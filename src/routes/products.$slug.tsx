@@ -1,0 +1,276 @@
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { Header } from "@/components/site/Header";
+import { Footer } from "@/components/site/Footer";
+import { ProductCard } from "@/components/site/ProductCard";
+import { Breadcrumbs } from "@/components/site/PageHero";
+import { getProduct, relatedTo, products } from "@/lib/catalog";
+import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
+import { useEffect, useState } from "react";
+import {
+  Star, Zap, Shield, Heart, GitCompare, ShoppingCart, Share2, Check,
+  Facebook, Twitter, MessageCircle, Mail, Truck, RefreshCcw, Lock,
+} from "lucide-react";
+import { toast } from "sonner";
+
+export const Route = createFileRoute("/products/$slug")({
+  loader: ({ params }) => {
+    const product = getProduct(params.slug);
+    if (!product) throw notFound();
+    return { product };
+  },
+  head: ({ loaderData }) => ({
+    meta: [
+      { title: `${loaderData?.product.name} — TopupHut` },
+      { name: "description", content: loaderData?.product.short ?? "Premium digital product" },
+      { property: "og:title", content: `${loaderData?.product.name} — TopupHut` },
+      { property: "og:description", content: loaderData?.product.short ?? "" },
+    ],
+  }),
+  component: ProductPage,
+  notFoundComponent: () => (
+    <div className="min-h-screen grid place-items-center p-8 text-center">
+      <div>
+        <h1 className="text-2xl font-bold mb-2">Product not found</h1>
+        <Link to="/products" className="text-primary underline">Browse all products</Link>
+      </div>
+    </div>
+  ),
+  errorComponent: () => <div className="p-8">Something went wrong.</div>,
+});
+
+function ProductPage() {
+  const data = Route.useLoaderData();
+  const product = data.product as import("@/lib/catalog").Product;
+  const [qty, setQty] = useState(1);
+  const [tab, setTab] = useState<"desc" | "specs" | "reviews" | "faq">("desc");
+  const cart = useCart();
+  const wish = useWishlist();
+  const cmp = useCompare();
+  const push = useRecent((s) => s.push);
+  const recent = useRecent((s) => s.slugs);
+
+  useEffect(() => { push(product.slug); }, [product.slug, push]);
+
+  const off = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
+  const related = relatedTo(product.slug, 4);
+  const recentProducts = recent
+    .filter((s) => s !== product.slug)
+    .map((s) => products.find((p) => p.slug === s))
+    .filter((p): p is import("@/lib/catalog").Product => Boolean(p))
+    .slice(0, 4);
+
+  const addToCart = () => { cart.add(product, qty); toast.success(`${product.name} added to cart`); };
+  const buyNow = () => { cart.add(product, qty); window.location.href = "/checkout"; };
+
+  return (
+    <div className="min-h-screen">
+      <Header />
+      <div className="bg-gradient-hero text-white">
+        <div className="container mx-auto px-4 py-6">
+          <Breadcrumbs items={[{ label: "Home", to: "/" }, { label: "Products", to: "/products" }, { label: product.name }]} />
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-10 grid lg:grid-cols-2 gap-10">
+        <div className="space-y-4">
+          <div className="relative aspect-square rounded-3xl bg-gradient-to-br from-primary/15 via-secondary/15 to-accent/15 grid place-items-center overflow-hidden shadow-elegant">
+            <span className="text-[12rem]">{product.emoji}</span>
+            {product.badge && (
+              <span className="absolute top-4 left-4 px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-primary text-primary-foreground shadow-elegant">
+                {product.badge}
+              </span>
+            )}
+            {off > 0 && (
+              <span className="absolute top-4 right-4 px-3 py-1.5 rounded-full text-xs font-bold bg-accent text-accent-foreground">
+                -{off}% OFF
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-4 gap-3">
+            {[product.emoji, "✨", "🔐", "⚡"].map((e, i) => (
+              <div key={i} className="aspect-square rounded-xl bg-card border border-border grid place-items-center text-4xl hover:border-primary cursor-pointer transition-smooth">{e}</div>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-5">
+          <div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wider mb-2">{product.category.replace("-", " ")}</div>
+            <h1 className="text-3xl sm:text-4xl font-bold leading-tight">{product.name}</h1>
+            <div className="flex items-center gap-3 mt-3 text-sm">
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => <Star key={i} className={`h-4 w-4 ${i < Math.floor(product.rating) ? "fill-accent text-accent" : "text-muted"}`} />)}
+                <span className="font-semibold ml-1">{product.rating}</span>
+              </div>
+              <span className="text-muted-foreground">({product.reviews.toLocaleString()} reviews)</span>
+              <span className="text-emerald-600 font-medium inline-flex items-center gap-1"><Check className="h-4 w-4" /> In stock</span>
+            </div>
+          </div>
+
+          <p className="text-muted-foreground leading-relaxed">{product.short}</p>
+
+          <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 p-5 flex items-end gap-4 flex-wrap">
+            <div>
+              <div className="text-4xl font-bold text-primary">${product.price}</div>
+              {product.oldPrice && (
+                <div className="flex gap-2 items-center mt-1">
+                  <span className="text-sm text-muted-foreground line-through">${product.oldPrice}</span>
+                  <span className="text-xs font-bold text-accent">Save ${(product.oldPrice - product.price).toFixed(2)}</span>
+                </div>
+              )}
+            </div>
+            <div className="ml-auto inline-flex items-center gap-2 text-sm font-semibold text-accent">
+              <Zap className="h-4 w-4" /> {product.delivery} delivery
+            </div>
+          </div>
+
+          <ul className="space-y-2">
+            {product.features?.slice(0, 4).map((f) => (
+              <li key={f} className="flex items-start gap-2 text-sm">
+                <Check className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" /> {f}
+              </li>
+            ))}
+          </ul>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="inline-flex items-center rounded-xl border border-border bg-card">
+              <button onClick={() => setQty(Math.max(1, qty - 1))} className="w-10 h-11 grid place-items-center hover:bg-muted rounded-l-xl">−</button>
+              <span className="w-10 text-center font-semibold">{qty}</span>
+              <button onClick={() => setQty(qty + 1)} className="w-10 h-11 grid place-items-center hover:bg-muted rounded-r-xl">+</button>
+            </div>
+            <button onClick={addToCart} className="flex-1 min-w-40 inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-card border border-primary text-primary font-semibold hover:bg-primary/5 transition-smooth">
+              <ShoppingCart className="h-4 w-4" /> Add to Cart
+            </button>
+            <button onClick={buyNow} className="flex-1 min-w-40 inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:opacity-95 transition-smooth">
+              <Zap className="h-4 w-4" /> Buy Now
+            </button>
+          </div>
+
+          <div className="flex gap-2 flex-wrap text-sm">
+            <button onClick={() => { wish.toggle(product.slug); toast(wish.has(product.slug) ? "Removed from wishlist" : "Added to wishlist"); }} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border ${wish.has(product.slug) ? "bg-accent/10 border-accent text-accent" : "border-border hover:bg-muted"}`}>
+              <Heart className={`h-4 w-4 ${wish.has(product.slug) ? "fill-accent" : ""}`} /> Wishlist
+            </button>
+            <button onClick={() => { cmp.toggle(product.slug); toast(cmp.has(product.slug) ? "Removed from compare" : "Added to compare"); }} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border ${cmp.has(product.slug) ? "bg-primary/10 border-primary text-primary" : "border-border hover:bg-muted"}`}>
+              <GitCompare className="h-4 w-4" /> Compare
+            </button>
+            <div className="inline-flex items-center gap-1 ml-auto">
+              <span className="text-muted-foreground mr-1"><Share2 className="h-4 w-4" /></span>
+              {[Facebook, Twitter, MessageCircle, Mail].map((Icon, i) => (
+                <a key={i} href="#" className="h-9 w-9 grid place-items-center rounded-lg hover:bg-muted"><Icon className="h-4 w-4" /></a>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 pt-4 border-t border-border">
+            {[{ Icon: Truck, t: "Instant Delivery" }, { Icon: Shield, t: "Full Warranty" }, { Icon: Lock, t: "Secure Payment" }].map((b) => (
+              <div key={b.t} className="text-center text-xs">
+                <b.Icon className="h-5 w-5 text-primary mx-auto mb-1" />
+                <div className="font-semibold">{b.t}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 pb-12">
+        <div className="flex gap-1 border-b border-border overflow-x-auto">
+          {(["desc", "specs", "reviews", "faq"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-5 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-smooth ${tab === t ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+            >
+              {{ desc: "Description", specs: "Specifications", reviews: "Reviews", faq: "FAQ" }[t]}
+            </button>
+          ))}
+        </div>
+
+        <div className="py-8">
+          {tab === "desc" && (
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+                <h3 className="font-semibold mt-6">Key features</h3>
+                <ul className="space-y-2">
+                  {product.features?.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm"><Check className="h-4 w-4 text-emerald-600 mt-0.5" /> {f}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="rounded-2xl bg-card border border-border p-6 space-y-3">
+                <h3 className="font-semibold flex items-center gap-2"><RefreshCcw className="h-4 w-4 text-primary" /> What's included</h3>
+                <ul className="space-y-2">
+                  {product.included?.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm"><Check className="h-4 w-4 text-primary mt-0.5" /> {f}</li>
+                  ))}
+                </ul>
+                <h3 className="font-semibold flex items-center gap-2 pt-3 border-t border-border"><Truck className="h-4 w-4 text-primary" /> Delivery info</h3>
+                <p className="text-sm text-muted-foreground">Delivered in {product.delivery} after payment confirmation, sent directly to your email.</p>
+              </div>
+            </div>
+          )}
+          {tab === "specs" && (
+            <div className="rounded-2xl bg-card border border-border overflow-hidden max-w-2xl">
+              {Object.entries(product.specs ?? {}).map(([k, v], i) => (
+                <div key={k} className={`grid grid-cols-2 px-5 py-3 text-sm ${i % 2 ? "bg-muted/40" : ""}`}>
+                  <span className="font-semibold">{k}</span>
+                  <span className="text-muted-foreground">{v}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {tab === "reviews" && (
+            <div className="space-y-4 max-w-3xl">
+              {[
+                { n: "Sarah K.", r: 5, t: "Worked instantly. Smooth experience overall.", d: "2 days ago" },
+                { n: "Ahmed R.", r: 5, t: "Great price, support replied in minutes.", d: "1 week ago" },
+                { n: "Maria L.", r: 4, t: "Took 15 minutes but everything works perfectly.", d: "2 weeks ago" },
+              ].map((rv, i) => (
+                <div key={i} className="rounded-2xl bg-card border border-border p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-gradient-primary text-primary-foreground grid place-items-center font-bold">{rv.n[0]}</div>
+                      <div>
+                        <div className="font-semibold text-sm">{rv.n}</div>
+                        <div className="flex">{[...Array(5)].map((_, j) => <Star key={j} className={`h-3.5 w-3.5 ${j < rv.r ? "fill-accent text-accent" : "text-muted"}`} />)}</div>
+                      </div>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{rv.d}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-3">{rv.t}</p>
+                </div>
+              ))}
+            </div>
+          )}
+          {tab === "faq" && (
+            <div className="space-y-3 max-w-3xl">
+              {product.faqs?.map((f) => (
+                <details key={f.q} className="rounded-2xl bg-card border border-border p-5 group">
+                  <summary className="font-semibold cursor-pointer flex justify-between items-center">{f.q}<span className="text-primary group-open:rotate-45 transition-smooth">+</span></summary>
+                  <p className="text-sm text-muted-foreground mt-3">{f.a}</p>
+                </details>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <section className="mt-12">
+          <h2 className="text-2xl font-bold mb-5">Related products</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+            {related.map((p) => <ProductCard key={p.slug} product={p} />)}
+          </div>
+        </section>
+
+        {recentProducts.length > 0 && (
+          <section className="mt-12">
+            <h2 className="text-2xl font-bold mb-5">Recently viewed</h2>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+              {recentProducts.map((p) => p && <ProductCard key={p.slug} product={p} />)}
+            </div>
+          </section>
+        )}
+      </div>
+      <Footer />
+    </div>
+  );
+}
