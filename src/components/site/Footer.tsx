@@ -27,8 +27,8 @@ export function Footer() {
           </div>
         </div>
 
-        <FooterCol title="Company" links={[["About", "/about"], ["Contact", "/contact"], ["Careers", "#"], ["Blog", "#"], ["Affiliate", "#"]]} />
-        <FooterCol title="Support" links={[["FAQ", "#"], ["Track Order", "#"], ["Refund Policy", "#"], ["Privacy Policy", "#"], ["Terms", "#"]]} />
+        <FooterCol title="Company" links={[["About", "/about"], ["Contact", "/contact"], ["Blog", "/blog"], ["Categories", "/categories"]]} />
+        <FooterCol title="Support" links={[["FAQ", "/faq"], ["Track Order", "/track-order"], ["Support Center", "/support"], ["Refund Policy", "/refund"], ["Privacy Policy", "/privacy"], ["Terms", "/terms"]]} />
 
         <div className="space-y-3">
           <h4 className="font-semibold text-lg">Newsletter</h4>
