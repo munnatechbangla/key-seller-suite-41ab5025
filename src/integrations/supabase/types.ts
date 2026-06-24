@@ -448,12 +448,17 @@ export type Database = {
       }
       products: {
         Row: {
+          badge: string | null
           brand_id: string | null
           category_id: string | null
           created_at: string
+          delivery_time: string | null
           description: string | null
+          emoji: string | null
           external_url: string | null
+          features: string[]
           id: string
+          included: string[]
           is_best_seller: boolean
           is_digital: boolean
           is_external: boolean
@@ -461,7 +466,9 @@ export type Database = {
           is_license_key: boolean
           is_subscription: boolean
           is_trending: boolean
+          rating: number
           regular_price: number
+          reviews_count: number
           sale_price: number | null
           sales_count: number
           seo_description: string | null
@@ -469,6 +476,7 @@ export type Database = {
           short_description: string | null
           sku: string | null
           slug: string
+          specs: Json
           status: Database["public"]["Enums"]["product_status"]
           stock_status: Database["public"]["Enums"]["stock_state"]
           thumbnail_url: string | null
@@ -477,12 +485,17 @@ export type Database = {
           views_count: number
         }
         Insert: {
+          badge?: string | null
           brand_id?: string | null
           category_id?: string | null
           created_at?: string
+          delivery_time?: string | null
           description?: string | null
+          emoji?: string | null
           external_url?: string | null
+          features?: string[]
           id?: string
+          included?: string[]
           is_best_seller?: boolean
           is_digital?: boolean
           is_external?: boolean
@@ -490,7 +503,9 @@ export type Database = {
           is_license_key?: boolean
           is_subscription?: boolean
           is_trending?: boolean
+          rating?: number
           regular_price?: number
+          reviews_count?: number
           sale_price?: number | null
           sales_count?: number
           seo_description?: string | null
@@ -498,6 +513,7 @@ export type Database = {
           short_description?: string | null
           sku?: string | null
           slug: string
+          specs?: Json
           status?: Database["public"]["Enums"]["product_status"]
           stock_status?: Database["public"]["Enums"]["stock_state"]
           thumbnail_url?: string | null
@@ -506,12 +522,17 @@ export type Database = {
           views_count?: number
         }
         Update: {
+          badge?: string | null
           brand_id?: string | null
           category_id?: string | null
           created_at?: string
+          delivery_time?: string | null
           description?: string | null
+          emoji?: string | null
           external_url?: string | null
+          features?: string[]
           id?: string
+          included?: string[]
           is_best_seller?: boolean
           is_digital?: boolean
           is_external?: boolean
@@ -519,7 +540,9 @@ export type Database = {
           is_license_key?: boolean
           is_subscription?: boolean
           is_trending?: boolean
+          rating?: number
           regular_price?: number
+          reviews_count?: number
           sale_price?: number | null
           sales_count?: number
           seo_description?: string | null
@@ -527,6 +550,7 @@ export type Database = {
           short_description?: string | null
           sku?: string | null
           slug?: string
+          specs?: Json
           status?: Database["public"]["Enums"]["product_status"]
           stock_status?: Database["public"]["Enums"]["stock_state"]
           thumbnail_url?: string | null
