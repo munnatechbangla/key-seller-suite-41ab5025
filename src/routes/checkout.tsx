@@ -49,22 +49,37 @@ function CheckoutPage() {
     );
   }
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agree || !privacy) { toast.error("Please accept the terms"); return; }
+    if (submitting) return;
+    setSubmitting(true);
     const fd = new FormData(e.currentTarget as HTMLFormElement);
-    const orderId = "TH-" + Date.now().toString(36).toUpperCase();
-    const order = {
-      id: orderId,
-      email: fd.get("email"),
-      total: cart.total(),
-      items: cart.items,
-      gateway,
-      date: new Date().toISOString(),
+    const customer = {
+      email: String(fd.get("email") ?? ""),
+      firstName: String(fd.get("firstName") ?? ""),
+      lastName: String(fd.get("lastName") ?? ""),
+      phone: String(fd.get("phone") ?? ""),
+      country: String(fd.get("country") ?? ""),
+      address: String(fd.get("address") ?? ""),
+      notes: String(fd.get("notes") ?? ""),
     };
-    localStorage.setItem("topuphut-last-order", JSON.stringify(order));
-    cart.clear();
-    navigate({ to: "/thank-you", search: { order: orderId } });
+    const payload = {
+      data: {
+        items: cart.items.map((i) => ({ slug: i.slug, qty: i.qty })),
+        customer,
+        paymentMethod: gateway,
+        couponCode: cart.coupon,
+      },
+    };
+    try {
+      const result = user ? await placeAuth(payload) : await placeGuest(payload);
+      cart.clear();
+      navigate({ to: "/thank-you", search: { order: result.orderNumber, email: customer.email } });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not place order");
+      setSubmitting(false);
+    }
   };
 
   return (
