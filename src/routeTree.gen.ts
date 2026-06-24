@@ -16,7 +16,6 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as RefundRouteImport } from './routes/refund'
-import { Route as ProductsRouteImport } from './routes/products'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -28,6 +27,7 @@ import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AuthResetRouteImport } from './routes/auth.reset'
@@ -68,11 +68,6 @@ const SearchRoute = SearchRouteImport.update({
 const RefundRoute = RefundRouteImport.update({
   id: '/refund',
   path: '/refund',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProductsRoute = ProductsRouteImport.update({
-  id: '/products',
-  path: '/products',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -130,10 +125,15 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProductsIndexRoute = ProductsIndexRouteImport.update({
+  id: '/products/',
+  path: '/products/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductsSlugRoute = ProductsSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => ProductsRoute,
+  id: '/products/$slug',
+  path: '/products/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/$slug',
@@ -173,7 +173,6 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/privacy': typeof PrivacyRoute
-  '/products': typeof ProductsRouteWithChildren
   '/refund': typeof RefundRoute
   '/search': typeof SearchRoute
   '/support': typeof SupportRoute
@@ -187,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/auth/reset': typeof AuthResetRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
+  '/products/': typeof ProductsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -200,7 +200,6 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/privacy': typeof PrivacyRoute
-  '/products': typeof ProductsRouteWithChildren
   '/refund': typeof RefundRoute
   '/search': typeof SearchRoute
   '/support': typeof SupportRoute
@@ -214,6 +213,7 @@ export interface FileRoutesByTo {
   '/auth/reset': typeof AuthResetRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
+  '/products': typeof ProductsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -228,7 +228,6 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/privacy': typeof PrivacyRoute
-  '/products': typeof ProductsRouteWithChildren
   '/refund': typeof RefundRoute
   '/search': typeof SearchRoute
   '/support': typeof SupportRoute
@@ -242,6 +241,7 @@ export interface FileRoutesById {
   '/auth/reset': typeof AuthResetRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
+  '/products/': typeof ProductsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -257,7 +257,6 @@ export interface FileRouteTypes {
     | '/contact'
     | '/faq'
     | '/privacy'
-    | '/products'
     | '/refund'
     | '/search'
     | '/support'
@@ -271,6 +270,7 @@ export interface FileRouteTypes {
     | '/auth/reset'
     | '/blog/$slug'
     | '/products/$slug'
+    | '/products/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -284,7 +284,6 @@ export interface FileRouteTypes {
     | '/contact'
     | '/faq'
     | '/privacy'
-    | '/products'
     | '/refund'
     | '/search'
     | '/support'
@@ -298,6 +297,7 @@ export interface FileRouteTypes {
     | '/auth/reset'
     | '/blog/$slug'
     | '/products/$slug'
+    | '/products'
   id:
     | '__root__'
     | '/'
@@ -311,7 +311,6 @@ export interface FileRouteTypes {
     | '/contact'
     | '/faq'
     | '/privacy'
-    | '/products'
     | '/refund'
     | '/search'
     | '/support'
@@ -325,6 +324,7 @@ export interface FileRouteTypes {
     | '/auth/reset'
     | '/blog/$slug'
     | '/products/$slug'
+    | '/products/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -339,7 +339,6 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   FaqRoute: typeof FaqRoute
   PrivacyRoute: typeof PrivacyRoute
-  ProductsRoute: typeof ProductsRouteWithChildren
   RefundRoute: typeof RefundRoute
   SearchRoute: typeof SearchRoute
   SupportRoute: typeof SupportRoute
@@ -351,6 +350,8 @@ export interface RootRouteChildren {
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
   AuthResetRoute: typeof AuthResetRoute
+  ProductsSlugRoute: typeof ProductsSlugRoute
+  ProductsIndexRoute: typeof ProductsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -402,13 +403,6 @@ declare module '@tanstack/react-router' {
       path: '/refund'
       fullPath: '/refund'
       preLoaderRoute: typeof RefundRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/products': {
-      id: '/products'
-      path: '/products'
-      fullPath: '/products'
-      preLoaderRoute: typeof ProductsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -488,12 +482,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/products/': {
+      id: '/products/'
+      path: '/products'
+      fullPath: '/products/'
+      preLoaderRoute: typeof ProductsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/products/$slug': {
       id: '/products/$slug'
-      path: '/$slug'
+      path: '/products/$slug'
       fullPath: '/products/$slug'
       preLoaderRoute: typeof ProductsSlugRouteImport
-      parentRoute: typeof ProductsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/blog/$slug': {
       id: '/blog/$slug'
@@ -543,18 +544,6 @@ const BlogRouteChildren: BlogRouteChildren = {
 
 const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 
-interface ProductsRouteChildren {
-  ProductsSlugRoute: typeof ProductsSlugRoute
-}
-
-const ProductsRouteChildren: ProductsRouteChildren = {
-  ProductsSlugRoute: ProductsSlugRoute,
-}
-
-const ProductsRouteWithChildren = ProductsRoute._addFileChildren(
-  ProductsRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -567,7 +556,6 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   FaqRoute: FaqRoute,
   PrivacyRoute: PrivacyRoute,
-  ProductsRoute: ProductsRouteWithChildren,
   RefundRoute: RefundRoute,
   SearchRoute: SearchRoute,
   SupportRoute: SupportRoute,
@@ -579,17 +567,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
   AuthResetRoute: AuthResetRoute,
+  ProductsSlugRoute: ProductsSlugRoute,
+  ProductsIndexRoute: ProductsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
