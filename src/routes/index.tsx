@@ -4,11 +4,18 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Section } from "@/components/site/Section";
 import { ProductCard } from "@/components/site/ProductCard";
-import { categories, type Product } from "@/lib/catalog";
+import {
+  useCategories,
+  featuredQuery,
+  trendingQuery,
+  bestSellersQuery,
+  productsBySlugsQuery,
+  type Product,
+} from "@/lib/catalog";
 import {
   resolveIcon,
-  resolveProductSection,
-  resolveProductsBySlugs,
+  useProductSection,
+  useResolvedProducts,
   heroConfig,
   trustStripItems,
   whyChooseItems,
@@ -23,6 +30,7 @@ import {
   categoriesSection,
   newsletterCta,
 } from "@/lib/cms";
+import { categoriesQuery } from "@/lib/catalog";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -33,7 +41,16 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: "Premium digital subscriptions & license keys delivered instantly." },
     ],
   }),
+  loader: ({ context }) => {
+    context.queryClient.ensureQueryData(categoriesQuery());
+    context.queryClient.ensureQueryData(featuredQuery());
+    context.queryClient.ensureQueryData(trendingQuery());
+    context.queryClient.ensureQueryData(bestSellersQuery());
+    context.queryClient.ensureQueryData(productsBySlugsQuery(heroConfig.floatingProductSlugs));
+  },
   component: Home,
+  errorComponent: () => <div className="p-8 text-center">Something went wrong loading the homepage.</div>,
+  notFoundComponent: () => <div className="p-8 text-center">Page not found.</div>,
 });
 
 function Home() {
