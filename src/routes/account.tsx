@@ -92,12 +92,32 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
   return <div className={`rounded-2xl bg-card border border-border p-5 ${className}`}>{children}</div>;
 }
 
-function DashboardTab({ user }: { user: { name: string; email: string } }) {
+function useMyOrders() {
+  const fn = useServerFn(getMyOrdersFn);
+  return useQuery({ queryKey: ["my-orders"], queryFn: () => fn({}) });
+}
+function useMyDownloads() {
+  const fn = useServerFn(getMyDownloadsFn);
+  return useQuery({ queryKey: ["my-downloads"], queryFn: () => fn({}) });
+}
+function useMyLicenses() {
+  const fn = useServerFn(getMyLicensesFn);
+  return useQuery({ queryKey: ["my-licenses"], queryFn: () => fn({}) });
+}
+
+function Loader() {
+  return <div className="flex items-center justify-center py-8 text-muted-foreground text-sm"><Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading…</div>;
+}
+
+function DashboardTab() {
+  const orders = useMyOrders();
+  const list = orders.data ?? [];
+  const totalSpent = list.filter((o) => o.status === "paid" || o.status === "completed").reduce((s, o) => s + Number(o.total), 0);
   const stats = [
-    { label: "Total orders", value: "12", Icon: Package, color: "text-primary bg-primary/10" },
-    { label: "Total spent", value: "$248", Icon: DollarSign, color: "text-emerald-600 bg-emerald-500/10" },
-    { label: "Active subs", value: "5", Icon: CheckCircle2, color: "text-accent bg-accent/10" },
-    { label: "Loyalty pts", value: "1,240", Icon: TrendingUp, color: "text-secondary bg-secondary/10" },
+    { label: "Total orders", value: String(list.length), Icon: Package, color: "text-primary bg-primary/10" },
+    { label: "Total spent", value: `$${totalSpent.toFixed(2)}`, Icon: DollarSign, color: "text-emerald-600 bg-emerald-500/10" },
+    { label: "Active orders", value: String(list.filter((o) => o.status === "paid" || o.status === "processing").length), Icon: CheckCircle2, color: "text-accent bg-accent/10" },
+    { label: "Loyalty pts", value: String(Math.floor(totalSpent * 5)), Icon: TrendingUp, color: "text-secondary bg-secondary/10" },
   ];
   return (
     <div className="space-y-6">
@@ -112,57 +132,101 @@ function DashboardTab({ user }: { user: { name: string; email: string } }) {
       </div>
       <Card>
         <h3 className="font-bold mb-4">Recent orders</h3>
-        <OrdersList limit={3} />
+        {orders.isLoading ? <Loader /> : <OrdersList orders={list.slice(0, 3)} />}
       </Card>
     </div>
   );
 }
 
-const sampleOrders = [
-  { id: "TH-A1B2C", date: "Jun 20, 2026", items: 2, total: 17.98, status: "Delivered" },
-  { id: "TH-X7Y2K", date: "Jun 12, 2026", items: 1, total: 39.99, status: "Delivered" },
-  { id: "TH-M9P3Q", date: "May 28, 2026", items: 3, total: 56.97, status: "Processing" },
-];
+type OrderRow = NonNullable<ReturnType<typeof useMyOrders>["data"]>[number];
 
-function OrdersList({ limit }: { limit?: number }) {
-  const list = limit ? sampleOrders.slice(0, limit) : sampleOrders;
+function OrdersList({ orders }: { orders: OrderRow[] }) {
+  if (orders.length === 0) return <p className="text-sm text-muted-foreground">No orders yet. <Link to="/products" className="text-primary">Browse products</Link></p>;
   return (
     <div className="space-y-2">
-      {list.map((o) => (
-        <div key={o.id} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-muted/40 transition-smooth">
-          <Package className="h-5 w-5 text-primary" />
-          <div className="flex-1 min-w-0">
-            <div className="font-semibold text-sm">#{o.id}</div>
-            <div className="text-xs text-muted-foreground">{o.date} · {o.items} item{o.items !== 1 ? "s" : ""}</div>
+      {orders.map((o) => {
+        const itemCount = o.order_items?.length ?? 0;
+        const date = new Date(o.created_at).toLocaleDateString();
+        const ok = o.status === "completed" || o.status === "paid";
+        return (
+          <div key={o.id} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-muted/40 transition-smooth">
+            <Package className="h-5 w-5 text-primary" />
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-sm">#{o.order_number}</div>
+              <div className="text-xs text-muted-foreground">{date} · {itemCount} item{itemCount !== 1 ? "s" : ""}</div>
+            </div>
+            <div className="text-right">
+              <div className="font-bold">${Number(o.total).toFixed(2)}</div>
+              <div className={`text-xs capitalize ${ok ? "text-emerald-600" : "text-accent"}`}>{o.status}</div>
+            </div>
           </div>
-          <div className="text-right">
-            <div className="font-bold">${o.total}</div>
-            <div className={`text-xs ${o.status === "Delivered" ? "text-emerald-600" : "text-accent"}`}>{o.status}</div>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
 
-function OrdersTab() { return <Card><h3 className="font-bold mb-4">All orders</h3><OrdersList /></Card>; }
+function OrdersTab() {
+  const orders = useMyOrders();
+  return <Card><h3 className="font-bold mb-4">All orders</h3>{orders.isLoading ? <Loader /> : <OrdersList orders={orders.data ?? []} />}</Card>;
+}
 
 function DownloadsTab() {
-  const items = useFeatured().slice(0, 3);
+  const dl = useMyDownloads();
+  const items = dl.data ?? [];
   return (
     <Card>
       <h3 className="font-bold mb-4">Your downloads</h3>
-      <div className="space-y-2">
-        {items.map((p) => (
-          <div key={p.slug} className="flex items-center gap-3 p-3 rounded-xl border border-border">
-            <span className="text-3xl">{p.emoji}</span>
-            <div className="flex-1"><div className="font-semibold text-sm">{p.name}</div><div className="text-xs text-muted-foreground">Available · expires never</div></div>
-            <button className="px-3 py-2 rounded-lg bg-gradient-primary text-primary-foreground text-xs font-semibold inline-flex items-center gap-1">
-              <Download className="h-3.5 w-3.5" /> Download
-            </button>
-          </div>
-        ))}
-      </div>
+      {dl.isLoading ? <Loader /> : items.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No downloads yet.</p>
+      ) : (
+        <div className="space-y-2">
+          {items.map((d) => {
+            const name = (d as { order_items: { product_name: string } | null }).order_items?.product_name ?? "Product";
+            const expires = d.expires_at ? new Date(d.expires_at).toLocaleDateString() : "never";
+            const used = d.download_count >= d.max_downloads;
+            return (
+              <div key={d.id} className="flex items-center gap-3 p-3 rounded-xl border border-border">
+                <Download className="h-5 w-5 text-primary" />
+                <div className="flex-1"><div className="font-semibold text-sm">{name}</div><div className="text-xs text-muted-foreground">{d.download_count}/{d.max_downloads} · expires {expires}</div></div>
+                <button disabled={used} className="px-3 py-2 rounded-lg bg-gradient-primary text-primary-foreground text-xs font-semibold inline-flex items-center gap-1 disabled:opacity-50">
+                  <Download className="h-3.5 w-3.5" /> {used ? "Used" : "Download"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function LicensesTab() {
+  const lic = useMyLicenses();
+  const items = lic.data ?? [];
+  return (
+    <Card>
+      <h3 className="font-bold mb-4">Your license keys</h3>
+      {lic.isLoading ? <Loader /> : items.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No licenses yet. Licenses appear after a successful order.</p>
+      ) : (
+        <div className="space-y-2">
+          {items.map((a) => {
+            const name = (a as { order_items: { product_name: string } | null }).order_items?.product_name ?? "Product";
+            const key = (a as { license_keys: { key_value: string } | null }).license_keys?.key_value ?? "";
+            return (
+              <div key={a.id} className="flex items-center gap-3 p-3 rounded-xl border border-border">
+                <KeyRound className="h-5 w-5 text-primary" />
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm">{name}</div>
+                  <code className="text-xs text-muted-foreground font-mono break-all">{key}</code>
+                </div>
+                <button onClick={() => { navigator.clipboard.writeText(key); toast.success("Copied"); }} className="px-3 py-2 rounded-lg bg-card border border-border text-xs font-semibold hover:bg-muted">Copy</button>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </Card>
   );
 }
