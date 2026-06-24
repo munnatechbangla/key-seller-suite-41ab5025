@@ -32,12 +32,13 @@ type Tab = typeof tabs[number]["id"];
 
 function AccountPage() {
   const user = useAuth((s) => s.user);
+  const loading = useAuth((s) => s.loading);
   const logout = useAuth((s) => s.logout);
   const navigate = useNavigate();
   const [active, setActive] = useState<Tab>("dashboard");
 
-  useEffect(() => { if (!user) navigate({ to: "/auth/login" }); }, [user, navigate]);
-  if (!user) return null;
+  useEffect(() => { if (!loading && !user) navigate({ to: "/auth/login" }); }, [user, loading, navigate]);
+  if (loading || !user) return null;
 
   return (
     <div className="min-h-screen">
