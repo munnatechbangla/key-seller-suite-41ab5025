@@ -77,7 +77,7 @@ function Home() {
 
 function Hero() {
   const BadgeIcon = resolveIcon(heroConfig.badge.icon);
-  const floatingProducts = resolveProductsBySlugs(heroConfig.floatingProductSlugs);
+  const floatingProducts = useResolvedProducts(heroConfig.floatingProductSlugs);
   const positions = [
     "absolute top-0 left-8 w-64",
     "absolute top-24 right-0 w-64",
@@ -208,7 +208,7 @@ function CategoriesGrid() {
       }
     >
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        {categories.map((c) => (
+        {useCategories().map((c) => (
           <Link
             key={c.slug}
             to="/products"
@@ -226,7 +226,7 @@ function CategoriesGrid() {
 }
 
 function ProductSectionBlock({ section, action }: { section: (typeof productSections)[number]; action?: React.ReactNode }) {
-  const items = resolveProductSection(section);
+  const items = useProductSection(section);
   return (
     <Section eyebrow={section.eyebrow} title={section.title} subtitle={section.subtitle} action={action}>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
