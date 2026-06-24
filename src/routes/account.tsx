@@ -9,11 +9,14 @@ import {
   MapPin, LifeBuoy, KeyRound, LogOut, Package, DollarSign, CheckCircle2, TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useFeatured, useProductsBySlugs } from "@/lib/catalog";
+import { useFeatured, useProductsBySlugs, featuredQuery } from "@/lib/catalog";
 
 export const Route = createFileRoute("/account")({
   head: () => ({ meta: [{ title: "My Account — TopupHut" }] }),
+  loader: ({ context }) => { context.queryClient.ensureQueryData(featuredQuery()); },
   component: AccountPage,
+  errorComponent: () => <div className="p-8 text-center">Account unavailable.</div>,
+  notFoundComponent: () => <div className="p-8 text-center">Not found.</div>,
 });
 
 const tabs = [

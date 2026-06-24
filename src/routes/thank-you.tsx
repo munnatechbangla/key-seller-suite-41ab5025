@@ -2,14 +2,17 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
-import { useFeatured } from "@/lib/catalog";
+import { useFeatured, featuredQuery } from "@/lib/catalog";
 import { CheckCircle2, Download, Mail, MessageCircle } from "lucide-react";
 import { z } from "zod";
 
 export const Route = createFileRoute("/thank-you")({
   validateSearch: z.object({ order: z.string().optional() }),
   head: () => ({ meta: [{ title: "Order Confirmed — TopupHut" }] }),
+  loader: ({ context }) => { context.queryClient.ensureQueryData(featuredQuery()); },
   component: ThankYou,
+  errorComponent: () => <div className="p-8 text-center">Order page unavailable.</div>,
+  notFoundComponent: () => <div className="p-8 text-center">Not found.</div>,
 });
 
 function ThankYou() {

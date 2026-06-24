@@ -4,14 +4,17 @@ import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { PageHero } from "@/components/site/PageHero";
 import { useCart } from "@/lib/stores";
-import { useFeatured } from "@/lib/catalog";
+import { useFeatured, featuredQuery } from "@/lib/catalog";
 import { Trash2, Tag, ShoppingBag, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({ meta: [{ title: "Shopping Cart — TopupHut" }] }),
+  loader: ({ context }) => { context.queryClient.ensureQueryData(featuredQuery()); },
   component: CartPage,
+  errorComponent: () => <div className="p-8 text-center">Cart unavailable.</div>,
+  notFoundComponent: () => <div className="p-8 text-center">Not found.</div>,
 });
 
 function CartPage() {

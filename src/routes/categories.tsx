@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
-import { useCategories } from "@/lib/catalog";
+import { useCategories, categoriesQuery } from "@/lib/catalog";
 import { ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/categories")({
@@ -13,7 +13,10 @@ export const Route = createFileRoute("/categories")({
       { property: "og:description", content: "Find premium digital products by category." },
     ],
   }),
+  loader: ({ context }) => { context.queryClient.ensureQueryData(categoriesQuery()); },
   component: CategoriesPage,
+  errorComponent: () => <div className="p-8 text-center">Failed to load categories.</div>,
+  notFoundComponent: () => <div className="p-8 text-center">Not found.</div>,
 });
 
 function CategoriesPage() {
