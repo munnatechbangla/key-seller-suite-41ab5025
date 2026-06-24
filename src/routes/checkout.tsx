@@ -171,8 +171,8 @@ function CheckoutPage() {
                 <Tag className="h-4 w-4" /> Apply
               </button>
             </div>
-            <button type="submit" className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:opacity-95">
-              <Lock className="h-4 w-4" /> Place secure order
+            <button type="submit" disabled={submitting} className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:opacity-95 disabled:opacity-60">
+              <Lock className="h-4 w-4" /> {submitting ? "Placing order…" : "Place secure order"}
             </button>
             <p className="text-[11px] text-center text-muted-foreground">256-bit SSL encryption. Your data is safe.</p>
           </div>
