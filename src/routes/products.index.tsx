@@ -6,7 +6,7 @@ import { useCategories, useProducts, type ProductSort, categoriesQuery, products
 import { useState } from "react";
 import { Filter, Grid3x3, List } from "lucide-react";
 
-export const Route = createFileRoute("/products")({
+export const Route = createFileRoute("/products/")({
   head: () => ({
     meta: [
       { title: "All Digital Products — TopupHut" },
