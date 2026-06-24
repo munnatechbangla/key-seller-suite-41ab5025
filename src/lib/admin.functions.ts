@@ -102,7 +102,7 @@ export const adminListOrdersFn = createServerFn({ method: "GET" })
       .select("id, order_number, email, customer_name, total, currency, status, payment_method, created_at")
       .order("created_at", { ascending: false })
       .limit(200);
-    if (data.status) q = q.eq("status", data.status);
+    if (data.status) q = q.eq("status", data.status as any);
     if (data.search) q = q.or(`order_number.ilike.%${data.search}%,email.ilike.%${data.search}%`);
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
