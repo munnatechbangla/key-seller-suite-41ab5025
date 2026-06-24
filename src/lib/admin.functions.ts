@@ -115,11 +115,13 @@ export const adminUpdateOrderStatusFn = createServerFn({ method: "POST" })
     z
       .object({
         orderId: z.string().uuid(),
-        status: z.enum(["pending", "paid", "failed", "refunded", "cancelled"]),
+        status: z.enum(["pending", "paid", "processing", "completed", "cancelled", "refunded", "failed"]),
       })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    const status = data.status as
+      | "pending" | "paid" | "processing" | "completed" | "cancelled" | "refunded" | "failed";
     await assertAdmin(context);
     const { error } = await context.supabase.from("orders").update({ status: data.status }).eq("id", data.orderId);
     if (error) throw new Error(error.message);
