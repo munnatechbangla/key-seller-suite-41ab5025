@@ -81,10 +81,6 @@ function CheckoutPage() {
       setSubmitting(false);
     }
   };
-      toast.error(err instanceof Error ? err.message : "Could not place order");
-      setSubmitting(false);
-    }
-  };
 
   return (
     <div className="min-h-screen">
