@@ -32,6 +32,9 @@ function CheckoutPage() {
   const [agree, setAgree] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [code, setCode] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const placeGuest = useServerFn(placeOrderGuestFn);
+  const placeAuth = useServerFn(placeOrderAuthFn);
 
   if (cart.items.length === 0) {
     return (
