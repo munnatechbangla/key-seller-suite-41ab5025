@@ -131,13 +131,14 @@ export const simulateGatewayPaymentFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { processPaymentCallback } = await import("@/lib/payments.server");
     const txn = `SIM-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-    return processPaymentCallback({
+    const r = await processPaymentCallback({
       orderNumber: data.orderNumber,
       transactionId: txn,
       status: data.outcome,
       gateway: "sandbox",
       raw: { simulated: true, at: new Date().toISOString() },
     });
+    return { ok: r.ok, transactionId: txn, outcome: data.outcome };
   });
 
 // ----- Reads -----
