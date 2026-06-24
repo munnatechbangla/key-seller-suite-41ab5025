@@ -2,15 +2,10 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Heart, ShoppingCart, User, Search, Menu, X, Zap, GitCompare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCart, useWishlist, useCompare, useAuth } from "@/lib/stores";
+import { primaryNav, announcementBar, siteConfig, resolveIcon } from "@/lib/cms";
+import { ThemeToggle } from "@/components/site/ThemeToggle";
 
-const nav = [
-  { to: "/", label: "Home" },
-  { to: "/products", label: "Products" },
-  { to: "/categories", label: "Categories" },
-  { to: "/blog", label: "Blog" },
-  { to: "/about", label: "About" },
-  { to: "/contact", label: "Contact" },
-] as const;
+const nav = primaryNav;
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
