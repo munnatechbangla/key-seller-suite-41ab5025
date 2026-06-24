@@ -419,36 +419,42 @@ export type Database = {
           amount: number
           created_at: string
           currency: string
+          gateway_response: Json | null
           id: string
           method: string
           order_id: string
           paid_at: string | null
           provider_ref: string | null
           status: Database["public"]["Enums"]["payment_status"]
+          transaction_id: string | null
           updated_at: string
         }
         Insert: {
           amount: number
           created_at?: string
           currency?: string
+          gateway_response?: Json | null
           id?: string
           method: string
           order_id: string
           paid_at?: string | null
           provider_ref?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
+          transaction_id?: string | null
           updated_at?: string
         }
         Update: {
           amount?: number
           created_at?: string
           currency?: string
+          gateway_response?: Json | null
           id?: string
           method?: string
           order_id?: string
           paid_at?: string | null
           provider_ref?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
+          transaction_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1029,6 +1035,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      mark_order_failed: {
+        Args: { _gateway_response?: Json; _order_id: string; _reason?: string }
+        Returns: Json
+      }
+      mark_order_paid: {
+        Args: {
+          _gateway_response?: Json
+          _order_id: string
+          _transaction_id: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "manager" | "customer" | "affiliate" | "support"
@@ -1040,6 +1058,7 @@ export type Database = {
         | "completed"
         | "cancelled"
         | "refunded"
+        | "failed"
       payment_status: "pending" | "paid" | "failed" | "refunded"
       product_status: "draft" | "published" | "archived"
       stock_state: "in_stock" | "out_of_stock" | "on_backorder"
@@ -1179,6 +1198,7 @@ export const Constants = {
         "completed",
         "cancelled",
         "refunded",
+        "failed",
       ],
       payment_status: ["pending", "paid", "failed", "refunded"],
       product_status: ["draft", "published", "archived"],
