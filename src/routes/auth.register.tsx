@@ -11,15 +11,16 @@ export const Route = createFileRoute("/auth/register")({
 function RegisterPage() {
   const register = useAuth((s) => s.register);
   const navigate = useNavigate();
-  const submit = (e: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const name = String(fd.get("name") ?? "");
     const email = String(fd.get("email") ?? "");
     const password = String(fd.get("password") ?? "");
     if (!name || !email || password.length < 6) return toast.error("Please complete all fields (min 6 char password)");
-    register(name, email, password);
-    toast.success("Account created!");
+    const { error } = await register(name, email, password);
+    if (error) return toast.error(error);
+    toast.success("Account created! Check your email to verify.");
     navigate({ to: "/account" });
   };
 

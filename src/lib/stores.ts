@@ -95,21 +95,63 @@ export const useRecent = create<RecentState>()(
   ),
 );
 
-type User = { name: string; email: string };
+import { supabase } from "@/integrations/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
+
+export type AuthUser = { id: string; name: string; email: string; avatar?: string };
 type AuthState = {
-  user: User | null;
-  login: (email: string, _password: string) => void;
-  register: (name: string, email: string, _password: string) => void;
-  logout: () => void;
+  user: AuthUser | null;
+  loading: boolean;
+  initialized: boolean;
+  init: () => () => void;
+  login: (email: string, password: string) => Promise<{ error: string | null }>;
+  register: (name: string, email: string, password: string) => Promise<{ error: string | null }>;
+  logout: () => Promise<void>;
 };
-export const useAuth = create<AuthState>()(
-  persist(
-    (set) => ({
-      user: null,
-      login: (email) => set({ user: { name: email.split("@")[0], email } }),
-      register: (name, email) => set({ user: { name, email } }),
-      logout: () => set({ user: null }),
-    }),
-    { name: "topuphut-auth" },
-  ),
-);
+
+const toAuthUser = (u: SupabaseUser | null | undefined): AuthUser | null => {
+  if (!u) return null;
+  const meta = (u.user_metadata ?? {}) as Record<string, unknown>;
+  const name = (meta.full_name as string) || (meta.name as string) || (u.email?.split("@")[0] ?? "User");
+  return {
+    id: u.id,
+    email: u.email ?? "",
+    name,
+    avatar: (meta.avatar_url as string) || undefined,
+  };
+};
+
+export const useAuth = create<AuthState>()((set, get) => ({
+  user: null,
+  loading: true,
+  initialized: false,
+  init: () => {
+    if (get().initialized) return () => {};
+    set({ initialized: true });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      set({ user: toAuthUser(session?.user), loading: false });
+    });
+    void supabase.auth.getSession().then(({ data }) => {
+      set({ user: toAuthUser(data.session?.user), loading: false });
+    });
+    return () => sub.subscription.unsubscribe();
+  },
+  login: async (email, password) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error: error?.message ?? null };
+  },
+  register: async (name, email, password) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
+        data: { full_name: name },
+      },
+    });
+    return { error: error?.message ?? null };
+  },
+  logout: async () => {
+    await supabase.auth.signOut();
+  },
+}));

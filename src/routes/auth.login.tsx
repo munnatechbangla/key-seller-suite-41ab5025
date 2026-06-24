@@ -15,13 +15,14 @@ function LoginPage() {
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
 
-  const submit = (e: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const email = String(fd.get("email") ?? "");
     const password = String(fd.get("password") ?? "");
     if (!email || !password) return toast.error("Please fill all fields");
-    login(email, password);
+    const { error } = await login(email, password);
+    if (error) return toast.error(error);
     toast.success("Welcome back!");
     navigate({ to: "/account" });
   };
