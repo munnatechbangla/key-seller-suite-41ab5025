@@ -1,4 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { PageHero } from "@/components/site/PageHero";
@@ -6,10 +8,11 @@ import { useAuth, useWishlist } from "@/lib/stores";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard, ShoppingBag, Download, Heart, Bell, Settings,
-  MapPin, LifeBuoy, KeyRound, LogOut, Package, DollarSign, CheckCircle2, TrendingUp,
+  MapPin, LifeBuoy, KeyRound, LogOut, Package, DollarSign, CheckCircle2, TrendingUp, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useFeatured, useProductsBySlugs, featuredQuery } from "@/lib/catalog";
+import { useProductsBySlugs, featuredQuery } from "@/lib/catalog";
+import { getMyOrdersFn, getMyDownloadsFn, getMyLicensesFn } from "@/lib/orders.functions";
 
 export const Route = createFileRoute("/account")({
   head: () => ({ meta: [{ title: "My Account — TopupHut" }] }),
