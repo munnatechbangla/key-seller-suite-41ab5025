@@ -2,15 +2,10 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Heart, ShoppingCart, User, Search, Menu, X, Zap, GitCompare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCart, useWishlist, useCompare, useAuth } from "@/lib/stores";
+import { primaryNav, announcementBar, siteConfig, resolveIcon } from "@/lib/cms";
+import { ThemeToggle } from "@/components/site/ThemeToggle";
 
-const nav = [
-  { to: "/", label: "Home" },
-  { to: "/products", label: "Products" },
-  { to: "/categories", label: "Categories" },
-  { to: "/blog", label: "Blog" },
-  { to: "/about", label: "About" },
-  { to: "/contact", label: "Contact" },
-] as const;
+const nav = primaryNav;
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -36,12 +31,17 @@ export function Header() {
 
   return (
     <>
-      <div className="bg-gradient-primary text-primary-foreground text-xs sm:text-sm">
-        <div className="container mx-auto px-4 py-2 flex items-center justify-center gap-2 text-center">
-          <Zap className="h-3.5 w-3.5" />
-          <span>Flash Sale — Up to <b>70% OFF</b> on premium digital products. Instant delivery 24/7.</span>
-        </div>
-      </div>
+      {announcementBar.enabled && (() => {
+        const AnnouncementIcon = resolveIcon(announcementBar.icon);
+        return (
+          <div className="bg-gradient-primary text-primary-foreground text-xs sm:text-sm">
+            <div className="container mx-auto px-4 py-2 flex items-center justify-center gap-2 text-center">
+              <AnnouncementIcon className="h-3.5 w-3.5" />
+              <span dangerouslySetInnerHTML={{ __html: announcementBar.html }} />
+            </div>
+          </div>
+        );
+      })()}
 
       <header className={`sticky top-0 z-50 transition-smooth ${scrolled ? "glass shadow-elegant" : "bg-background/80 backdrop-blur-sm"}`}>
         <div className="container mx-auto px-4 py-3 flex items-center gap-6">
@@ -50,7 +50,7 @@ export function Header() {
               <Zap className="h-5 w-5 text-primary-foreground" strokeWidth={2.5} />
             </div>
             <span className="font-bold text-xl tracking-tight">
-              Topup<span className="text-gradient">Hut</span>
+              {siteConfig.brandSplit.lead}<span className="text-gradient">{siteConfig.brandSplit.accent}</span>
             </span>
           </Link>
 
@@ -61,7 +61,7 @@ export function Header() {
                 to={n.to}
                 className="px-3 py-2 rounded-lg text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted transition-smooth"
                 activeProps={{ className: "text-primary bg-primary/10" }}
-                activeOptions={{ exact: n.to === "/" }}
+                activeOptions={{ exact: n.exact ?? false }}
               >
                 {n.label}
               </Link>
@@ -82,6 +82,7 @@ export function Header() {
           </form>
 
           <div className="flex items-center gap-1 ml-auto md:ml-0">
+            <div className="hidden md:block mr-1"><ThemeToggle /></div>
             <IconLink to="/compare" label="Compare" badge={cmpCount}><GitCompare className="h-5 w-5" /></IconLink>
             <IconLink to="/wishlist" label="Wishlist" badge={wishCount}><Heart className="h-5 w-5" /></IconLink>
             <IconLink to={user ? "/account" : "/auth/login"} label="Account"><User className="h-5 w-5" /></IconLink>
@@ -106,7 +107,7 @@ export function Header() {
                   onClick={() => setOpen(false)}
                   className="px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-muted"
                   activeProps={{ className: "text-primary bg-primary/10" }}
-                  activeOptions={{ exact: n.to === "/" }}
+                  activeOptions={{ exact: n.exact ?? false }}
                 >
                   {n.label}
                 </Link>
