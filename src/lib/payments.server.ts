@@ -22,7 +22,7 @@ export async function processPaymentCallback(cb: GatewayCallback) {
   const order = orderRows?.[0];
   if (!order) return { ok: false as const, reason: "order_not_found" };
 
-  const gatewayPayload = { gateway: cb.gateway, txn: cb.transactionId, raw: cb.raw ?? {} };
+  const gatewayPayload = JSON.parse(JSON.stringify({ gateway: cb.gateway, txn: cb.transactionId, raw: cb.raw ?? {} }));
 
   if (cb.status === "paid") {
     const { data, error } = await supabaseAdmin.rpc("mark_order_paid", {
