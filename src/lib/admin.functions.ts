@@ -168,7 +168,7 @@ export const adminListLicensePoolsFn = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     const ids = (pools ?? []).map((p: any) => p.id);
-    const stats: Record<string, { total: number; available: number; assigned: number; used: number }> = {};
+    const stats: Record<string, { total: number; available: number; assigned: number; revoked: number }> = {};
     if (ids.length) {
       const { data: keys } = await context.supabase
         .from("license_keys")
@@ -176,14 +176,14 @@ export const adminListLicensePoolsFn = createServerFn({ method: "GET" })
         .in("pool_id", ids);
       for (const k of keys ?? []) {
         const p = k.pool_id as string;
-        if (!stats[p]) stats[p] = { total: 0, available: 0, assigned: 0, used: 0 };
+        if (!stats[p]) stats[p] = { total: 0, available: 0, assigned: 0, revoked: 0 };
         stats[p].total += 1;
         if (k.status === "available") stats[p].available += 1;
         else if (k.status === "assigned") stats[p].assigned += 1;
-        else if (k.status === "used") stats[p].used += 1;
+        else if (k.status === "revoked") stats[p].revoked += 1;
       }
     }
-    return (pools ?? []).map((p: any) => ({ ...p, stats: stats[p.id] ?? { total: 0, available: 0, assigned: 0, used: 0 } }));
+    return (pools ?? []).map((p: any) => ({ ...p, stats: stats[p.id] ?? { total: 0, available: 0, assigned: 0, revoked: 0 } }));
   });
 
 export const adminCreatePoolFn = createServerFn({ method: "POST" })
