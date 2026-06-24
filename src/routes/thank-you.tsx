@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
-import { CheckCircle2, Download, Mail, MessageCircle, KeyRound, Loader2 } from "lucide-react";
+import { CheckCircle2, Download, Mail, MessageCircle, KeyRound, Loader2, Clock, XCircle } from "lucide-react";
 import { z } from "zod";
 import { getOrderByNumberFn } from "@/lib/orders.functions";
 import { toast } from "sonner";
@@ -23,7 +23,17 @@ function ThankYou() {
     queryKey: ["order", order, email],
     queryFn: () => fetchOrder({ data: { orderNumber: order!, email } }),
     enabled: !!order,
+    // Poll while waiting for webhook to mark payment paid.
+    refetchInterval: (query) => {
+      const s = query.state.data?.paymentStatus;
+      return s === "paid" || s === "failed" || s === "refunded" ? false : 4000;
+    },
   });
+
+  const paymentStatus = q.data?.paymentStatus ?? "pending";
+  const isPaid = paymentStatus === "paid";
+  const isFailed = paymentStatus === "failed";
+  const isPending = !isPaid && !isFailed;
 
   return (
     <div className="min-h-screen">
