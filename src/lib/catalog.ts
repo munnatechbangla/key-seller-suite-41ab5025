@@ -251,7 +251,7 @@ export const searchQuery = (q: string) =>
 export const useCategories = () => useSuspenseQuery(categoriesQuery()).data;
 export const useProducts = (f: ProductsFilter = {}) => useSuspenseQuery(productsQuery(f)).data;
 export const useProduct = (slug: string) => useSuspenseQuery(productQuery(slug)).data;
-export const useProductsBySlugs = (slugs: string[]) => useSuspenseQuery(productsBySlugsQuery(slugs)).data;
+export const useProductsBySlugs = (slugs: string[]) => useQuery(productsBySlugsQuery(slugs)).data ?? [];
 export const useFeatured = () => useSuspenseQuery(featuredQuery()).data;
 export const useTrending = () => useSuspenseQuery(trendingQuery()).data;
 export const useBestSellers = () => useSuspenseQuery(bestSellersQuery()).data;
