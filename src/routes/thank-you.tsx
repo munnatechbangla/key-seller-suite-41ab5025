@@ -14,7 +14,7 @@ export const Route = createFileRoute("/thank-you")({
 
 function ThankYou() {
   const { order } = Route.useSearch();
-  const recommended = products.slice(0, 4);
+  const recommended = useFeatured().slice(0, 4);
   return (
     <div className="min-h-screen">
       <Header />

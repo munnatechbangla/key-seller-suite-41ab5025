@@ -17,6 +17,7 @@ export const Route = createFileRoute("/categories")({
 });
 
 function CategoriesPage() {
+  const categories = useCategories();
   return (
     <div className="min-h-screen">
       <Header />

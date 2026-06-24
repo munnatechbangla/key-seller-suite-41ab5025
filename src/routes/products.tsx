@@ -15,17 +15,21 @@ export const Route = createFileRoute("/products")({
       { property: "og:description", content: "Premium digital products at the best prices." },
     ],
   }),
+  loader: ({ context }) => {
+    context.queryClient.ensureQueryData(categoriesQuery());
+    context.queryClient.ensureQueryData(productsQuery({ sort: "popular" }));
+  },
   component: ProductsPage,
+  errorComponent: () => <div className="p-8 text-center">Failed to load products.</div>,
+  notFoundComponent: () => <div className="p-8 text-center">Not found.</div>,
 });
 
 function ProductsPage() {
   const [cat, setCat] = useState<string | null>(null);
-  const [sort, setSort] = useState("popular");
+  const [sort, setSort] = useState<ProductSort>("popular");
 
-  let list = cat ? products.filter((p) => p.category === cat) : products;
-  if (sort === "price-asc") list = [...list].sort((a, b) => a.price - b.price);
-  if (sort === "price-desc") list = [...list].sort((a, b) => b.price - a.price);
-  if (sort === "rating") list = [...list].sort((a, b) => b.rating - a.rating);
+  const categories = useCategories();
+  const list = useProducts({ categorySlug: cat, sort });
 
   return (
     <div className="min-h-screen">

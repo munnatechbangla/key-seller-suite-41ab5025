@@ -14,7 +14,7 @@ export const Route = createFileRoute("/compare")({
 function ComparePage() {
   const cmp = useCompare();
   const cart = useCart();
-  const items = cmp.slugs.map((s) => products.find((p) => p.slug === s)).filter(Boolean);
+  const items = useProductsBySlugs(cmp.slugs);
 
   return (
     <div className="min-h-screen">
@@ -51,7 +51,7 @@ function ComparePage() {
               </thead>
               <tbody>
                 {(() => {
-                  const rows: { label: string; fn: (p: import("@/lib/catalog").Product) => string }[] = [
+                  const rows: { label: string; fn: (p: Product) => string }[] = [
                     { label: "Price", fn: (p) => `$${p.price}` },
                     { label: "Rating", fn: (p) => `${p.rating} ★ (${p.reviews})` },
                     { label: "Delivery", fn: (p) => p.delivery },

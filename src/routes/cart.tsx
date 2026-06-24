@@ -17,7 +17,7 @@ export const Route = createFileRoute("/cart")({
 function CartPage() {
   const cart = useCart();
   const [code, setCode] = useState("");
-  const crossSell = products.slice(0, 4);
+  const crossSell = useFeatured().slice(0, 4);
 
   if (cart.items.length === 0) {
     return (

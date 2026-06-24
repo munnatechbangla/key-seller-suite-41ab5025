@@ -19,7 +19,7 @@ const trending = ["ChatGPT Plus", "Netflix", "Canva Pro", "Spotify", "IPTV", "Of
 function SearchPage() {
   const { q: initial } = Route.useSearch();
   const [q, setQ] = useState(initial ?? "");
-  const results = q ? products.filter((p) => (p.name + " " + p.short + " " + p.category).toLowerCase().includes(q.toLowerCase())) : [];
+  const results = useSearchResults(q);
 
   return (
     <div className="min-h-screen">
