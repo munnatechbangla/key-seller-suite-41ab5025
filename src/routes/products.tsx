@@ -88,7 +88,7 @@ function ProductsPage() {
             </div>
             <select
               value={sort}
-              onChange={(e) => setSort(e.target.value)}
+              onChange={(e) => setSort(e.target.value as ProductSort)}
               className="px-3 py-2 rounded-lg bg-card border border-border text-sm outline-none focus:border-primary"
             >
               <option value="popular">Most popular</option>

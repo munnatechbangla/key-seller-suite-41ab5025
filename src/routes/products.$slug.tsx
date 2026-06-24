@@ -3,7 +3,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Breadcrumbs } from "@/components/site/PageHero";
-import { getProduct, relatedTo, products } from "@/lib/catalog";
+import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelated, useProductsBySlugs } from "@/lib/catalog";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
 import { useEffect, useState } from "react";
 import {
@@ -13,9 +13,10 @@ import {
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/products/$slug")({
-  loader: ({ params }) => {
-    const product = getProduct(params.slug);
+  loader: async ({ params, context }) => {
+    const product = await context.queryClient.ensureQueryData(productQuery(params.slug));
     if (!product) throw notFound();
+    context.queryClient.ensureQueryData(relatedQuery(params.slug, 4));
     return { product };
   },
   head: ({ loaderData }) => ({
@@ -39,8 +40,9 @@ export const Route = createFileRoute("/products/$slug")({
 });
 
 function ProductPage() {
-  const data = Route.useLoaderData();
-  const product = data.product as import("@/lib/catalog").Product;
+  const { slug } = Route.useParams();
+  const product = useProduct(slug)!;
+  const related = useRelated(slug, 4);
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<"desc" | "specs" | "reviews" | "faq">("desc");
   const cart = useCart();
@@ -52,12 +54,8 @@ function ProductPage() {
   useEffect(() => { push(product.slug); }, [product.slug, push]);
 
   const off = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
-  const related = relatedTo(product.slug, 4);
-  const recentProducts = recent
-    .filter((s) => s !== product.slug)
-    .map((s) => products.find((p) => p.slug === s))
-    .filter((p): p is import("@/lib/catalog").Product => Boolean(p))
-    .slice(0, 4);
+  const recentSlugs = recent.filter((s) => s !== product.slug).slice(0, 4);
+  const recentProducts = useProductsBySlugs(recentSlugs);
 
   const addToCart = () => { cart.add(product, qty); toast.success(`${product.name} added to cart`); };
   const buyNow = () => { cart.add(product, qty); window.location.href = "/checkout"; };
