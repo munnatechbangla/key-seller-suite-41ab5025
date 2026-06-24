@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { PageHero } from "@/components/site/PageHero";
@@ -6,6 +7,7 @@ import { useCart, useAuth } from "@/lib/stores";
 import { useState } from "react";
 import { CreditCard, Wallet, Building2, Smartphone, Lock, Tag } from "lucide-react";
 import { toast } from "sonner";
+import { placeOrderAuthFn, placeOrderGuestFn } from "@/lib/orders.functions";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — TopupHut" }] }),
@@ -30,6 +32,9 @@ function CheckoutPage() {
   const [agree, setAgree] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [code, setCode] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const placeGuest = useServerFn(placeOrderGuestFn);
+  const placeAuth = useServerFn(placeOrderAuthFn);
 
   if (cart.items.length === 0) {
     return (
@@ -44,22 +49,37 @@ function CheckoutPage() {
     );
   }
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agree || !privacy) { toast.error("Please accept the terms"); return; }
+    if (submitting) return;
+    setSubmitting(true);
     const fd = new FormData(e.currentTarget as HTMLFormElement);
-    const orderId = "TH-" + Date.now().toString(36).toUpperCase();
-    const order = {
-      id: orderId,
-      email: fd.get("email"),
-      total: cart.total(),
-      items: cart.items,
-      gateway,
-      date: new Date().toISOString(),
+    const customer = {
+      email: String(fd.get("email") ?? ""),
+      firstName: String(fd.get("firstName") ?? ""),
+      lastName: String(fd.get("lastName") ?? ""),
+      phone: String(fd.get("phone") ?? ""),
+      country: String(fd.get("country") ?? ""),
+      address: String(fd.get("address") ?? ""),
+      notes: String(fd.get("notes") ?? ""),
     };
-    localStorage.setItem("topuphut-last-order", JSON.stringify(order));
-    cart.clear();
-    navigate({ to: "/thank-you", search: { order: orderId } });
+    const payload = {
+      data: {
+        items: cart.items.map((i) => ({ slug: i.slug, qty: i.qty })),
+        customer,
+        paymentMethod: gateway,
+        couponCode: cart.coupon,
+      },
+    };
+    try {
+      const result = user ? await placeAuth(payload) : await placeGuest(payload);
+      cart.clear();
+      navigate({ to: "/thank-you", search: { order: result.orderNumber, email: customer.email } });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not place order");
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -151,8 +171,8 @@ function CheckoutPage() {
                 <Tag className="h-4 w-4" /> Apply
               </button>
             </div>
-            <button type="submit" className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:opacity-95">
-              <Lock className="h-4 w-4" /> Place secure order
+            <button type="submit" disabled={submitting} className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:opacity-95 disabled:opacity-60">
+              <Lock className="h-4 w-4" /> {submitting ? "Placing order…" : "Place secure order"}
             </button>
             <p className="text-[11px] text-center text-muted-foreground">256-bit SSL encryption. Your data is safe.</p>
           </div>

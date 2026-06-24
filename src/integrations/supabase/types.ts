@@ -40,6 +40,70 @@ export type Database = {
           },
         ]
       }
+      downloads: {
+        Row: {
+          created_at: string
+          download_count: number
+          expires_at: string | null
+          file_url: string | null
+          id: string
+          max_downloads: number
+          order_id: string
+          order_item_id: string
+          product_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          download_count?: number
+          expires_at?: string | null
+          file_url?: string | null
+          id?: string
+          max_downloads?: number
+          order_id: string
+          order_item_id: string
+          product_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          download_count?: number
+          expires_at?: string | null
+          file_url?: string | null
+          id?: string
+          max_downloads?: number
+          order_id?: string
+          order_item_id?: string
+          product_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "downloads_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "downloads_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "downloads_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       featured_products: {
         Row: {
           created_at: string
@@ -100,6 +164,299 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      license_assignments: {
+        Row: {
+          assigned_at: string
+          id: string
+          license_key_id: string
+          order_id: string
+          order_item_id: string
+          revoked_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assigned_at?: string
+          id?: string
+          license_key_id: string
+          order_id: string
+          order_item_id: string
+          revoked_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assigned_at?: string
+          id?: string
+          license_key_id?: string
+          order_id?: string
+          order_item_id?: string
+          revoked_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_assignments_license_key_id_fkey"
+            columns: ["license_key_id"]
+            isOneToOne: false
+            referencedRelation: "license_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "license_assignments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "license_assignments_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      license_keys: {
+        Row: {
+          created_at: string
+          id: string
+          key_value: string
+          pool_id: string
+          product_id: string
+          status: Database["public"]["Enums"]["license_key_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key_value: string
+          pool_id: string
+          product_id: string
+          status?: Database["public"]["Enums"]["license_key_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key_value?: string
+          pool_id?: string
+          product_id?: string
+          status?: Database["public"]["Enums"]["license_key_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_keys_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "license_pools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "license_keys_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      license_pools: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_pools_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          line_total: number
+          order_id: string
+          product_id: string | null
+          product_name: string
+          product_slug: string
+          qty: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          line_total: number
+          order_id: string
+          product_id?: string | null
+          product_name: string
+          product_slug: string
+          qty?: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          line_total?: number
+          order_id?: string
+          product_id?: string | null
+          product_name?: string
+          product_slug?: string
+          qty?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          address: string | null
+          country: string | null
+          coupon_code: string | null
+          created_at: string
+          currency: string
+          customer_name: string | null
+          discount: number
+          email: string
+          id: string
+          notes: string | null
+          order_number: string
+          payment_method: string | null
+          phone: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          subtotal: number
+          total: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          country?: string | null
+          coupon_code?: string | null
+          created_at?: string
+          currency?: string
+          customer_name?: string | null
+          discount?: number
+          email: string
+          id?: string
+          notes?: string | null
+          order_number: string
+          payment_method?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          country?: string | null
+          coupon_code?: string | null
+          created_at?: string
+          currency?: string
+          customer_name?: string | null
+          discount?: number
+          email?: string
+          id?: string
+          notes?: string | null
+          order_number?: string
+          payment_method?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          method: string
+          order_id: string
+          paid_at: string | null
+          provider_ref: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          method: string
+          order_id: string
+          paid_at?: string | null
+          provider_ref?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          method?: string
+          order_id?: string
+          paid_at?: string | null
+          provider_ref?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -660,6 +1017,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_licenses_for_order: {
+        Args: { _order_id: string }
+        Returns: number
+      }
+      generate_order_number: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -670,6 +1032,15 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "manager" | "customer" | "affiliate" | "support"
+      license_key_status: "available" | "assigned" | "revoked"
+      order_status:
+        | "pending"
+        | "paid"
+        | "processing"
+        | "completed"
+        | "cancelled"
+        | "refunded"
+      payment_status: "pending" | "paid" | "failed" | "refunded"
       product_status: "draft" | "published" | "archived"
       stock_state: "in_stock" | "out_of_stock" | "on_backorder"
     }
@@ -800,6 +1171,16 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "manager", "customer", "affiliate", "support"],
+      license_key_status: ["available", "assigned", "revoked"],
+      order_status: [
+        "pending",
+        "paid",
+        "processing",
+        "completed",
+        "cancelled",
+        "refunded",
+      ],
+      payment_status: ["pending", "paid", "failed", "refunded"],
       product_status: ["draft", "published", "archived"],
       stock_state: ["in_stock", "out_of_stock", "on_backorder"],
     },
