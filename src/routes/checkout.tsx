@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { PageHero } from "@/components/site/PageHero";
@@ -6,6 +7,7 @@ import { useCart, useAuth } from "@/lib/stores";
 import { useState } from "react";
 import { CreditCard, Wallet, Building2, Smartphone, Lock, Tag } from "lucide-react";
 import { toast } from "sonner";
+import { placeOrderAuthFn, placeOrderGuestFn } from "@/lib/orders.functions";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — TopupHut" }] }),
