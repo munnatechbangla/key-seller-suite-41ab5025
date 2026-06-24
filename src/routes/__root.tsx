@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { MobileBottomNav } from "@/components/site/MobileBottomNav";
 import { ThemeProviderEffect } from "@/components/site/ThemeToggle";
 import { Toaster } from "@/components/ui/sonner";
+import { useAuth } from "@/lib/stores";
 
 function NotFoundComponent() {
   return (
