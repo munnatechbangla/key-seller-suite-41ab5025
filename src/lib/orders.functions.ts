@@ -64,6 +64,8 @@ async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string
 
   const customerName = [input.customer.firstName, input.customer.lastName].filter(Boolean).join(" ").trim() || null;
 
+  // Order + payment are created as PENDING. License keys and downloads are
+  // generated only after a verified payment callback via the webhook route.
   const { data: order, error: oErr } = await supabaseAdmin
     .from("orders")
     .insert({
@@ -75,7 +77,7 @@ async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string
       country: input.customer.country || null,
       address: input.customer.address || null,
       notes: input.customer.notes || null,
-      status: "paid",
+      status: "pending",
       subtotal,
       discount,
       total,
@@ -87,10 +89,9 @@ async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string
     .single();
   if (oErr || !order) throw new Error(oErr?.message ?? "Order insert failed");
 
-  const { data: insertedItems, error: iErr } = await supabaseAdmin
+  const { error: iErr } = await supabaseAdmin
     .from("order_items")
-    .insert(itemsToInsert.map((it) => ({ ...it, order_id: order.id })))
-    .select();
+    .insert(itemsToInsert.map((it) => ({ ...it, order_id: order.id })));
   if (iErr) throw new Error(iErr.message);
 
   const { error: payErr } = await supabaseAdmin.from("payments").insert({
@@ -98,14 +99,11 @@ async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string
     amount: total,
     currency: "USD",
     method: input.paymentMethod,
-    status: "paid",
-    paid_at: new Date().toISOString(),
+    status: "pending",
   });
   if (payErr) throw new Error(payErr.message);
 
-  await supabaseAdmin.rpc("assign_licenses_for_order", { _order_id: order.id });
-
-  return { orderNumber: order.order_number, orderId: order.id, total, itemCount: insertedItems?.length ?? 0 };
+  return { orderNumber: order.order_number, orderId: order.id, total, paymentUrl: `/pay/${order.order_number}` };
 }
 
 export const placeOrderGuestFn = createServerFn({ method: "POST" })
@@ -116,6 +114,32 @@ export const placeOrderAuthFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => placeSchema.parse(d))
   .handler(async ({ data, context }) => placeOrderCore(data, context.userId));
+
+// ----- Dev / sandbox: simulate a gateway callback (real gateways post to the webhook) -----
+// In production these calls come from SSLCommerz/bKash/Nagad/Stripe/PayPal webhooks
+// (see src/routes/api/public/payments.webhook.ts). This server fn exists so the UI
+// can drive a full pending -> paid lifecycle while real merchant accounts aren't connected.
+export const simulateGatewayPaymentFn = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        orderNumber: z.string(),
+        outcome: z.enum(["paid", "failed"]).default("paid"),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { processPaymentCallback } = await import("@/lib/payments.server");
+    const txn = `SIM-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    const r = await processPaymentCallback({
+      orderNumber: data.orderNumber,
+      transactionId: txn,
+      status: data.outcome,
+      gateway: "sandbox",
+      raw: { simulated: true, at: new Date().toISOString() },
+    });
+    return { ok: r.ok, transactionId: txn, outcome: data.outcome };
+  });
 
 // ----- Reads -----
 
@@ -131,13 +155,14 @@ export const getOrderByNumberFn = createServerFn({ method: "GET" })
     if (!order) return null;
     const [{ data: items }, { data: payments }, { data: assignments }] = await Promise.all([
       supabaseAdmin.from("order_items").select("*").eq("order_id", order.id),
-      supabaseAdmin.from("payments").select("*").eq("order_id", order.id),
+      supabaseAdmin.from("payments").select("*").eq("order_id", order.id).order("created_at", { ascending: false }),
       supabaseAdmin
         .from("license_assignments")
         .select("id, order_item_id, license_keys(key_value)")
         .eq("order_id", order.id),
     ]);
-    return { order, items: items ?? [], payments: payments ?? [], assignments: assignments ?? [] };
+    const paymentStatus = payments?.[0]?.status ?? "pending";
+    return { order, items: items ?? [], payments: payments ?? [], assignments: assignments ?? [], paymentStatus };
   });
 
 export const getMyOrdersFn = createServerFn({ method: "GET" })
@@ -145,7 +170,7 @@ export const getMyOrdersFn = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("orders")
-      .select("id, order_number, status, total, currency, created_at, order_items(id, product_name, qty, unit_price, line_total)")
+      .select("id, order_number, status, total, currency, created_at, order_items(id, product_name, qty, unit_price, line_total), payments(status)")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];

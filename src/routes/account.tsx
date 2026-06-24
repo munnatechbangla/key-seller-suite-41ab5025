@@ -142,12 +142,21 @@ type OrderRow = NonNullable<ReturnType<typeof useMyOrders>["data"]>[number];
 
 function OrdersList({ orders }: { orders: OrderRow[] }) {
   if (orders.length === 0) return <p className="text-sm text-muted-foreground">No orders yet. <Link to="/products" className="text-primary">Browse products</Link></p>;
+  const palette: Record<string, string> = {
+    paid: "text-emerald-600 bg-emerald-500/10",
+    completed: "text-emerald-600 bg-emerald-500/10",
+    pending: "text-amber-600 bg-amber-500/10",
+    processing: "text-amber-600 bg-amber-500/10",
+    failed: "text-rose-600 bg-rose-500/10",
+    cancelled: "text-muted-foreground bg-muted",
+    refunded: "text-secondary bg-secondary/10",
+  };
   return (
     <div className="space-y-2">
       {orders.map((o) => {
         const itemCount = o.order_items?.length ?? 0;
         const date = new Date(o.created_at).toLocaleDateString();
-        const ok = o.status === "completed" || o.status === "paid";
+        const payStatus = (o as { payments?: { status: string }[] }).payments?.[0]?.status ?? "pending";
         return (
           <div key={o.id} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-muted/40 transition-smooth">
             <Package className="h-5 w-5 text-primary" />
@@ -155,9 +164,12 @@ function OrdersList({ orders }: { orders: OrderRow[] }) {
               <div className="font-semibold text-sm">#{o.order_number}</div>
               <div className="text-xs text-muted-foreground">{date} · {itemCount} item{itemCount !== 1 ? "s" : ""}</div>
             </div>
-            <div className="text-right">
+            <div className="text-right space-y-1">
               <div className="font-bold">${Number(o.total).toFixed(2)}</div>
-              <div className={`text-xs capitalize ${ok ? "text-emerald-600" : "text-accent"}`}>{o.status}</div>
+              <div className="flex gap-1 justify-end">
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[o.status] ?? palette.pending}`}>{o.status}</span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[payStatus] ?? palette.pending}`}>{payStatus}</span>
+              </div>
             </div>
           </div>
         );

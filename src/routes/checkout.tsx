@@ -75,7 +75,7 @@ function CheckoutPage() {
     try {
       const result = user ? await placeAuth(payload) : await placeGuest(payload);
       cart.clear();
-      navigate({ to: "/thank-you", search: { order: result.orderNumber, email: customer.email } });
+      navigate({ to: "/pay/$orderNumber", params: { orderNumber: result.orderNumber } });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not place order");
       setSubmitting(false);

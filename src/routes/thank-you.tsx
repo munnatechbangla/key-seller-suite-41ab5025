@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
-import { CheckCircle2, Download, Mail, MessageCircle, KeyRound, Loader2 } from "lucide-react";
+import { CheckCircle2, Download, Mail, MessageCircle, KeyRound, Loader2, Clock, XCircle } from "lucide-react";
 import { z } from "zod";
 import { getOrderByNumberFn } from "@/lib/orders.functions";
 import { toast } from "sonner";
@@ -23,7 +23,17 @@ function ThankYou() {
     queryKey: ["order", order, email],
     queryFn: () => fetchOrder({ data: { orderNumber: order!, email } }),
     enabled: !!order,
+    // Poll while waiting for webhook to mark payment paid.
+    refetchInterval: (query) => {
+      const s = query.state.data?.paymentStatus;
+      return s === "paid" || s === "failed" || s === "refunded" ? false : 4000;
+    },
   });
+
+  const paymentStatus = q.data?.paymentStatus ?? "pending";
+  const isPaid = paymentStatus === "paid";
+  const isFailed = paymentStatus === "failed";
+  const isPending = !isPaid && !isFailed;
 
   return (
     <div className="min-h-screen">
@@ -31,31 +41,76 @@ function ThankYou() {
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-xl mx-auto text-center">
           <div className="relative inline-grid place-items-center mb-6">
-            <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping" />
-            <div className="relative h-24 w-24 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 grid place-items-center shadow-glow">
-              <CheckCircle2 className="h-12 w-12 text-white" strokeWidth={2.5} />
-            </div>
+            {isPaid && (
+              <>
+                <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping" />
+                <div className="relative h-24 w-24 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 grid place-items-center shadow-glow">
+                  <CheckCircle2 className="h-12 w-12 text-white" strokeWidth={2.5} />
+                </div>
+              </>
+            )}
+            {isPending && (
+              <div className="relative h-24 w-24 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 grid place-items-center shadow-glow">
+                <Clock className="h-12 w-12 text-white" strokeWidth={2.5} />
+              </div>
+            )}
+            {isFailed && (
+              <div className="relative h-24 w-24 rounded-full bg-gradient-to-br from-rose-400 to-rose-600 grid place-items-center shadow-glow">
+                <XCircle className="h-12 w-12 text-white" strokeWidth={2.5} />
+              </div>
+            )}
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">Thank you for your order!</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+            {isPaid ? "Thank you for your order!" : isFailed ? "Payment failed" : "Awaiting payment confirmation"}
+          </h1>
           <p className="text-muted-foreground">
-            Your order <b className="text-primary">#{order ?? "—"}</b>
-            {q.data?.order ? <> has been <span className="capitalize">{q.data.order.status}</span>.</> : " has been received."}
+            Order <b className="text-primary">#{order ?? "—"}</b>
+            {q.data?.order && <> · payment status <span className="capitalize font-semibold">{paymentStatus}</span></>}
           </p>
           {q.data?.order && (
             <p className="mt-1 text-sm text-muted-foreground">
               Total <b>${Number(q.data.order.total).toFixed(2)}</b> · {q.data.items.length} item{q.data.items.length !== 1 ? "s" : ""}
             </p>
           )}
+          {isPending && order && (
+            <div className="mt-4">
+              <Link to="/pay/$orderNumber" params={{ orderNumber: order }} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-primary text-primary-foreground font-semibold text-sm">
+                Complete payment
+              </Link>
+            </div>
+          )}
         </div>
 
         <div className="max-w-2xl mx-auto mt-10 rounded-2xl bg-card border border-border p-6 space-y-5">
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
-            <Mail className="h-5 w-5 text-primary mt-0.5" />
-            <div className="text-sm">
-              <div className="font-semibold">Confirmation email sent</div>
-              <p className="text-muted-foreground">Check your inbox for download links and activation instructions.</p>
+          {isPaid && (
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
+              <Mail className="h-5 w-5 text-primary mt-0.5" />
+              <div className="text-sm">
+                <div className="font-semibold">Confirmation email sent</div>
+                <p className="text-muted-foreground">Check your inbox for download links and activation instructions.</p>
+              </div>
             </div>
-          </div>
+          )}
+
+          {isPending && (
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
+              <Loader2 className="h-5 w-5 text-amber-600 mt-0.5 animate-spin" />
+              <div className="text-sm">
+                <div className="font-semibold">Waiting for the payment gateway to confirm your transaction…</div>
+                <p className="text-muted-foreground">License keys and downloads will appear here automatically as soon as payment is verified.</p>
+              </div>
+            </div>
+          )}
+
+          {isFailed && (
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/30">
+              <XCircle className="h-5 w-5 text-destructive mt-0.5" />
+              <div className="text-sm">
+                <div className="font-semibold">We couldn't verify this payment.</div>
+                <p className="text-muted-foreground">No license keys were issued. Please retry payment or contact support.</p>
+              </div>
+            </div>
+          )}
 
           {q.isLoading && (
             <div className="flex items-center justify-center py-6 text-muted-foreground text-sm">
@@ -75,15 +130,15 @@ function ThankYou() {
                         <div className="font-semibold text-sm">{it.product_name}</div>
                         <div className="text-xs text-muted-foreground">${Number(it.unit_price).toFixed(2)} each</div>
                       </div>
-                      <button className="px-3 py-2 rounded-lg bg-gradient-primary text-primary-foreground text-xs font-semibold inline-flex items-center gap-1">
-                        <Download className="h-3.5 w-3.5" /> Download
+                      <button disabled={!isPaid} className="px-3 py-2 rounded-lg bg-gradient-primary text-primary-foreground text-xs font-semibold inline-flex items-center gap-1 disabled:opacity-50">
+                        <Download className="h-3.5 w-3.5" /> {isPaid ? "Download" : "Locked"}
                       </button>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {q.data.assignments.length > 0 && (
+              {isPaid && q.data.assignments.length > 0 && (
                 <div>
                   <h3 className="font-bold mb-3 flex items-center gap-2"><KeyRound className="h-4 w-4 text-primary" /> License keys</h3>
                   <div className="space-y-2">
