@@ -71,9 +71,10 @@ function AccountPage() {
         </aside>
 
         <section>
-          {active === "dashboard" && <DashboardTab user={user} />}
+          {active === "dashboard" && <DashboardTab />}
           {active === "orders" && <OrdersTab />}
           {active === "downloads" && <DownloadsTab />}
+          {active === "licenses" && <LicensesTab />}
           {active === "wishlist" && <WishlistTab />}
           {active === "notifications" && <NotificationsTab />}
           {active === "profile" && <ProfileTab user={user} />}
