@@ -3,7 +3,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { PageHero } from "@/components/site/PageHero";
 import { useCompare, useCart } from "@/lib/stores";
-import { products } from "@/lib/catalog";
+import { useProductsBySlugs, type Product } from "@/lib/catalog";
 import { X, Check, ShoppingCart, GitCompare } from "lucide-react";
 
 export const Route = createFileRoute("/compare")({

@@ -9,7 +9,7 @@ import {
   MapPin, LifeBuoy, KeyRound, LogOut, Package, DollarSign, CheckCircle2, TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
-import { products } from "@/lib/catalog";
+import { useFeatured, useProductsBySlugs } from "@/lib/catalog";
 
 export const Route = createFileRoute("/account")({
   head: () => ({ meta: [{ title: "My Account — TopupHut" }] }),

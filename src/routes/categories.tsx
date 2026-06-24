@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
-import { categories } from "@/lib/catalog";
+import { useCategories } from "@/lib/catalog";
 import { ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/categories")({

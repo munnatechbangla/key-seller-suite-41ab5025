@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
-import { products } from "@/lib/catalog";
+import { useFeatured } from "@/lib/catalog";
 import { CheckCircle2, Download, Mail, MessageCircle } from "lucide-react";
 import { z } from "zod";
 

@@ -3,7 +3,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { PageHero } from "@/components/site/PageHero";
-import { products } from "@/lib/catalog";
+import { useSearchResults } from "@/lib/catalog";
 import { Search, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
