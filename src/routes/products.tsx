@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
-import { products, categories } from "@/lib/catalog";
+import { useCategories, useProducts, type ProductSort, categoriesQuery, productsQuery } from "@/lib/catalog";
 import { useState } from "react";
 import { Filter, Grid3x3, List } from "lucide-react";
 
@@ -15,17 +15,21 @@ export const Route = createFileRoute("/products")({
       { property: "og:description", content: "Premium digital products at the best prices." },
     ],
   }),
+  loader: ({ context }) => {
+    context.queryClient.ensureQueryData(categoriesQuery());
+    context.queryClient.ensureQueryData(productsQuery({ sort: "popular" }));
+  },
   component: ProductsPage,
+  errorComponent: () => <div className="p-8 text-center">Failed to load products.</div>,
+  notFoundComponent: () => <div className="p-8 text-center">Not found.</div>,
 });
 
 function ProductsPage() {
   const [cat, setCat] = useState<string | null>(null);
-  const [sort, setSort] = useState("popular");
+  const [sort, setSort] = useState<ProductSort>("popular");
 
-  let list = cat ? products.filter((p) => p.category === cat) : products;
-  if (sort === "price-asc") list = [...list].sort((a, b) => a.price - b.price);
-  if (sort === "price-desc") list = [...list].sort((a, b) => b.price - a.price);
-  if (sort === "rating") list = [...list].sort((a, b) => b.rating - a.rating);
+  const categories = useCategories();
+  const list = useProducts({ categorySlug: cat, sort });
 
   return (
     <div className="min-h-screen">
@@ -84,7 +88,7 @@ function ProductsPage() {
             </div>
             <select
               value={sort}
-              onChange={(e) => setSort(e.target.value)}
+              onChange={(e) => setSort(e.target.value as ProductSort)}
               className="px-3 py-2 rounded-lg bg-card border border-border text-sm outline-none focus:border-primary"
             >
               <option value="popular">Most popular</option>

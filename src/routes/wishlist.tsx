@@ -4,7 +4,7 @@ import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { PageHero } from "@/components/site/PageHero";
 import { useWishlist, useCart } from "@/lib/stores";
-import { products } from "@/lib/catalog";
+import { useProductsBySlugs } from "@/lib/catalog";
 import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/wishlist")({
 function WishlistPage() {
   const wish = useWishlist();
   const cart = useCart();
-  const items = wish.slugs.map((s) => products.find((p) => p.slug === s)).filter(Boolean);
+  const items = useProductsBySlugs(wish.slugs);
 
   return (
     <div className="min-h-screen">

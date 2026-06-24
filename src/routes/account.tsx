@@ -9,11 +9,14 @@ import {
   MapPin, LifeBuoy, KeyRound, LogOut, Package, DollarSign, CheckCircle2, TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
-import { products } from "@/lib/catalog";
+import { useFeatured, useProductsBySlugs, featuredQuery } from "@/lib/catalog";
 
 export const Route = createFileRoute("/account")({
   head: () => ({ meta: [{ title: "My Account — TopupHut" }] }),
+  loader: ({ context }) => { context.queryClient.ensureQueryData(featuredQuery()); },
   component: AccountPage,
+  errorComponent: () => <div className="p-8 text-center">Account unavailable.</div>,
+  notFoundComponent: () => <div className="p-8 text-center">Not found.</div>,
 });
 
 const tabs = [
@@ -140,11 +143,12 @@ function OrdersList({ limit }: { limit?: number }) {
 function OrdersTab() { return <Card><h3 className="font-bold mb-4">All orders</h3><OrdersList /></Card>; }
 
 function DownloadsTab() {
+  const items = useFeatured().slice(0, 3);
   return (
     <Card>
       <h3 className="font-bold mb-4">Your downloads</h3>
       <div className="space-y-2">
-        {products.slice(0, 3).map((p) => (
+        {items.map((p) => (
           <div key={p.slug} className="flex items-center gap-3 p-3 rounded-xl border border-border">
             <span className="text-3xl">{p.emoji}</span>
             <div className="flex-1"><div className="font-semibold text-sm">{p.name}</div><div className="text-xs text-muted-foreground">Available · expires never</div></div>
@@ -160,7 +164,7 @@ function DownloadsTab() {
 
 function WishlistTab() {
   const wish = useWishlist();
-  const items = wish.slugs.map((s) => products.find((p) => p.slug === s)).filter(Boolean);
+  const items = useProductsBySlugs(wish.slugs);
   return (
     <Card>
       <h3 className="font-bold mb-4">Saved items ({items.length})</h3>

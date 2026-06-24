@@ -3,7 +3,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { PageHero } from "@/components/site/PageHero";
-import { products } from "@/lib/catalog";
+import { useSearchResults } from "@/lib/catalog";
 import { Search, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
@@ -19,7 +19,7 @@ const trending = ["ChatGPT Plus", "Netflix", "Canva Pro", "Spotify", "IPTV", "Of
 function SearchPage() {
   const { q: initial } = Route.useSearch();
   const [q, setQ] = useState(initial ?? "");
-  const results = q ? products.filter((p) => (p.name + " " + p.short + " " + p.category).toLowerCase().includes(q.toLowerCase())) : [];
+  const results = useSearchResults(q);
 
   return (
     <div className="min-h-screen">
