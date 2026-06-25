@@ -144,7 +144,7 @@ export const getReviewableItemsFn = createServerFn({ method: "GET" })
       .select("product_id")
       .eq("user_id", context.userId);
     const reviewedIds = new Set((reviewed ?? []).map((r) => r.product_id));
-    return (items ?? []).filter((it) => !reviewedIds.has(it.product_id));
+    return (items ?? []).filter((it) => it.product_id && !reviewedIds.has(it.product_id));
   });
 
 // ----- Admin moderation -----
