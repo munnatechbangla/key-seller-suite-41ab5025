@@ -1536,6 +1536,30 @@ export type Database = {
         }
         Relationships: []
       }
+      setup_state: {
+        Row: {
+          completed_at: string | null
+          id: number
+          is_completed: boolean
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: number
+          is_completed?: boolean
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          completed_at?: string | null
+          id?: number
+          is_completed?: boolean
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           created_at: string
@@ -1665,6 +1689,7 @@ export type Database = {
         Args: { _order_id: string }
         Returns: number
       }
+      claim_first_admin: { Args: never; Returns: Json }
       generate_order_number: { Args: never; Returns: string }
       has_role: {
         Args: {
