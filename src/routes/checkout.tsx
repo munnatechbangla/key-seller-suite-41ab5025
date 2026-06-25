@@ -33,9 +33,9 @@ function CheckoutPage() {
   const user = useAuth((s) => s.user);
   const navigate = useNavigate();
   const payment = useSettings((s) => s.settings.payment) as Record<string, any>;
-  const gateways = allGateways.filter((g) => payment?.[g.key] !== false && (payment?.[g.key] === true || g.id === "manual"));
-  const visibleGateways = gateways.length > 0 ? gateways : allGateways.filter((g) => g.id === "manual");
-  const [gateway, setGateway] = useState(visibleGateways[0]?.id ?? "manual");
+  const visibleGateways = allGateways.filter((g) => !!payment?.[g.key]);
+  const gatewayList = visibleGateways.length > 0 ? visibleGateways : allGateways.filter((g) => g.id === "manual");
+  const [gateway, setGateway] = useState(gatewayList[0]?.id ?? "manual");
   const [agree, setAgree] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [code, setCode] = useState("");
