@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/stores";
 import { LayoutDashboard, Package, ShoppingBag, Users, KeyRound, Loader2, Ticket, Settings as SettingsIcon, Mail, FileText, CreditCard, Wallet, Star, ScrollText, Wand2, HeartPulse, Database, BookOpen, ClipboardCheck, History } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSettings } from "@/lib/cms/settings";
+import { Logo } from "@/components/site/Logo";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
@@ -44,7 +44,7 @@ function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [checking, setChecking] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const brandName = useSettings((s) => s.settings.branding.name);
+  
 
   useEffect(() => {
     const unsub = init();
@@ -79,8 +79,9 @@ function AdminLayout() {
   return (
     <div className="min-h-screen flex w-full bg-muted/20">
       <aside className="w-60 border-r bg-background hidden md:flex flex-col">
-        <div className="px-5 py-4 border-b">
-          <Link to="/" className="text-sm font-semibold">{brandName} Admin</Link>
+        <div className="px-5 py-4 border-b flex items-center gap-2">
+          <Logo size="sm" />
+          <span className="text-xs text-muted-foreground">Admin</span>
         </div>
         <nav className="flex-1 p-2 space-y-1">
           {items.map((it) => {

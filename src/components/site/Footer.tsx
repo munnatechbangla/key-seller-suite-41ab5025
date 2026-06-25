@@ -1,7 +1,8 @@
-import { Link } from "@tanstack/react-router";
-import { Zap, Send, Facebook, Twitter, Instagram, Youtube, Linkedin } from "lucide-react";
+
+import { Send, Facebook, Twitter, Instagram, Youtube, Linkedin } from "lucide-react";
 import { siteConfig, footerColumns, paymentBadges } from "@/lib/cms";
 import { useSettings, formatCopyright } from "@/lib/cms/settings";
+import { Logo } from "@/components/site/Logo";
 
 export function Footer() {
   const s = useSettings((st) => st.settings);
@@ -16,18 +17,8 @@ export function Footer() {
     <footer className="mt-24 bg-gradient-hero text-white">
       <div className="container mx-auto px-4 py-16 grid gap-10 md:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-2 space-y-4">
-          <Link to="/" className="flex items-center gap-2">
-            {s.branding.logo_url ? (
-              <img src={s.branding.logo_url} alt={s.branding.name} className="h-10 w-10 rounded-xl object-contain bg-white/10 backdrop-blur p-1" />
-            ) : (
-              <div className="h-10 w-10 rounded-xl bg-gradient-primary grid place-items-center shadow-glow">
-                <Zap className="h-5 w-5 text-primary-foreground" strokeWidth={2.5} />
-              </div>
-            )}
-            <span className="font-bold text-2xl">
-              {s.branding.brand_lead}<span className="text-gradient">{s.branding.brand_accent}</span>
-            </span>
-          </Link>
+          <Logo size="lg" variant="dark" />
+
           <p className="text-white/70 max-w-sm text-sm leading-relaxed">{s.branding.description}</p>
           <div className="flex gap-2 pt-2">
             {social.map((item) => (

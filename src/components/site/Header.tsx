@@ -1,10 +1,11 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Heart, ShoppingCart, User, Search, Menu, X, Zap, GitCompare } from "lucide-react";
+import { Heart, ShoppingCart, User, Search, Menu, X, GitCompare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCart, useWishlist, useCompare, useAuth } from "@/lib/stores";
 import { primaryNav, announcementBar, resolveIcon } from "@/lib/cms";
-import { useSettings } from "@/lib/cms/settings";
+
 import { ThemeToggle } from "@/components/site/ThemeToggle";
+import { Logo } from "@/components/site/Logo";
 
 const nav = primaryNav;
 
@@ -17,8 +18,8 @@ export function Header() {
   const wishCount = useWishlist((s) => s.slugs.length);
   const cmpCount = useCompare((s) => s.slugs.length);
   const user = useAuth((s) => s.user);
-  const branding = useSettings((s) => s.settings.branding);
-  const tagline = branding.tagline;
+
+
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -48,18 +49,8 @@ export function Header() {
 
       <header className={`sticky top-0 z-50 transition-smooth ${scrolled ? "glass shadow-elegant" : "bg-background/80 backdrop-blur-sm"}`}>
         <div className="container mx-auto px-4 py-3 flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2 group" aria-label={branding.name} title={tagline}>
-            {branding.logo_url ? (
-              <img src={branding.logo_url} alt={branding.name} className="h-9 w-auto rounded-xl object-contain" />
-            ) : (
-              <div className="h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center shadow-glow group-hover:scale-105 transition-smooth">
-                <Zap className="h-5 w-5 text-primary-foreground" strokeWidth={2.5} />
-              </div>
-            )}
-            <span className="font-bold text-xl tracking-tight">
-              {branding.brand_lead}<span className="text-gradient">{branding.brand_accent}</span>
-            </span>
-          </Link>
+          <Logo size="md" />
+
 
           <nav className="hidden lg:flex items-center gap-1 ml-4">
             {nav.map((n) => (
