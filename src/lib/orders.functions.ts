@@ -118,6 +118,17 @@ async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string
   });
   if (payErr) throw new Error(payErr.message);
 
+  if (couponId) {
+    await supabaseAdmin.rpc("apply_coupon_usage", {
+      _coupon_id: couponId,
+      _order_id: order.id,
+      _user_id: userId ?? undefined,
+      _email: input.customer.email,
+      _discount: discount,
+      _order_total: total,
+    });
+  }
+
   return { orderNumber: order.order_number, orderId: order.id, total, paymentUrl: `/pay/${order.order_number}` };
 }
 
