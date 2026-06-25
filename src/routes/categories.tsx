@@ -1,3 +1,4 @@
+import { seoMeta, siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";

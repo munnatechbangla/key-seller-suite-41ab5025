@@ -1,3 +1,4 @@
+import { seoMeta, siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Star, ChevronRight } from "lucide-react";
 import { Header } from "@/components/site/Header";
