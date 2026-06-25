@@ -1,4 +1,5 @@
 import { siteName } from "@/lib/cms/seo";
+import { useSettings } from "@/lib/cms/settings";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AuthShell, SocialButtons } from "@/components/site/AuthShell";
 import { useAuth } from "@/lib/stores";
@@ -13,6 +14,7 @@ export const Route = createFileRoute("/auth/login")({
 
 function LoginPage() {
   const login = useAuth((s) => s.login);
+  const name = useSettings((s) => s.settings.branding.name);
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
 
@@ -29,7 +31,7 @@ function LoginPage() {
   };
 
   return (
-    <AuthShell title="Welcome back" subtitle="Sign in to continue to TopupHut">
+    <AuthShell title="Welcome back" subtitle={`Sign in to continue to ${name}`}>
       <form onSubmit={submit} className="space-y-4">
         <div>
           <label className="text-sm font-semibold block mb-1.5">Email</label>
@@ -55,7 +57,7 @@ function LoginPage() {
         <SocialButtons />
       </form>
       <p className="text-sm text-center text-muted-foreground">
-        New to TopupHut? <Link to="/auth/register" className="text-primary font-semibold hover:underline">Create an account</Link>
+        New to {name}? <Link to="/auth/register" className="text-primary font-semibold hover:underline">Create an account</Link>
       </p>
     </AuthShell>
   );

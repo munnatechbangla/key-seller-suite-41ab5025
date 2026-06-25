@@ -1,7 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { Zap } from "lucide-react";
+import { useSettings } from "@/lib/cms/settings";
 
 export function AuthShell({ title, subtitle, children, footer }: { title: string; subtitle?: string; children: React.ReactNode; footer?: React.ReactNode }) {
+  const s = useSettings((st) => st.settings);
+  const { brand_lead, brand_accent, name } = s.branding;
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       <div className="hidden lg:flex bg-gradient-hero text-white p-12 flex-col justify-between">
@@ -9,24 +12,24 @@ export function AuthShell({ title, subtitle, children, footer }: { title: string
           <div className="h-10 w-10 rounded-xl bg-white/10 backdrop-blur grid place-items-center">
             <Zap className="h-5 w-5" strokeWidth={2.5} />
           </div>
-          <span className="font-bold text-2xl">Topup<span className="text-accent">Hut</span></span>
+          <span className="font-bold text-2xl">{brand_lead}<span className="text-accent">{brand_accent}</span></span>
         </Link>
         <div className="space-y-4 max-w-md">
           <h2 className="text-4xl font-bold leading-tight">Premium digital products, delivered in seconds.</h2>
-          <p className="text-white/70">Join 200,000+ customers who trust TopupHut for ChatGPT, Netflix, Canva, IPTV and more — all at unbeatable prices.</p>
+          <p className="text-white/70">Join thousands of customers who trust {name} for premium subscriptions and software — all at unbeatable prices.</p>
           <div className="flex gap-6 pt-4 border-t border-white/10">
             <div><div className="text-2xl font-bold">200K+</div><div className="text-xs text-white/60">Customers</div></div>
             <div><div className="text-2xl font-bold">4.9★</div><div className="text-xs text-white/60">Rating</div></div>
             <div><div className="text-2xl font-bold">24/7</div><div className="text-xs text-white/60">Support</div></div>
           </div>
         </div>
-        <p className="text-xs text-white/50">© {new Date().getFullYear()} TopupHut</p>
+        <p className="text-xs text-white/50">© {new Date().getFullYear()} {name}</p>
       </div>
       <div className="flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-md space-y-6">
           <Link to="/" className="lg:hidden flex items-center gap-2">
             <div className="h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center shadow-glow"><Zap className="h-5 w-5 text-primary-foreground" /></div>
-            <span className="font-bold text-xl">Topup<span className="text-gradient">Hut</span></span>
+            <span className="font-bold text-xl">{brand_lead}<span className="text-gradient">{brand_accent}</span></span>
           </Link>
           <div>
             <h1 className="text-3xl font-bold">{title}</h1>

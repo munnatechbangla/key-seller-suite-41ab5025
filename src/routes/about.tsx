@@ -1,4 +1,5 @@
 import { seoMeta, siteName, canonicalLink } from "@/lib/cms/seo";
+import { useSettings } from "@/lib/cms/settings";
 import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/about")({
 });
 
 function AboutPage() {
+  const name = useSettings((s) => s.settings.branding.name);
   return (
     <div className="min-h-screen">
       <Header />
@@ -24,7 +26,7 @@ function AboutPage() {
         <div className="container mx-auto px-4 py-20 text-center max-w-3xl">
           <h1 className="text-4xl sm:text-5xl font-extrabold mb-4">Digital, done right.</h1>
           <p className="text-white/75 text-lg">
-            We started TopupHut to make premium digital products affordable, accessible and
+            We started {name} to make premium digital products affordable, accessible and
             instantly available — for everyone, everywhere.
           </p>
         </div>
@@ -52,7 +54,7 @@ function AboutPage() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-3">Our story</div>
           <h2 className="text-3xl font-bold mb-4">Built by digital natives, for digital natives.</h2>
           <p className="text-muted-foreground leading-relaxed mb-4">
-            TopupHut was founded in 2021 with a simple belief — premium software and
+            {name} was founded in 2021 with a simple belief — premium software and
             subscriptions should not cost more than the value they provide. By partnering
             directly with global vendors and automating delivery, we cut out the middlemen
             and pass the savings to you.
