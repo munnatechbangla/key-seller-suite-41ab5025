@@ -35,8 +35,22 @@ function CheckoutPage() {
   const [privacy, setPrivacy] = useState(false);
   const [code, setCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [applying, setApplying] = useState(false);
   const placeGuest = useServerFn(placeOrderGuestFn);
   const placeAuth = useServerFn(placeOrderAuthFn);
+  const validate = useServerFn(validateCouponFn);
+
+  const applyCoupon = async () => {
+    if (!code.trim()) return;
+    setApplying(true);
+    try {
+      const r = await validate({
+        data: { code: code.trim(), subtotal: cart.subtotal(), productSlugs: cart.items.map((i) => i.slug) },
+      });
+      if (r.ok) { cart.setCoupon(r.code, r.discount); toast.success(`Saved $${r.discount.toFixed(2)}`); setCode(""); }
+      else { cart.clearCoupon(); toast.error(couponReason(r.reason, r)); }
+    } finally { setApplying(false); }
+  };
 
   if (cart.items.length === 0) {
     return (
