@@ -157,3 +157,18 @@ function Row({ label, value, accent }: { label: string; value: string; accent?: 
     </div>
   );
 }
+
+export function couponReason(reason: string, extra?: { min?: number }): string {
+  switch (reason) {
+    case "not_found": return "Coupon not found";
+    case "inactive": return "Coupon disabled";
+    case "not_started": return "Coupon not yet active";
+    case "expired": return "Coupon expired";
+    case "limit_reached": return "Coupon usage limit reached";
+    case "user_limit": return "You've already used this coupon";
+    case "min_order": return `Minimum order $${(extra?.min ?? 0).toFixed(2)} required`;
+    case "not_first_order": return "Only valid on your first order";
+    case "no_matching_products": return "Not valid for items in your cart";
+    default: return reason || "Invalid coupon";
+  }
+}
