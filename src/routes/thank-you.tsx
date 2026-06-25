@@ -38,6 +38,23 @@ function ThankYou() {
   const isFailed = paymentStatus === "failed";
   const isPending = !isPaid && !isFailed;
 
+  const fired = useRef(false);
+  useEffect(() => {
+    if (!isPaid || fired.current || !q.data) return;
+    fired.current = true;
+    track("purchase", {
+      transaction_id: order,
+      currency: q.data.order?.currency ?? "USD",
+      value: Number(q.data.order?.total ?? 0),
+      items: q.data.items.map((it) => ({
+        item_id: it.product_id ?? it.id,
+        item_name: it.product_name,
+        price: Number(it.unit_price),
+        quantity: it.qty,
+      })),
+    });
+  }, [isPaid, q.data, order]);
+
   return (
     <div className="min-h-screen">
       <Header />
