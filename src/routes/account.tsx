@@ -29,6 +29,7 @@ const tabs = [
   { id: "orders", label: "My Orders", Icon: ShoppingBag },
   { id: "downloads", label: "My Downloads", Icon: Download },
   { id: "licenses", label: "My Licenses", Icon: KeyRound },
+  { id: "submissions", label: "Manual Payments", Icon: Receipt },
   { id: "wishlist", label: "Wishlist", Icon: Heart },
   { id: "notifications", label: "Notifications", Icon: Bell },
   { id: "profile", label: "Profile", Icon: Settings },
