@@ -149,12 +149,12 @@ function AdminSettings() {
             <Field label="Currency Code" value={data.payment.currency} onChange={(v) => set("payment", "currency", v)} />
             <Field label="Currency Symbol" value={data.payment.currency_symbol} onChange={(v) => set("payment", "currency_symbol", v)} />
           </div>
-          <Toggle label="SSLCommerz enabled" value={data.payment.sslcommerz_enabled} onChange={(v) => set("payment", "sslcommerz_enabled", v)} />
-          <Toggle label="bKash enabled" value={data.payment.bkash_enabled} onChange={(v) => set("payment", "bkash_enabled", v)} />
-          <Toggle label="Nagad enabled" value={data.payment.nagad_enabled} onChange={(v) => set("payment", "nagad_enabled", v)} />
+          <GatewayRow id="sslcommerz" label="SSLCommerz" data={data} set={set} />
+          <GatewayRow id="bkash" label="bKash" data={data} set={set} />
+          <GatewayRow id="nagad" label="Nagad" data={data} set={set} />
+          <GatewayRow id="stripe" label="Stripe" data={data} set={set} />
+          <GatewayRow id="paypal" label="PayPal" data={data} set={set} />
           <Toggle label="Rocket enabled" value={data.payment.rocket_enabled} onChange={(v) => set("payment", "rocket_enabled", v)} />
-          <Toggle label="Stripe enabled" value={data.payment.stripe_enabled} onChange={(v) => set("payment", "stripe_enabled", v)} />
-          <Toggle label="PayPal enabled" value={data.payment.paypal_enabled} onChange={(v) => set("payment", "paypal_enabled", v)} />
           <Toggle label="Manual payment enabled" value={data.payment.manual_enabled} onChange={(v) => set("payment", "manual_enabled", v)} />
           <Area label="Manual Payment Instructions" value={data.payment.manual_instructions} onChange={(v) => set("payment", "manual_instructions", v)} />
           <SaveBtn onClick={() => save("payment")} saving={saving === "payment"} />
