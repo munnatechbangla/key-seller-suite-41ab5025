@@ -210,8 +210,8 @@ function ManualForm({
         const path = `submissions/${orderNumber}/${Date.now()}.${ext}`;
         const { error } = await supabase.storage.from("payments").upload(path, file, { upsert: true, contentType: file.type });
         if (error) throw new Error(error.message);
-        const { data } = supabase.storage.from("payments").getPublicUrl(path);
-        screenshot_url = data.publicUrl;
+        // Store the object path; admins fetch a short-lived signed URL on demand.
+        screenshot_url = path;
         setUploading(false);
       }
       await submit({

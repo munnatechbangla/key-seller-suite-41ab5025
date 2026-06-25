@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import {
   listAllGatewaysFn, upsertGatewayFn, deleteGatewayFn, toggleGatewayFn,
   listSubmissionsFn, reviewSubmissionFn,
@@ -354,7 +355,7 @@ function SubmissionsList() {
                           onClick={async () => { await review({ data: { id: s.id, action: "reject" } }); toast("Rejected"); qc.invalidateQueries({ queryKey: ["admin", "manual-submissions"] }); }}>
                           <XCircle className="h-4 w-4" />
                         </Button>
-                        {s.screenshot_url && <a href={s.screenshot_url} target="_blank" rel="noreferrer" className="text-xs underline self-center">proof</a>}
+                        {s.screenshot_url && <ProofLink value={s.screenshot_url} />}
                       </div>
                     )}
                   </td>
@@ -369,5 +370,27 @@ function SubmissionsList() {
         </table>
       </div>
     </div>
+  );
+}
+
+function ProofLink({ value }: { value: string }) {
+  const [loading, setLoading] = useState(false);
+  const open = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Legacy rows may already hold a full URL.
+    if (/^https?:\/\//i.test(value)) {
+      window.open(value, "_blank", "noopener,noreferrer");
+      return;
+    }
+    setLoading(true);
+    const { data, error } = await supabase.storage.from("payments").createSignedUrl(value, 300);
+    setLoading(false);
+    if (error || !data?.signedUrl) { toast.error(error?.message ?? "Could not load proof"); return; }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
+  return (
+    <a href="#" onClick={open} className="text-xs underline self-center">
+      {loading ? "…" : "proof"}
+    </a>
   );
 }
