@@ -22,6 +22,7 @@ const items = [
   { to: "/admin/licenses", label: "Licenses", icon: KeyRound },
   { to: "/admin/coupons", label: "Coupons", icon: Ticket },
   { to: "/admin/payment-logs", label: "Payments", icon: CreditCard },
+  { to: "/admin/gateways", label: "Gateways", icon: Wallet },
   { to: "/admin/emails", label: "Email Logs", icon: Mail },
   { to: "/admin/email-templates", label: "Templates", icon: FileText },
   { to: "/admin/settings", label: "Settings", icon: SettingsIcon },
