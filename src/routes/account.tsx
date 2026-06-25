@@ -9,12 +9,13 @@ import { useAuth, useWishlist } from "@/lib/stores";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard, ShoppingBag, Download, Heart, Bell, Settings,
-  MapPin, LifeBuoy, KeyRound, LogOut, Package, DollarSign, CheckCircle2, TrendingUp, Loader2, Receipt,
+  MapPin, LifeBuoy, KeyRound, LogOut, Package, DollarSign, CheckCircle2, TrendingUp, Loader2, Receipt, Star,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProductsBySlugs, featuredQuery } from "@/lib/catalog";
 import { getMyOrdersFn, getMyDownloadsFn, getMyLicensesFn } from "@/lib/orders.functions";
 import { getMySubmissionsFn } from "@/lib/payments/gateways.functions";
+import { MyReviewsTab } from "@/components/site/MyReviewsTab";
 
 export const Route = createFileRoute("/account")({
   head: () => ({ meta: [{ title: `My Account — ${siteName()}` }] }),
@@ -30,6 +31,7 @@ const tabs = [
   { id: "downloads", label: "My Downloads", Icon: Download },
   { id: "licenses", label: "My Licenses", Icon: KeyRound },
   { id: "submissions", label: "Manual Payments", Icon: Receipt },
+  { id: "reviews", label: "My Reviews", Icon: Star },
   { id: "wishlist", label: "Wishlist", Icon: Heart },
   { id: "notifications", label: "Notifications", Icon: Bell },
   { id: "profile", label: "Profile", Icon: Settings },
@@ -79,6 +81,7 @@ function AccountPage() {
           {active === "downloads" && <DownloadsTab />}
           {active === "licenses" && <LicensesTab />}
           {active === "submissions" && <SubmissionsTab />}
+          {active === "reviews" && <MyReviewsTab />}
           {active === "wishlist" && <WishlistTab />}
           {active === "notifications" && <NotificationsTab />}
           {active === "profile" && <ProfileTab user={user} />}
