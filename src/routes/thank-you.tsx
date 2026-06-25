@@ -8,6 +8,8 @@ import { CheckCircle2, Download, Mail, MessageCircle, KeyRound, Loader2, Clock, 
 import { z } from "zod";
 import { getOrderByNumberFn } from "@/lib/orders.functions";
 import { toast } from "sonner";
+import { useEffect, useRef } from "react";
+import { track } from "@/lib/analytics/track";
 
 export const Route = createFileRoute("/thank-you")({
   validateSearch: z.object({ order: z.string().optional(), email: z.string().optional() }),
