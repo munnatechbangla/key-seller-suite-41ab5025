@@ -42,6 +42,7 @@ import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminPaymentLogsRouteImport } from './routes/admin.payment-logs'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminLicensesRouteImport } from './routes/admin.licenses'
+import { Route as AdminGatewaysRouteImport } from './routes/admin.gateways'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailTemplatesRouteImport } from './routes/admin.email-templates'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
@@ -215,6 +216,11 @@ const AdminLicensesRoute = AdminLicensesRouteImport.update({
   path: '/licenses',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminGatewaysRoute = AdminGatewaysRouteImport.update({
+  id: '/gateways',
+  path: '/gateways',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminEmailsRoute = AdminEmailsRouteImport.update({
   id: '/emails',
   path: '/emails',
@@ -278,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/email-templates': typeof AdminEmailTemplatesRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/gateways': typeof AdminGatewaysRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
@@ -319,6 +326,7 @@ export interface FileRoutesByTo {
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/email-templates': typeof AdminEmailTemplatesRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/gateways': typeof AdminGatewaysRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
@@ -362,6 +370,7 @@ export interface FileRoutesById {
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/email-templates': typeof AdminEmailTemplatesRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/gateways': typeof AdminGatewaysRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
@@ -406,6 +415,7 @@ export interface FileRouteTypes {
     | '/admin/customers'
     | '/admin/email-templates'
     | '/admin/emails'
+    | '/admin/gateways'
     | '/admin/licenses'
     | '/admin/orders'
     | '/admin/payment-logs'
@@ -447,6 +457,7 @@ export interface FileRouteTypes {
     | '/admin/customers'
     | '/admin/email-templates'
     | '/admin/emails'
+    | '/admin/gateways'
     | '/admin/licenses'
     | '/admin/orders'
     | '/admin/payment-logs'
@@ -489,6 +500,7 @@ export interface FileRouteTypes {
     | '/admin/customers'
     | '/admin/email-templates'
     | '/admin/emails'
+    | '/admin/gateways'
     | '/admin/licenses'
     | '/admin/orders'
     | '/admin/payment-logs'
@@ -773,6 +785,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLicensesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/gateways': {
+      id: '/admin/gateways'
+      path: '/gateways'
+      fullPath: '/admin/gateways'
+      preLoaderRoute: typeof AdminGatewaysRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/emails': {
       id: '/admin/emails'
       path: '/emails'
@@ -830,6 +849,7 @@ interface AdminRouteChildren {
   AdminCustomersRoute: typeof AdminCustomersRoute
   AdminEmailTemplatesRoute: typeof AdminEmailTemplatesRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
+  AdminGatewaysRoute: typeof AdminGatewaysRoute
   AdminLicensesRoute: typeof AdminLicensesRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminPaymentLogsRoute: typeof AdminPaymentLogsRoute
@@ -843,6 +863,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCustomersRoute: AdminCustomersRoute,
   AdminEmailTemplatesRoute: AdminEmailTemplatesRoute,
   AdminEmailsRoute: AdminEmailsRoute,
+  AdminGatewaysRoute: AdminGatewaysRoute,
   AdminLicensesRoute: AdminLicensesRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminPaymentLogsRoute: AdminPaymentLogsRoute,
