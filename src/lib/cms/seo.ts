@@ -171,6 +171,13 @@ export function productJsonLd(p: {
   category?: string;
   sku?: string;
   inStock?: boolean;
+  reviewSamples?: Array<{
+    author: string;
+    rating: number;
+    body?: string | null;
+    title?: string | null;
+    createdAt?: string;
+  }>;
 }) {
   const currency = p.currency || getSettings().payment.currency || "USD";
   const data: Record<string, unknown> = {
@@ -197,6 +204,16 @@ export function productJsonLd(p: {
       ratingValue: p.rating.toFixed(1),
       reviewCount: p.reviews,
     };
+  }
+  if (p.reviewSamples && p.reviewSamples.length > 0) {
+    data.review = p.reviewSamples.map((r) => ({
+      "@type": "Review",
+      reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5 },
+      author: { "@type": "Person", name: r.author },
+      ...(r.title && { name: r.title }),
+      ...(r.body && { reviewBody: r.body }),
+      ...(r.createdAt && { datePublished: r.createdAt }),
+    }));
   }
   return data;
 }
