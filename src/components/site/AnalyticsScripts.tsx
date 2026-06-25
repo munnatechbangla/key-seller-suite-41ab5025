@@ -2,7 +2,7 @@
 // injects only the enabled providers. Pageview events are tracked on every
 // router location change.
 import { useEffect, useRef } from "react";
-import { useRouterState } from "@tanstack/react-router";
+import { useLocation } from "@tanstack/react-router";
 import { useSettings } from "@/lib/cms/settings";
 import { track } from "@/lib/analytics/track";
 
@@ -35,7 +35,7 @@ function appendRaw(id: string, html: string, where: "head" | "body") {
 
 export function AnalyticsScripts() {
   const a = useSettings((s) => s.settings.analytics);
-  const location = useRouterState({ select: (s) => s.location.href });
+  const location = useLocation({ select: (l) => `${l.pathname}${l.searchStr ?? ""}` });
   const firstPage = useRef(true);
 
   useEffect(() => {
