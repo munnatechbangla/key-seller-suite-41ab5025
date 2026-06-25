@@ -21,7 +21,9 @@ function EmailLogsPage() {
   const list = useServerFn(adminListEmailLogsFn);
   const retry = useServerFn(adminRetryEmailFn);
   const process = useServerFn(adminProcessQueueFn);
+  const sendTest = useServerFn(adminSendTestEmailFn);
   const [status, setStatus] = useState<string>("");
+  const [testTo, setTestTo] = useState("");
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
