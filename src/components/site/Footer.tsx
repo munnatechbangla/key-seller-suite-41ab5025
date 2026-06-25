@@ -62,8 +62,8 @@ export function Footer() {
 
       <div className="border-t border-white/10">
         <div className="container mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/60">
-          <p>© {new Date().getFullYear()} {siteConfig.name}. All rights reserved.</p>
-          <p>Crafted for digital enthusiasts. Instant delivery worldwide.</p>
+          <p>{formatCopyright(s.branding.copyright, s.branding.name)}</p>
+          <p>{s.branding.footer_text}</p>
         </div>
       </div>
     </footer>
