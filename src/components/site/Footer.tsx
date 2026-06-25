@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+
 import { Send, Facebook, Twitter, Instagram, Youtube, Linkedin } from "lucide-react";
 import { siteConfig, footerColumns, paymentBadges } from "@/lib/cms";
 import { useSettings, formatCopyright } from "@/lib/cms/settings";
