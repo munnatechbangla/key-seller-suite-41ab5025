@@ -2,8 +2,9 @@ import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tan
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/stores";
-import { LayoutDashboard, Package, ShoppingBag, Users, KeyRound, Loader2, Ticket } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Users, KeyRound, Loader2, Ticket, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSettings } from "@/lib/cms/settings";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
@@ -20,6 +21,7 @@ const items = [
   { to: "/admin/customers", label: "Customers", icon: Users },
   { to: "/admin/licenses", label: "Licenses", icon: KeyRound },
   { to: "/admin/coupons", label: "Coupons", icon: Ticket },
+  { to: "/admin/settings", label: "Settings", icon: SettingsIcon },
 ];
 
 function AdminLayout() {
@@ -30,6 +32,7 @@ function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [checking, setChecking] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const brandName = useSettings((s) => s.settings.branding.name);
 
   useEffect(() => {
     const unsub = init();
@@ -65,7 +68,7 @@ function AdminLayout() {
     <div className="min-h-screen flex w-full bg-muted/20">
       <aside className="w-60 border-r bg-background hidden md:flex flex-col">
         <div className="px-5 py-4 border-b">
-          <Link to="/" className="text-sm font-semibold">TopupHut Admin</Link>
+          <Link to="/" className="text-sm font-semibold">{brandName} Admin</Link>
         </div>
         <nav className="flex-1 p-2 space-y-1">
           {items.map((it) => {

@@ -1,8 +1,17 @@
 import { Link } from "@tanstack/react-router";
-import { Zap, Send } from "lucide-react";
-import { siteConfig, footerColumns, socialLinks, paymentBadges, resolveIcon } from "@/lib/cms";
+import { Zap, Send, Facebook, Twitter, Instagram, Youtube, Linkedin } from "lucide-react";
+import { siteConfig, footerColumns, paymentBadges } from "@/lib/cms";
+import { useSettings, formatCopyright } from "@/lib/cms/settings";
 
 export function Footer() {
+  const s = useSettings((st) => st.settings);
+  const social: { label: string; href: string; Icon: typeof Facebook }[] = [
+    { label: "Facebook", href: s.social.facebook, Icon: Facebook },
+    { label: "Twitter", href: s.social.twitter, Icon: Twitter },
+    { label: "Instagram", href: s.social.instagram, Icon: Instagram },
+    { label: "YouTube", href: s.social.youtube, Icon: Youtube },
+    { label: "LinkedIn", href: s.social.linkedin, Icon: Linkedin },
+  ].filter((x) => x.href);
   return (
     <footer className="mt-24 bg-gradient-hero text-white">
       <div className="container mx-auto px-4 py-16 grid gap-10 md:grid-cols-2 lg:grid-cols-5">
@@ -12,19 +21,16 @@ export function Footer() {
               <Zap className="h-5 w-5 text-primary-foreground" strokeWidth={2.5} />
             </div>
             <span className="font-bold text-2xl">
-              {siteConfig.brandSplit.lead}<span className="text-gradient">{siteConfig.brandSplit.accent}</span>
+              {s.branding.brand_lead}<span className="text-gradient">{s.branding.brand_accent}</span>
             </span>
           </Link>
-          <p className="text-white/70 max-w-sm text-sm leading-relaxed">{siteConfig.description}</p>
+          <p className="text-white/70 max-w-sm text-sm leading-relaxed">{s.branding.description}</p>
           <div className="flex gap-2 pt-2">
-            {socialLinks.map((s) => {
-              const Icon = resolveIcon(s.icon);
-              return (
-                <a key={s.label} href={s.href} aria-label={s.label} className="h-10 w-10 grid place-items-center rounded-xl glass-dark hover:bg-white/15 transition-smooth">
-                  <Icon className="h-4 w-4" />
-                </a>
-              );
-            })}
+            {social.map((item) => (
+              <a key={item.label} href={item.href} aria-label={item.label} className="h-10 w-10 grid place-items-center rounded-xl glass-dark hover:bg-white/15 transition-smooth">
+                <item.Icon className="h-4 w-4" />
+              </a>
+            ))}
           </div>
         </div>
 
@@ -56,8 +62,8 @@ export function Footer() {
 
       <div className="border-t border-white/10">
         <div className="container mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/60">
-          <p>© {new Date().getFullYear()} {siteConfig.name}. All rights reserved.</p>
-          <p>Crafted for digital enthusiasts. Instant delivery worldwide.</p>
+          <p>{formatCopyright(s.branding.copyright, s.branding.name)}</p>
+          <p>{s.branding.footer_text}</p>
         </div>
       </div>
     </footer>
