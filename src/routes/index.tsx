@@ -75,13 +75,16 @@ function Home() {
 function Hero() {
   const BadgeIcon = resolveIcon(heroConfig.badge.icon);
   const floatingProducts = useResolvedProducts(heroConfig.floatingProductSlugs);
+  // 6 staggered positions — denser layout, less empty space.
   const positions = [
-    "absolute top-0 left-8 w-64",
-    "absolute top-24 right-0 w-64",
-    "absolute bottom-8 left-0 w-64",
-    "absolute bottom-0 right-12 w-64",
+    "absolute top-0 left-0 w-56",
+    "absolute top-8 right-4 w-56",
+    "absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-60",
+    "absolute bottom-8 left-2 w-56",
+    "absolute bottom-0 right-0 w-56",
+    "absolute top-1/3 right-1/3 w-52",
   ];
-  const delays = ["0s", "1.2s", "2.4s", "0.8s"];
+  const delays = ["0s", "1.2s", "2.4s", "0.8s", "1.8s", "3.2s"];
   return (
     <section className="relative overflow-hidden bg-gradient-hero text-white">
       <div className="absolute inset-0 opacity-50 pointer-events-none">
@@ -90,7 +93,7 @@ function Hero() {
         <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-accent/30 blur-3xl animate-float" style={{ animationDelay: "3s" }} />
       </div>
 
-      <div className="container mx-auto px-4 pt-16 pb-24 lg:pt-24 lg:pb-32 relative grid lg:grid-cols-2 gap-12 items-center">
+      <div className="container mx-auto px-4 pt-14 pb-20 lg:pt-20 lg:pb-24 relative grid lg:grid-cols-[1.05fr_1fr] gap-10 items-center">
         <div className="space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-dark text-sm">
             <BadgeIcon className="h-4 w-4 text-accent" />
@@ -137,8 +140,8 @@ function Hero() {
           </div>
         </div>
 
-        <div className="relative h-[480px] hidden lg:block">
-          {floatingProducts.map((p, i) => (
+        <div className="relative h-[460px] hidden lg:block">
+          {floatingProducts.slice(0, 6).map((p, i) => (
             <FloatingCard key={p.slug} className={positions[i % positions.length]} delay={delays[i % delays.length]} product={p} />
           ))}
         </div>
@@ -149,10 +152,14 @@ function Hero() {
 
 function FloatingCard({ product, className = "", delay = "0s" }: { product: Product; className?: string; delay?: string }) {
   return (
-    <div className={`glass-dark rounded-2xl p-4 shadow-premium animate-float ${className}`} style={{ animationDelay: delay }}>
+    <div className={`glass-dark rounded-2xl p-3.5 shadow-premium animate-float ${className}`} style={{ animationDelay: delay }}>
       <div className="flex items-center gap-3">
-        <div className="h-12 w-12 rounded-xl bg-gradient-primary grid place-items-center text-2xl shadow-glow">
-          {product.emoji}
+        <div className="h-11 w-11 rounded-xl bg-gradient-primary grid place-items-center overflow-hidden text-xl shadow-glow shrink-0">
+          {product.thumbnailUrl ? (
+            <img src={product.thumbnailUrl} alt={product.name} className="h-full w-full object-cover" />
+          ) : (
+            <span>{product.emoji}</span>
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold truncate">{product.name}</div>
@@ -160,7 +167,7 @@ function FloatingCard({ product, className = "", delay = "0s" }: { product: Prod
             <Star className="h-3 w-3 fill-accent text-accent" /> {product.rating} · {product.delivery}
           </div>
         </div>
-        <div className="text-right">
+        <div className="text-right shrink-0">
           <div className="text-sm font-bold text-accent">${product.price}</div>
           {product.oldPrice && <div className="text-[10px] text-white/40 line-through">${product.oldPrice}</div>}
         </div>
