@@ -17,9 +17,13 @@ export function Footer() {
       <div className="container mx-auto px-4 py-16 grid gap-10 md:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-2 space-y-4">
           <Link to="/" className="flex items-center gap-2">
-            <div className="h-10 w-10 rounded-xl bg-gradient-primary grid place-items-center shadow-glow">
-              <Zap className="h-5 w-5 text-primary-foreground" strokeWidth={2.5} />
-            </div>
+            {s.branding.logo_url ? (
+              <img src={s.branding.logo_url} alt={s.branding.name} className="h-10 w-10 rounded-xl object-contain bg-white/10 backdrop-blur p-1" />
+            ) : (
+              <div className="h-10 w-10 rounded-xl bg-gradient-primary grid place-items-center shadow-glow">
+                <Zap className="h-5 w-5 text-primary-foreground" strokeWidth={2.5} />
+              </div>
+            )}
             <span className="font-bold text-2xl">
               {s.branding.brand_lead}<span className="text-gradient">{s.branding.brand_accent}</span>
             </span>
