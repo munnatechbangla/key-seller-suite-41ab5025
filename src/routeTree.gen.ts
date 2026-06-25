@@ -55,6 +55,7 @@ import { Route as AdminDocsRouteImport } from './routes/admin.docs'
 import { Route as AdminDemoRouteImport } from './routes/admin.demo'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
+import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments.webhook'
 import { Route as ApiPublicPaymentsSslcommerzReturnRouteImport } from './routes/api/public/payments.sslcommerz.return'
@@ -291,6 +292,11 @@ const AdminCouponsRoute = AdminCouponsRouteImport.update({
   path: '/coupons',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAuditLogsRoute = AdminAuditLogsRouteImport.update({
+  id: '/audit-logs',
+  path: '/audit-logs',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAuditRoute = AdminAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -344,6 +350,7 @@ export interface FileRoutesByFullPath {
   '/track-order': typeof TrackOrderRoute
   '/wishlist': typeof WishlistRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/demo': typeof AdminDemoRoute
@@ -396,6 +403,7 @@ export interface FileRoutesByTo {
   '/track-order': typeof TrackOrderRoute
   '/wishlist': typeof WishlistRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/demo': typeof AdminDemoRoute
@@ -450,6 +458,7 @@ export interface FileRoutesById {
   '/track-order': typeof TrackOrderRoute
   '/wishlist': typeof WishlistRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/demo': typeof AdminDemoRoute
@@ -505,6 +514,7 @@ export interface FileRouteTypes {
     | '/track-order'
     | '/wishlist'
     | '/admin/audit'
+    | '/admin/audit-logs'
     | '/admin/coupons'
     | '/admin/customers'
     | '/admin/demo'
@@ -557,6 +567,7 @@ export interface FileRouteTypes {
     | '/track-order'
     | '/wishlist'
     | '/admin/audit'
+    | '/admin/audit-logs'
     | '/admin/coupons'
     | '/admin/customers'
     | '/admin/demo'
@@ -610,6 +621,7 @@ export interface FileRouteTypes {
     | '/track-order'
     | '/wishlist'
     | '/admin/audit'
+    | '/admin/audit-logs'
     | '/admin/coupons'
     | '/admin/customers'
     | '/admin/demo'
@@ -1000,6 +1012,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCouponsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/audit-logs': {
+      id: '/admin/audit-logs'
+      path: '/audit-logs'
+      fullPath: '/admin/audit-logs'
+      preLoaderRoute: typeof AdminAuditLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/audit': {
       id: '/admin/audit'
       path: '/audit'
@@ -1040,6 +1059,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAuditRoute: typeof AdminAuditRoute
+  AdminAuditLogsRoute: typeof AdminAuditLogsRoute
   AdminCouponsRoute: typeof AdminCouponsRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
   AdminDemoRoute: typeof AdminDemoRoute
@@ -1061,6 +1081,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAuditRoute: AdminAuditRoute,
+  AdminAuditLogsRoute: AdminAuditLogsRoute,
   AdminCouponsRoute: AdminCouponsRoute,
   AdminCustomersRoute: AdminCustomersRoute,
   AdminDemoRoute: AdminDemoRoute,
