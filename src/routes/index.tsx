@@ -1,10 +1,12 @@
 import { seoMeta, siteName, canonicalLink } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Star, ChevronRight } from "lucide-react";
+import { Star, ChevronRight, Calendar, ArrowRight, ShieldCheck } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Section } from "@/components/site/Section";
 import { ProductCard } from "@/components/site/ProductCard";
+import { blogPosts } from "@/lib/catalog";
 import {
   useCategories,
   featuredQuery,
@@ -64,7 +66,9 @@ function Home() {
         <WhyChoose />
         <Stats />
         <Testimonials />
+        <BlogSection />
         <FAQ />
+        <PaymentMethods />
         <CTA />
       </main>
       <Footer />
@@ -75,16 +79,9 @@ function Home() {
 function Hero() {
   const BadgeIcon = resolveIcon(heroConfig.badge.icon);
   const floatingProducts = useResolvedProducts(heroConfig.floatingProductSlugs);
-  // 6 staggered positions — denser layout, less empty space.
-  const positions = [
-    "absolute top-0 left-0 w-56",
-    "absolute top-8 right-4 w-56",
-    "absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-60",
-    "absolute bottom-8 left-2 w-56",
-    "absolute bottom-0 right-0 w-56",
-    "absolute top-1/3 right-1/3 w-52",
-  ];
-  const delays = ["0s", "1.2s", "2.4s", "0.8s", "1.8s", "3.2s"];
+  // 6 cards in a tidy 3-row × 2-col grid — no overlaps at any breakpoint.
+  const durations = ["6s", "7s", "8s", "6.5s", "7.5s", "8.5s"];
+  const delays = ["0s", "1.2s", "2.4s", "0.6s", "1.8s", "3s"];
   return (
     <section className="relative overflow-hidden bg-gradient-hero text-white">
       <div className="absolute inset-0 opacity-50 pointer-events-none">
@@ -140,9 +137,14 @@ function Hero() {
           </div>
         </div>
 
-        <div className="relative h-[460px] hidden lg:block">
+        <div className="hidden lg:grid grid-cols-2 gap-4 self-stretch content-center">
           {floatingProducts.slice(0, 6).map((p, i) => (
-            <FloatingCard key={p.slug} className={positions[i % positions.length]} delay={delays[i % delays.length]} product={p} />
+            <FloatingCard
+              key={p.slug}
+              product={p}
+              delay={delays[i % delays.length]}
+              duration={durations[i % durations.length]}
+            />
           ))}
         </div>
       </div>
@@ -150,9 +152,9 @@ function Hero() {
   );
 }
 
-function FloatingCard({ product, className = "", delay = "0s" }: { product: Product; className?: string; delay?: string }) {
+function FloatingCard({ product, delay = "0s", duration = "7s" }: { product: Product; delay?: string; duration?: string }) {
   return (
-    <div className={`glass-dark rounded-2xl p-3.5 shadow-premium animate-float ${className}`} style={{ animationDelay: delay }}>
+    <div className="glass-dark rounded-2xl p-3.5 shadow-premium animate-float" style={{ animationDelay: delay, animationDuration: duration }}>
       <div className="flex items-center gap-3">
         <div className="h-11 w-11 rounded-xl bg-gradient-primary grid place-items-center overflow-hidden text-xl shadow-glow shrink-0">
           {product.thumbnailUrl ? (
@@ -179,17 +181,17 @@ function FloatingCard({ product, className = "", delay = "0s" }: { product: Prod
 function TrustStrip() {
   return (
     <div className="container mx-auto px-4 -mt-12 relative z-10">
-      <div className="bg-card border border-border rounded-3xl shadow-premium p-6 grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="bg-card border border-border rounded-3xl shadow-premium p-5 sm:p-6 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5 sm:gap-6">
         {trustStripItems.map((item) => {
           const Icon = resolveIcon(item.icon);
           return (
-            <div key={item.title} className="flex items-center gap-3">
-              <div className="h-12 w-12 grid place-items-center rounded-2xl bg-gradient-primary text-primary-foreground shadow-elegant shrink-0">
+            <div key={item.title} className="flex items-center gap-3 min-h-12">
+              <div className="h-11 w-11 sm:h-12 sm:w-12 grid place-items-center rounded-2xl bg-primary/10 text-primary shrink-0">
                 <Icon className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <div className="font-semibold text-sm text-foreground">{item.title}</div>
-                <div className="text-xs text-muted-foreground">{item.desc}</div>
+                <div className="font-semibold text-sm text-foreground leading-tight">{item.title}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{item.desc}</div>
               </div>
             </div>
           );
@@ -290,9 +292,11 @@ function Stats() {
         <div className="absolute -top-20 -right-20 h-80 w-80 rounded-full bg-primary/40 blur-3xl" />
         <div className="absolute -bottom-20 -left-20 h-80 w-80 rounded-full bg-accent/30 blur-3xl" />
         <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-          {statsItems.map((s) => (
-            <div key={s.label}>
-              <div className="text-4xl lg:text-5xl font-extrabold text-gradient mb-1">{s.value}</div>
+          {statsItems.map((s, i) => (
+            <div key={s.label} className="animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
+              <div className="text-4xl lg:text-5xl font-extrabold text-gradient mb-1">
+                <CountUp value={s.value} />
+              </div>
               <div className="text-sm text-white/70">{s.label}</div>
             </div>
           ))}
@@ -302,29 +306,139 @@ function Stats() {
   );
 }
 
+/** Animated count-up that respects prefers-reduced-motion and preserves suffixes. */
+function CountUp({ value, duration = 1400 }: { value: string; duration?: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const match = /^([\d.]+)(.*)$/.exec(value);
+  const target = match ? parseFloat(match[1]) : NaN;
+  const suffix = match ? match[2] : "";
+  const [display, setDisplay] = useState(Number.isFinite(target) ? "0" : value);
+
+  useEffect(() => {
+    if (!Number.isFinite(target) || !ref.current) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) { setDisplay(String(target)); return; }
+    const node = ref.current;
+    let raf = 0; let start = 0; let done = false;
+    const isInt = Number.isInteger(target);
+    const step = (t: number) => {
+      if (!start) start = t;
+      const p = Math.min(1, (t - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const v = target * eased;
+      setDisplay(isInt ? String(Math.round(v)) : v.toFixed(1));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    const io = new IntersectionObserver((entries) => {
+      if (done) return;
+      if (entries.some((e) => e.isIntersecting)) { done = true; raf = requestAnimationFrame(step); io.disconnect(); }
+    }, { threshold: 0.3 });
+    io.observe(node);
+    return () => { io.disconnect(); cancelAnimationFrame(raf); };
+  }, [target, duration]);
+
+  return <span ref={ref}>{display}{suffix}</span>;
+}
+
 function Testimonials() {
   return (
     <Section eyebrow={testimonialsSection.eyebrow} title={testimonialsSection.title}>
-      <div className="grid md:grid-cols-3 gap-5">
+      <div className="grid md:grid-cols-3 gap-5 items-stretch">
         {testimonials.map((r) => (
-          <div key={r.name} className="rounded-2xl bg-card border border-border p-6 hover:shadow-elegant transition-smooth">
+          <div key={r.name} className="flex flex-col h-full rounded-2xl bg-card border border-border p-6 hover:shadow-elegant transition-smooth">
             <div className="flex gap-0.5 mb-3">
               {Array.from({ length: r.rating }).map((_, i) => (
                 <Star key={i} className="h-4 w-4 fill-accent text-accent" />
               ))}
             </div>
-            <p className="text-sm leading-relaxed text-foreground/90 mb-5">"{r.text}"</p>
-            <div className="flex items-center gap-3">
-              <div className="h-11 w-11 rounded-full bg-gradient-primary grid place-items-center text-xl">{r.emoji}</div>
-              <div>
-                <div className="font-semibold text-sm">{r.name}</div>
-                <div className="text-xs text-muted-foreground">{r.role}</div>
+            <p className="text-sm leading-relaxed text-foreground/90 mb-5 flex-1">"{r.text}"</p>
+            <div className="flex items-center gap-3 mt-auto">
+              <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-primary grid place-items-center text-xl">{r.emoji}</div>
+              <div className="min-w-0">
+                <div className="font-semibold text-sm truncate">{r.name}</div>
+                <div className="text-xs text-muted-foreground truncate">{r.role}</div>
               </div>
             </div>
           </div>
         ))}
       </div>
     </Section>
+  );
+}
+
+function BlogSection() {
+  const posts = blogPosts.slice(0, 3);
+  if (!posts.length) return null;
+  return (
+    <Section
+      eyebrow="From the blog"
+      title="Guides, reviews and pro tips"
+      action={
+        <Link to="/blog" className="text-sm font-semibold text-primary inline-flex items-center gap-1 hover:gap-2 transition-all">
+          View all articles <ChevronRight className="h-4 w-4" />
+        </Link>
+      }
+    >
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch">
+        {posts.map((p) => (
+          <Link
+            key={p.slug}
+            to="/blog/$slug"
+            params={{ slug: p.slug }}
+            className="group flex flex-col rounded-2xl bg-card border border-border overflow-hidden hover:shadow-premium hover:-translate-y-1 transition-smooth"
+          >
+            <div className="aspect-[16/10] bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center text-7xl">{p.emoji}</div>
+            <div className="p-5 flex-1 flex flex-col gap-2">
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="font-semibold text-primary">{p.category}</span>
+                <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" /> {p.date}</span>
+              </div>
+              <h3 className="font-bold text-base leading-snug group-hover:text-primary transition-smooth line-clamp-2">{p.title}</h3>
+              <p className="text-sm text-muted-foreground line-clamp-2">{p.excerpt}</p>
+              <div className="inline-flex items-center gap-1 text-sm font-semibold text-primary pt-2 mt-auto">
+                Read article <ArrowRight className="h-3.5 w-3.5" />
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+const paymentMethods = [
+  { code: "SSLCommerz", label: "SSLCommerz" },
+  { code: "bKash", label: "bKash" },
+  { code: "Nagad", label: "Nagad" },
+  { code: "Rocket", label: "Rocket" },
+  { code: "Visa", label: "Visa" },
+  { code: "Mastercard", label: "Mastercard" },
+  { code: "Stripe", label: "Stripe" },
+  { code: "PayPal", label: "PayPal" },
+];
+
+function PaymentMethods() {
+  return (
+    <div className="container mx-auto px-4 pb-4">
+      <div className="rounded-3xl bg-card border border-border p-6 sm:p-8 text-center">
+        <div className="inline-flex items-center gap-2 text-xs font-semibold text-primary mb-2">
+          <ShieldCheck className="h-4 w-4" /> 100% Secure Checkout
+        </div>
+        <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-1">We accept secure payments</h3>
+        <p className="text-sm text-muted-foreground mb-6">Pay confidently with your preferred provider — all transactions are encrypted.</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+          {paymentMethods.map((m) => (
+            <div
+              key={m.code}
+              title={m.label}
+              className="h-12 grid place-items-center rounded-xl border border-border bg-muted/40 text-xs font-bold tracking-tight text-foreground/80 hover:border-primary/40 hover:text-primary transition-smooth"
+            >
+              {m.label}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
