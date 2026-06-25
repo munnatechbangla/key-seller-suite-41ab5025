@@ -1,16 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { PageHero } from "@/components/site/PageHero";
 import { useCart, useAuth } from "@/lib/stores";
-import { useState } from "react";
-import { CreditCard, Wallet, Building2, Smartphone, Lock, Tag } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Lock, Tag, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { placeOrderAuthFn, placeOrderGuestFn } from "@/lib/orders.functions";
 import { validateCouponFn } from "@/lib/coupons.functions";
 import { couponReason } from "@/routes/cart";
-import { useSettings } from "@/lib/cms/settings";
+import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
 import { seoMeta } from "@/lib/cms/seo";
 
 export const Route = createFileRoute("/checkout")({
@@ -18,24 +19,16 @@ export const Route = createFileRoute("/checkout")({
   component: CheckoutPage,
 });
 
-const allGateways = [
-  { id: "stripe", label: "Credit / Debit Card", sub: "Powered by Stripe", Icon: CreditCard, key: "stripe_enabled" as const },
-  { id: "paypal", label: "PayPal", sub: "Pay with your PayPal balance", Icon: Wallet, key: "paypal_enabled" as const },
-  { id: "sslcommerz", label: "SSLCommerz", sub: "All BD cards & banks", Icon: CreditCard, key: "sslcommerz_enabled" as const },
-  { id: "bkash", label: "bKash", sub: "Mobile financial service", Icon: Smartphone, key: "bkash_enabled" as const },
-  { id: "nagad", label: "Nagad", sub: "Mobile financial service", Icon: Smartphone, key: "nagad_enabled" as const },
-  { id: "rocket", label: "Rocket", sub: "Mobile financial service", Icon: Smartphone, key: "rocket_enabled" as const },
-  { id: "manual", label: "Bank Transfer", sub: "Direct deposit", Icon: Building2, key: "manual_enabled" as const },
-];
-
 function CheckoutPage() {
   const cart = useCart();
   const user = useAuth((s) => s.user);
   const navigate = useNavigate();
-  const payment = useSettings((s) => s.settings.payment) as Record<string, any>;
-  const visibleGateways = allGateways.filter((g) => !!payment?.[g.key]);
-  const gatewayList = visibleGateways.length > 0 ? visibleGateways : allGateways.filter((g) => g.id === "manual");
-  const [gateway, setGateway] = useState(gatewayList[0]?.id ?? "manual");
+  const listGateways = useServerFn(listEnabledGatewaysFn);
+  const gwQuery = useQuery({ queryKey: ["enabled-gateways"], queryFn: () => listGateways() });
+  const gateways = gwQuery.data?.gateways ?? [];
+  const [gateway, setGateway] = useState<string>("");
+  useEffect(() => { if (!gateway && gateways[0]) setGateway(gateways[0].slug); }, [gateways, gateway]);
+
   const [agree, setAgree] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [code, setCode] = useState("");
