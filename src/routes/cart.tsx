@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { PageHero } from "@/components/site/PageHero";
 import { useCart } from "@/lib/stores";
 import { useFeatured, featuredQuery } from "@/lib/catalog";
-import { Trash2, Tag, ShoppingBag, ArrowRight } from "lucide-react";
+import { validateCouponFn } from "@/lib/coupons.functions";
+import { Trash2, Tag, ShoppingBag, ArrowRight, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -20,7 +22,31 @@ export const Route = createFileRoute("/cart")({
 function CartPage() {
   const cart = useCart();
   const [code, setCode] = useState("");
+  const [applying, setApplying] = useState(false);
+  const validate = useServerFn(validateCouponFn);
   const crossSell = useFeatured().slice(0, 4);
+
+  const apply = async () => {
+    if (!code.trim()) return;
+    setApplying(true);
+    try {
+      const r = await validate({
+        data: { code: code.trim(), subtotal: cart.subtotal(), productSlugs: cart.items.map((i) => i.slug) },
+      });
+      if (r.ok) {
+        cart.setCoupon(r.code, r.discount);
+        toast.success(`Saved $${r.discount.toFixed(2)}`);
+        setCode("");
+      } else {
+        cart.clearCoupon();
+        toast.error(couponReason(r.reason, r));
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not apply coupon");
+    } finally {
+      setApplying(false);
+    }
+  };
 
   if (cart.items.length === 0) {
     return (
@@ -86,7 +112,14 @@ function CartPage() {
           <div className="rounded-2xl bg-card border border-border p-5 space-y-3">
             <h3 className="font-bold text-lg">Order summary</h3>
             <Row label="Subtotal" value={`$${cart.subtotal().toFixed(2)}`} />
-            {cart.coupon && <Row label={`Coupon (${cart.coupon})`} value={`-$${cart.discount().toFixed(2)}`} accent />}
+            {cart.coupon && (
+              <div className="flex justify-between text-sm items-center">
+                <span className="text-muted-foreground inline-flex items-center gap-1">Coupon ({cart.coupon})
+                  <button onClick={() => cart.clearCoupon()} className="text-muted-foreground hover:text-destructive"><X className="h-3 w-3" /></button>
+                </span>
+                <span className="text-accent font-semibold">-${cart.discount().toFixed(2)}</span>
+              </div>
+            )}
             <Row label="Delivery" value="Free" />
             <div className="border-t border-border pt-3 flex justify-between font-bold text-lg">
               <span>Total</span>
@@ -102,11 +135,12 @@ function CartPage() {
             <div className="flex gap-2">
               <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="TOPUP10" className="flex-1 px-3 py-2 rounded-lg bg-muted/60 border border-border text-sm outline-none focus:border-primary" />
               <button
-                onClick={() => { const ok = cart.applyCoupon(code); ok ? toast.success("Coupon applied!") : toast.error("Invalid coupon"); }}
-                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold"
-              >Apply</button>
+                onClick={apply}
+                disabled={applying}
+                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-60"
+              >{applying ? "..." : "Apply"}</button>
             </div>
-            <p className="text-xs text-muted-foreground">Try: TOPUP10, WELCOME15, FLASH25</p>
+            <p className="text-xs text-muted-foreground">Enter your coupon code at checkout to save.</p>
           </div>
         </aside>
       </div>
@@ -122,4 +156,19 @@ function Row({ label, value, accent }: { label: string; value: string; accent?: 
       <span className={accent ? "text-accent font-semibold" : "font-semibold"}>{value}</span>
     </div>
   );
+}
+
+export function couponReason(reason: string, extra?: { min?: number }): string {
+  switch (reason) {
+    case "not_found": return "Coupon not found";
+    case "inactive": return "Coupon disabled";
+    case "not_started": return "Coupon not yet active";
+    case "expired": return "Coupon expired";
+    case "limit_reached": return "Coupon usage limit reached";
+    case "user_limit": return "You've already used this coupon";
+    case "min_order": return `Minimum order $${(extra?.min ?? 0).toFixed(2)} required`;
+    case "not_first_order": return "Only valid on your first order";
+    case "no_matching_products": return "Not valid for items in your cart";
+    default: return reason || "Invalid coupon";
+  }
 }

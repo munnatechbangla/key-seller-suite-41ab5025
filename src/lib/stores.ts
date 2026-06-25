@@ -7,24 +7,25 @@ type CartItem = { slug: string; qty: number; product: Product };
 type CartState = {
   items: CartItem[];
   coupon: string | null;
+  couponDiscount: number;
   add: (p: Product, qty?: number) => void;
   remove: (slug: string) => void;
   setQty: (slug: string, qty: number) => void;
   clear: () => void;
-  applyCoupon: (code: string) => boolean;
+  setCoupon: (code: string, discount: number) => void;
+  clearCoupon: () => void;
   subtotal: () => number;
   discount: () => number;
   total: () => number;
   count: () => number;
 };
 
-const COUPONS: Record<string, number> = { TOPUP10: 0.1, WELCOME15: 0.15, FLASH25: 0.25 };
-
 export const useCart = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
       coupon: null,
+      couponDiscount: 0,
       add: (p, qty = 1) =>
         set((s) => {
           const ex = s.items.find((i) => i.slug === p.slug);
@@ -34,19 +35,13 @@ export const useCart = create<CartState>()(
       remove: (slug) => set((s) => ({ items: s.items.filter((i) => i.slug !== slug) })),
       setQty: (slug, qty) =>
         set((s) => ({ items: s.items.map((i) => (i.slug === slug ? { ...i, qty: Math.max(1, qty) } : i)) })),
-      clear: () => set({ items: [], coupon: null }),
-      applyCoupon: (code) => {
-        const c = code.trim().toUpperCase();
-        if (COUPONS[c] != null) {
-          set({ coupon: c });
-          return true;
-        }
-        return false;
-      },
+      clear: () => set({ items: [], coupon: null, couponDiscount: 0 }),
+      setCoupon: (code, discount) => set({ coupon: code.trim().toUpperCase(), couponDiscount: discount }),
+      clearCoupon: () => set({ coupon: null, couponDiscount: 0 }),
       subtotal: () => get().items.reduce((s, i) => s + i.product.price * i.qty, 0),
       discount: () => {
-        const c = get().coupon;
-        return c ? get().subtotal() * (COUPONS[c] ?? 0) : 0;
+        const sub = get().subtotal();
+        return Math.min(get().couponDiscount, sub);
       },
       total: () => Math.max(0, get().subtotal() - get().discount()),
       count: () => get().items.reduce((s, i) => s + i.qty, 0),

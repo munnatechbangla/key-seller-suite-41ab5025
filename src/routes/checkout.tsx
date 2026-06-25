@@ -8,6 +8,8 @@ import { useState } from "react";
 import { CreditCard, Wallet, Building2, Smartphone, Lock, Tag } from "lucide-react";
 import { toast } from "sonner";
 import { placeOrderAuthFn, placeOrderGuestFn } from "@/lib/orders.functions";
+import { validateCouponFn } from "@/lib/coupons.functions";
+import { couponReason } from "@/routes/cart";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — TopupHut" }] }),
@@ -33,8 +35,22 @@ function CheckoutPage() {
   const [privacy, setPrivacy] = useState(false);
   const [code, setCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [applying, setApplying] = useState(false);
   const placeGuest = useServerFn(placeOrderGuestFn);
   const placeAuth = useServerFn(placeOrderAuthFn);
+  const validate = useServerFn(validateCouponFn);
+
+  const applyCoupon = async () => {
+    if (!code.trim()) return;
+    setApplying(true);
+    try {
+      const r = await validate({
+        data: { code: code.trim(), subtotal: cart.subtotal(), productSlugs: cart.items.map((i) => i.slug) },
+      });
+      if (r.ok) { cart.setCoupon(r.code, r.discount); toast.success(`Saved $${r.discount.toFixed(2)}`); setCode(""); }
+      else { cart.clearCoupon(); toast.error(couponReason(r.reason, r)); }
+    } finally { setApplying(false); }
+  };
 
   if (cart.items.length === 0) {
     return (
@@ -167,8 +183,8 @@ function CheckoutPage() {
             </div>
             <div className="flex gap-2">
               <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Coupon" className="flex-1 px-3 py-2 rounded-lg bg-muted/60 border border-border text-sm outline-none" />
-              <button type="button" onClick={() => cart.applyCoupon(code) ? toast.success("Applied") : toast.error("Invalid")} className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold inline-flex items-center gap-1">
-                <Tag className="h-4 w-4" /> Apply
+              <button type="button" onClick={applyCoupon} disabled={applying} className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold inline-flex items-center gap-1 disabled:opacity-60">
+                <Tag className="h-4 w-4" /> {applying ? "..." : "Apply"}
               </button>
             </div>
             <button type="submit" disabled={submitting} className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:opacity-95 disabled:opacity-60">

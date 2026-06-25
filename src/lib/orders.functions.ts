@@ -24,8 +24,6 @@ const placeSchema = z.object({
   couponCode: z.string().nullable().optional(),
 });
 
-const COUPONS: Record<string, number> = { TOPUP10: 0.1, WELCOME15: 0.15, FLASH25: 0.25 };
-
 async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string | null) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const slugs = input.items.map((i) => i.slug);
@@ -55,7 +53,22 @@ async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string
   });
 
   const couponCode = input.couponCode?.trim().toUpperCase() || null;
-  const discount = couponCode && COUPONS[couponCode] ? +(subtotal * COUPONS[couponCode]).toFixed(2) : 0;
+  let discount = 0;
+  let couponId: string | null = null;
+  if (couponCode) {
+    const productIds = products.map((p) => p.id);
+    const { data: vRow } = await supabaseAdmin.rpc("validate_coupon", {
+      _code: couponCode,
+      _subtotal: subtotal,
+      _user_id: userId ?? undefined,
+      _email: input.customer.email,
+      _product_ids: productIds,
+    });
+    const v = vRow as { ok: boolean; discount?: number; coupon_id?: string; reason?: string } | null;
+    if (!v?.ok) throw new Error(`Coupon invalid: ${v?.reason ?? "unknown"}`);
+    discount = Number(v.discount ?? 0);
+    couponId = v.coupon_id ?? null;
+  }
   const total = +(subtotal - discount).toFixed(2);
 
   const { data: numRow, error: nErr } = await supabaseAdmin.rpc("generate_order_number");
@@ -102,6 +115,17 @@ async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string
     status: "pending",
   });
   if (payErr) throw new Error(payErr.message);
+
+  if (couponId) {
+    await supabaseAdmin.rpc("apply_coupon_usage", {
+      _coupon_id: couponId,
+      _order_id: order.id,
+      _user_id: (userId ?? null) as string,
+      _email: input.customer.email,
+      _discount: discount,
+      _order_total: total,
+    });
+  }
 
   return { orderNumber: order.order_number, orderId: order.id, total, paymentUrl: `/pay/${order.order_number}` };
 }
