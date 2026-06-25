@@ -124,8 +124,8 @@ export const defaultSettings: AllSettings = {
     site_title: `${siteConfig.name} — Premium Digital Products`,
     meta_description: siteConfig.description,
     site_url: "",
-    og_image: "",
-    twitter_image: "",
+    og_image: brandOg.url,
+    twitter_image: brandOg.url,
     twitter_handle: "",
   },
   email: {
