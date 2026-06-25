@@ -67,6 +67,19 @@ export type PaymentConfig = {
   manual_instructions: string;
 };
 
+export type AnalyticsConfig = {
+  ga4_enabled: boolean;
+  ga4_id: string;
+  gtm_enabled: boolean;
+  gtm_id: string;
+  meta_pixel_enabled: boolean;
+  meta_pixel_id: string;
+  custom_header_enabled: boolean;
+  custom_header: string;
+  custom_footer_enabled: boolean;
+  custom_footer: string;
+};
+
 export type AllSettings = {
   branding: SiteBranding;
   contact: SiteContact;
@@ -74,6 +87,7 @@ export type AllSettings = {
   email: EmailSenders;
   social: SocialLinksMap;
   payment: PaymentConfig;
+  analytics: AnalyticsConfig;
 };
 
 export const defaultSettings: AllSettings = {
