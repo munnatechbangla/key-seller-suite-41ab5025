@@ -1,4 +1,5 @@
 import { siteName } from "@/lib/cms/seo";
+import { useSettings } from "@/lib/cms/settings";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -18,7 +19,7 @@ const quick = [
 ];
 
 function SupportPage() {
-  const contact = (require("@/lib/cms/settings") as typeof import("@/lib/cms/settings")).useSettings((s) => s.settings.contact);
+  const contact = useSettings((s) => s.settings.contact);
   const channels = [
     { Icon: MessageCircle, t: "Live chat", d: "Average reply in 2 min", link: "#", action: "Start chat", color: "bg-emerald-500" },
     contact.support_email && { Icon: Mail, t: "Email support", d: contact.support_email, link: `mailto:${contact.support_email}`, action: "Send email", color: "bg-primary" },
