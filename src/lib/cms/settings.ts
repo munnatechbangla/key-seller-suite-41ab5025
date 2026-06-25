@@ -67,6 +67,19 @@ export type PaymentConfig = {
   manual_instructions: string;
 };
 
+export type AnalyticsConfig = {
+  ga4_enabled: boolean;
+  ga4_id: string;
+  gtm_enabled: boolean;
+  gtm_id: string;
+  meta_pixel_enabled: boolean;
+  meta_pixel_id: string;
+  custom_header_enabled: boolean;
+  custom_header: string;
+  custom_footer_enabled: boolean;
+  custom_footer: string;
+};
+
 export type AllSettings = {
   branding: SiteBranding;
   contact: SiteContact;
@@ -74,6 +87,7 @@ export type AllSettings = {
   email: EmailSenders;
   social: SocialLinksMap;
   payment: PaymentConfig;
+  analytics: AnalyticsConfig;
 };
 
 export const defaultSettings: AllSettings = {
@@ -134,6 +148,18 @@ export const defaultSettings: AllSettings = {
     manual_enabled: true,
     manual_instructions: "",
   },
+  analytics: {
+    ga4_enabled: false,
+    ga4_id: "",
+    gtm_enabled: false,
+    gtm_id: "",
+    meta_pixel_enabled: false,
+    meta_pixel_id: "",
+    custom_header_enabled: false,
+    custom_header: "",
+    custom_footer_enabled: false,
+    custom_footer: "",
+  },
 };
 
 type SettingsState = {
@@ -176,6 +202,8 @@ export const useSettings = create<SettingsState>((set) => ({
           next.social = merge(next.social, v as Partial<SocialLinksMap>);
         } else if (row.group_key === "payment" && row.setting_key === "config") {
           next.payment = merge(next.payment, v as Partial<PaymentConfig>);
+        } else if (row.group_key === "analytics" && row.setting_key === "config") {
+          next.analytics = merge(next.analytics, v as Partial<AnalyticsConfig>);
         }
       }
       set({ settings: next, loaded: true });

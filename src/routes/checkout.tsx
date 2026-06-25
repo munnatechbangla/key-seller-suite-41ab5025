@@ -13,6 +13,7 @@ import { validateCouponFn } from "@/lib/coupons.functions";
 import { couponReason } from "@/routes/cart";
 import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
 import { seoMeta } from "@/lib/cms/seo";
+import { track } from "@/lib/analytics/track";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: seoMeta({ title: "Checkout" }) }),
@@ -69,6 +70,12 @@ function CheckoutPage() {
     if (!gateway) { toast.error("Select a payment method"); return; }
     if (submitting) return;
     setSubmitting(true);
+    track("begin_checkout", {
+      currency: "USD",
+      value: cart.total(),
+      coupon: cart.coupon ?? undefined,
+      items: cart.items.map((i) => ({ item_id: i.slug, item_name: i.product.name, price: i.product.price, quantity: i.qty })),
+    });
     const fd = new FormData(e.currentTarget as HTMLFormElement);
     const customer = {
       email: String(fd.get("email") ?? ""),

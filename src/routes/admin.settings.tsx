@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { isValidGa4, isValidGtm, isValidMetaPixel } from "@/lib/analytics/track";
 
 export const Route = createFileRoute("/admin/settings")({
   component: AdminSettings,
@@ -25,6 +26,7 @@ const GROUP_KEYS: Array<{ group: keyof AllSettings; group_key: string; setting_k
   { group: "email", group_key: "email", setting_key: "senders" },
   { group: "social", group_key: "social", setting_key: "links" },
   { group: "payment", group_key: "payment", setting_key: "config" },
+  { group: "analytics", group_key: "analytics", setting_key: "config" },
 ];
 
 function AdminSettings() {
@@ -55,6 +57,12 @@ function AdminSettings() {
 
   async function save(group: keyof AllSettings) {
     const map = GROUP_KEYS.find((g) => g.group === group)!;
+    if (group === "analytics") {
+      const a = data.analytics;
+      if (!isValidGa4(a.ga4_id)) { toast.error("GA4 ID must look like G-XXXXXXX"); return; }
+      if (!isValidGtm(a.gtm_id)) { toast.error("GTM ID must look like GTM-XXXXXX"); return; }
+      if (!isValidMetaPixel(a.meta_pixel_id)) { toast.error("Meta Pixel ID must be a numeric string"); return; }
+    }
     setSaving(group);
     try {
       await upsert({ data: { group_key: map.group_key, setting_key: map.setting_key, value: data[group] as any } });
@@ -90,6 +98,7 @@ function AdminSettings() {
           <TabsTrigger value="email">Email</TabsTrigger>
           <TabsTrigger value="social">Social</TabsTrigger>
           <TabsTrigger value="payment">Payment</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="branding" className="mt-4 space-y-4">
@@ -158,6 +167,27 @@ function AdminSettings() {
           <Toggle label="Manual payment enabled" value={data.payment.manual_enabled} onChange={(v) => set("payment", "manual_enabled", v)} />
           <Area label="Manual Payment Instructions" value={data.payment.manual_instructions} onChange={(v) => set("payment", "manual_instructions", v)} />
           <SaveBtn onClick={() => save("payment")} saving={saving === "payment"} />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-4 space-y-4">
+          <p className="text-xs text-muted-foreground">Scripts inject only when their toggle is enabled. IDs are validated client-side before save.</p>
+          <div className="flex items-end gap-3">
+            <div className="flex-1"><Field label="Google Analytics 4 Measurement ID" value={data.analytics.ga4_id} onChange={(v) => set("analytics", "ga4_id", v)} /></div>
+            <Switch checked={data.analytics.ga4_enabled} onCheckedChange={(v) => set("analytics", "ga4_enabled", v as never)} />
+          </div>
+          <div className="flex items-end gap-3">
+            <div className="flex-1"><Field label="Google Tag Manager Container ID" value={data.analytics.gtm_id} onChange={(v) => set("analytics", "gtm_id", v)} /></div>
+            <Switch checked={data.analytics.gtm_enabled} onCheckedChange={(v) => set("analytics", "gtm_enabled", v as never)} />
+          </div>
+          <div className="flex items-end gap-3">
+            <div className="flex-1"><Field label="Meta Pixel ID" value={data.analytics.meta_pixel_id} onChange={(v) => set("analytics", "meta_pixel_id", v)} /></div>
+            <Switch checked={data.analytics.meta_pixel_enabled} onCheckedChange={(v) => set("analytics", "meta_pixel_enabled", v as never)} />
+          </div>
+          <Toggle label="Inject custom header scripts" value={data.analytics.custom_header_enabled} onChange={(v) => set("analytics", "custom_header_enabled", v)} />
+          <Area label="Custom header scripts (raw HTML, runs in <head>)" value={data.analytics.custom_header} onChange={(v) => set("analytics", "custom_header", v)} />
+          <Toggle label="Inject custom footer scripts" value={data.analytics.custom_footer_enabled} onChange={(v) => set("analytics", "custom_footer_enabled", v)} />
+          <Area label="Custom footer scripts (raw HTML, runs at end of <body>)" value={data.analytics.custom_footer} onChange={(v) => set("analytics", "custom_footer", v)} />
+          <SaveBtn onClick={() => save("analytics")} saving={saving === "analytics"} />
         </TabsContent>
       </Tabs>
     </div>

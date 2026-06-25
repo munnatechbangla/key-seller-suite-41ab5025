@@ -8,6 +8,8 @@ import { CheckCircle2, Download, Mail, MessageCircle, KeyRound, Loader2, Clock, 
 import { z } from "zod";
 import { getOrderByNumberFn } from "@/lib/orders.functions";
 import { toast } from "sonner";
+import { useEffect, useRef } from "react";
+import { track } from "@/lib/analytics/track";
 
 export const Route = createFileRoute("/thank-you")({
   validateSearch: z.object({ order: z.string().optional(), email: z.string().optional() }),
@@ -35,6 +37,23 @@ function ThankYou() {
   const isPaid = paymentStatus === "paid";
   const isFailed = paymentStatus === "failed";
   const isPending = !isPaid && !isFailed;
+
+  const fired = useRef(false);
+  useEffect(() => {
+    if (!isPaid || fired.current || !q.data) return;
+    fired.current = true;
+    track("purchase", {
+      transaction_id: order,
+      currency: q.data.order?.currency ?? "USD",
+      value: Number(q.data.order?.total ?? 0),
+      items: q.data.items.map((it) => ({
+        item_id: it.id,
+        item_name: it.product_name,
+        price: Number(it.unit_price),
+        quantity: it.qty,
+      })),
+    });
+  }, [isPaid, q.data, order]);
 
   return (
     <div className="min-h-screen">
