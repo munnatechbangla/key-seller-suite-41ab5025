@@ -138,7 +138,7 @@ function CheckoutPage() {
 
           <Section title="Payment method">
             <div className="space-y-2">
-              {visibleGateways.map((g) => (
+              {gatewayList.map((g) => (
                 <label key={g.id} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-smooth ${gateway === g.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
                   <input type="radio" name="gateway" checked={gateway === g.id} onChange={() => setGateway(g.id)} className="accent-[var(--primary)]" />
                   <g.Icon className="h-5 w-5 text-primary" />
