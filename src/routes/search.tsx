@@ -22,6 +22,12 @@ function SearchPage() {
   const { q: initial } = Route.useSearch();
   const [q, setQ] = useState(initial ?? "");
   const results = useSearchResults(q);
+  useEffect(() => {
+    const v = q.trim();
+    if (!v) return;
+    const t = setTimeout(() => track("search", { search_term: v, results: results.length }), 600);
+    return () => clearTimeout(t);
+  }, [q, results.length]);
 
   return (
     <div className="min-h-screen">
