@@ -1,4 +1,4 @@
-// Email queue + dispatcher. Sender domain is NOT bound to topuphut.com.
+// Email queue + dispatcher. Sender domain is configured per-tenant via site_settings.
 // The system runs in "development mode" until site_settings.email.sender_email
 // is configured AND EMAILS_ENABLED=true is set as a runtime env var.
 // Until then, emails are queued and logged with status='skipped' (or 'pending'
