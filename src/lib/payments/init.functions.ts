@@ -114,6 +114,52 @@ export const initPaymentFn = createServerFn({ method: "POST" })
       return { ok: true as const, gateway: "sslcommerz", redirectUrl: result.gatewayUrl };
     }
 
-    // Other gateways implemented in subsequent slices.
+    // ---- Custom Auto runtime adapter (no-code gateways) ----
+    const { data: gw, error: gwErr } = await supabaseAdmin
+      .from("payment_gateways")
+      .select("id, slug, type, is_enabled, mode, config")
+      .eq("slug", data.gateway)
+      .maybeSingle();
+    if (gwErr) throw new Error(gwErr.message);
+    if (!gw) throw new Error(`Gateway not found: ${data.gateway}`);
+    if (!gw.is_enabled) throw new Error(`Gateway disabled: ${data.gateway}`);
+
+    if (gw.type === "custom_auto") {
+      const { createCustomAutoSession } = await import("./custom-auto.server");
+      const { data: items } = await supabaseAdmin
+        .from("order_items").select("product_name").eq("order_id", order.id).limit(3);
+      const productName = (items ?? []).map((i) => i.product_name).join(", ") || `Order ${order.order_number}`;
+
+      const result = await createCustomAutoSession({
+        gatewaySlug: gw.slug,
+        config: (gw.config as Record<string, unknown>) ?? {},
+        orderId: order.id,
+        orderNumber: order.order_number,
+        amount: Number(order.total),
+        currency: order.currency,
+        customerName: order.customer_name,
+        customerEmail: order.email,
+        customerPhone: order.phone,
+        productName,
+        baseUrl,
+      });
+
+      await supabaseAdmin.from("payment_intents").insert({
+        order_id: order.id,
+        order_number: order.order_number,
+        gateway: gw.slug,
+        mode: gw.mode,
+        gateway_session_id: result.ok ? result.transactionId : null,
+        redirect_url: result.ok ? result.redirectUrl : null,
+        amount: Number(order.total),
+        currency: order.currency,
+        status: result.ok ? "redirected" : "failed",
+        response_payload: (result.ok ? result.raw : { reason: result.reason, raw: result.raw ?? {} }) as never,
+      });
+
+      if (!result.ok) throw new Error(result.reason);
+      return { ok: true as const, gateway: gw.slug, redirectUrl: result.redirectUrl };
+    }
+
     throw new Error(`Gateway not implemented: ${data.gateway}`);
   });
