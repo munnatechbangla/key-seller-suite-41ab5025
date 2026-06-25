@@ -150,7 +150,7 @@ export const getReviewableItemsFn = createServerFn({ method: "GET" })
 // ----- Admin moderation -----
 
 async function assertAdmin(supabase: import("@supabase/supabase-js").SupabaseClient, userId: string) {
-  const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+  const { data } = await (supabase.rpc as unknown as (n: string, p: Record<string, unknown>) => Promise<{ data: boolean | null }>)("has_role", { _user_id: userId, _role: "admin" });
   if (!data) throw new Error("Forbidden");
 }
 
