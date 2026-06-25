@@ -9,9 +9,13 @@ export function AuthShell({ title, subtitle, children, footer }: { title: string
     <div className="min-h-screen grid lg:grid-cols-2">
       <div className="hidden lg:flex bg-gradient-hero text-white p-12 flex-col justify-between">
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="h-10 w-10 rounded-xl bg-white/10 backdrop-blur grid place-items-center">
-            <Zap className="h-5 w-5" strokeWidth={2.5} />
-          </div>
+          {s.branding.logo_url ? (
+            <img src={s.branding.logo_url} alt={s.branding.name} className="h-10 w-10 rounded-xl object-contain bg-white/10 backdrop-blur p-1" />
+          ) : (
+            <div className="h-10 w-10 rounded-xl bg-white/10 backdrop-blur grid place-items-center">
+              <Zap className="h-5 w-5" strokeWidth={2.5} />
+            </div>
+          )}
           <span className="font-bold text-2xl">{brand_lead}<span className="text-accent">{brand_accent}</span></span>
         </Link>
         <div className="space-y-4 max-w-md">
@@ -28,7 +32,11 @@ export function AuthShell({ title, subtitle, children, footer }: { title: string
       <div className="flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-md space-y-6">
           <Link to="/" className="lg:hidden flex items-center gap-2">
-            <div className="h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center shadow-glow"><Zap className="h-5 w-5 text-primary-foreground" /></div>
+            {s.branding.logo_url ? (
+              <img src={s.branding.logo_url} alt={s.branding.name} className="h-9 w-9 rounded-xl object-contain" />
+            ) : (
+              <div className="h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center shadow-glow"><Zap className="h-5 w-5 text-primary-foreground" /></div>
+            )}
             <span className="font-bold text-xl">{brand_lead}<span className="text-gradient">{brand_accent}</span></span>
           </Link>
           <div>
