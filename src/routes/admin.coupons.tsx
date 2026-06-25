@@ -133,8 +133,8 @@ function AdminCoupons() {
               <Field label="Value"><NumberInput value={editing.value} onChange={(v) => setEditing({ ...editing, value: v })} /></Field>
               <Field label="Min order amount"><NumberInput value={editing.min_order_amount} onChange={(v) => setEditing({ ...editing, min_order_amount: v })} /></Field>
               <Field label="Max discount"><NumberInput value={editing.max_discount} onChange={(v) => setEditing({ ...editing, max_discount: v })} /></Field>
-              <Field label="Total usage limit"><NumberInput value={editing.usage_limit} onChange={(v) => setEditing({ ...editing, usage_limit: v ? Math.floor(v) : undefined })} /></Field>
-              <Field label="Per-user limit"><NumberInput value={editing.per_user_limit} onChange={(v) => setEditing({ ...editing, per_user_limit: v ? Math.floor(v) : undefined })} /></Field>
+              <Field label="Total usage limit"><NumberInput value={editing.usage_limit} onChange={(v) => setEditing({ ...editing, usage_limit: v == null ? null : Math.floor(v) })} /></Field>
+              <Field label="Per-user limit"><NumberInput value={editing.per_user_limit} onChange={(v) => setEditing({ ...editing, per_user_limit: v == null ? null : Math.floor(v) })} /></Field>
               <Field label="Starts at"><Input type="datetime-local" value={editing.starts_at?.slice(0, 16) ?? ""} onChange={(e) => setEditing({ ...editing, starts_at: e.target.value || null })} /></Field>
               <Field label="Ends at"><Input type="datetime-local" value={editing.ends_at?.slice(0, 16) ?? ""} onChange={(e) => setEditing({ ...editing, ends_at: e.target.value || null })} /></Field>
               <div className="col-span-2 grid grid-cols-2 gap-3">
