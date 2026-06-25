@@ -79,8 +79,9 @@ function AdminLayout() {
   return (
     <div className="min-h-screen flex w-full bg-muted/20">
       <aside className="w-60 border-r bg-background hidden md:flex flex-col">
-        <div className="px-5 py-4 border-b">
-          <Link to="/" className="text-sm font-semibold">{brandName} Admin</Link>
+        <div className="px-5 py-4 border-b flex items-center gap-2">
+          <Logo size="sm" />
+          <span className="text-xs text-muted-foreground">Admin</span>
         </div>
         <nav className="flex-1 p-2 space-y-1">
           {items.map((it) => {
