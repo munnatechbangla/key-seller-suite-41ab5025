@@ -18,8 +18,8 @@ export function Header() {
   const wishCount = useWishlist((s) => s.slugs.length);
   const cmpCount = useCompare((s) => s.slugs.length);
   const user = useAuth((s) => s.user);
-  const branding = useSettings((s) => s.settings.branding);
-  const tagline = branding.tagline;
+
+
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
