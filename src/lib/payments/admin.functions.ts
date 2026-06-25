@@ -77,3 +77,37 @@ export const gatewayStatusFn = createServerFn({ method: "GET" })
 
     return { gateways: status, stats };
   });
+
+// ---------- Custom Auto: test connection + per-gateway health ----------
+
+export const testGatewayConnectionFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase as never, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: gw, error } = await supabaseAdmin
+      .from("payment_gateways").select("slug, type, config").eq("id", data.id).single();
+    if (error) throw new Error(error.message);
+    if (gw.type !== "custom_auto") return { ok: false, message: "Test only supported for custom_auto gateways", latencyMs: 0 };
+    const { testCustomAutoConnection } = await import("./custom-auto.server");
+    return testCustomAutoConnection({ gatewaySlug: gw.slug, config: (gw.config as Record<string, unknown>) ?? {} });
+  });
+
+export const getGatewayHealthFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ slug: z.string().min(1), limit: z.number().int().min(1).max(50).default(10) }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase as never, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: logs } = await supabaseAdmin
+      .from("payment_logs")
+      .select("id, event_type, status, transaction_id, order_number, signature_valid, error_message, created_at, request_body, response_body")
+      .eq("gateway", data.slug)
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+    const list = logs ?? [];
+    const lastSuccess = list.find((l) => l.status === "ok" || l.event_type === "success") ?? null;
+    const lastFailure = list.find((l) => l.status === "failed" || l.event_type === "error" || l.event_type === "failed") ?? null;
+    return { logs: list, lastSuccess, lastFailure };
+  });

@@ -50,6 +50,7 @@ import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments.webhook'
 import { Route as ApiPublicPaymentsSslcommerzReturnRouteImport } from './routes/api/public/payments.sslcommerz.return'
 import { Route as ApiPublicPaymentsSslcommerzIpnRouteImport } from './routes/api/public/payments.sslcommerz.ipn'
+import { Route as ApiPublicPaymentsCustomWebhookSlugRouteImport } from './routes/api/public/payments.custom-webhook.$slug'
 
 const WishlistRoute = WishlistRouteImport.update({
   id: '/wishlist',
@@ -259,6 +260,12 @@ const ApiPublicPaymentsSslcommerzIpnRoute =
     path: '/api/public/payments/sslcommerz/ipn',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPaymentsCustomWebhookSlugRoute =
+  ApiPublicPaymentsCustomWebhookSlugRouteImport.update({
+    id: '/api/public/payments/custom-webhook/$slug',
+    path: '/api/public/payments/custom-webhook/$slug',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -300,6 +307,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
   '/api/public/payments/sslcommerz/ipn': typeof ApiPublicPaymentsSslcommerzIpnRoute
   '/api/public/payments/sslcommerz/return': typeof ApiPublicPaymentsSslcommerzReturnRoute
 }
@@ -342,6 +350,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/products': typeof ProductsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
   '/api/public/payments/sslcommerz/ipn': typeof ApiPublicPaymentsSslcommerzIpnRoute
   '/api/public/payments/sslcommerz/return': typeof ApiPublicPaymentsSslcommerzReturnRoute
 }
@@ -386,6 +395,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
   '/api/public/payments/sslcommerz/ipn': typeof ApiPublicPaymentsSslcommerzIpnRoute
   '/api/public/payments/sslcommerz/return': typeof ApiPublicPaymentsSslcommerzReturnRoute
 }
@@ -431,6 +441,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/products/'
     | '/api/public/payments/webhook'
+    | '/api/public/payments/custom-webhook/$slug'
     | '/api/public/payments/sslcommerz/ipn'
     | '/api/public/payments/sslcommerz/return'
   fileRoutesByTo: FileRoutesByTo
@@ -473,6 +484,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/products'
     | '/api/public/payments/webhook'
+    | '/api/public/payments/custom-webhook/$slug'
     | '/api/public/payments/sslcommerz/ipn'
     | '/api/public/payments/sslcommerz/return'
   id:
@@ -516,6 +528,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/products/'
     | '/api/public/payments/webhook'
+    | '/api/public/payments/custom-webhook/$slug'
     | '/api/public/payments/sslcommerz/ipn'
     | '/api/public/payments/sslcommerz/return'
   fileRoutesById: FileRoutesById
@@ -548,6 +561,7 @@ export interface RootRouteChildren {
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  ApiPublicPaymentsCustomWebhookSlugRoute: typeof ApiPublicPaymentsCustomWebhookSlugRoute
   ApiPublicPaymentsSslcommerzIpnRoute: typeof ApiPublicPaymentsSslcommerzIpnRoute
   ApiPublicPaymentsSslcommerzReturnRoute: typeof ApiPublicPaymentsSslcommerzReturnRoute
 }
@@ -841,6 +855,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsSslcommerzIpnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payments/custom-webhook/$slug': {
+      id: '/api/public/payments/custom-webhook/$slug'
+      path: '/api/public/payments/custom-webhook/$slug'
+      fullPath: '/api/public/payments/custom-webhook/$slug'
+      preLoaderRoute: typeof ApiPublicPaymentsCustomWebhookSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -912,6 +933,8 @@ const rootRouteChildren: RootRouteChildren = {
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  ApiPublicPaymentsCustomWebhookSlugRoute:
+    ApiPublicPaymentsCustomWebhookSlugRoute,
   ApiPublicPaymentsSslcommerzIpnRoute: ApiPublicPaymentsSslcommerzIpnRoute,
   ApiPublicPaymentsSslcommerzReturnRoute:
     ApiPublicPaymentsSslcommerzReturnRoute,
