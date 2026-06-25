@@ -3,14 +3,16 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Mail, MessageCircle, MapPin, Phone, Send, Clock } from "lucide-react";
 import { useSettings } from "@/lib/cms/settings";
-import { seoMeta } from "@/lib/cms/seo";
+import { seoMeta, canonicalLink } from "@/lib/cms/seo";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: seoMeta({
       title: "Contact",
       description: "Reach our support team via WhatsApp, email or live chat. 24/7 response, real humans.",
+      path: "/contact",
     }),
+    links: [canonicalLink("/contact")],
   }),
   component: ContactPage,
 });
