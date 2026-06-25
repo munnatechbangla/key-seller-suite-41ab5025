@@ -37,7 +37,7 @@
 :root {
   --radius: 0.875rem;
 
-  /* TopupHut palette */
+  /* DigitalNest palette */
   --background: oklch(0.985 0.005 250);            /* #F8FAFC */
   --foreground: oklch(0.255 0.04 260);             /* #1E293B */
 
