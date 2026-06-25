@@ -1,3 +1,4 @@
+import { siteName } from "@/lib/cms/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage } from "@/components/site/LegalPage";
 

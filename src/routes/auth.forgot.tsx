@@ -1,3 +1,4 @@
+import { siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AuthShell } from "@/components/site/AuthShell";
 import { supabase } from "@/integrations/supabase/client";

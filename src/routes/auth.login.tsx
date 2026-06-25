@@ -1,3 +1,4 @@
+import { siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AuthShell, SocialButtons } from "@/components/site/AuthShell";
 import { useAuth } from "@/lib/stores";

@@ -1,3 +1,4 @@
+import { siteName } from "@/lib/cms/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Header } from "@/components/site/Header";
