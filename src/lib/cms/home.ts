@@ -105,7 +105,7 @@ export const categoriesSection = {
 };
 
 export const whyChooseSection = {
-  eyebrow: "Why TopupHut",
+  eyebrow: "Why DigitalNest",
   title: "The smarter way to buy digital",
 };
 
