@@ -8,6 +8,8 @@ import { useState } from "react";
 import { CreditCard, Wallet, Building2, Smartphone, Lock, Tag } from "lucide-react";
 import { toast } from "sonner";
 import { placeOrderAuthFn, placeOrderGuestFn } from "@/lib/orders.functions";
+import { validateCouponFn } from "@/lib/coupons.functions";
+import { couponReason } from "@/routes/cart";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — TopupHut" }] }),
