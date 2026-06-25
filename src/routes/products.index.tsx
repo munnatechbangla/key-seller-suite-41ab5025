@@ -9,12 +9,10 @@ import { Filter, Grid3x3, List } from "lucide-react";
 
 export const Route = createFileRoute("/products/")({
   head: () => ({
-    meta: [
-      { title: "All Digital Products — TopupHut" },
-      { name: "description", content: "Browse our full catalog of premium digital products: ChatGPT, Netflix, Canva, Spotify, software keys, gift cards & more." },
-      { property: "og:title", content: "Shop All Products — TopupHut" },
-      { property: "og:description", content: "Premium digital products at the best prices." },
-    ],
+    meta: seoMeta({
+      title: "All Digital Products",
+      description: "Browse our full catalog of premium digital products.",
+    }),
   }),
   loader: ({ context }) => {
     context.queryClient.ensureQueryData(categoriesQuery());

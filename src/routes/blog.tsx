@@ -8,10 +8,7 @@ import { Calendar, ArrowRight, Send } from "lucide-react";
 
 export const Route = createFileRoute("/blog")({
   head: () => ({
-    meta: [
-      { title: "Blog — TopupHut" },
-      { name: "description", content: "Guides, reviews and tips on digital subscriptions, AI tools and streaming services." },
-    ],
+    meta: seoMeta({ title: "Blog", description: "Guides, reviews and tips on digital subscriptions, AI tools and streaming services." }),
   }),
   component: BlogPage,
 });
@@ -22,7 +19,7 @@ function BlogPage() {
   return (
     <div className="min-h-screen">
       <Header />
-      <PageHero title="TopupHut Blog" subtitle="Reviews, guides and pro tips on premium digital products" crumbs={[{ label: "Home", to: "/" }, { label: "Blog" }]} />
+      <PageHero title={`${siteName()} Blog`} subtitle="Reviews, guides and pro tips on premium digital products" crumbs={[{ label: "Home", to: "/" }, { label: "Blog" }]} />
       <div className="container mx-auto px-4 py-10">
         <div className="flex gap-2 overflow-x-auto pb-2 mb-6">
           {categories.map((c, i) => (
