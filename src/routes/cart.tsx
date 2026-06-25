@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { PageHero } from "@/components/site/PageHero";
 import { useCart } from "@/lib/stores";
 import { useFeatured, featuredQuery } from "@/lib/catalog";
-import { Trash2, Tag, ShoppingBag, ArrowRight } from "lucide-react";
+import { validateCouponFn } from "@/lib/coupons.functions";
+import { Trash2, Tag, ShoppingBag, ArrowRight, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
