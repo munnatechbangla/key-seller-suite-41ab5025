@@ -169,6 +169,13 @@ export const defaultSettings: AllSettings = {
     custom_footer_enabled: false,
     custom_footer: "",
   },
+  theme: {
+    primary_color: "#6C5CE7",
+    secondary_color: "#8E44AD",
+    accent_color: "#00D084",
+    font_family: "Poppins",
+    font_url: "https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap",
+  },
 };
 
 type SettingsState = {
