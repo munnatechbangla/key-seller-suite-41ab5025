@@ -121,7 +121,9 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const initAuth = useAuth((s) => s.init);
+  const loadSettings = useSettings((s) => s.load);
   useEffect(() => initAuth(), [initAuth]);
+  useEffect(() => { loadSettings(); }, [loadSettings]);
 
   return (
     <QueryClientProvider client={queryClient}>
