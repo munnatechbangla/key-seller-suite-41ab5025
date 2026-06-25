@@ -3,9 +3,9 @@
 // trust this for fulfillment — the IPN handler at /ipn is the source of
 // truth. This handler just guides the user to the right page.
 
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
-async function handle(request: Request) {
+async function handle(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const type = url.searchParams.get("type") || "success";
   const orderFromQuery = url.searchParams.get("order");
@@ -17,7 +17,7 @@ async function handle(request: Request) {
       const form = new URLSearchParams(text);
       order = order || form.get("tran_id");
       const valId = form.get("val_id");
-      const { logPaymentEvent } = await import("@/lib/payments/logger.server");
+      const { logPaymentEvent, claimWebhookEvent } = await import("@/lib/payments/logger.server");
       await logPaymentEvent({
         gateway: "sslcommerz",
         event_type: "redirect",
@@ -27,13 +27,10 @@ async function handle(request: Request) {
         request_body: Object.fromEntries(form),
       });
 
-      // If success/fail with a val_id and IPN hasn't arrived yet (it's async),
-      // kick off our own validation so /thank-you reflects status quickly.
       if (valId && (type === "success" || type === "fail")) {
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { validateSslcommerzPayment } = await import("@/lib/payments/sslcommerz.server");
         const { processPaymentCallback } = await import("@/lib/payments.server");
-        const { claimWebhookEvent } = await import("@/lib/payments/logger.server");
 
         const { data: ord } = await supabaseAdmin
           .from("orders").select("id, order_number, total, currency").eq("order_number", order ?? "").maybeSingle();
@@ -45,23 +42,13 @@ async function handle(request: Request) {
           const replay = await claimWebhookEvent("sslcommerz", valId, ord.id);
           if (!replay) {
             const v = await validateSslcommerzPayment(valId, mode);
-            if (v.ok) {
-              await processPaymentCallback({
-                orderNumber: ord.order_number,
-                transactionId: valId,
-                status: "paid",
-                gateway: "sslcommerz",
-                raw: { from: "return_url", validation: v.raw },
-              });
-            } else {
-              await processPaymentCallback({
-                orderNumber: ord.order_number,
-                transactionId: valId,
-                status: "failed",
-                gateway: "sslcommerz",
-                raw: { from: "return_url", validation: v.raw },
-              });
-            }
+            await processPaymentCallback({
+              orderNumber: ord.order_number,
+              transactionId: valId,
+              status: v.ok ? "paid" : "failed",
+              gateway: "sslcommerz",
+              raw: { from: "return_url", validation: v.raw },
+            });
           }
         }
       }
@@ -70,17 +57,17 @@ async function handle(request: Request) {
     console.error("[sslcommerz return]", e);
   }
 
-  if (type === "cancel" || type === "fail") {
-    throw redirect({ to: "/pay/$orderNumber", params: { orderNumber: order ?? "" } });
-  }
-  throw redirect({ to: "/thank-you", search: { order: order ?? "" } });
+  const dest = (type === "cancel" || type === "fail")
+    ? `/pay/${encodeURIComponent(order ?? "")}`
+    : `/thank-you?order=${encodeURIComponent(order ?? "")}`;
+  return new Response(null, { status: 302, headers: { Location: dest } });
 }
 
 export const Route = createFileRoute("/api/public/payments/sslcommerz/return")({
   server: {
     handlers: {
-      GET: async ({ request }) => handle(request),
-      POST: async ({ request }) => handle(request),
+      GET: ({ request }) => handle(request),
+      POST: ({ request }) => handle(request),
     },
   },
 });

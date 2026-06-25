@@ -93,7 +93,7 @@ export const initPaymentFn = createServerFn({ method: "POST" })
           amount: Number(order.total),
           currency: order.currency,
           status: "failed",
-          response_payload: { reason: result.reason, raw: result.raw ?? {} },
+          response_payload: { reason: result.reason, raw: result.raw ?? {} } as never,
         });
         throw new Error(result.reason);
       }
@@ -108,7 +108,7 @@ export const initPaymentFn = createServerFn({ method: "POST" })
         amount: Number(order.total),
         currency: order.currency,
         status: "redirected",
-        response_payload: result.raw,
+        response_payload: result.raw as never,
       });
 
       return { ok: true as const, gateway: "sslcommerz", redirectUrl: result.gatewayUrl };
