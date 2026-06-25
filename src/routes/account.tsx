@@ -78,6 +78,7 @@ function AccountPage() {
           {active === "orders" && <OrdersTab />}
           {active === "downloads" && <DownloadsTab />}
           {active === "licenses" && <LicensesTab />}
+          {active === "submissions" && <SubmissionsTab />}
           {active === "wishlist" && <WishlistTab />}
           {active === "notifications" && <NotificationsTab />}
           {active === "profile" && <ProfileTab user={user} />}
