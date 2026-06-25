@@ -135,11 +135,12 @@ function CartPage() {
             <div className="flex gap-2">
               <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="TOPUP10" className="flex-1 px-3 py-2 rounded-lg bg-muted/60 border border-border text-sm outline-none focus:border-primary" />
               <button
-                onClick={() => { const ok = cart.applyCoupon(code); ok ? toast.success("Coupon applied!") : toast.error("Invalid coupon"); }}
-                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold"
-              >Apply</button>
+                onClick={apply}
+                disabled={applying}
+                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-60"
+              >{applying ? "..." : "Apply"}</button>
             </div>
-            <p className="text-xs text-muted-foreground">Try: TOPUP10, WELCOME15, FLASH25</p>
+            <p className="text-xs text-muted-foreground">Enter your coupon code at checkout to save.</p>
           </div>
         </aside>
       </div>
