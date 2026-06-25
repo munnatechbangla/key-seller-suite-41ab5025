@@ -1,4 +1,4 @@
-import { seoMeta, siteName } from "@/lib/cms/seo";
+import { seoMeta, siteName, canonicalLink } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -8,7 +8,8 @@ import { Calendar, ArrowRight, Send } from "lucide-react";
 
 export const Route = createFileRoute("/blog")({
   head: () => ({
-    meta: seoMeta({ title: "Blog", description: "Guides, reviews and tips on digital subscriptions, AI tools and streaming services." }),
+    meta: seoMeta({ title: "Blog", description: "Guides, reviews and tips on digital subscriptions, AI tools and streaming services.", path: "/blog" }),
+    links: [canonicalLink("/blog")],
   }),
   component: BlogPage,
 });

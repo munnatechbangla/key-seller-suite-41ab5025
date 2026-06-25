@@ -1,4 +1,4 @@
-import { seoMeta, siteName } from "@/lib/cms/seo";
+import { seoMeta, siteName, canonicalLink } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Star, ChevronRight } from "lucide-react";
 import { Header } from "@/components/site/Header";
@@ -35,7 +35,8 @@ import { categoriesQuery } from "@/lib/catalog";
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    meta: seoMeta({}),
+    meta: seoMeta({ path: "/" }),
+    links: [canonicalLink("/")],
   }),
   loader: ({ context }) => {
     context.queryClient.ensureQueryData(categoriesQuery());

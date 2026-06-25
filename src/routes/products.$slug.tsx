@@ -1,4 +1,4 @@
-import { seoMeta, siteName } from "@/lib/cms/seo";
+import { seoMeta, canonicalLink, productJsonLd, breadcrumbJsonLd, faqJsonLd, jsonLdScript } from "@/lib/cms/seo";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -20,13 +20,42 @@ export const Route = createFileRoute("/products/$slug")({
     context.queryClient.ensureQueryData(relatedQuery(params.slug, 4));
     return { product };
   },
-  head: ({ loaderData }) => ({
-    meta: seoMeta({
-      title: loaderData?.product.name,
-      description: loaderData?.product.short ?? undefined,
-      ogType: "product",
-    }),
-  }),
+  head: ({ loaderData, params }) => {
+    const p = loaderData?.product;
+    const path = `/products/${params.slug}`;
+    if (!p) return { meta: seoMeta({ path }) };
+    const scripts = [
+      jsonLdScript(productJsonLd({
+        name: p.name,
+        slug: p.slug,
+        description: p.short ?? p.description ?? null,
+        image: p.thumbnailUrl ?? null,
+        price: p.price,
+        oldPrice: p.oldPrice,
+        rating: p.rating,
+        reviews: p.reviews,
+        category: p.categoryName ?? p.category,
+        inStock: (p.stock ?? 1) > 0,
+      })),
+      jsonLdScript(breadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Products", path: "/products" },
+        { name: p.name, path },
+      ])),
+    ];
+    if (p.faqs && p.faqs.length) scripts.push(jsonLdScript(faqJsonLd(p.faqs)));
+    return {
+      meta: seoMeta({
+        title: p.name,
+        description: p.short ?? undefined,
+        ogType: "product",
+        image: p.thumbnailUrl ?? undefined,
+        path,
+      }),
+      links: [canonicalLink(path)],
+      scripts,
+    };
+  },
   component: ProductPage,
   notFoundComponent: () => (
     <div className="min-h-screen grid place-items-center p-8 text-center">

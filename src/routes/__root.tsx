@@ -16,7 +16,7 @@ import { ThemeProviderEffect } from "@/components/site/ThemeToggle";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/lib/stores";
 import { useSettings } from "@/lib/cms/settings";
-import { seoMeta } from "@/lib/cms/seo";
+import { seoMeta, organizationJsonLd, websiteJsonLd, jsonLdScript } from "@/lib/cms/seo";
 
 function NotFoundComponent() {
   return (
@@ -91,6 +91,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" },
+    ],
+    scripts: [
+      jsonLdScript(organizationJsonLd()),
+      jsonLdScript(websiteJsonLd()),
     ],
   }),
   shellComponent: RootShell,
