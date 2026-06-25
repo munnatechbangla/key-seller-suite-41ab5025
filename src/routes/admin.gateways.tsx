@@ -171,6 +171,7 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
             <Textarea value={form.configText} onChange={(e) => setForm({ ...form, configText: e.target.value })} rows={12} className="font-mono text-xs" />
             <p className="text-xs text-muted-foreground mt-1">{configHelp(form.type)}</p>
           </div>
+          {gateway && form.type === "custom_auto" && <GatewayHealthPanel id={gateway.id} slug={gateway.slug} />}
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
