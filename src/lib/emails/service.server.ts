@@ -55,7 +55,7 @@ export async function enqueueEmail(args: EnqueueArgs) {
       subject: args.subject ?? args.templateKey,
       status: "failed",
       error_message: "template_not_found",
-      payload: args.vars ?? {},
+      payload: (args.vars ?? {}) as any,
     });
     return { ok: false, reason: "template_not_found" };
   }
@@ -79,7 +79,7 @@ export async function enqueueEmail(args: EnqueueArgs) {
     subject,
     status,
     rendered_html: html,
-    payload: vars,
+    payload: vars as any,
     error_message: sendingEnabled ? null : "dev_mode_no_sender_domain",
   });
   return { ok: true, status };
