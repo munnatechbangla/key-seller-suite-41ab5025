@@ -214,6 +214,8 @@ function GatewayRow({ id, label, data, set }: {
       <Switch checked={enabled} onCheckedChange={(v) => set("payment", enabledKey, v as never)} />
     </div>
   );
+}
+
 
 function SaveBtn({ onClick, saving }: { onClick: () => void; saving: boolean }) {
   return (
