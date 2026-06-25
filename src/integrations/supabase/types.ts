@@ -390,6 +390,48 @@ export type Database = {
           },
         ]
       }
+      legal_pages: {
+        Row: {
+          canonical_url: string | null
+          content: Json
+          created_at: string
+          id: string
+          is_published: boolean
+          seo_description: string | null
+          seo_title: string | null
+          slug: string
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          canonical_url?: string | null
+          content?: Json
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          seo_description?: string | null
+          seo_title?: string | null
+          slug: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          canonical_url?: string | null
+          content?: Json
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       license_assignments: {
         Row: {
           assigned_at: string

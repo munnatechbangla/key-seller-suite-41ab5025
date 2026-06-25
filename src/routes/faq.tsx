@@ -5,13 +5,14 @@ import { Footer } from "@/components/site/Footer";
 import { PageHero } from "@/components/site/PageHero";
 import { useState } from "react";
 import { Search } from "lucide-react";
+import { useLegalPage, type FaqGroup } from "@/lib/cms/legal";
 
 export const Route = createFileRoute("/faq")({
   head: () => ({ meta: [{ title: `FAQ — ${siteName()}` }] }),
   component: FAQ,
 });
 
-const groups = [
+const fallbackGroups: FaqGroup[] = [
   {
     name: "Orders & Delivery",
     items: [
@@ -38,10 +39,15 @@ const groups = [
 
 function FAQ() {
   const [q, setQ] = useState("");
+  const { data: page } = useLegalPage("faq");
+  const groups = page?.content?.faq_groups ?? fallbackGroups;
+  const title = page?.title ?? "Frequently asked questions";
+  const subtitle = page?.subtitle ?? "Quick answers to the things customers ask most";
+
   return (
     <div className="min-h-screen">
       <Header />
-      <PageHero title="Frequently asked questions" subtitle="Quick answers to the things customers ask most" crumbs={[{ label: "Home", to: "/" }, { label: "FAQ" }]} />
+      <PageHero title={title} subtitle={subtitle} crumbs={[{ label: "Home", to: "/" }, { label: "FAQ" }]} />
       <div className="container mx-auto px-4 py-12 max-w-3xl space-y-8">
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
