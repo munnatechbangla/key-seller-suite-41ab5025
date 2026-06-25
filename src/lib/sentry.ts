@@ -9,7 +9,7 @@ export async function initSentry(): Promise<void> {
   if (!dsn) return;
   initialized = true;
   try {
-    const mod: any = await import(/* @vite-ignore */ "@sentry/browser").catch(() => null);
+    const mod: any = await import(/* @vite-ignore */ ("@sentry/browser" as string)).catch(() => null);
     if (!mod?.init) {
       console.info("[sentry] DSN configured but @sentry/browser not installed.");
       return;
