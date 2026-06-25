@@ -79,16 +79,9 @@ function Home() {
 function Hero() {
   const BadgeIcon = resolveIcon(heroConfig.badge.icon);
   const floatingProducts = useResolvedProducts(heroConfig.floatingProductSlugs);
-  // 6 staggered positions — denser layout, less empty space.
-  const positions = [
-    "absolute top-0 left-0 w-56",
-    "absolute top-8 right-4 w-56",
-    "absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-60",
-    "absolute bottom-8 left-2 w-56",
-    "absolute bottom-0 right-0 w-56",
-    "absolute top-1/3 right-1/3 w-52",
-  ];
-  const delays = ["0s", "1.2s", "2.4s", "0.8s", "1.8s", "3.2s"];
+  // 6 cards in a tidy 3-row × 2-col grid — no overlaps at any breakpoint.
+  const durations = ["6s", "7s", "8s", "6.5s", "7.5s", "8.5s"];
+  const delays = ["0s", "1.2s", "2.4s", "0.6s", "1.8s", "3s"];
   return (
     <section className="relative overflow-hidden bg-gradient-hero text-white">
       <div className="absolute inset-0 opacity-50 pointer-events-none">
