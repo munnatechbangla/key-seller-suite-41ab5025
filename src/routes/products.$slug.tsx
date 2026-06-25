@@ -265,29 +265,7 @@ function ProductPage() {
               ))}
             </div>
           )}
-          {tab === "reviews" && (
-            <div className="space-y-4 max-w-3xl">
-              {[
-                { n: "Sarah K.", r: 5, t: "Worked instantly. Smooth experience overall.", d: "2 days ago" },
-                { n: "Ahmed R.", r: 5, t: "Great price, support replied in minutes.", d: "1 week ago" },
-                { n: "Maria L.", r: 4, t: "Took 15 minutes but everything works perfectly.", d: "2 weeks ago" },
-              ].map((rv, i) => (
-                <div key={i} className="rounded-2xl bg-card border border-border p-5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-primary text-primary-foreground grid place-items-center font-bold">{rv.n[0]}</div>
-                      <div>
-                        <div className="font-semibold text-sm">{rv.n}</div>
-                        <div className="flex">{[...Array(5)].map((_, j) => <Star key={j} className={`h-3.5 w-3.5 ${j < rv.r ? "fill-accent text-accent" : "text-muted"}`} />)}</div>
-                      </div>
-                    </div>
-                    <span className="text-xs text-muted-foreground">{rv.d}</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-3">{rv.t}</p>
-                </div>
-              ))}
-            </div>
-          )}
+          {tab === "reviews" && <ReviewsSection productId={product.id} />}
           {tab === "faq" && (
             <div className="space-y-3 max-w-3xl">
               {product.faqs?.map((f) => (
