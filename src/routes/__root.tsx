@@ -15,6 +15,7 @@ import { MobileBottomNav } from "@/components/site/MobileBottomNav";
 import { ThemeProviderEffect } from "@/components/site/ThemeToggle";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/lib/stores";
+import { useSettings } from "@/lib/cms/settings";
 
 function NotFoundComponent() {
   return (
