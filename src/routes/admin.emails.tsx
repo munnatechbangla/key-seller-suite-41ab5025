@@ -84,6 +84,22 @@ function EmailLogsPage() {
         </div>
       </div>
 
+      <div className="rounded-lg border bg-background p-4 flex gap-2 items-end flex-wrap">
+        <div className="flex-1 min-w-[220px]">
+          <label className="text-xs text-muted-foreground">Send test email to</label>
+          <Input type="email" placeholder="you@example.com" value={testTo} onChange={(e) => setTestTo(e.target.value)} />
+        </div>
+        <Button
+          onClick={() => testM.mutate(testTo)}
+          disabled={!testTo || testM.isPending}
+        >
+          Send test
+        </Button>
+        <p className="text-xs text-muted-foreground basis-full">
+          Requires a sender email in Settings → Email and the RESEND_API_KEY secret.
+        </p>
+      </div>
+
       <div className="rounded-lg border bg-background overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-left">
