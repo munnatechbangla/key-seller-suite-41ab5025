@@ -1,10 +1,12 @@
 import { seoMeta, siteName, canonicalLink } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Star, ChevronRight } from "lucide-react";
+import { Star, ChevronRight, Calendar, ArrowRight, ShieldCheck } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Section } from "@/components/site/Section";
 import { ProductCard } from "@/components/site/ProductCard";
+import { blogPosts } from "@/lib/catalog";
 import {
   useCategories,
   featuredQuery,
