@@ -1,8 +1,17 @@
 import { Link } from "@tanstack/react-router";
-import { Zap, Send } from "lucide-react";
-import { siteConfig, footerColumns, socialLinks, paymentBadges, resolveIcon } from "@/lib/cms";
+import { Zap, Send, Facebook, Twitter, Instagram, Youtube, Linkedin } from "lucide-react";
+import { siteConfig, footerColumns, paymentBadges } from "@/lib/cms";
+import { useSettings, formatCopyright } from "@/lib/cms/settings";
 
 export function Footer() {
+  const s = useSettings((st) => st.settings);
+  const social: { label: string; href: string; Icon: typeof Facebook }[] = [
+    { label: "Facebook", href: s.social.facebook, Icon: Facebook },
+    { label: "Twitter", href: s.social.twitter, Icon: Twitter },
+    { label: "Instagram", href: s.social.instagram, Icon: Instagram },
+    { label: "YouTube", href: s.social.youtube, Icon: Youtube },
+    { label: "LinkedIn", href: s.social.linkedin, Icon: Linkedin },
+  ].filter((x) => x.href);
   return (
     <footer className="mt-24 bg-gradient-hero text-white">
       <div className="container mx-auto px-4 py-16 grid gap-10 md:grid-cols-2 lg:grid-cols-5">
