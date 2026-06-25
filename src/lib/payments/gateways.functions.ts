@@ -76,7 +76,7 @@ export const upsertGatewayFn = createServerFn({ method: "POST" })
     is_enabled?: boolean;
     mode?: GatewayMode;
     sort_order?: number;
-    config?: Record<string, unknown>;
+    config?: { [k: string]: JsonValue };
   }) => d)
   .handler(async ({ data, context }) => {
     await assertAdmin(context as never);
