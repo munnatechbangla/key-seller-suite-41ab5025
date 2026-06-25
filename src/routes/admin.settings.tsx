@@ -168,6 +168,27 @@ function AdminSettings() {
           <Area label="Manual Payment Instructions" value={data.payment.manual_instructions} onChange={(v) => set("payment", "manual_instructions", v)} />
           <SaveBtn onClick={() => save("payment")} saving={saving === "payment"} />
         </TabsContent>
+
+        <TabsContent value="analytics" className="mt-4 space-y-4">
+          <p className="text-xs text-muted-foreground">Scripts inject only when their toggle is enabled. IDs are validated client-side before save.</p>
+          <div className="flex items-end gap-3">
+            <div className="flex-1"><Field label="Google Analytics 4 Measurement ID" value={data.analytics.ga4_id} onChange={(v) => set("analytics", "ga4_id", v)} /></div>
+            <Switch checked={data.analytics.ga4_enabled} onCheckedChange={(v) => set("analytics", "ga4_enabled", v as never)} />
+          </div>
+          <div className="flex items-end gap-3">
+            <div className="flex-1"><Field label="Google Tag Manager Container ID" value={data.analytics.gtm_id} onChange={(v) => set("analytics", "gtm_id", v)} /></div>
+            <Switch checked={data.analytics.gtm_enabled} onCheckedChange={(v) => set("analytics", "gtm_enabled", v as never)} />
+          </div>
+          <div className="flex items-end gap-3">
+            <div className="flex-1"><Field label="Meta Pixel ID" value={data.analytics.meta_pixel_id} onChange={(v) => set("analytics", "meta_pixel_id", v)} /></div>
+            <Switch checked={data.analytics.meta_pixel_enabled} onCheckedChange={(v) => set("analytics", "meta_pixel_enabled", v as never)} />
+          </div>
+          <Toggle label="Inject custom header scripts" value={data.analytics.custom_header_enabled} onChange={(v) => set("analytics", "custom_header_enabled", v)} />
+          <Area label="Custom header scripts (raw HTML, runs in <head>)" value={data.analytics.custom_header} onChange={(v) => set("analytics", "custom_header", v)} />
+          <Toggle label="Inject custom footer scripts" value={data.analytics.custom_footer_enabled} onChange={(v) => set("analytics", "custom_footer_enabled", v)} />
+          <Area label="Custom footer scripts (raw HTML, runs at end of <body>)" value={data.analytics.custom_footer} onChange={(v) => set("analytics", "custom_footer", v)} />
+          <SaveBtn onClick={() => save("analytics")} saving={saving === "analytics"} />
+        </TabsContent>
       </Tabs>
     </div>
   );
