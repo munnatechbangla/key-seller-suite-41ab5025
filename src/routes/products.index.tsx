@@ -1,4 +1,4 @@
-import { seoMeta, siteName } from "@/lib/cms/seo";
+import { seoMeta, siteName, canonicalLink } from "@/lib/cms/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -12,7 +12,9 @@ export const Route = createFileRoute("/products/")({
     meta: seoMeta({
       title: "All Digital Products",
       description: "Browse our full catalog of premium digital products.",
+      path: "/products",
     }),
+    links: [canonicalLink("/products")],
   }),
   loader: ({ context }) => {
     context.queryClient.ensureQueryData(categoriesQuery());
