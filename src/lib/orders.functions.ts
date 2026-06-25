@@ -120,7 +120,7 @@ async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string
     await supabaseAdmin.rpc("apply_coupon_usage", {
       _coupon_id: couponId,
       _order_id: order.id,
-      _user_id: userId ?? undefined,
+      _user_id: (userId ?? null) as string,
       _email: input.customer.email,
       _discount: discount,
       _order_total: total,
