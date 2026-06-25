@@ -191,6 +191,30 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
   );
 }
 
+type GatewayId = "sslcommerz" | "bkash" | "nagad" | "stripe" | "paypal";
+function GatewayRow({ id, label, data, set }: {
+  id: GatewayId; label: string; data: AllSettings;
+  set: <K extends keyof AllSettings, F extends keyof AllSettings[K]>(g: K, f: F, v: AllSettings[K][F]) => void;
+}) {
+  const enabledKey = `${id}_enabled` as keyof AllSettings["payment"];
+  const modeKey = `${id}_mode` as keyof AllSettings["payment"];
+  const enabled = Boolean(data.payment[enabledKey]);
+  const mode = (data.payment[modeKey] as "sandbox" | "live") || "sandbox";
+  return (
+    <div className="flex items-center justify-between rounded-md border p-3 gap-3 flex-wrap">
+      <Label className="cursor-pointer flex-1">{label}</Label>
+      <select
+        value={mode}
+        onChange={(e) => set("payment", modeKey, e.target.value as never)}
+        className="text-xs px-2 py-1 rounded border bg-background"
+      >
+        <option value="sandbox">Sandbox</option>
+        <option value="live">Live</option>
+      </select>
+      <Switch checked={enabled} onCheckedChange={(v) => set("payment", enabledKey, v as never)} />
+    </div>
+  );
+
 function SaveBtn({ onClick, saving }: { onClick: () => void; saving: boolean }) {
   return (
     <Button onClick={onClick} disabled={saving} className="gap-2">
