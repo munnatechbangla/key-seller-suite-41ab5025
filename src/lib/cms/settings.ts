@@ -54,7 +54,10 @@ export type PaymentConfig = {
   currency_symbol: string;
   sslcommerz_enabled: boolean;
   bkash_enabled: boolean;
+  nagad_enabled: boolean;
+  rocket_enabled: boolean;
   stripe_enabled: boolean;
+  paypal_enabled: boolean;
   manual_enabled: boolean;
   manual_instructions: string;
 };
