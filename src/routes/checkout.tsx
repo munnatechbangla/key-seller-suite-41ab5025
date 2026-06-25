@@ -1,16 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { PageHero } from "@/components/site/PageHero";
 import { useCart, useAuth } from "@/lib/stores";
-import { useState } from "react";
-import { CreditCard, Wallet, Building2, Smartphone, Lock, Tag } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Lock, Tag, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { placeOrderAuthFn, placeOrderGuestFn } from "@/lib/orders.functions";
 import { validateCouponFn } from "@/lib/coupons.functions";
 import { couponReason } from "@/routes/cart";
-import { useSettings } from "@/lib/cms/settings";
+import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
 import { seoMeta } from "@/lib/cms/seo";
 
 export const Route = createFileRoute("/checkout")({
@@ -18,24 +19,16 @@ export const Route = createFileRoute("/checkout")({
   component: CheckoutPage,
 });
 
-const allGateways = [
-  { id: "stripe", label: "Credit / Debit Card", sub: "Powered by Stripe", Icon: CreditCard, key: "stripe_enabled" as const },
-  { id: "paypal", label: "PayPal", sub: "Pay with your PayPal balance", Icon: Wallet, key: "paypal_enabled" as const },
-  { id: "sslcommerz", label: "SSLCommerz", sub: "All BD cards & banks", Icon: CreditCard, key: "sslcommerz_enabled" as const },
-  { id: "bkash", label: "bKash", sub: "Mobile financial service", Icon: Smartphone, key: "bkash_enabled" as const },
-  { id: "nagad", label: "Nagad", sub: "Mobile financial service", Icon: Smartphone, key: "nagad_enabled" as const },
-  { id: "rocket", label: "Rocket", sub: "Mobile financial service", Icon: Smartphone, key: "rocket_enabled" as const },
-  { id: "manual", label: "Bank Transfer", sub: "Direct deposit", Icon: Building2, key: "manual_enabled" as const },
-];
-
 function CheckoutPage() {
   const cart = useCart();
   const user = useAuth((s) => s.user);
   const navigate = useNavigate();
-  const payment = useSettings((s) => s.settings.payment) as Record<string, any>;
-  const visibleGateways = allGateways.filter((g) => !!payment?.[g.key]);
-  const gatewayList = visibleGateways.length > 0 ? visibleGateways : allGateways.filter((g) => g.id === "manual");
-  const [gateway, setGateway] = useState(gatewayList[0]?.id ?? "manual");
+  const listGateways = useServerFn(listEnabledGatewaysFn);
+  const gwQuery = useQuery({ queryKey: ["enabled-gateways"], queryFn: () => listGateways() });
+  const gateways = gwQuery.data?.gateways ?? [];
+  const [gateway, setGateway] = useState<string>("");
+  useEffect(() => { if (!gateway && gateways[0]) setGateway(gateways[0].slug); }, [gateways, gateway]);
+
   const [agree, setAgree] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [code, setCode] = useState("");
@@ -73,6 +66,7 @@ function CheckoutPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agree || !privacy) { toast.error("Please accept the terms"); return; }
+    if (!gateway) { toast.error("Select a payment method"); return; }
     if (submitting) return;
     setSubmitting(true);
     const fd = new FormData(e.currentTarget as HTMLFormElement);
@@ -137,19 +131,33 @@ function CheckoutPage() {
           </Section>
 
           <Section title="Payment method">
-            <div className="space-y-2">
-              {gatewayList.map((g) => (
-                <label key={g.id} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-smooth ${gateway === g.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
-                  <input type="radio" name="gateway" checked={gateway === g.id} onChange={() => setGateway(g.id)} className="accent-[var(--primary)]" />
-                  <g.Icon className="h-5 w-5 text-primary" />
-                  <div className="flex-1">
-                    <div className="font-semibold text-sm">{g.label}</div>
-                    <div className="text-xs text-muted-foreground">{g.sub}</div>
-                  </div>
-                </label>
-              ))}
-            </div>
+            {gwQuery.isLoading ? (
+              <p className="text-sm text-muted-foreground">Loading payment methods…</p>
+            ) : gateways.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No payment methods enabled. Please contact support.</p>
+            ) : (
+              <div className="space-y-2">
+                {gateways.map((g) => (
+                  <label key={g.slug} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-smooth ${gateway === g.slug ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
+                    <input type="radio" name="gateway" checked={gateway === g.slug} onChange={() => setGateway(g.slug)} className="accent-[var(--primary)]" />
+                    {g.logo_url ? (
+                      <img src={g.logo_url} alt="" className="h-6 w-6 object-contain" />
+                    ) : (
+                      <Wallet className="h-5 w-5 text-primary" />
+                    )}
+                    <div className="flex-1">
+                      <div className="font-semibold text-sm flex items-center gap-2">
+                        {g.name}
+                        {g.type === "manual" && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600">MANUAL</span>}
+                      </div>
+                      {g.description && <div className="text-xs text-muted-foreground">{g.description}</div>}
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
           </Section>
+
 
           <div className="space-y-2 text-sm">
             <label className="flex items-start gap-2 cursor-pointer">
