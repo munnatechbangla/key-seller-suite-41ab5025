@@ -47,11 +47,15 @@ import { Route as AdminPaymentLogsRouteImport } from './routes/admin.payment-log
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminLicensesRouteImport } from './routes/admin.licenses'
 import { Route as AdminLegalRouteImport } from './routes/admin.legal'
+import { Route as AdminHealthRouteImport } from './routes/admin.health'
 import { Route as AdminGatewaysRouteImport } from './routes/admin.gateways'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailTemplatesRouteImport } from './routes/admin.email-templates'
+import { Route as AdminDocsRouteImport } from './routes/admin.docs'
+import { Route as AdminDemoRouteImport } from './routes/admin.demo'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments.webhook'
 import { Route as ApiPublicPaymentsSslcommerzReturnRouteImport } from './routes/api/public/payments.sslcommerz.return'
 import { Route as ApiPublicPaymentsSslcommerzIpnRouteImport } from './routes/api/public/payments.sslcommerz.ipn'
@@ -247,6 +251,11 @@ const AdminLegalRoute = AdminLegalRouteImport.update({
   path: '/legal',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminHealthRoute = AdminHealthRouteImport.update({
+  id: '/health',
+  path: '/health',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminGatewaysRoute = AdminGatewaysRouteImport.update({
   id: '/gateways',
   path: '/gateways',
@@ -262,6 +271,16 @@ const AdminEmailTemplatesRoute = AdminEmailTemplatesRouteImport.update({
   path: '/email-templates',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminDocsRoute = AdminDocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDemoRoute = AdminDemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCustomersRoute = AdminCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
@@ -270,6 +289,11 @@ const AdminCustomersRoute = AdminCustomersRouteImport.update({
 const AdminCouponsRoute = AdminCouponsRouteImport.update({
   id: '/coupons',
   path: '/coupons',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
   getParentRoute: () => AdminRoute,
 } as any)
 const ApiPublicPaymentsWebhookRoute =
@@ -319,11 +343,15 @@ export interface FileRoutesByFullPath {
   '/thank-you': typeof ThankYouRoute
   '/track-order': typeof TrackOrderRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/demo': typeof AdminDemoRoute
+  '/admin/docs': typeof AdminDocsRoute
   '/admin/email-templates': typeof AdminEmailTemplatesRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/gateways': typeof AdminGatewaysRoute
+  '/admin/health': typeof AdminHealthRoute
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -367,11 +395,15 @@ export interface FileRoutesByTo {
   '/thank-you': typeof ThankYouRoute
   '/track-order': typeof TrackOrderRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/demo': typeof AdminDemoRoute
+  '/admin/docs': typeof AdminDocsRoute
   '/admin/email-templates': typeof AdminEmailTemplatesRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/gateways': typeof AdminGatewaysRoute
+  '/admin/health': typeof AdminHealthRoute
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -417,11 +449,15 @@ export interface FileRoutesById {
   '/thank-you': typeof ThankYouRoute
   '/track-order': typeof TrackOrderRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/demo': typeof AdminDemoRoute
+  '/admin/docs': typeof AdminDocsRoute
   '/admin/email-templates': typeof AdminEmailTemplatesRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/gateways': typeof AdminGatewaysRoute
+  '/admin/health': typeof AdminHealthRoute
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -468,11 +504,15 @@ export interface FileRouteTypes {
     | '/thank-you'
     | '/track-order'
     | '/wishlist'
+    | '/admin/audit'
     | '/admin/coupons'
     | '/admin/customers'
+    | '/admin/demo'
+    | '/admin/docs'
     | '/admin/email-templates'
     | '/admin/emails'
     | '/admin/gateways'
+    | '/admin/health'
     | '/admin/legal'
     | '/admin/licenses'
     | '/admin/orders'
@@ -516,11 +556,15 @@ export interface FileRouteTypes {
     | '/thank-you'
     | '/track-order'
     | '/wishlist'
+    | '/admin/audit'
     | '/admin/coupons'
     | '/admin/customers'
+    | '/admin/demo'
+    | '/admin/docs'
     | '/admin/email-templates'
     | '/admin/emails'
     | '/admin/gateways'
+    | '/admin/health'
     | '/admin/legal'
     | '/admin/licenses'
     | '/admin/orders'
@@ -565,11 +609,15 @@ export interface FileRouteTypes {
     | '/thank-you'
     | '/track-order'
     | '/wishlist'
+    | '/admin/audit'
     | '/admin/coupons'
     | '/admin/customers'
+    | '/admin/demo'
+    | '/admin/docs'
     | '/admin/email-templates'
     | '/admin/emails'
     | '/admin/gateways'
+    | '/admin/health'
     | '/admin/legal'
     | '/admin/licenses'
     | '/admin/orders'
@@ -896,6 +944,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLegalRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/health': {
+      id: '/admin/health'
+      path: '/health'
+      fullPath: '/admin/health'
+      preLoaderRoute: typeof AdminHealthRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/gateways': {
       id: '/admin/gateways'
       path: '/gateways'
@@ -917,6 +972,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEmailTemplatesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/docs': {
+      id: '/admin/docs'
+      path: '/docs'
+      fullPath: '/admin/docs'
+      preLoaderRoute: typeof AdminDocsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/demo': {
+      id: '/admin/demo'
+      path: '/demo'
+      fullPath: '/admin/demo'
+      preLoaderRoute: typeof AdminDemoRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/customers': {
       id: '/admin/customers'
       path: '/customers'
@@ -929,6 +998,13 @@ declare module '@tanstack/react-router' {
       path: '/coupons'
       fullPath: '/admin/coupons'
       preLoaderRoute: typeof AdminCouponsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
       parentRoute: typeof AdminRoute
     }
     '/api/public/payments/webhook': {
@@ -963,11 +1039,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminAuditRoute: typeof AdminAuditRoute
   AdminCouponsRoute: typeof AdminCouponsRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
+  AdminDemoRoute: typeof AdminDemoRoute
+  AdminDocsRoute: typeof AdminDocsRoute
   AdminEmailTemplatesRoute: typeof AdminEmailTemplatesRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminGatewaysRoute: typeof AdminGatewaysRoute
+  AdminHealthRoute: typeof AdminHealthRoute
   AdminLegalRoute: typeof AdminLegalRoute
   AdminLicensesRoute: typeof AdminLicensesRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
@@ -980,11 +1060,15 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAuditRoute: AdminAuditRoute,
   AdminCouponsRoute: AdminCouponsRoute,
   AdminCustomersRoute: AdminCustomersRoute,
+  AdminDemoRoute: AdminDemoRoute,
+  AdminDocsRoute: AdminDocsRoute,
   AdminEmailTemplatesRoute: AdminEmailTemplatesRoute,
   AdminEmailsRoute: AdminEmailsRoute,
   AdminGatewaysRoute: AdminGatewaysRoute,
+  AdminHealthRoute: AdminHealthRoute,
   AdminLegalRoute: AdminLegalRoute,
   AdminLicensesRoute: AdminLicensesRoute,
   AdminOrdersRoute: AdminOrdersRoute,
@@ -1047,13 +1131,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
