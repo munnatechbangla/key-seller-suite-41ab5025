@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { storageKey } from "./storage-slug";
+
 
 export type ThemeMode = "light" | "dark" | "system";
 
@@ -14,7 +16,7 @@ export const useTheme = create<ThemeState>()(
       mode: "system",
       setMode: (mode) => set({ mode }),
     }),
-    { name: "topuphut.theme" },
+    { name: storageKey("theme") },
   ),
 );
 

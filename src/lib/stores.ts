@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Product } from "./catalog";
 import { track } from "./analytics/track";
+import { storageKey } from "./storage-slug";
 
 type CartItem = { slug: string; qty: number; product: Product };
 
@@ -55,7 +56,7 @@ export const useCart = create<CartState>()(
       total: () => Math.max(0, get().subtotal() - get().discount()),
       count: () => get().items.reduce((s, i) => s + i.qty, 0),
     }),
-    { name: "topuphut-cart" },
+    { name: storageKey("cart") },
   ),
 );
 
@@ -82,8 +83,8 @@ const makeSlugList = (name: string) =>
     ),
   );
 
-export const useWishlist = makeSlugList("topuphut-wishlist");
-export const useCompare = makeSlugList("topuphut-compare");
+export const useWishlist = makeSlugList(storageKey("wishlist"));
+export const useCompare = makeSlugList(storageKey("compare"));
 
 type RecentState = {
   slugs: string[];
@@ -95,7 +96,7 @@ export const useRecent = create<RecentState>()(
       slugs: [],
       push: (slug) => set((s) => ({ slugs: [slug, ...s.slugs.filter((x) => x !== slug)].slice(0, 8) })),
     }),
-    { name: "topuphut-recent" },
+    { name: storageKey("recent") },
   ),
 );
 
