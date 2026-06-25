@@ -39,6 +39,7 @@ import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as AuthForgotRouteImport } from './routes/auth.forgot'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
+import { Route as AdminPaymentLogsRouteImport } from './routes/admin.payment-logs'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminLicensesRouteImport } from './routes/admin.licenses'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
@@ -46,6 +47,8 @@ import { Route as AdminEmailTemplatesRouteImport } from './routes/admin.email-te
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments.webhook'
+import { Route as ApiPublicPaymentsSslcommerzReturnRouteImport } from './routes/api/public/payments.sslcommerz.return'
+import { Route as ApiPublicPaymentsSslcommerzIpnRouteImport } from './routes/api/public/payments.sslcommerz.ipn'
 
 const WishlistRoute = WishlistRouteImport.update({
   id: '/wishlist',
@@ -197,6 +200,11 @@ const AdminProductsRoute = AdminProductsRouteImport.update({
   path: '/products',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPaymentLogsRoute = AdminPaymentLogsRouteImport.update({
+  id: '/payment-logs',
+  path: '/payment-logs',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
@@ -233,6 +241,18 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPaymentsSslcommerzReturnRoute =
+  ApiPublicPaymentsSslcommerzReturnRouteImport.update({
+    id: '/api/public/payments/sslcommerz/return',
+    path: '/api/public/payments/sslcommerz/return',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicPaymentsSslcommerzIpnRoute =
+  ApiPublicPaymentsSslcommerzIpnRouteImport.update({
+    id: '/api/public/payments/sslcommerz/ipn',
+    path: '/api/public/payments/sslcommerz/ipn',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -260,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/auth/forgot': typeof AuthForgotRoute
@@ -272,6 +293,8 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/payments/sslcommerz/ipn': typeof ApiPublicPaymentsSslcommerzIpnRoute
+  '/api/public/payments/sslcommerz/return': typeof ApiPublicPaymentsSslcommerzReturnRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -298,6 +321,7 @@ export interface FileRoutesByTo {
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/auth/forgot': typeof AuthForgotRoute
@@ -310,6 +334,8 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/products': typeof ProductsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/payments/sslcommerz/ipn': typeof ApiPublicPaymentsSslcommerzIpnRoute
+  '/api/public/payments/sslcommerz/return': typeof ApiPublicPaymentsSslcommerzReturnRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -338,6 +364,7 @@ export interface FileRoutesById {
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/auth/forgot': typeof AuthForgotRoute
@@ -350,6 +377,8 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/payments/sslcommerz/ipn': typeof ApiPublicPaymentsSslcommerzIpnRoute
+  '/api/public/payments/sslcommerz/return': typeof ApiPublicPaymentsSslcommerzReturnRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -379,6 +408,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/licenses'
     | '/admin/orders'
+    | '/admin/payment-logs'
     | '/admin/products'
     | '/admin/settings'
     | '/auth/forgot'
@@ -391,6 +421,8 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/products/'
     | '/api/public/payments/webhook'
+    | '/api/public/payments/sslcommerz/ipn'
+    | '/api/public/payments/sslcommerz/return'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -417,6 +449,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/licenses'
     | '/admin/orders'
+    | '/admin/payment-logs'
     | '/admin/products'
     | '/admin/settings'
     | '/auth/forgot'
@@ -429,6 +462,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/products'
     | '/api/public/payments/webhook'
+    | '/api/public/payments/sslcommerz/ipn'
+    | '/api/public/payments/sslcommerz/return'
   id:
     | '__root__'
     | '/'
@@ -456,6 +491,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/licenses'
     | '/admin/orders'
+    | '/admin/payment-logs'
     | '/admin/products'
     | '/admin/settings'
     | '/auth/forgot'
@@ -468,6 +504,8 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/products/'
     | '/api/public/payments/webhook'
+    | '/api/public/payments/sslcommerz/ipn'
+    | '/api/public/payments/sslcommerz/return'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -498,6 +536,8 @@ export interface RootRouteChildren {
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  ApiPublicPaymentsSslcommerzIpnRoute: typeof ApiPublicPaymentsSslcommerzIpnRoute
+  ApiPublicPaymentsSslcommerzReturnRoute: typeof ApiPublicPaymentsSslcommerzReturnRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -712,6 +752,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/payment-logs': {
+      id: '/admin/payment-logs'
+      path: '/payment-logs'
+      fullPath: '/admin/payment-logs'
+      preLoaderRoute: typeof AdminPaymentLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/orders': {
       id: '/admin/orders'
       path: '/orders'
@@ -761,6 +808,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payments/sslcommerz/return': {
+      id: '/api/public/payments/sslcommerz/return'
+      path: '/api/public/payments/sslcommerz/return'
+      fullPath: '/api/public/payments/sslcommerz/return'
+      preLoaderRoute: typeof ApiPublicPaymentsSslcommerzReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/payments/sslcommerz/ipn': {
+      id: '/api/public/payments/sslcommerz/ipn'
+      path: '/api/public/payments/sslcommerz/ipn'
+      fullPath: '/api/public/payments/sslcommerz/ipn'
+      preLoaderRoute: typeof ApiPublicPaymentsSslcommerzIpnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -771,6 +832,7 @@ interface AdminRouteChildren {
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminLicensesRoute: typeof AdminLicensesRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminPaymentLogsRoute: typeof AdminPaymentLogsRoute
   AdminProductsRoute: typeof AdminProductsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -783,6 +845,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminEmailsRoute: AdminEmailsRoute,
   AdminLicensesRoute: AdminLicensesRoute,
   AdminOrdersRoute: AdminOrdersRoute,
+  AdminPaymentLogsRoute: AdminPaymentLogsRoute,
   AdminProductsRoute: AdminProductsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminIndexRoute: AdminIndexRoute,
@@ -828,17 +891,10 @@ const rootRouteChildren: RootRouteChildren = {
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  ApiPublicPaymentsSslcommerzIpnRoute: ApiPublicPaymentsSslcommerzIpnRoute,
+  ApiPublicPaymentsSslcommerzReturnRoute:
+    ApiPublicPaymentsSslcommerzReturnRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

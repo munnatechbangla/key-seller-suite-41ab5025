@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tan
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/stores";
-import { LayoutDashboard, Package, ShoppingBag, Users, KeyRound, Loader2, Ticket, Settings as SettingsIcon, Mail, FileText } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Users, KeyRound, Loader2, Ticket, Settings as SettingsIcon, Mail, FileText, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSettings } from "@/lib/cms/settings";
 
@@ -21,6 +21,7 @@ const items = [
   { to: "/admin/customers", label: "Customers", icon: Users },
   { to: "/admin/licenses", label: "Licenses", icon: KeyRound },
   { to: "/admin/coupons", label: "Coupons", icon: Ticket },
+  { to: "/admin/payment-logs", label: "Payments", icon: CreditCard },
   { to: "/admin/emails", label: "Email Logs", icon: Mail },
   { to: "/admin/email-templates", label: "Templates", icon: FileText },
   { to: "/admin/settings", label: "Settings", icon: SettingsIcon },

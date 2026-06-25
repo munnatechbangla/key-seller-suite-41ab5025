@@ -4,10 +4,13 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
-import { Loader2, ShieldCheck, CreditCard, XCircle } from "lucide-react";
+import { Loader2, ShieldCheck, CreditCard, XCircle, ExternalLink } from "lucide-react";
 import { getOrderByNumberFn, simulateGatewayPaymentFn } from "@/lib/orders.functions";
+import { initPaymentFn } from "@/lib/payments/init.functions";
 import { toast } from "sonner";
 import { useState } from "react";
+
+const REAL_GATEWAYS = new Set(["sslcommerz", "bkash", "stripe"]);
 
 export const Route = createFileRoute("/pay/$orderNumber")({
   head: () => ({ meta: [{ title: `Complete Payment — ${siteName()}` }] }),
@@ -21,8 +24,9 @@ function PayPage() {
   const navigate = useNavigate();
   const fetchOrder = useServerFn(getOrderByNumberFn);
   const simulate = useServerFn(simulateGatewayPaymentFn);
+  const initPayment = useServerFn(initPaymentFn);
   const qc = useQueryClient();
-  const [working, setWorking] = useState<null | "paid" | "failed">(null);
+  const [working, setWorking] = useState<null | "paid" | "failed" | "redirect">(null);
 
   const q = useQuery({
     queryKey: ["order", orderNumber],
@@ -31,6 +35,21 @@ function PayPage() {
 
   const order = q.data?.order;
   const alreadyDone = order && order.status !== "pending";
+  const gateway = order?.payment_method ?? "manual";
+  const isRealGateway = REAL_GATEWAYS.has(gateway);
+
+  const redirectToGateway = async () => {
+    if (working || !order) return;
+    setWorking("redirect");
+    try {
+      const res = await initPayment({ data: { orderNumber, gateway } });
+      if (!res.ok) throw new Error("Could not start gateway session");
+      window.location.href = res.redirectUrl;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Gateway init failed");
+      setWorking(null);
+    }
+  };
 
   const run = async (outcome: "paid" | "failed") => {
     if (working) return;
@@ -80,11 +99,25 @@ function PayPage() {
                   This order has already been processed.{" "}
                   <Link to="/thank-you" search={{ order: orderNumber }} className="font-semibold text-primary hover:underline">View confirmation →</Link>
                 </div>
+              ) : isRealGateway ? (
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    You will be redirected to <span className="font-medium capitalize">{gateway}</span> to complete payment securely. Your order will be confirmed once the gateway verifies the transaction.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={redirectToGateway}
+                    disabled={!!working}
+                    className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow disabled:opacity-60"
+                  >
+                    {working === "redirect" ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+                    Continue to {gateway} →
+                  </button>
+                </>
               ) : (
                 <>
                   <p className="text-xs text-muted-foreground">
-                    Real payment gateways post a signed webhook to <code>/api/public/payments/webhook</code> after the customer pays.
-                    While merchant credentials are not connected, use the sandbox controls below to drive the same verified-callback flow.
+                    Sandbox controls — for {gateway === "manual" ? "manual" : "in-development"} gateways without a hosted checkout.
                   </p>
                   <div className="grid grid-cols-2 gap-3">
                     <button

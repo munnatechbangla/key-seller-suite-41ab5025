@@ -53,11 +53,16 @@ export type PaymentConfig = {
   currency: string;
   currency_symbol: string;
   sslcommerz_enabled: boolean;
+  sslcommerz_mode: "sandbox" | "live";
   bkash_enabled: boolean;
+  bkash_mode: "sandbox" | "live";
   nagad_enabled: boolean;
+  nagad_mode: "sandbox" | "live";
   rocket_enabled: boolean;
   stripe_enabled: boolean;
+  stripe_mode: "sandbox" | "live";
   paypal_enabled: boolean;
+  paypal_mode: "sandbox" | "live";
   manual_enabled: boolean;
   manual_instructions: string;
 };
@@ -116,11 +121,16 @@ export const defaultSettings: AllSettings = {
     currency: "USD",
     currency_symbol: "$",
     sslcommerz_enabled: false,
+    sslcommerz_mode: "sandbox",
     bkash_enabled: false,
+    bkash_mode: "sandbox",
     nagad_enabled: false,
+    nagad_mode: "sandbox",
     rocket_enabled: false,
     stripe_enabled: false,
+    stripe_mode: "sandbox",
     paypal_enabled: false,
+    paypal_mode: "sandbox",
     manual_enabled: true,
     manual_instructions: "",
   },

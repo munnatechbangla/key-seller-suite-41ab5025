@@ -149,12 +149,12 @@ function AdminSettings() {
             <Field label="Currency Code" value={data.payment.currency} onChange={(v) => set("payment", "currency", v)} />
             <Field label="Currency Symbol" value={data.payment.currency_symbol} onChange={(v) => set("payment", "currency_symbol", v)} />
           </div>
-          <Toggle label="SSLCommerz enabled" value={data.payment.sslcommerz_enabled} onChange={(v) => set("payment", "sslcommerz_enabled", v)} />
-          <Toggle label="bKash enabled" value={data.payment.bkash_enabled} onChange={(v) => set("payment", "bkash_enabled", v)} />
-          <Toggle label="Nagad enabled" value={data.payment.nagad_enabled} onChange={(v) => set("payment", "nagad_enabled", v)} />
+          <GatewayRow id="sslcommerz" label="SSLCommerz" data={data} set={set} />
+          <GatewayRow id="bkash" label="bKash" data={data} set={set} />
+          <GatewayRow id="nagad" label="Nagad" data={data} set={set} />
+          <GatewayRow id="stripe" label="Stripe" data={data} set={set} />
+          <GatewayRow id="paypal" label="PayPal" data={data} set={set} />
           <Toggle label="Rocket enabled" value={data.payment.rocket_enabled} onChange={(v) => set("payment", "rocket_enabled", v)} />
-          <Toggle label="Stripe enabled" value={data.payment.stripe_enabled} onChange={(v) => set("payment", "stripe_enabled", v)} />
-          <Toggle label="PayPal enabled" value={data.payment.paypal_enabled} onChange={(v) => set("payment", "paypal_enabled", v)} />
           <Toggle label="Manual payment enabled" value={data.payment.manual_enabled} onChange={(v) => set("payment", "manual_enabled", v)} />
           <Area label="Manual Payment Instructions" value={data.payment.manual_instructions} onChange={(v) => set("payment", "manual_instructions", v)} />
           <SaveBtn onClick={() => save("payment")} saving={saving === "payment"} />
@@ -190,6 +190,32 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
     </div>
   );
 }
+
+type GatewayId = "sslcommerz" | "bkash" | "nagad" | "stripe" | "paypal";
+function GatewayRow({ id, label, data, set }: {
+  id: GatewayId; label: string; data: AllSettings;
+  set: <K extends keyof AllSettings, F extends keyof AllSettings[K]>(g: K, f: F, v: AllSettings[K][F]) => void;
+}) {
+  const enabledKey = `${id}_enabled` as keyof AllSettings["payment"];
+  const modeKey = `${id}_mode` as keyof AllSettings["payment"];
+  const enabled = Boolean(data.payment[enabledKey]);
+  const mode = (data.payment[modeKey] as "sandbox" | "live") || "sandbox";
+  return (
+    <div className="flex items-center justify-between rounded-md border p-3 gap-3 flex-wrap">
+      <Label className="cursor-pointer flex-1">{label}</Label>
+      <select
+        value={mode}
+        onChange={(e) => set("payment", modeKey, e.target.value as never)}
+        className="text-xs px-2 py-1 rounded border bg-background"
+      >
+        <option value="sandbox">Sandbox</option>
+        <option value="live">Live</option>
+      </select>
+      <Switch checked={enabled} onCheckedChange={(v) => set("payment", enabledKey, v as never)} />
+    </div>
+  );
+}
+
 
 function SaveBtn({ onClick, saving }: { onClick: () => void; saving: boolean }) {
   return (

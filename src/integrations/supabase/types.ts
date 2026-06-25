@@ -636,6 +636,146 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_intents: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          expires_at: string | null
+          gateway: string
+          gateway_payment_id: string | null
+          gateway_session_id: string | null
+          id: string
+          mode: string
+          order_id: string
+          order_number: string
+          redirect_url: string | null
+          request_payload: Json | null
+          response_payload: Json | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          expires_at?: string | null
+          gateway: string
+          gateway_payment_id?: string | null
+          gateway_session_id?: string | null
+          id?: string
+          mode?: string
+          order_id: string
+          order_number: string
+          redirect_url?: string | null
+          request_payload?: Json | null
+          response_payload?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          expires_at?: string | null
+          gateway?: string
+          gateway_payment_id?: string | null
+          gateway_session_id?: string | null
+          id?: string
+          mode?: string
+          order_id?: string
+          order_number?: string
+          redirect_url?: string | null
+          request_payload?: Json | null
+          response_payload?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_intents_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_logs: {
+        Row: {
+          amount: number | null
+          created_at: string
+          currency: string | null
+          error_message: string | null
+          event_type: string
+          gateway: string
+          id: string
+          ip_address: string | null
+          order_id: string | null
+          order_number: string | null
+          payment_intent_id: string | null
+          request_body: Json | null
+          response_body: Json | null
+          signature_valid: boolean | null
+          status: string | null
+          transaction_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          error_message?: string | null
+          event_type: string
+          gateway: string
+          id?: string
+          ip_address?: string | null
+          order_id?: string | null
+          order_number?: string | null
+          payment_intent_id?: string | null
+          request_body?: Json | null
+          response_body?: Json | null
+          signature_valid?: boolean | null
+          status?: string | null
+          transaction_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          error_message?: string | null
+          event_type?: string
+          gateway?: string
+          id?: string
+          ip_address?: string | null
+          order_id?: string | null
+          order_number?: string | null
+          payment_intent_id?: string | null
+          request_body?: Json | null
+          response_body?: Json | null
+          signature_valid?: boolean | null
+          status?: string | null
+          transaction_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_logs_payment_intent_id_fkey"
+            columns: ["payment_intent_id"]
+            isOneToOne: false
+            referencedRelation: "payment_intents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -1269,6 +1409,38 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      webhook_events: {
+        Row: {
+          event_id: string
+          gateway: string
+          id: string
+          order_id: string | null
+          processed_at: string
+        }
+        Insert: {
+          event_id: string
+          gateway: string
+          id?: string
+          order_id?: string | null
+          processed_at?: string
+        }
+        Update: {
+          event_id?: string
+          gateway?: string
+          id?: string
+          order_id?: string | null
+          processed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
