@@ -183,8 +183,8 @@ function CheckoutPage() {
             </div>
             <div className="flex gap-2">
               <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Coupon" className="flex-1 px-3 py-2 rounded-lg bg-muted/60 border border-border text-sm outline-none" />
-              <button type="button" onClick={() => cart.applyCoupon(code) ? toast.success("Applied") : toast.error("Invalid")} className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold inline-flex items-center gap-1">
-                <Tag className="h-4 w-4" /> Apply
+              <button type="button" onClick={applyCoupon} disabled={applying} className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold inline-flex items-center gap-1 disabled:opacity-60">
+                <Tag className="h-4 w-4" /> {applying ? "..." : "Apply"}
               </button>
             </div>
             <button type="submit" disabled={submitting} className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:opacity-95 disabled:opacity-60">
