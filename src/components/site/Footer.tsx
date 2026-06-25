@@ -21,19 +21,16 @@ export function Footer() {
               <Zap className="h-5 w-5 text-primary-foreground" strokeWidth={2.5} />
             </div>
             <span className="font-bold text-2xl">
-              {siteConfig.brandSplit.lead}<span className="text-gradient">{siteConfig.brandSplit.accent}</span>
+              {s.branding.brand_lead}<span className="text-gradient">{s.branding.brand_accent}</span>
             </span>
           </Link>
-          <p className="text-white/70 max-w-sm text-sm leading-relaxed">{siteConfig.description}</p>
+          <p className="text-white/70 max-w-sm text-sm leading-relaxed">{s.branding.description}</p>
           <div className="flex gap-2 pt-2">
-            {socialLinks.map((s) => {
-              const Icon = resolveIcon(s.icon);
-              return (
-                <a key={s.label} href={s.href} aria-label={s.label} className="h-10 w-10 grid place-items-center rounded-xl glass-dark hover:bg-white/15 transition-smooth">
-                  <Icon className="h-4 w-4" />
-                </a>
-              );
-            })}
+            {social.map((item) => (
+              <a key={item.label} href={item.href} aria-label={item.label} className="h-10 w-10 grid place-items-center rounded-xl glass-dark hover:bg-white/15 transition-smooth">
+                <item.Icon className="h-4 w-4" />
+              </a>
+            ))}
           </div>
         </div>
 
