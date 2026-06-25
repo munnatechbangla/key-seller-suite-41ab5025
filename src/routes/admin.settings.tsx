@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { isValidGa4, isValidGtm, isValidMetaPixel } from "@/lib/analytics/track";
 
 export const Route = createFileRoute("/admin/settings")({
   component: AdminSettings,
