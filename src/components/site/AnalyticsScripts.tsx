@@ -35,7 +35,7 @@ function appendRaw(id: string, html: string, where: "head" | "body") {
 
 export function AnalyticsScripts() {
   const a = useSettings((s) => s.settings.analytics);
-  const location = useRouterState({ select: (s) => s.location.pathname + s.location.search });
+  const location = useRouterState({ select: (s) => s.location.href });
   const firstPage = useRef(true);
 
   useEffect(() => {
