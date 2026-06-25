@@ -137,9 +137,14 @@ function Hero() {
           </div>
         </div>
 
-        <div className="relative h-[460px] hidden lg:block">
+        <div className="hidden lg:grid grid-cols-2 gap-4 self-stretch content-center">
           {floatingProducts.slice(0, 6).map((p, i) => (
-            <FloatingCard key={p.slug} className={positions[i % positions.length]} delay={delays[i % delays.length]} product={p} />
+            <FloatingCard
+              key={p.slug}
+              product={p}
+              delay={delays[i % delays.length]}
+              duration={durations[i % durations.length]}
+            />
           ))}
         </div>
       </div>
