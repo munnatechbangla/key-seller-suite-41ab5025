@@ -130,19 +130,33 @@ function CheckoutPage() {
           </Section>
 
           <Section title="Payment method">
-            <div className="space-y-2">
-              {gatewayList.map((g) => (
-                <label key={g.id} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-smooth ${gateway === g.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
-                  <input type="radio" name="gateway" checked={gateway === g.id} onChange={() => setGateway(g.id)} className="accent-[var(--primary)]" />
-                  <g.Icon className="h-5 w-5 text-primary" />
-                  <div className="flex-1">
-                    <div className="font-semibold text-sm">{g.label}</div>
-                    <div className="text-xs text-muted-foreground">{g.sub}</div>
-                  </div>
-                </label>
-              ))}
-            </div>
+            {gwQuery.isLoading ? (
+              <p className="text-sm text-muted-foreground">Loading payment methods…</p>
+            ) : gateways.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No payment methods enabled. Please contact support.</p>
+            ) : (
+              <div className="space-y-2">
+                {gateways.map((g) => (
+                  <label key={g.slug} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-smooth ${gateway === g.slug ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
+                    <input type="radio" name="gateway" checked={gateway === g.slug} onChange={() => setGateway(g.slug)} className="accent-[var(--primary)]" />
+                    {g.logo_url ? (
+                      <img src={g.logo_url} alt="" className="h-6 w-6 object-contain" />
+                    ) : (
+                      <Wallet className="h-5 w-5 text-primary" />
+                    )}
+                    <div className="flex-1">
+                      <div className="font-semibold text-sm flex items-center gap-2">
+                        {g.name}
+                        {g.type === "manual" && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600">MANUAL</span>}
+                      </div>
+                      {g.description && <div className="text-xs text-muted-foreground">{g.description}</div>}
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
           </Section>
+
 
           <div className="space-y-2 text-sm">
             <label className="flex items-start gap-2 cursor-pointer">
