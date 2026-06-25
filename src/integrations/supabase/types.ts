@@ -1097,6 +1097,36 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          created_at: string
+          group_key: string
+          id: string
+          is_public: boolean
+          setting_key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          group_key: string
+          id?: string
+          is_public?: boolean
+          setting_key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          created_at?: string
+          group_key?: string
+          id?: string
+          is_public?: boolean
+          setting_key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       trending_products: {
         Row: {
           created_at: string
