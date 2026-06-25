@@ -21,6 +21,7 @@ const items = [
   { to: "/admin/customers", label: "Customers", icon: Users },
   { to: "/admin/licenses", label: "Licenses", icon: KeyRound },
   { to: "/admin/coupons", label: "Coupons", icon: Ticket },
+  { to: "/admin/settings", label: "Settings", icon: SettingsIcon },
 ];
 
 function AdminLayout() {
