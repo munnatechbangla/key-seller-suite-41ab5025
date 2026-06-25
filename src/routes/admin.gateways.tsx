@@ -17,6 +17,8 @@ import {
   listSubmissionsFn, reviewSubmissionFn,
   type GatewayRow, type GatewayType, type JsonValue,
 } from "@/lib/payments/gateways.functions";
+import { testGatewayConnectionFn, getGatewayHealthFn } from "@/lib/payments/admin.functions";
+import { Activity, CheckCircle, AlertCircle } from "lucide-react";
 
 export const Route = createFileRoute("/admin/gateways")({
   component: GatewaysPage,
