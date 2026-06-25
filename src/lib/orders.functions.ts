@@ -55,7 +55,22 @@ async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string
   });
 
   const couponCode = input.couponCode?.trim().toUpperCase() || null;
-  const discount = couponCode && COUPONS[couponCode] ? +(subtotal * COUPONS[couponCode]).toFixed(2) : 0;
+  let discount = 0;
+  let couponId: string | null = null;
+  if (couponCode) {
+    const productIds = products.map((p) => p.id);
+    const { data: vRow } = await supabaseAdmin.rpc("validate_coupon", {
+      _code: couponCode,
+      _subtotal: subtotal,
+      _user_id: userId ?? undefined,
+      _email: input.customer.email,
+      _product_ids: productIds,
+    });
+    const v = vRow as { ok: boolean; discount?: number; coupon_id?: string; reason?: string } | null;
+    if (!v?.ok) throw new Error(`Coupon invalid: ${v?.reason ?? "unknown"}`);
+    discount = Number(v.discount ?? 0);
+    couponId = v.coupon_id ?? null;
+  }
   const total = +(subtotal - discount).toFixed(2);
 
   const { data: numRow, error: nErr } = await supabaseAdmin.rpc("generate_order_number");
