@@ -1,4 +1,4 @@
-import { seoMeta, siteName } from "@/lib/cms/seo";
+import { seoMeta, siteName, canonicalLink } from "@/lib/cms/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -9,7 +9,9 @@ export const Route = createFileRoute("/about")({
     meta: seoMeta({
       title: "About",
       description: `${siteName()} is the trusted marketplace for premium digital products. Learn about our mission, team and values.`,
+      path: "/about",
     }),
+    links: [canonicalLink("/about")],
   }),
   component: AboutPage,
 });
