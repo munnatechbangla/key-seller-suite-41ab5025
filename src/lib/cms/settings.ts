@@ -148,6 +148,18 @@ export const defaultSettings: AllSettings = {
     manual_enabled: true,
     manual_instructions: "",
   },
+  analytics: {
+    ga4_enabled: false,
+    ga4_id: "",
+    gtm_enabled: false,
+    gtm_id: "",
+    meta_pixel_enabled: false,
+    meta_pixel_id: "",
+    custom_header_enabled: false,
+    custom_header: "",
+    custom_footer_enabled: false,
+    custom_footer: "",
+  },
 };
 
 type SettingsState = {
