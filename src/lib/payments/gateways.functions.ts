@@ -28,18 +28,16 @@ export type GatewayRow = {
 // ---------------- Public (checkout) ----------------
 
 export const listEnabledGatewaysFn = createServerFn({ method: "GET" }).handler(async () => {
+  // Uses SECURITY DEFINER RPC `list_public_payment_gateways` which strips
+  // credentials from `config` (only safe fields exposed for manual methods).
   const supabase = createClient<Database>(
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_PUBLISHABLE_KEY!,
     { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
   );
-  const { data, error } = await supabase
-    .from("payment_gateways")
-    .select("id, slug, name, type, logo_url, description, is_enabled, mode, sort_order, config")
-    .eq("is_enabled", true)
-    .order("sort_order", { ascending: true });
+  const { data, error } = await supabase.rpc("list_public_payment_gateways");
   if (error) throw new Error(error.message);
-  return { gateways: (data ?? []) as GatewayRow[] };
+  return { gateways: (data ?? []) as unknown as GatewayRow[] };
 });
 
 // ---------------- Admin: CRUD ----------------
