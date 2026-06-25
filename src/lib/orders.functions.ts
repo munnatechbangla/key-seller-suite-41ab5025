@@ -25,8 +25,6 @@ const placeSchema = z.object({
 });
 
 async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string | null) {
-
-async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string | null) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const slugs = input.items.map((i) => i.slug);
 
