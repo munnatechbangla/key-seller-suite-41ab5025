@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/stores";
 import { LayoutDashboard, Package, ShoppingBag, Users, KeyRound, Loader2, Ticket, Settings as SettingsIcon, Mail, FileText, CreditCard, Wallet, Star, ScrollText, Wand2, HeartPulse, Database, BookOpen, ClipboardCheck, History } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSettings } from "@/lib/cms/settings";
 import { Logo } from "@/components/site/Logo";
 
 export const Route = createFileRoute("/admin")({
