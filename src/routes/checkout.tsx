@@ -66,6 +66,7 @@ function CheckoutPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agree || !privacy) { toast.error("Please accept the terms"); return; }
+    if (!gateway) { toast.error("Select a payment method"); return; }
     if (submitting) return;
     setSubmitting(true);
     const fd = new FormData(e.currentTarget as HTMLFormElement);
