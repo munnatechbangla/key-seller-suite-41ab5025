@@ -1,4 +1,5 @@
 import { seoMeta, siteName } from "@/lib/cms/seo";
+import { useSettings } from "@/lib/cms/settings";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -33,7 +34,9 @@ const toc = [
 
 function PostPage() {
   const { post } = Route.useLoaderData();
+  const brand = useSettings((s) => s.settings.branding.name);
   const related = blogPosts.filter((p) => p.slug !== post.slug).slice(0, 3);
+
 
   return (
     <div className="min-h-screen">
@@ -63,9 +66,9 @@ function PostPage() {
             <li>Priority support and warranty</li>
           </ul>
           <h2 id="pricing" className="text-2xl font-bold scroll-mt-24">Pricing & value</h2>
-          <p>The retail price isn't the whole story. With TopupHut, you can get the same subscription for a fraction of the cost, with instant delivery and full warranty.</p>
+          <p>The retail price isn't the whole story. With {brand}, you can get the same subscription for a fraction of the cost, with instant delivery and full warranty.</p>
           <h2 id="verdict" className="text-2xl font-bold scroll-mt-24">Our verdict</h2>
-          <p>If you use the service even occasionally, the value is hard to beat. Check out the latest deals on TopupHut and grab yours today.</p>
+          <p>If you use the service even occasionally, the value is hard to beat. Check out the latest deals on {brand} and grab yours today.</p>
 
           <div className="flex flex-wrap gap-2 pt-6 border-t border-border">
             {(post.tags as string[]).map((t) => (
