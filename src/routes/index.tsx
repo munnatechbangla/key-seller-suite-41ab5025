@@ -66,7 +66,9 @@ function Home() {
         <WhyChoose />
         <Stats />
         <Testimonials />
+        <BlogSection />
         <FAQ />
+        <PaymentMethods />
         <CTA />
       </main>
       <Footer />
