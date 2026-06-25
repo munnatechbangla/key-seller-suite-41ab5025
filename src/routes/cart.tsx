@@ -22,7 +22,31 @@ export const Route = createFileRoute("/cart")({
 function CartPage() {
   const cart = useCart();
   const [code, setCode] = useState("");
+  const [applying, setApplying] = useState(false);
+  const validate = useServerFn(validateCouponFn);
   const crossSell = useFeatured().slice(0, 4);
+
+  const apply = async () => {
+    if (!code.trim()) return;
+    setApplying(true);
+    try {
+      const r = await validate({
+        data: { code: code.trim(), subtotal: cart.subtotal(), productSlugs: cart.items.map((i) => i.slug) },
+      });
+      if (r.ok) {
+        cart.setCoupon(r.code, r.discount);
+        toast.success(`Saved $${r.discount.toFixed(2)}`);
+        setCode("");
+      } else {
+        cart.clearCoupon();
+        toast.error(couponReason(r.reason, r));
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not apply coupon");
+    } finally {
+      setApplying(false);
+    }
+  };
 
   if (cart.items.length === 0) {
     return (
