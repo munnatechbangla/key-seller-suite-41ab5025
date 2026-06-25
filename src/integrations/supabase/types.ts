@@ -40,6 +40,132 @@ export type Database = {
           },
         ]
       }
+      coupon_usage: {
+        Row: {
+          coupon_id: string
+          created_at: string
+          discount_amount: number
+          email: string | null
+          id: string
+          order_id: string | null
+          order_total: number
+          user_id: string | null
+        }
+        Insert: {
+          coupon_id: string
+          created_at?: string
+          discount_amount?: number
+          email?: string | null
+          id?: string
+          order_id?: string | null
+          order_total?: number
+          user_id?: string | null
+        }
+        Update: {
+          coupon_id?: string
+          created_at?: string
+          discount_amount?: number
+          email?: string | null
+          id?: string
+          order_id?: string | null
+          order_total?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_usage_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupon_usage_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          ends_at: string | null
+          first_order_only: boolean | null
+          free_product_id: string | null
+          id: string
+          is_active: boolean
+          max_discount: number | null
+          min_order_amount: number | null
+          new_customer_only: boolean | null
+          per_user_limit: number | null
+          revenue_generated: number
+          starts_at: string | null
+          target_brand_ids: string[] | null
+          target_category_ids: string[] | null
+          target_product_ids: string[] | null
+          type: Database["public"]["Enums"]["coupon_type"]
+          updated_at: string
+          usage_limit: number | null
+          used_count: number
+          value: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          first_order_only?: boolean | null
+          free_product_id?: string | null
+          id?: string
+          is_active?: boolean
+          max_discount?: number | null
+          min_order_amount?: number | null
+          new_customer_only?: boolean | null
+          per_user_limit?: number | null
+          revenue_generated?: number
+          starts_at?: string | null
+          target_brand_ids?: string[] | null
+          target_category_ids?: string[] | null
+          target_product_ids?: string[] | null
+          type?: Database["public"]["Enums"]["coupon_type"]
+          updated_at?: string
+          usage_limit?: number | null
+          used_count?: number
+          value?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          first_order_only?: boolean | null
+          free_product_id?: string | null
+          id?: string
+          is_active?: boolean
+          max_discount?: number | null
+          min_order_amount?: number | null
+          new_customer_only?: boolean | null
+          per_user_limit?: number | null
+          revenue_generated?: number
+          starts_at?: string | null
+          target_brand_ids?: string[] | null
+          target_category_ids?: string[] | null
+          target_product_ids?: string[] | null
+          type?: Database["public"]["Enums"]["coupon_type"]
+          updated_at?: string
+          usage_limit?: number | null
+          used_count?: number
+          value?: number
+        }
+        Relationships: []
+      }
       downloads: {
         Row: {
           created_at: string
@@ -1023,6 +1149,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_coupon_usage: {
+        Args: {
+          _coupon_id: string
+          _discount: number
+          _email: string
+          _order_id: string
+          _order_total: number
+          _user_id: string
+        }
+        Returns: undefined
+      }
       assign_licenses_for_order: {
         Args: { _order_id: string }
         Returns: number
@@ -1047,9 +1184,20 @@ export type Database = {
         }
         Returns: Json
       }
+      validate_coupon: {
+        Args: {
+          _code: string
+          _email?: string
+          _product_ids?: string[]
+          _subtotal: number
+          _user_id?: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "manager" | "customer" | "affiliate" | "support"
+      coupon_type: "percent" | "fixed" | "free_product" | "free_download"
       license_key_status: "available" | "assigned" | "revoked"
       order_status:
         | "pending"
@@ -1190,6 +1338,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "manager", "customer", "affiliate", "support"],
+      coupon_type: ["percent", "fixed", "free_product", "free_download"],
       license_key_status: ["available", "assigned", "revoked"],
       order_status: [
         "pending",
