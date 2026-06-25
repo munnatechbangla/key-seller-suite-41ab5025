@@ -100,6 +100,7 @@ function AdminSettings() {
           <TabsTrigger value="social">Social</TabsTrigger>
           <TabsTrigger value="payment">Payment</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="theme">Theme</TabsTrigger>
         </TabsList>
 
         <TabsContent value="branding" className="mt-4 space-y-4">
