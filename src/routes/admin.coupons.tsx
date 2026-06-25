@@ -130,7 +130,7 @@ function AdminCoupons() {
                   <option value="free_download">Free download</option>
                 </select>
               </Field>
-              <Field label="Value"><NumberInput value={editing.value} onChange={(v) => setEditing({ ...editing, value: v })} /></Field>
+              <Field label="Value"><NumberInput value={editing.value} onChange={(v) => setEditing({ ...editing, value: v ?? 0 })} /></Field>
               <Field label="Min order amount"><NumberInput value={editing.min_order_amount} onChange={(v) => setEditing({ ...editing, min_order_amount: v })} /></Field>
               <Field label="Max discount"><NumberInput value={editing.max_discount} onChange={(v) => setEditing({ ...editing, max_discount: v })} /></Field>
               <Field label="Total usage limit"><NumberInput value={editing.usage_limit} onChange={(v) => setEditing({ ...editing, usage_limit: v == null ? null : Math.floor(v) })} /></Field>
