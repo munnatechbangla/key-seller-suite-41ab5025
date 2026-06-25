@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { MobileBottomNav } from "@/components/site/MobileBottomNav";
 import { ThemeProviderEffect } from "@/components/site/ThemeToggle";
+import { ThemeStyleInjector } from "@/components/site/ThemeStyleInjector";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/lib/stores";
 import { useSettings } from "@/lib/cms/settings";
