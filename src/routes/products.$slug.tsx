@@ -1,4 +1,4 @@
-import { seoMeta, siteName } from "@/lib/cms/seo";
+import { seoMeta, canonicalLink, productJsonLd, breadcrumbJsonLd, faqJsonLd, jsonLdScript } from "@/lib/cms/seo";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
