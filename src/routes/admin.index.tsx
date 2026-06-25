@@ -1,15 +1,24 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { adminGetKpisFn } from "@/lib/admin.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, ShoppingBag, Users, Package, TrendingUp } from "lucide-react";
+import { DollarSign, ShoppingBag, Users, Package, TrendingUp, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { useSetupStatus } from "@/lib/setup";
+import { useSettings } from "@/lib/cms/settings";
 
 export const Route = createFileRoute("/admin/")({ component: AdminDashboard });
 
 function AdminDashboard() {
   const fn = useServerFn(adminGetKpisFn);
   const { data, isLoading } = useQuery({ queryKey: ["admin-kpis"], queryFn: () => fn() });
+  const { data: setup } = useSetupStatus();
+  const s = useSettings((x) => x.settings);
+  const missing: string[] = [];
+  if (!s.branding.name) missing.push("Brand name");
+  if (!s.seo.site_url) missing.push("Site URL");
+  if (!s.contact.support_email) missing.push("Support email");
+  if (!s.payment.currency) missing.push("Currency");
 
   const k = data ?? { totalRevenue: 0, orders: 0, customers: 0, products: 0, conversion: 0 };
   const cards = [
