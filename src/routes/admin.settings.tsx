@@ -98,6 +98,7 @@ function AdminSettings() {
           <TabsTrigger value="email">Email</TabsTrigger>
           <TabsTrigger value="social">Social</TabsTrigger>
           <TabsTrigger value="payment">Payment</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="branding" className="mt-4 space-y-4">
