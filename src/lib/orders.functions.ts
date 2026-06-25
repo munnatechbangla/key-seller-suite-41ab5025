@@ -127,6 +127,13 @@ async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string
     });
   }
 
+  try {
+    const { sendOrderConfirmation } = await import("@/lib/emails/triggers.server");
+    await sendOrderConfirmation(order.id);
+  } catch (e) {
+    console.error("[emails] order confirmation failed", e);
+  }
+
   return { orderNumber: order.order_number, orderId: order.id, total, paymentUrl: `/pay/${order.order_number}` };
 }
 

@@ -31,6 +31,13 @@ export async function processPaymentCallback(cb: GatewayCallback) {
       _gateway_response: gatewayPayload,
     });
     if (error) throw new Error(error.message);
+    // Fire-and-forget transactional emails (queued; sent only when sender domain is configured).
+    try {
+      const { sendPostPaymentEmails } = await import("@/lib/emails/triggers.server");
+      await sendPostPaymentEmails(order.id);
+    } catch (e) {
+      console.error("[emails] post-payment dispatch failed", e);
+    }
     return { ok: true as const, result: data as Record<string, unknown> };
   }
 

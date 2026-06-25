@@ -41,6 +41,8 @@ import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminLicensesRouteImport } from './routes/admin.licenses'
+import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
+import { Route as AdminEmailTemplatesRouteImport } from './routes/admin.email-templates'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments.webhook'
@@ -205,6 +207,16 @@ const AdminLicensesRoute = AdminLicensesRouteImport.update({
   path: '/licenses',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminEmailsRoute = AdminEmailsRouteImport.update({
+  id: '/emails',
+  path: '/emails',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEmailTemplatesRoute = AdminEmailTemplatesRouteImport.update({
+  id: '/email-templates',
+  path: '/email-templates',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCustomersRoute = AdminCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
@@ -244,6 +256,8 @@ export interface FileRoutesByFullPath {
   '/wishlist': typeof WishlistRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/email-templates': typeof AdminEmailTemplatesRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -280,6 +294,8 @@ export interface FileRoutesByTo {
   '/wishlist': typeof WishlistRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/email-templates': typeof AdminEmailTemplatesRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -318,6 +334,8 @@ export interface FileRoutesById {
   '/wishlist': typeof WishlistRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/email-templates': typeof AdminEmailTemplatesRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -357,6 +375,8 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/coupons'
     | '/admin/customers'
+    | '/admin/email-templates'
+    | '/admin/emails'
     | '/admin/licenses'
     | '/admin/orders'
     | '/admin/products'
@@ -393,6 +413,8 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/coupons'
     | '/admin/customers'
+    | '/admin/email-templates'
+    | '/admin/emails'
     | '/admin/licenses'
     | '/admin/orders'
     | '/admin/products'
@@ -430,6 +452,8 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/coupons'
     | '/admin/customers'
+    | '/admin/email-templates'
+    | '/admin/emails'
     | '/admin/licenses'
     | '/admin/orders'
     | '/admin/products'
@@ -702,6 +726,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLicensesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/emails': {
+      id: '/admin/emails'
+      path: '/emails'
+      fullPath: '/admin/emails'
+      preLoaderRoute: typeof AdminEmailsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/email-templates': {
+      id: '/admin/email-templates'
+      path: '/email-templates'
+      fullPath: '/admin/email-templates'
+      preLoaderRoute: typeof AdminEmailTemplatesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/customers': {
       id: '/admin/customers'
       path: '/customers'
@@ -729,6 +767,8 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminCouponsRoute: typeof AdminCouponsRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
+  AdminEmailTemplatesRoute: typeof AdminEmailTemplatesRoute
+  AdminEmailsRoute: typeof AdminEmailsRoute
   AdminLicensesRoute: typeof AdminLicensesRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminProductsRoute: typeof AdminProductsRoute
@@ -739,6 +779,8 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminCouponsRoute: AdminCouponsRoute,
   AdminCustomersRoute: AdminCustomersRoute,
+  AdminEmailTemplatesRoute: AdminEmailTemplatesRoute,
+  AdminEmailsRoute: AdminEmailsRoute,
   AdminLicensesRoute: AdminLicensesRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminProductsRoute: AdminProductsRoute,
@@ -790,13 +832,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
