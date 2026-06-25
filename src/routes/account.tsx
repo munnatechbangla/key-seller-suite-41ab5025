@@ -247,6 +247,55 @@ function LicensesTab() {
   );
 }
 
+function SubmissionsTab() {
+  const fn = useServerFn(getMySubmissionsFn);
+  const q = useQuery({ queryKey: ["my-submissions"], queryFn: () => fn() });
+  const items = q.data ?? [];
+  const palette: Record<string, string> = {
+    pending: "text-amber-600 bg-amber-500/10",
+    approved: "text-emerald-600 bg-emerald-500/10",
+    rejected: "text-rose-600 bg-rose-500/10",
+  };
+  return (
+    <Card>
+      <h3 className="font-bold mb-4">Manual payment submissions</h3>
+      {q.isLoading ? <Loader /> : items.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No manual payments submitted yet.</p>
+      ) : (
+        <div className="space-y-2">
+          {items.map((s) => {
+            const ord = (s as { orders: { order_number: string } | null }).orders;
+            const date = new Date(s.created_at).toLocaleString();
+            const reviewed = s.reviewed_at ? new Date(s.reviewed_at).toLocaleString() : null;
+            return (
+              <div key={s.id} className="p-3 rounded-xl border border-border space-y-1.5">
+                <div className="flex items-center gap-3">
+                  <Receipt className="h-4 w-4 text-primary" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm">#{ord?.order_number ?? "—"} · <span className="capitalize">{s.gateway_slug}</span></div>
+                    <div className="text-xs text-muted-foreground">Submitted {date}{s.transaction_id ? ` · Txn ${s.transaction_id}` : ""}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold text-sm">${Number(s.amount ?? 0).toFixed(2)}</div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[s.status] ?? palette.pending}`}>{s.status}</span>
+                  </div>
+                </div>
+                {s.status === "rejected" && s.admin_note && (
+                  <div className="text-xs text-rose-600 pl-7">Reason: {s.admin_note}</div>
+                )}
+                {s.status === "approved" && reviewed && (
+                  <div className="text-xs text-emerald-600 pl-7">Approved on {reviewed}</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+
 function WishlistTab() {
   const wish = useWishlist();
   const items = useProductsBySlugs(wish.slugs);
