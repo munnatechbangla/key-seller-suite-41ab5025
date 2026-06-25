@@ -57,6 +57,12 @@ function AdminSettings() {
 
   async function save(group: keyof AllSettings) {
     const map = GROUP_KEYS.find((g) => g.group === group)!;
+    if (group === "analytics") {
+      const a = data.analytics;
+      if (!isValidGa4(a.ga4_id)) { toast.error("GA4 ID must look like G-XXXXXXX"); return; }
+      if (!isValidGtm(a.gtm_id)) { toast.error("GTM ID must look like GTM-XXXXXX"); return; }
+      if (!isValidMetaPixel(a.meta_pixel_id)) { toast.error("Meta Pixel ID must be a numeric string"); return; }
+    }
     setSaving(group);
     try {
       await upsert({ data: { group_key: map.group_key, setting_key: map.setting_key, value: data[group] as any } });
