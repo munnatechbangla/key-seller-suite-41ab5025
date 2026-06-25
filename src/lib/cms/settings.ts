@@ -202,6 +202,8 @@ export const useSettings = create<SettingsState>((set) => ({
           next.social = merge(next.social, v as Partial<SocialLinksMap>);
         } else if (row.group_key === "payment" && row.setting_key === "config") {
           next.payment = merge(next.payment, v as Partial<PaymentConfig>);
+        } else if (row.group_key === "analytics" && row.setting_key === "config") {
+          next.analytics = merge(next.analytics, v as Partial<AnalyticsConfig>);
         }
       }
       set({ settings: next, loaded: true });
