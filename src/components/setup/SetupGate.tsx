@@ -14,11 +14,13 @@ export function SetupGate() {
   useEffect(() => {
     if (isLoading || !data) return;
     if (data.is_completed) return;
-    const allowed =
-      pathname === "/setup" ||
-      pathname.startsWith("/auth") ||
-      pathname.startsWith("/api/");
-    if (!allowed) navigate({ to: "/setup", replace: true });
+    // Only gate the admin area on first-run. The storefront, auth pages,
+    // API routes, and the wizard itself stay reachable so the preview and
+    // public site work before an admin completes setup.
+    const mustGate =
+      pathname.startsWith("/admin") &&
+      pathname !== "/admin/setup";
+    if (mustGate) navigate({ to: "/setup", replace: true });
   }, [isLoading, data, pathname, navigate]);
 
   return null;
