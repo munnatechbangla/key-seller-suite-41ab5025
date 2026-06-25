@@ -12,34 +12,39 @@ type LogoProps = {
   className?: string;
 };
 
+// Uniform sizing — every surface (Header, Footer, Admin, Auth) renders the
+// same dimensions for a given size token.
 const sizeMap: Record<NonNullable<LogoProps["size"]>, string> = {
-  sm: "text-lg",
-  md: "text-xl",
+  sm: "text-xl",
+  md: "text-2xl",
   lg: "text-2xl",
 };
 
 /**
  * Single source of truth for brand wordmark. Text-only — no icon, no symbol,
- * no badge. Splits the brand name into two halves (`brand_lead` + `brand_accent`)
- * coming from `site_settings.branding` and styles the accent half with the
- * theme's primary→secondary gradient.
+ * no badge. "Digital" (lead) renders in solid white; "Nest" (accent) uses the
+ * theme primary→secondary gradient. Weight is locked at 800 (font-extrabold).
  */
 export function Logo({ variant = "light", size = "md", asPlainText, className }: LogoProps) {
   const branding = useSettings((s) => s.settings.branding);
   const lead = branding.brand_lead || branding.name || "Digital";
   const accent = branding.brand_accent || "Nest";
 
+  // Lead half: white on dark surfaces, foreground on light — keeps contrast in
+  // both themes while preserving the "white DIGITAL" treatment on hero/footer.
+  const leadClass = variant === "dark" ? "text-white" : "text-foreground";
+
+
   const content = (
     <span
       className={cn(
-        "font-extrabold tracking-tight leading-none select-none",
+        "font-extrabold tracking-tight leading-none select-none inline-flex",
         sizeMap[size],
-        variant === "dark" ? "text-white" : "text-foreground",
         className,
       )}
     >
-      {lead}
-      <span className={variant === "dark" ? "text-gradient" : "text-gradient"}>{accent}</span>
+      <span className={leadClass}>{lead}</span>
+      <span className="text-gradient">{accent}</span>
     </span>
   );
 

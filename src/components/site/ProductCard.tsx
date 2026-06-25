@@ -14,7 +14,16 @@ export function ProductCard({ product }: { product: Product }) {
     <article className="group relative rounded-2xl bg-card border border-border overflow-hidden hover:shadow-premium hover:-translate-y-1 transition-smooth">
       <Link to="/products/$slug" params={{ slug: product.slug }} className="block">
         <div className="relative aspect-square bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center overflow-hidden">
-          <span className="text-7xl group-hover:scale-110 transition-smooth">{product.emoji}</span>
+          {product.thumbnailUrl ? (
+            <img
+              src={product.thumbnailUrl}
+              alt={product.name}
+              loading="lazy"
+              className="h-full w-full object-cover group-hover:scale-110 transition-smooth"
+            />
+          ) : (
+            <span className="text-7xl group-hover:scale-110 transition-smooth">{product.emoji}</span>
+          )}
           {product.badge && (
             <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold bg-gradient-primary text-primary-foreground shadow-elegant">
               {product.badge}

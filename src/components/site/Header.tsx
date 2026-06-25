@@ -122,6 +122,10 @@ export function Header() {
                   />
                 </div>
               </form>
+              <div className="flex items-center justify-between pt-3 mt-1 border-t border-border">
+                <span className="text-xs font-medium text-muted-foreground">Theme</span>
+                <ThemeToggle />
+              </div>
             </nav>
           </div>
         )}

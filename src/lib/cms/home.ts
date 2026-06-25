@@ -49,7 +49,7 @@ export const heroConfig: HeroConfig = {
     { icon: "Shield", label: "Secure checkout" },
     { icon: "RefreshCw", label: "Money-back guarantee" },
   ],
-  floatingProductSlugs: ["chatgpt-plus", "netflix-premium", "canva-pro", "iptv-12m"],
+  floatingProductSlugs: ["chatgpt-plus", "netflix-premium", "canva-pro", "iptv-12m", "spotify-premium", "youtube-premium"],
 };
 
 export const trustStripItems: TrustStripItem[] = [
