@@ -362,14 +362,14 @@ function CTA() {
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold">{newsletterCta.title}</h2>
           <p className="text-white/85 text-lg">{newsletterCta.subtitle}</p>
-          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto pt-2" onSubmit={(e) => e.preventDefault()}>
+          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto pt-2 items-stretch" onSubmit={(e) => e.preventDefault()}>
             <input
               type="email"
               required
               placeholder={newsletterCta.placeholder}
-              className="flex-1 px-4 py-3 rounded-xl bg-white/15 backdrop-blur text-white placeholder:text-white/60 outline-none focus:bg-white/20 border border-white/20"
+              className="flex-1 h-12 px-4 rounded-xl bg-white/15 backdrop-blur text-white placeholder:text-white/60 outline-none focus:bg-white/20 border border-white/20"
             />
-            <button className="px-6 py-3 rounded-xl bg-accent text-accent-foreground font-semibold hover:scale-105 transition-smooth inline-flex items-center justify-center gap-2">
+            <button className="h-12 px-6 rounded-xl bg-accent text-accent-foreground font-semibold hover:scale-105 transition-smooth inline-flex items-center justify-center gap-2">
               <BtnIcon className="h-4 w-4" /> {newsletterCta.button.label}
             </button>
           </form>
