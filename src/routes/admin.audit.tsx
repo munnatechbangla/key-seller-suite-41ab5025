@@ -20,7 +20,7 @@ function AuditReport() {
 
   // Heuristic scores
   const whitelabel = score([
-    !!s.branding.name && s.branding.name !== "TopupHut",
+    !!s.branding.name && s.branding.name !== "DigitalNest",
     !!s.branding.tagline,
     !!s.branding.logo_url,
     !!s.branding.favicon_url,
@@ -53,7 +53,7 @@ function AuditReport() {
   if (!s.seo.site_url) issues.push("Site URL not configured");
   if (!s.email.sender_email) issues.push("Email sender not configured");
   if (!(s.payment.manual_enabled || s.payment.sslcommerz_enabled || s.payment.stripe_enabled)) issues.push("No payment method enabled");
-  if (s.branding.name === "TopupHut") issues.push("Brand name still set to demo value");
+  if (s.branding.name === "DigitalNest") issues.push("Brand name still set to demo value");
 
   return (
     <div className="p-6 space-y-6 max-w-5xl">

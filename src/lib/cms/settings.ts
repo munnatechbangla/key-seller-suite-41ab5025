@@ -1,5 +1,5 @@
 // White-label runtime settings. Loaded from `site_settings` table with the
-// existing TopupHut config as fallback so nothing breaks if the row is missing.
+// existing demo config as fallback so nothing breaks if the row is missing.
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
 import { siteConfig, socialLinks as defaultSocial } from "./site";

@@ -78,7 +78,7 @@ export const statsItems: StatItem[] = [
 export const testimonials: Testimonial[] = [
   { name: "Sarah M.", role: "Designer", emoji: "👩‍🎨", rating: 5, text: "Got Canva Pro for a fraction of the price and it activated in under a minute. Insane service." },
   { name: "James K.", role: "Developer", emoji: "👨‍💻", rating: 5, text: "Bought ChatGPT Plus here three times. Always instant, always works. Support is unmatched." },
-  { name: "Priya R.", role: "Student", emoji: "👩‍🎓", rating: 5, text: "Spotify + Netflix for less than my morning coffee. TopupHut is now my go-to." },
+  { name: "Priya R.", role: "Student", emoji: "👩‍🎓", rating: 5, text: "Spotify + Netflix for less than my morning coffee. DigitalNest is now my go-to." },
 ];
 
 export const homeFaqs: Faq[] = [
@@ -105,7 +105,7 @@ export const categoriesSection = {
 };
 
 export const whyChooseSection = {
-  eyebrow: "Why TopupHut",
+  eyebrow: "Why DigitalNest",
   title: "The smarter way to buy digital",
 };
 
