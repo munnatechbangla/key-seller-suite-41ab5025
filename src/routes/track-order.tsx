@@ -1,3 +1,4 @@
+import { siteName } from "@/lib/cms/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Header } from "@/components/site/Header";
@@ -9,7 +10,7 @@ import { getOrderByNumberFn } from "@/lib/orders.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/track-order")({
-  head: () => ({ meta: [{ title: "Track Order — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `Track Order — ${siteName()}` }] }),
   component: TrackOrder,
 });
 

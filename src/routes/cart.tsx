@@ -1,3 +1,4 @@
+import { siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Header } from "@/components/site/Header";
@@ -12,7 +13,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/cart")({
-  head: () => ({ meta: [{ title: "Shopping Cart — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `Shopping Cart — ${siteName()}` }] }),
   loader: ({ context }) => { context.queryClient.ensureQueryData(featuredQuery()); },
   component: CartPage,
   errorComponent: () => <div className="p-8 text-center">Cart unavailable.</div>,

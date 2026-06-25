@@ -1,3 +1,4 @@
+import { seoMeta, siteName } from "@/lib/cms/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -5,12 +6,10 @@ import { Zap, Users, Award, Globe } from "lucide-react";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
-    meta: [
-      { title: "About TopupHut — Our Story & Mission" },
-      { name: "description", content: "TopupHut is the trusted marketplace for premium digital products. Learn about our mission, team and values." },
-      { property: "og:title", content: "About TopupHut" },
-      { property: "og:description", content: "The trusted home for premium digital products." },
-    ],
+    meta: seoMeta({
+      title: "About",
+      description: `${siteName()} is the trusted marketplace for premium digital products. Learn about our mission, team and values.`,
+    }),
   }),
   component: AboutPage,
 });

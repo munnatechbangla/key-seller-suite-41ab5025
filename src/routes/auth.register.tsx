@@ -1,10 +1,11 @@
+import { siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AuthShell, SocialButtons } from "@/components/site/AuthShell";
 import { useAuth } from "@/lib/stores";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth/register")({
-  head: () => ({ meta: [{ title: "Create account — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `Create account — ${siteName()}` }] }),
   component: RegisterPage,
 });
 

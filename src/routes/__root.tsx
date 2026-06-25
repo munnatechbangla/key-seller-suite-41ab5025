@@ -16,6 +16,7 @@ import { ThemeProviderEffect } from "@/components/site/ThemeToggle";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/lib/stores";
 import { useSettings } from "@/lib/cms/settings";
+import { seoMeta } from "@/lib/cms/seo";
 
 function NotFoundComponent() {
   return (
@@ -82,14 +83,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "TopupHut — Premium Digital Products, Instant Delivery" },
-      { name: "description", content: "Buy ChatGPT Plus, Netflix, Canva Pro, Spotify, IPTV, software keys & gift cards at the best prices. Instant delivery, 24/7 support." },
-      { name: "author", content: "TopupHut" },
       { name: "theme-color", content: "#6C5CE7" },
-      { property: "og:title", content: "TopupHut — Premium Digital Products" },
-      { property: "og:description", content: "Instant delivery on the world's top digital subscriptions and license keys." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      ...seoMeta({}),
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -122,8 +117,15 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const initAuth = useAuth((s) => s.init);
   const loadSettings = useSettings((s) => s.load);
+  const favicon = useSettings((s) => s.settings.branding.favicon_url);
   useEffect(() => initAuth(), [initAuth]);
   useEffect(() => { loadSettings(); }, [loadSettings]);
+  useEffect(() => {
+    if (typeof document === "undefined" || !favicon) return;
+    let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
+    if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
+    link.href = favicon;
+  }, [favicon]);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -1,3 +1,4 @@
+import { seoMeta, siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -20,12 +21,11 @@ export const Route = createFileRoute("/products/$slug")({
     return { product };
   },
   head: ({ loaderData }) => ({
-    meta: [
-      { title: `${loaderData?.product.name} — TopupHut` },
-      { name: "description", content: loaderData?.product.short ?? "Premium digital product" },
-      { property: "og:title", content: `${loaderData?.product.name} — TopupHut` },
-      { property: "og:description", content: loaderData?.product.short ?? "" },
-    ],
+    meta: seoMeta({
+      title: loaderData?.product.name,
+      description: loaderData?.product.short ?? undefined,
+      ogType: "product",
+    }),
   }),
   component: ProductPage,
   notFoundComponent: () => (

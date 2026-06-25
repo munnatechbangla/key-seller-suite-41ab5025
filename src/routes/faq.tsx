@@ -1,3 +1,4 @@
+import { siteName } from "@/lib/cms/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -6,7 +7,7 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 
 export const Route = createFileRoute("/faq")({
-  head: () => ({ meta: [{ title: "FAQ — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `FAQ — ${siteName()}` }] }),
   component: FAQ,
 });
 

@@ -1,3 +1,5 @@
+import { siteName } from "@/lib/cms/seo";
+import { useSettings } from "@/lib/cms/settings";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -6,15 +8,9 @@ import { MessageCircle, Mail, Phone, HelpCircle, FileText, RefreshCcw } from "lu
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/support")({
-  head: () => ({ meta: [{ title: "Support Center — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `Support Center — ${siteName()}` }] }),
   component: SupportPage,
 });
-
-const channels = [
-  { Icon: MessageCircle, t: "Live chat", d: "Average reply in 2 min", link: "#", action: "Start chat", color: "bg-emerald-500" },
-  { Icon: Mail, t: "Email support", d: "support@topuphut.com", link: "mailto:support@topuphut.com", action: "Send email", color: "bg-primary" },
-  { Icon: Phone, t: "WhatsApp", d: "+880 1000 000 000", link: "https://wa.me/8801000000000", action: "Open WhatsApp", color: "bg-emerald-600" },
-];
 
 const quick = [
   { Icon: HelpCircle, t: "FAQ", d: "Quick answers", to: "/faq" },
@@ -23,6 +19,12 @@ const quick = [
 ];
 
 function SupportPage() {
+  const contact = useSettings((s) => s.settings.contact);
+  const channels = [
+    { Icon: MessageCircle, t: "Live chat", d: "Average reply in 2 min", link: "#", action: "Start chat", color: "bg-emerald-500" },
+    contact.support_email && { Icon: Mail, t: "Email support", d: contact.support_email, link: `mailto:${contact.support_email}`, action: "Send email", color: "bg-primary" },
+    contact.whatsapp && { Icon: Phone, t: "WhatsApp", d: contact.whatsapp, link: `https://wa.me/${contact.whatsapp.replace(/[^0-9]/g, "")}`, action: "Open WhatsApp", color: "bg-emerald-600" },
+  ].filter(Boolean) as Array<{ Icon: any; t: string; d: string; link: string; action: string; color: string }>;
   return (
     <div className="min-h-screen">
       <Header />

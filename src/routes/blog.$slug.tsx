@@ -1,3 +1,4 @@
+import { seoMeta, siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -12,10 +13,11 @@ export const Route = createFileRoute("/blog/$slug")({
     return { post };
   },
   head: ({ loaderData }) => ({
-    meta: [
-      { title: `${loaderData?.post.title} — TopupHut Blog` },
-      { name: "description", content: loaderData?.post.excerpt ?? "" },
-    ],
+    meta: seoMeta({
+      title: loaderData?.post.title,
+      description: loaderData?.post.excerpt ?? undefined,
+      ogType: "article",
+    }),
   }),
   component: PostPage,
   notFoundComponent: () => <div className="p-16 text-center"><Link to="/blog" className="text-primary">← Back to blog</Link></div>,

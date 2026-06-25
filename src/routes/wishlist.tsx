@@ -1,3 +1,4 @@
+import { siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -9,7 +10,7 @@ import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/wishlist")({
-  head: () => ({ meta: [{ title: "My Wishlist — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `My Wishlist — ${siteName()}` }] }),
   component: WishlistPage,
 });
 

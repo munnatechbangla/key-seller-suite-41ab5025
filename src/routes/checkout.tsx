@@ -10,27 +10,32 @@ import { toast } from "sonner";
 import { placeOrderAuthFn, placeOrderGuestFn } from "@/lib/orders.functions";
 import { validateCouponFn } from "@/lib/coupons.functions";
 import { couponReason } from "@/routes/cart";
+import { useSettings } from "@/lib/cms/settings";
+import { seoMeta } from "@/lib/cms/seo";
 
 export const Route = createFileRoute("/checkout")({
-  head: () => ({ meta: [{ title: "Checkout — TopupHut" }] }),
+  head: () => ({ meta: seoMeta({ title: "Checkout" }) }),
   component: CheckoutPage,
 });
 
-const gateways = [
-  { id: "stripe", label: "Credit / Debit Card", sub: "Powered by Stripe", Icon: CreditCard },
-  { id: "paypal", label: "PayPal", sub: "Pay with your PayPal balance", Icon: Wallet },
-  { id: "sslcommerz", label: "SSLCommerz", sub: "All BD cards & banks", Icon: CreditCard },
-  { id: "bkash", label: "bKash", sub: "Mobile financial service", Icon: Smartphone },
-  { id: "nagad", label: "Nagad", sub: "Mobile financial service", Icon: Smartphone },
-  { id: "rocket", label: "Rocket", sub: "Mobile financial service", Icon: Smartphone },
-  { id: "bank", label: "Bank Transfer", sub: "Direct deposit", Icon: Building2 },
+const allGateways = [
+  { id: "stripe", label: "Credit / Debit Card", sub: "Powered by Stripe", Icon: CreditCard, key: "stripe_enabled" as const },
+  { id: "paypal", label: "PayPal", sub: "Pay with your PayPal balance", Icon: Wallet, key: "paypal_enabled" as const },
+  { id: "sslcommerz", label: "SSLCommerz", sub: "All BD cards & banks", Icon: CreditCard, key: "sslcommerz_enabled" as const },
+  { id: "bkash", label: "bKash", sub: "Mobile financial service", Icon: Smartphone, key: "bkash_enabled" as const },
+  { id: "nagad", label: "Nagad", sub: "Mobile financial service", Icon: Smartphone, key: "nagad_enabled" as const },
+  { id: "rocket", label: "Rocket", sub: "Mobile financial service", Icon: Smartphone, key: "rocket_enabled" as const },
+  { id: "manual", label: "Bank Transfer", sub: "Direct deposit", Icon: Building2, key: "manual_enabled" as const },
 ];
 
 function CheckoutPage() {
   const cart = useCart();
   const user = useAuth((s) => s.user);
   const navigate = useNavigate();
-  const [gateway, setGateway] = useState("stripe");
+  const payment = useSettings((s) => s.settings.payment) as Record<string, any>;
+  const visibleGateways = allGateways.filter((g) => !!payment?.[g.key]);
+  const gatewayList = visibleGateways.length > 0 ? visibleGateways : allGateways.filter((g) => g.id === "manual");
+  const [gateway, setGateway] = useState(gatewayList[0]?.id ?? "manual");
   const [agree, setAgree] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [code, setCode] = useState("");
@@ -133,7 +138,7 @@ function CheckoutPage() {
 
           <Section title="Payment method">
             <div className="space-y-2">
-              {gateways.map((g) => (
+              {gatewayList.map((g) => (
                 <label key={g.id} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-smooth ${gateway === g.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
                   <input type="radio" name="gateway" checked={gateway === g.id} onChange={() => setGateway(g.id)} className="accent-[var(--primary)]" />
                   <g.Icon className="h-5 w-5 text-primary" />

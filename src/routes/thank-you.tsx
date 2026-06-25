@@ -1,3 +1,4 @@
+import { siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -10,7 +11,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/thank-you")({
   validateSearch: z.object({ order: z.string().optional(), email: z.string().optional() }),
-  head: () => ({ meta: [{ title: "Order Confirmed — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `Order Confirmed — ${siteName()}` }] }),
   component: ThankYou,
   errorComponent: () => <div className="p-8 text-center">Order page unavailable.</div>,
   notFoundComponent: () => <div className="p-8 text-center">Not found.</div>,

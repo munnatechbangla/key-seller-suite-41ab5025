@@ -1,3 +1,4 @@
+import { seoMeta, siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -6,12 +7,10 @@ import { ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/categories")({
   head: () => ({
-    meta: [
-      { title: "All Categories — TopupHut" },
-      { name: "description", content: "Explore every category at TopupHut: AI tools, streaming, design, IPTV, software, gift cards and more." },
-      { property: "og:title", content: "Browse Categories — TopupHut" },
-      { property: "og:description", content: "Find premium digital products by category." },
-    ],
+    meta: seoMeta({
+      title: "All Categories",
+      description: "Explore every category: AI tools, streaming, design, IPTV, software, gift cards and more.",
+    }),
   }),
   loader: ({ context }) => { context.queryClient.ensureQueryData(categoriesQuery()); },
   component: CategoriesPage,

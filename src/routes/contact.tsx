@@ -1,21 +1,37 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
-import { Mail, MessageCircle, MapPin, Send } from "lucide-react";
+import { Mail, MessageCircle, MapPin, Phone, Send, Clock } from "lucide-react";
+import { useSettings } from "@/lib/cms/settings";
+import { seoMeta } from "@/lib/cms/seo";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
-    meta: [
-      { title: "Contact TopupHut — We're Here 24/7" },
-      { name: "description", content: "Reach the TopupHut support team via WhatsApp, email or live chat. 24/7 response, real humans." },
-      { property: "og:title", content: "Contact TopupHut" },
-      { property: "og:description", content: "Get in touch with our support team — 24/7." },
-    ],
+    meta: seoMeta({
+      title: "Contact",
+      description: "Reach our support team via WhatsApp, email or live chat. 24/7 response, real humans.",
+    }),
   }),
   component: ContactPage,
 });
 
 function ContactPage() {
+  const contact = useSettings((s) => s.settings.contact);
+  const social = useSettings((s) => s.settings.social);
+
+  const cards: Array<{ icon: any; title: string; value: string; href: string }> = [];
+  if (contact.support_email)
+    cards.push({ icon: Mail, title: "Email us", value: contact.support_email, href: `mailto:${contact.support_email}` });
+  if (contact.whatsapp)
+    cards.push({ icon: MessageCircle, title: "WhatsApp", value: contact.whatsapp, href: `https://wa.me/${contact.whatsapp.replace(/[^0-9]/g, "")}` });
+  if (contact.telegram)
+    cards.push({ icon: Send, title: "Telegram", value: contact.telegram, href: social.facebook ? contact.telegram : `https://t.me/${contact.telegram.replace(/^@/, "")}` });
+  if (contact.phone)
+    cards.push({ icon: Phone, title: "Phone", value: contact.phone, href: `tel:${contact.phone}` });
+  if (contact.address)
+    cards.push({ icon: MapPin, title: "Office", value: contact.address, href: "#" });
+  cards.push({ icon: Clock, title: "Business hours", value: "24/7 Support", href: "#" });
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -27,17 +43,13 @@ function ContactPage() {
       </section>
 
       <section className="container mx-auto px-4 py-16 grid lg:grid-cols-3 gap-6">
-        {[
-          { icon: Mail, title: "Email us", value: "support@topuphut.com", href: "mailto:support@topuphut.com" },
-          { icon: MessageCircle, title: "WhatsApp", value: "+1 (555) 010-2024", href: "#" },
-          { icon: MapPin, title: "Office", value: "Remote-first, worldwide", href: "#" },
-        ].map(({ icon: Icon, title, value, href }) => (
+        {cards.map(({ icon: Icon, title, value, href }) => (
           <a key={title} href={href} className="rounded-2xl bg-card border border-border p-6 hover:shadow-premium hover:border-primary/40 transition-smooth">
             <div className="h-12 w-12 rounded-xl bg-gradient-primary text-primary-foreground grid place-items-center shadow-glow mb-4">
               <Icon className="h-5 w-5" />
             </div>
             <div className="font-semibold mb-1">{title}</div>
-            <div className="text-sm text-muted-foreground">{value}</div>
+            <div className="text-sm text-muted-foreground break-words">{value}</div>
           </a>
         ))}
       </section>

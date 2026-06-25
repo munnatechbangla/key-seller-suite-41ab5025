@@ -1,3 +1,4 @@
+import { siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -7,7 +8,7 @@ import { useProductsBySlugs, type Product } from "@/lib/catalog";
 import { X, Check, ShoppingCart, GitCompare } from "lucide-react";
 
 export const Route = createFileRoute("/compare")({
-  head: () => ({ meta: [{ title: "Compare Products — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `Compare Products — ${siteName()}` }] }),
   component: ComparePage,
 });
 

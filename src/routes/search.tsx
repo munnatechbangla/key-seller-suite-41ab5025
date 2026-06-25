@@ -1,3 +1,4 @@
+import { siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -10,7 +11,7 @@ import { z } from "zod";
 
 export const Route = createFileRoute("/search")({
   validateSearch: z.object({ q: z.string().optional() }),
-  head: () => ({ meta: [{ title: "Search — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `Search — ${siteName()}` }] }),
   component: SearchPage,
 });
 

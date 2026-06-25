@@ -1,10 +1,11 @@
+import { siteName } from "@/lib/cms/seo";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AuthShell } from "@/components/site/AuthShell";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth/reset")({
-  head: () => ({ meta: [{ title: "Reset password — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `Reset password — ${siteName()}` }] }),
   component: ResetPage,
 });
 

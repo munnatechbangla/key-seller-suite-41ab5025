@@ -1,3 +1,4 @@
+import { seoMeta, siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Star, ChevronRight } from "lucide-react";
 import { Header } from "@/components/site/Header";
@@ -34,12 +35,7 @@ import { categoriesQuery } from "@/lib/catalog";
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    meta: [
-      { title: "TopupHut — Premium Digital Products at Unbeatable Prices" },
-      { name: "description", content: "Shop ChatGPT Plus, Netflix, Spotify, Canva Pro, IPTV, antivirus, gift cards and more. Instant digital delivery, 24/7 support." },
-      { property: "og:title", content: "TopupHut — Premium Digital Marketplace" },
-      { property: "og:description", content: "Premium digital subscriptions & license keys delivered instantly." },
-    ],
+    meta: seoMeta({}),
   }),
   loader: ({ context }) => {
     context.queryClient.ensureQueryData(categoriesQuery());
