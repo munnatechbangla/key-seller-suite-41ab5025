@@ -32,6 +32,7 @@ function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [checking, setChecking] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const brandName = useSettings((s) => s.settings.branding.name);
 
   useEffect(() => {
     const unsub = init();
