@@ -292,9 +292,11 @@ function Stats() {
         <div className="absolute -top-20 -right-20 h-80 w-80 rounded-full bg-primary/40 blur-3xl" />
         <div className="absolute -bottom-20 -left-20 h-80 w-80 rounded-full bg-accent/30 blur-3xl" />
         <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-          {statsItems.map((s) => (
-            <div key={s.label}>
-              <div className="text-4xl lg:text-5xl font-extrabold text-gradient mb-1">{s.value}</div>
+          {statsItems.map((s, i) => (
+            <div key={s.label} className="animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
+              <div className="text-4xl lg:text-5xl font-extrabold text-gradient mb-1">
+                <CountUp value={s.value} />
+              </div>
               <div className="text-sm text-white/70">{s.label}</div>
             </div>
           ))}
@@ -304,29 +306,139 @@ function Stats() {
   );
 }
 
+/** Animated count-up that respects prefers-reduced-motion and preserves suffixes. */
+function CountUp({ value, duration = 1400 }: { value: string; duration?: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const match = /^([\d.]+)(.*)$/.exec(value);
+  const target = match ? parseFloat(match[1]) : NaN;
+  const suffix = match ? match[2] : "";
+  const [display, setDisplay] = useState(Number.isFinite(target) ? "0" : value);
+
+  useEffect(() => {
+    if (!Number.isFinite(target) || !ref.current) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) { setDisplay(String(target)); return; }
+    const node = ref.current;
+    let raf = 0; let start = 0; let done = false;
+    const isInt = Number.isInteger(target);
+    const step = (t: number) => {
+      if (!start) start = t;
+      const p = Math.min(1, (t - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const v = target * eased;
+      setDisplay(isInt ? String(Math.round(v)) : v.toFixed(1));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    const io = new IntersectionObserver((entries) => {
+      if (done) return;
+      if (entries.some((e) => e.isIntersecting)) { done = true; raf = requestAnimationFrame(step); io.disconnect(); }
+    }, { threshold: 0.3 });
+    io.observe(node);
+    return () => { io.disconnect(); cancelAnimationFrame(raf); };
+  }, [target, duration]);
+
+  return <span ref={ref}>{display}{suffix}</span>;
+}
+
 function Testimonials() {
   return (
     <Section eyebrow={testimonialsSection.eyebrow} title={testimonialsSection.title}>
-      <div className="grid md:grid-cols-3 gap-5">
+      <div className="grid md:grid-cols-3 gap-5 items-stretch">
         {testimonials.map((r) => (
-          <div key={r.name} className="rounded-2xl bg-card border border-border p-6 hover:shadow-elegant transition-smooth">
+          <div key={r.name} className="flex flex-col h-full rounded-2xl bg-card border border-border p-6 hover:shadow-elegant transition-smooth">
             <div className="flex gap-0.5 mb-3">
               {Array.from({ length: r.rating }).map((_, i) => (
                 <Star key={i} className="h-4 w-4 fill-accent text-accent" />
               ))}
             </div>
-            <p className="text-sm leading-relaxed text-foreground/90 mb-5">"{r.text}"</p>
-            <div className="flex items-center gap-3">
-              <div className="h-11 w-11 rounded-full bg-gradient-primary grid place-items-center text-xl">{r.emoji}</div>
-              <div>
-                <div className="font-semibold text-sm">{r.name}</div>
-                <div className="text-xs text-muted-foreground">{r.role}</div>
+            <p className="text-sm leading-relaxed text-foreground/90 mb-5 flex-1">"{r.text}"</p>
+            <div className="flex items-center gap-3 mt-auto">
+              <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-primary grid place-items-center text-xl">{r.emoji}</div>
+              <div className="min-w-0">
+                <div className="font-semibold text-sm truncate">{r.name}</div>
+                <div className="text-xs text-muted-foreground truncate">{r.role}</div>
               </div>
             </div>
           </div>
         ))}
       </div>
     </Section>
+  );
+}
+
+function BlogSection() {
+  const posts = blogPosts.slice(0, 3);
+  if (!posts.length) return null;
+  return (
+    <Section
+      eyebrow="From the blog"
+      title="Guides, reviews and pro tips"
+      action={
+        <Link to="/blog" className="text-sm font-semibold text-primary inline-flex items-center gap-1 hover:gap-2 transition-all">
+          View all articles <ChevronRight className="h-4 w-4" />
+        </Link>
+      }
+    >
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch">
+        {posts.map((p) => (
+          <Link
+            key={p.slug}
+            to="/blog/$slug"
+            params={{ slug: p.slug }}
+            className="group flex flex-col rounded-2xl bg-card border border-border overflow-hidden hover:shadow-premium hover:-translate-y-1 transition-smooth"
+          >
+            <div className="aspect-[16/10] bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center text-7xl">{p.emoji}</div>
+            <div className="p-5 flex-1 flex flex-col gap-2">
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="font-semibold text-primary">{p.category}</span>
+                <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" /> {p.date}</span>
+              </div>
+              <h3 className="font-bold text-base leading-snug group-hover:text-primary transition-smooth line-clamp-2">{p.title}</h3>
+              <p className="text-sm text-muted-foreground line-clamp-2">{p.excerpt}</p>
+              <div className="inline-flex items-center gap-1 text-sm font-semibold text-primary pt-2 mt-auto">
+                Read article <ArrowRight className="h-3.5 w-3.5" />
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+const paymentMethods = [
+  { code: "SSLCommerz", label: "SSLCommerz" },
+  { code: "bKash", label: "bKash" },
+  { code: "Nagad", label: "Nagad" },
+  { code: "Rocket", label: "Rocket" },
+  { code: "Visa", label: "Visa" },
+  { code: "Mastercard", label: "Mastercard" },
+  { code: "Stripe", label: "Stripe" },
+  { code: "PayPal", label: "PayPal" },
+];
+
+function PaymentMethods() {
+  return (
+    <div className="container mx-auto px-4 pb-4">
+      <div className="rounded-3xl bg-card border border-border p-6 sm:p-8 text-center">
+        <div className="inline-flex items-center gap-2 text-xs font-semibold text-primary mb-2">
+          <ShieldCheck className="h-4 w-4" /> 100% Secure Checkout
+        </div>
+        <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-1">We accept secure payments</h3>
+        <p className="text-sm text-muted-foreground mb-6">Pay confidently with your preferred provider — all transactions are encrypted.</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+          {paymentMethods.map((m) => (
+            <div
+              key={m.code}
+              title={m.label}
+              className="h-12 grid place-items-center rounded-xl border border-border bg-muted/40 text-xs font-bold tracking-tight text-foreground/80 hover:border-primary/40 hover:text-primary transition-smooth"
+            >
+              {m.label}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
