@@ -47,6 +47,16 @@ function EmailLogsPage() {
     },
   });
 
+  const testM = useMutation({
+    mutationFn: (recipient: string) => sendTest({ data: { recipient } }),
+    onSuccess: (r: any) => {
+      if (r?.ok) toast.success(`Test sent via ${r.provider}`);
+      else toast.error(r?.error ?? "Test failed");
+      qc.invalidateQueries({ queryKey: ["admin-email-logs"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Test failed"),
+  });
+
   return (
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
