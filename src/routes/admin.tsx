@@ -68,7 +68,7 @@ function AdminLayout() {
     <div className="min-h-screen flex w-full bg-muted/20">
       <aside className="w-60 border-r bg-background hidden md:flex flex-col">
         <div className="px-5 py-4 border-b">
-          <Link to="/" className="text-sm font-semibold">TopupHut Admin</Link>
+          <Link to="/" className="text-sm font-semibold">{brandName} Admin</Link>
         </div>
         <nav className="flex-1 p-2 space-y-1">
           {items.map((it) => {
