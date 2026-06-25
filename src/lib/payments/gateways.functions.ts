@@ -172,6 +172,18 @@ export const submitManualPaymentFn = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const getMySubmissionsFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("manual_payment_submissions")
+      .select("id, gateway_slug, status, transaction_id, amount, currency, screenshot_url, admin_note, reviewed_at, created_at, order_id, orders!inner(order_number, total, currency, status)")
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
 export const listSubmissionsFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { status?: "pending" | "approved" | "rejected" | "all" }) => d ?? {})
