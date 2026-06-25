@@ -19,6 +19,7 @@ import { useAuth } from "@/lib/stores";
 import { useSettings } from "@/lib/cms/settings";
 import { AnalyticsScripts } from "@/components/site/AnalyticsScripts";
 import { seoMeta, organizationJsonLd, websiteJsonLd, jsonLdScript } from "@/lib/cms/seo";
+import { SetupGate } from "@/components/setup/SetupGate";
 
 function NotFoundComponent() {
   return (
@@ -138,6 +139,7 @@ function RootComponent() {
       <ThemeProviderEffect />
       <ThemeStyleInjector />
       <AnalyticsScripts />
+      <SetupGate />
       <div className="pb-16 lg:pb-0">
         <Outlet />
       </div>
