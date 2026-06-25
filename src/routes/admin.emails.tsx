@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { adminListEmailLogsFn, adminRetryEmailFn, adminProcessQueueFn } from "@/lib/emails/admin.functions";
+import { adminListEmailLogsFn, adminRetryEmailFn, adminProcessQueueFn, adminSendTestEmailFn } from "@/lib/emails/admin.functions";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
