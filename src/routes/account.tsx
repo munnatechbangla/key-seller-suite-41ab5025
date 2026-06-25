@@ -322,7 +322,7 @@ function NotificationsTab() {
   const list = [
     { t: "Your order #TH-A1B2C has been delivered", d: "2 hours ago", new: true },
     { t: "Flash sale: 25% off on all AI tools", d: "Yesterday", new: true },
-    { t: "Welcome to TopupHut! Here's 10% off", d: "3 days ago" },
+    { t: "Welcome! Here's 10% off your first order", d: "3 days ago" },
   ];
   return (
     <Card>
