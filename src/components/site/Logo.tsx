@@ -30,12 +30,10 @@ export function Logo({ variant = "light", size = "md", asPlainText, className }:
   const lead = branding.brand_lead || branding.name || "Digital";
   const accent = branding.brand_accent || "Nest";
 
-  // Lead half is always white per brand spec. On light surfaces we drop a
-  // subtle text-shadow so it stays legible without an icon backdrop.
-  const leadClass =
-    variant === "dark"
-      ? "text-white"
-      : "text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.35)]";
+  // Lead half: white on dark surfaces, foreground on light — keeps contrast in
+  // both themes while preserving the "white DIGITAL" treatment on hero/footer.
+  const leadClass = variant === "dark" ? "text-white" : "text-foreground";
+
 
   const content = (
     <span
