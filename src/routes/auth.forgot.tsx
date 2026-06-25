@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth/forgot")({
-  head: () => ({ meta: [{ title: "Forgot password — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `Forgot password — ${siteName()}` }] }),
   component: ForgotPage,
 });
 

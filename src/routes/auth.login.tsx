@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/auth/login")({
-  head: () => ({ meta: [{ title: "Sign in — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `Sign in — ${siteName()}` }] }),
   component: LoginPage,
 });
 

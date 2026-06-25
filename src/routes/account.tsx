@@ -15,7 +15,7 @@ import { useProductsBySlugs, featuredQuery } from "@/lib/catalog";
 import { getMyOrdersFn, getMyDownloadsFn, getMyLicensesFn } from "@/lib/orders.functions";
 
 export const Route = createFileRoute("/account")({
-  head: () => ({ meta: [{ title: "My Account — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `My Account — ${siteName()}` }] }),
   loader: ({ context }) => { context.queryClient.ensureQueryData(featuredQuery()); },
   component: AccountPage,
   errorComponent: () => <div className="p-8 text-center">Account unavailable.</div>,

@@ -7,7 +7,7 @@ import { useProductsBySlugs, type Product } from "@/lib/catalog";
 import { X, Check, ShoppingCart, GitCompare } from "lucide-react";
 
 export const Route = createFileRoute("/compare")({
-  head: () => ({ meta: [{ title: "Compare Products — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `Compare Products — ${siteName()}` }] }),
   component: ComparePage,
 });
 

@@ -12,7 +12,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/cart")({
-  head: () => ({ meta: [{ title: "Shopping Cart — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `Shopping Cart — ${siteName()}` }] }),
   loader: ({ context }) => { context.queryClient.ensureQueryData(featuredQuery()); },
   component: CartPage,
   errorComponent: () => <div className="p-8 text-center">Cart unavailable.</div>,

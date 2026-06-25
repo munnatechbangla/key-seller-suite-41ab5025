@@ -9,7 +9,7 @@ import { getOrderByNumberFn } from "@/lib/orders.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/track-order")({
-  head: () => ({ meta: [{ title: "Track Order — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `Track Order — ${siteName()}` }] }),
   component: TrackOrder,
 });
 

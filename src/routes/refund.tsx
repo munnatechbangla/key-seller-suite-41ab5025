@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage } from "@/components/site/LegalPage";
 
 export const Route = createFileRoute("/refund")({
-  head: () => ({ meta: [{ title: "Refund Policy — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `Refund Policy — ${siteName()}` }] }),
   component: () => <LegalPage
     title="Refund Policy"
     subtitle="Our promise: you get what you pay for"

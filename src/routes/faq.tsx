@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 
 export const Route = createFileRoute("/faq")({
-  head: () => ({ meta: [{ title: "FAQ — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `FAQ — ${siteName()}` }] }),
   component: FAQ,
 });
 

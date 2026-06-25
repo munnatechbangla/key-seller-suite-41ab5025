@@ -6,7 +6,7 @@ import { MessageCircle, Mail, Phone, HelpCircle, FileText, RefreshCcw } from "lu
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/support")({
-  head: () => ({ meta: [{ title: "Support Center — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `Support Center — ${siteName()}` }] }),
   component: SupportPage,
 });
 
