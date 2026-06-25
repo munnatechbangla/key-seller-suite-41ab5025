@@ -522,6 +522,97 @@ export type Database = {
           },
         ]
       }
+      manual_payment_submissions: {
+        Row: {
+          admin_note: string | null
+          amount: number | null
+          created_at: string
+          currency: string | null
+          email: string | null
+          gateway_id: string | null
+          gateway_slug: string
+          id: string
+          note: string | null
+          order_id: string
+          payment_intent_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          screenshot_url: string | null
+          sender_account: string | null
+          sender_name: string | null
+          status: string
+          transaction_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_note?: string | null
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          email?: string | null
+          gateway_id?: string | null
+          gateway_slug: string
+          id?: string
+          note?: string | null
+          order_id: string
+          payment_intent_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          screenshot_url?: string | null
+          sender_account?: string | null
+          sender_name?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_note?: string | null
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          email?: string | null
+          gateway_id?: string | null
+          gateway_slug?: string
+          id?: string
+          note?: string | null
+          order_id?: string
+          payment_intent_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          screenshot_url?: string | null
+          sender_account?: string | null
+          sender_name?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_payment_submissions_gateway_id_fkey"
+            columns: ["gateway_id"]
+            isOneToOne: false
+            referencedRelation: "payment_gateways"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_payment_submissions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_payment_submissions_payment_intent_id_fkey"
+            columns: ["payment_intent_id"]
+            isOneToOne: false
+            referencedRelation: "payment_intents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -633,6 +724,51 @@ export type Database = {
           total?: number
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      payment_gateways: {
+        Row: {
+          config: Json
+          created_at: string
+          description: string | null
+          id: string
+          is_enabled: boolean
+          logo_url: string | null
+          mode: string
+          name: string
+          slug: string
+          sort_order: number
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_enabled?: boolean
+          logo_url?: string | null
+          mode?: string
+          name: string
+          slug: string
+          sort_order?: number
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_enabled?: boolean
+          logo_url?: string | null
+          mode?: string
+          name?: string
+          slug?: string
+          sort_order?: number
+          type?: string
+          updated_at?: string
         }
         Relationships: []
       }
