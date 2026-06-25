@@ -1,3 +1,4 @@
+import { siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -9,7 +10,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 
 export const Route = createFileRoute("/pay/$orderNumber")({
-  head: () => ({ meta: [{ title: "Complete Payment — TopupHut" }] }),
+  head: () => ({ meta: [{ title: `Complete Payment — ${siteName()}` }] }),
   component: PayPage,
   errorComponent: () => <div className="p-8 text-center">Payment page unavailable.</div>,
   notFoundComponent: () => <div className="p-8 text-center">Order not found.</div>,
