@@ -24,7 +24,7 @@ const placeSchema = z.object({
   couponCode: z.string().nullable().optional(),
 });
 
-const COUPONS: Record<string, number> = { TOPUP10: 0.1, WELCOME15: 0.15, FLASH25: 0.25 };
+async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string | null) {
 
 async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string | null) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
