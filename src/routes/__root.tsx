@@ -16,6 +16,7 @@ import { ThemeProviderEffect } from "@/components/site/ThemeToggle";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/lib/stores";
 import { useSettings } from "@/lib/cms/settings";
+import { AnalyticsScripts } from "@/components/site/AnalyticsScripts";
 import { seoMeta, organizationJsonLd, websiteJsonLd, jsonLdScript } from "@/lib/cms/seo";
 
 function NotFoundComponent() {
