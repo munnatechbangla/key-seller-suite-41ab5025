@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, ShoppingBag, Users, Package, TrendingUp, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { useSetupStatus } from "@/lib/setup";
 import { useSettings } from "@/lib/cms/settings";
+import { DeploymentChecklist } from "@/components/admin/DeploymentChecklist";
 
 export const Route = createFileRoute("/admin/")({ component: AdminDashboard });
 
@@ -48,6 +49,8 @@ function AdminDashboard() {
           </Card>
         ))}
       </div>
+
+      <DeploymentChecklist />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
