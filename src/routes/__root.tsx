@@ -117,8 +117,15 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const initAuth = useAuth((s) => s.init);
   const loadSettings = useSettings((s) => s.load);
+  const favicon = useSettings((s) => s.settings.branding.favicon_url);
   useEffect(() => initAuth(), [initAuth]);
   useEffect(() => { loadSettings(); }, [loadSettings]);
+  useEffect(() => {
+    if (typeof document === "undefined" || !favicon) return;
+    let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
+    if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
+    link.href = favicon;
+  }, [favicon]);
 
   return (
     <QueryClientProvider client={queryClient}>
