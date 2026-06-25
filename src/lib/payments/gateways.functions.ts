@@ -9,6 +9,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 export type GatewayType = "builtin" | "custom_auto" | "manual";
 export type GatewayMode = "sandbox" | "live";
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
 
 export type GatewayRow = {
   id: string;
@@ -20,8 +21,9 @@ export type GatewayRow = {
   is_enabled: boolean;
   mode: GatewayMode;
   sort_order: number;
-  config: Record<string, unknown>;
+  config: { [k: string]: JsonValue };
 };
+
 
 // ---------------- Public (checkout) ----------------
 
