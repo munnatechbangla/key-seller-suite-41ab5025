@@ -9,11 +9,12 @@ import { useAuth, useWishlist } from "@/lib/stores";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard, ShoppingBag, Download, Heart, Bell, Settings,
-  MapPin, LifeBuoy, KeyRound, LogOut, Package, DollarSign, CheckCircle2, TrendingUp, Loader2,
+  MapPin, LifeBuoy, KeyRound, LogOut, Package, DollarSign, CheckCircle2, TrendingUp, Loader2, Receipt,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProductsBySlugs, featuredQuery } from "@/lib/catalog";
 import { getMyOrdersFn, getMyDownloadsFn, getMyLicensesFn } from "@/lib/orders.functions";
+import { getMySubmissionsFn } from "@/lib/payments/gateways.functions";
 
 export const Route = createFileRoute("/account")({
   head: () => ({ meta: [{ title: `My Account — ${siteName()}` }] }),
