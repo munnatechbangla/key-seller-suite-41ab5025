@@ -78,3 +78,44 @@ export const adminProcessQueueFn = createServerFn({ method: "POST" })
     const { processPendingEmails } = await import("./service.server");
     return processPendingEmails(50);
   });
+
+export const adminSendTestEmailFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ recipient: z.string().email() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: settingsRow } = await supabaseAdmin
+      .from("site_settings")
+      .select("value")
+      .eq("group_key", "email")
+      .eq("setting_key", "senders")
+      .maybeSingle();
+    const s = (settingsRow?.value ?? {}) as Record<string, string>;
+    if (!s.sender_email) {
+      return { ok: false, error: "Configure sender email in Settings → Email first." };
+    }
+    const provider = process.env.RESEND_API_KEY ? "resend" : "none";
+    if (provider === "none") {
+      return { ok: false, error: "No provider configured. Add RESEND_API_KEY to send real emails." };
+    }
+    const { deliverEmail } = await import("./service.server");
+    const result = await deliverEmail({
+      to: data.recipient,
+      subject: "Test email from your marketplace",
+      html: `<p>This is a test email confirming your email transport is working.</p><p>Provider: <b>${provider}</b></p>`,
+      from: s.sender_email,
+      fromName: s.sender_name ?? "Marketplace",
+      replyTo: s.reply_to,
+    });
+    await supabaseAdmin.from("email_logs").insert({
+      template_key: "test_email",
+      recipient: data.recipient,
+      subject: "Test email from your marketplace",
+      status: result.ok ? "sent" : "failed",
+      provider: result.provider,
+      error_message: result.error ?? null,
+      sent_at: result.ok ? new Date().toISOString() : null,
+    });
+    return result;
+  });

@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { adminListEmailLogsFn, adminRetryEmailFn, adminProcessQueueFn } from "@/lib/emails/admin.functions";
+import { adminListEmailLogsFn, adminRetryEmailFn, adminProcessQueueFn, adminSendTestEmailFn } from "@/lib/emails/admin.functions";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
@@ -20,7 +21,9 @@ function EmailLogsPage() {
   const list = useServerFn(adminListEmailLogsFn);
   const retry = useServerFn(adminRetryEmailFn);
   const process = useServerFn(adminProcessQueueFn);
+  const sendTest = useServerFn(adminSendTestEmailFn);
   const [status, setStatus] = useState<string>("");
+  const [testTo, setTestTo] = useState("");
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -42,6 +45,16 @@ function EmailLogsPage() {
       toast.success(r?.reason === "dev_mode" ? "Dev mode — sending disabled" : `Processed ${r?.processed ?? 0}`);
       qc.invalidateQueries({ queryKey: ["admin-email-logs"] });
     },
+  });
+
+  const testM = useMutation({
+    mutationFn: (recipient: string) => sendTest({ data: { recipient } }),
+    onSuccess: (r: any) => {
+      if (r?.ok) toast.success(`Test sent via ${r.provider}`);
+      else toast.error(r?.error ?? "Test failed");
+      qc.invalidateQueries({ queryKey: ["admin-email-logs"] });
+    },
+    onError: (e: any) => toast.error(e.message ?? "Test failed"),
   });
 
   return (
@@ -69,6 +82,22 @@ function EmailLogsPage() {
             Process queue
           </Button>
         </div>
+      </div>
+
+      <div className="rounded-lg border bg-background p-4 flex gap-2 items-end flex-wrap">
+        <div className="flex-1 min-w-[220px]">
+          <label className="text-xs text-muted-foreground">Send test email to</label>
+          <Input type="email" placeholder="you@example.com" value={testTo} onChange={(e) => setTestTo(e.target.value)} />
+        </div>
+        <Button
+          onClick={() => testM.mutate(testTo)}
+          disabled={!testTo || testM.isPending}
+        >
+          Send test
+        </Button>
+        <p className="text-xs text-muted-foreground basis-full">
+          Requires a sender email in Settings → Email and the RESEND_API_KEY secret.
+        </p>
       </div>
 
       <div className="rounded-lg border bg-background overflow-x-auto">

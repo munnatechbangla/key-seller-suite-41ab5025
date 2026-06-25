@@ -85,8 +85,8 @@ export async function enqueueEmail(args: EnqueueArgs) {
   return { ok: true, status };
 }
 
-// Process pending queue. Hook a real provider (Resend/SES/SMTP) here later;
-// for now, simulate success so the lifecycle is exercised in dev.
+// Process pending queue. Picks provider based on env: Resend if RESEND_API_KEY
+// is set; SMTP placeholder otherwise (not implemented in the Worker runtime).
 export async function processPendingEmails(limit = 25) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const sender = await loadSenderSettings();
@@ -97,26 +97,88 @@ export async function processPendingEmails(limit = 25) {
 
   const { data: rows } = await supabaseAdmin
     .from("email_logs")
-    .select("id, attempts, max_attempts")
+    .select("id, attempts, recipient, subject, rendered_html")
     .eq("status", "pending")
     .lte("attempts", 5)
     .order("created_at", { ascending: true })
     .limit(limit);
+
   let ok = 0;
   for (const r of rows ?? []) {
-    // TODO: integrate real provider. For now mark sent.
-    const { error } = await supabaseAdmin
-      .from("email_logs")
-      .update({
-        status: "sent",
-        attempts: r.attempts + 1,
-        sent_at: new Date().toISOString(),
-        provider: "stub",
-      })
-      .eq("id", r.id);
-    if (!error) ok++;
+    const result = await deliverEmail({
+      to: r.recipient,
+      subject: r.subject,
+      html: r.rendered_html ?? "",
+      from: sender.sender_email!,
+      fromName: sender.sender_name ?? sender.site_name ?? "Marketplace",
+      replyTo: sender.reply_to,
+    });
+    if (result.ok) {
+      await supabaseAdmin
+        .from("email_logs")
+        .update({
+          status: "sent",
+          attempts: r.attempts + 1,
+          sent_at: new Date().toISOString(),
+          provider: result.provider,
+        })
+        .eq("id", r.id);
+      ok++;
+    } else {
+      await supabaseAdmin
+        .from("email_logs")
+        .update({
+          status: r.attempts + 1 >= 5 ? "failed" : "pending",
+          attempts: r.attempts + 1,
+          error_message: result.error,
+          provider: result.provider,
+        })
+        .eq("id", r.id);
+    }
   }
   return { processed: ok };
+}
+
+type DeliverArgs = {
+  to: string;
+  subject: string;
+  html: string;
+  from: string;
+  fromName: string;
+  replyTo?: string;
+};
+
+export async function deliverEmail(
+  args: DeliverArgs,
+): Promise<{ ok: boolean; provider: string; error?: string }> {
+  const resendKey = process.env.RESEND_API_KEY;
+  if (resendKey) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: `${args.fromName} <${args.from}>`,
+          to: [args.to],
+          subject: args.subject,
+          html: args.html,
+          reply_to: args.replyTo || undefined,
+        }),
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        return { ok: false, provider: "resend", error: `resend_${res.status}: ${txt.slice(0, 200)}` };
+      }
+      return { ok: true, provider: "resend" };
+    } catch (e: any) {
+      return { ok: false, provider: "resend", error: e?.message ?? "resend_error" };
+    }
+  }
+  // SMTP not supported in Worker runtime — return informative error so admin sees it.
+  return { ok: false, provider: "none", error: "no_provider_configured (set RESEND_API_KEY)" };
 }
 
 export async function retryEmail(id: string) {
