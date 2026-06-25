@@ -112,7 +112,14 @@ function CartPage() {
           <div className="rounded-2xl bg-card border border-border p-5 space-y-3">
             <h3 className="font-bold text-lg">Order summary</h3>
             <Row label="Subtotal" value={`$${cart.subtotal().toFixed(2)}`} />
-            {cart.coupon && <Row label={`Coupon (${cart.coupon})`} value={`-$${cart.discount().toFixed(2)}`} accent />}
+            {cart.coupon && (
+              <div className="flex justify-between text-sm items-center">
+                <span className="text-muted-foreground inline-flex items-center gap-1">Coupon ({cart.coupon})
+                  <button onClick={() => cart.clearCoupon()} className="text-muted-foreground hover:text-destructive"><X className="h-3 w-3" /></button>
+                </span>
+                <span className="text-accent font-semibold">-${cart.discount().toFixed(2)}</span>
+              </div>
+            )}
             <Row label="Delivery" value="Free" />
             <div className="border-t border-border pt-3 flex justify-between font-bold text-lg">
               <span>Total</span>
