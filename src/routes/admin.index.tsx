@@ -48,6 +48,55 @@ function AdminDashboard() {
           </Card>
         ))}
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Setup status</CardTitle>
+            {setup?.is_completed ? (
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+            ) : (
+              <AlertTriangle className="h-4 w-4 text-amber-500" />
+            )}
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="text-sm">
+              {setup?.is_completed ? (
+                <>
+                  Completed
+                  {setup.completed_at ? ` on ${new Date(setup.completed_at).toLocaleDateString()}` : ""}.
+                </>
+              ) : (
+                <>Setup is not completed — public traffic is redirected to /setup.</>
+              )}
+            </div>
+            <Link to="/admin/setup" className="inline-block text-xs text-primary underline">
+              Open Setup Wizard
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Configuration warnings</CardTitle>
+            <AlertTriangle className={`h-4 w-4 ${missing.length ? "text-amber-500" : "text-muted-foreground"}`} />
+          </CardHeader>
+          <CardContent>
+            {missing.length === 0 ? (
+              <div className="text-sm text-muted-foreground">All required fields look good.</div>
+            ) : (
+              <ul className="text-sm list-disc pl-5 space-y-1">
+                {missing.map((m) => (
+                  <li key={m}>{m} is empty</li>
+                ))}
+              </ul>
+            )}
+            <Link to="/admin/settings" className="inline-block mt-2 text-xs text-primary underline">
+              Go to Settings
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
