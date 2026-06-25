@@ -99,7 +99,7 @@ export const Route = createFileRoute("/api/public/payments/sslcommerz/ipn")({
             gateway: "sslcommerz",
             raw: { ipn: formData, validation: validation.raw },
           });
-          await supabaseAdmin.from("payment_intents").update({ status: "failed", gateway_payment_id: valId, response_payload: validation.raw }).eq("id", intent?.id ?? "");
+          await supabaseAdmin.from("payment_intents").update({ status: "failed", gateway_payment_id: valId, response_payload: validation.raw as never }).eq("id", intent?.id ?? "");
           return new Response("failed_recorded", { status: 200 });
         }
 
@@ -111,7 +111,7 @@ export const Route = createFileRoute("/api/public/payments/sslcommerz/ipn")({
           raw: { ipn: formData, validation: validation.raw },
         });
 
-        await supabaseAdmin.from("payment_intents").update({ status: "paid", gateway_payment_id: valId, response_payload: validation.raw }).eq("id", intent?.id ?? "");
+        await supabaseAdmin.from("payment_intents").update({ status: "paid", gateway_payment_id: valId, response_payload: validation.raw as never }).eq("id", intent?.id ?? "");
         await logPaymentEvent({ gateway: "sslcommerz", event_type: "success", order_id: order.id, order_number: order.order_number, transaction_id: valId, status: "paid", response_body: result });
 
         return new Response("ok", { status: 200 });
