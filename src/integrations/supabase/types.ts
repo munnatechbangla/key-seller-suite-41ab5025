@@ -1161,42 +1161,67 @@ export type Database = {
       }
       product_reviews: {
         Row: {
+          admin_reply: string | null
+          admin_reply_at: string | null
+          avatar_url: string | null
           body: string | null
           created_at: string
+          display_name: string | null
           id: string
           is_approved: boolean
           is_verified: boolean
+          order_item_id: string | null
           product_id: string
           rating: number
+          status: Database["public"]["Enums"]["review_status"]
           title: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          admin_reply?: string | null
+          admin_reply_at?: string | null
+          avatar_url?: string | null
           body?: string | null
           created_at?: string
+          display_name?: string | null
           id?: string
           is_approved?: boolean
           is_verified?: boolean
+          order_item_id?: string | null
           product_id: string
           rating: number
+          status?: Database["public"]["Enums"]["review_status"]
           title?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          admin_reply?: string | null
+          admin_reply_at?: string | null
+          avatar_url?: string | null
           body?: string | null
           created_at?: string
+          display_name?: string | null
           id?: string
           is_approved?: boolean
           is_verified?: boolean
+          order_item_id?: string | null
           product_id?: string
           rating?: number
+          status?: Database["public"]["Enums"]["review_status"]
           title?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "product_reviews_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "product_reviews_product_id_fkey"
             columns: ["product_id"]
@@ -1618,6 +1643,14 @@ export type Database = {
         }
         Returns: Json
       }
+      recalc_product_rating: {
+        Args: { _product_id: string }
+        Returns: undefined
+      }
+      user_purchased_product: {
+        Args: { _product_id: string; _user_id: string }
+        Returns: boolean
+      }
       validate_coupon: {
         Args: {
           _code: string
@@ -1643,6 +1676,7 @@ export type Database = {
         | "failed"
       payment_status: "pending" | "paid" | "failed" | "refunded"
       product_status: "draft" | "published" | "archived"
+      review_status: "pending" | "approved" | "rejected"
       stock_state: "in_stock" | "out_of_stock" | "on_backorder"
     }
     CompositeTypes: {
@@ -1785,6 +1819,7 @@ export const Constants = {
       ],
       payment_status: ["pending", "paid", "failed", "refunded"],
       product_status: ["draft", "published", "archived"],
+      review_status: ["pending", "approved", "rejected"],
       stock_state: ["in_stock", "out_of_stock", "on_backorder"],
     },
   },
