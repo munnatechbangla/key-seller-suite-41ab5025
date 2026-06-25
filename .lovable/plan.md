@@ -1,62 +1,42 @@
-# Phase 7 — SEO + Analytics + Reviews + Search
+# Phase 7 — Resale Packaging & White Label Completion
 
-Large multi-area phase. Building in 4 slices so each ships green and reviewable.
+Phase 7 covers 8 workstreams. Shipping them in one turn would risk regressions (it touches branding, storage keys, theming, a new admin section, a setup wizard that gates first-run routing, and a docs generator). I will deliver it as **5 sequential slices**, each independently verifiable.
 
-## Slice 1 — SEO Suite (dynamic, white-label)
+## Slice 1 — Branding & LocalStorage Hardcodes (Tasks 1 + 2)
+- Add `branding.slug` to `defaultSettings` and the admin Branding form (default `topuphut`).
+- Replace literal "TopupHut" / `support@topuphut.com` / `privacy@topuphut.com` in:
+  - `src/routes/about.tsx`, `faq.tsx`, `privacy.tsx`, `terms.tsx`, `refund.tsx`, `auth.login.tsx`, `account.tsx`, `contact.tsx`
+  - `src/components/site/Footer.tsx`, hero/testimonial sections, `src/lib/cms/site.ts` static demo content
+  - Reads pull from `useSettings(...)` (branding.name / contact.support_email / seo.site_url).
+- Refactor Zustand persisted stores (`useCart`, `useWishlist`, `useCompare`, `useRecent`) to compute keys from `settings.branding.slug` at hydration time, with a one-time migration that copies any existing `topuphut-*` payload into the new slug-prefixed key.
 
-**Files**
-- `src/lib/cms/seo.ts` — extend with `buildProductJsonLd`, `buildBreadcrumbJsonLd`, `buildOrganizationJsonLd`, `buildFaqJsonLd`, `buildReviewJsonLd`. All read base URL + brand from `site_settings` (no hardcoded domain).
-- `src/routes/__root.tsx` — Organization JSON-LD + sitewide OG/Twitter defaults from settings.
-- `src/routes/products.$slug.tsx` — dynamic `head()`: title, description, canonical, og:image (product image), Product + Breadcrumb + (if reviews) AggregateRating + FAQ JSON-LD from loader data.
-- `src/routes/products.tsx`, `categories.tsx`, `about.tsx`, `contact.tsx` — canonical + per-route OG.
-- `src/routes/sitemap[.]xml.ts` — server route enumerating static routes + all published products + categories from Supabase.
-- `public/robots.txt` — `Allow: /`, `Sitemap: <base>/sitemap.xml` (base read at build via env fallback; runtime sitemap is dynamic).
+## Slice 2 — Theme Settings (Task 4)
+- Extend `SiteBranding` with `primary_color`, `secondary_color`, `accent_color`, `font_family`.
+- Inject CSS variables (`--primary`, `--secondary`, `--accent`, `--font-sans`) at runtime from `useSettings` via a `ThemeVarsBridge` mounted in `__root.tsx`.
+- Add a "Theme" subsection in `admin.settings.tsx` (color pickers + font selector).
+- No Tailwind config changes — variables already drive the design tokens in `styles.css`.
 
-## Slice 2 — Analytics Settings (configurable)
+## Slice 3 — Legal Pages CMS (Task 3)
+- Migration: `legal_pages` table (`slug`, `title`, `body_md`, `is_published`, timestamps) with admin-write / public-read RLS + GRANTs.
+- Seed rows for `terms`, `privacy`, `refund`, `faq` using the current static copy.
+- Refactor `src/routes/{terms,privacy,refund,faq}.tsx` to load from the table (markdown rendered via existing components).
+- New admin route `src/routes/admin.legal.tsx` (list + edit, markdown textarea).
 
-**DB**: new `analytics` settings group in `site_settings` (`ga4_id`, `gtm_id`, `meta_pixel_id`, `gsc_verification`, `bing_verification`).
+## Slice 4 — Setup Wizard + Env Validator (Tasks 5 + 7)
+- Wizard at `/setup` (7 steps) guarded by a `setup_completed` flag in `site_settings`. Public `setupStatus` server fn; `__root.tsx` redirects to `/setup` when incomplete and no admin exists.
+- Wizard writes admin role, branding, contact, site URL, currency, and flips the flag.
+- Env Validator: server fn that probes Supabase reachability, `payments` bucket, sender email config, analytics IDs, enabled gateways. Renders as a "System Health" card on `admin.index.tsx`.
 
-**Files**
-- `src/lib/analytics/injector.tsx` — `<AnalyticsScripts />` component that reads settings and injects GA4/GTM/Meta Pixel + verification meta tags. Mounted in `__root.tsx`.
-- `src/routes/admin.settings.tsx` — new "Analytics & SEO" tab with form fields for all IDs.
+## Slice 5 — Demo Data Manager + Documentation Generator (Tasks 6 + 8)
+- `admin.tools.demo.tsx` with admin-only server fns: `seedDemoData`, `resetDemoData`, `clearDemoOrders`, `clearDemoCustomers` (idempotent, tagged via `is_demo` columns added in a small migration where missing).
+- `admin.system.docs.tsx` — renders four bundled markdown templates (Installation, Gateway Setup, Email Setup, White Label) with the live `site_settings` values interpolated, plus a "Download .md" button per doc.
 
-## Slice 3 — Product Reviews
+## Per-slice exit criteria
+After each slice I will: run `tsgo --noEmit`, smoke-test affected routes, and post a short report. You approve before I start the next slice.
 
-**DB migration**
-- `product_reviews` already exists (10 cols). Add columns if missing: `status` (pending/approved/rejected), `helpful_count`, `is_verified_purchase`. Add RPC `mark_review_helpful(_review_id)`.
-- Add trigger to recompute `products.rating_avg` and `rating_count` on approved review insert/update.
+## Final report (after Slice 5)
+WHITE LABEL / RESALE / DEPLOYMENT / PRODUCTION scores, full file list, migration list, build + typecheck confirmation.
 
-**Files**
-- `src/lib/reviews/reviews.functions.ts` — `listProductReviewsFn`, `submitReviewFn` (auto-detect verified purchase via paid orders), `voteHelpfulFn`.
-- `src/lib/reviews/admin.functions.ts` — `listReviewsAdminFn`, `moderateReviewFn` (approve/reject/delete).
-- `src/components/products/ProductReviews.tsx` — rating breakdown bar chart, sort dropdown (newest / highest / lowest / most helpful), submit form (gated to authed users), helpful vote button, verified badge.
-- `src/routes/products.$slug.tsx` — wire Reviews tab to new component.
-- `src/routes/admin.reviews.tsx` — moderation queue (pending / all, approve / reject / delete buttons).
-- `src/routes/admin.tsx` sidebar — add "Reviews" link.
+---
 
-## Slice 4 — Search Improvements
-
-**DB migration**
-- Add `products.search_tsv tsvector` generated column + GIN index over `name`, `short_description`, `description`.
-- New `search_queries` table (query, count, last_searched_at) for trending.
-
-**Files**
-- `src/lib/search/search.functions.ts` — `searchProductsFn` (FTS via `websearch_to_tsquery`), `suggestProductsFn` (prefix), `getTrendingSearchesFn`, `logSearchFn`.
-- `src/components/SearchBar.tsx` — autocomplete dropdown with suggestions + recent (localStorage via Zustand) + trending sections.
-- `src/components/Header.tsx` — replace plain input with `SearchBar`.
-- `src/routes/products.tsx` — consume `q` search param via FTS function.
-- `src/routes/admin.search.tsx` — top searches table (KPI).
-
-## Cross-cutting
-
-- All new SQL migrations include explicit `GRANT` blocks per project rules.
-- All settings JSON merges preserve existing keys.
-- White-label: every site URL flows from `seo` settings group → `getSiteUrl()` helper; no hardcoded `topuphut` strings introduced.
-
-## Return shape
-
-At the end of each slice I'll report: files modified, per-area completion %, marketplace readiness, SEO score, resale readiness.
-
-## Confirmation
-
-Reply "go" to start with Slice 1 (SEO Suite). I can also re-order if you want Reviews or Analytics first.
+**Reply "go slice 1"** (or any specific slice number) to start. If you want a different order, say so and I'll re-plan.
