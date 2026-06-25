@@ -152,9 +152,9 @@ function Hero() {
   );
 }
 
-function FloatingCard({ product, className = "", delay = "0s" }: { product: Product; className?: string; delay?: string }) {
+function FloatingCard({ product, delay = "0s", duration = "7s" }: { product: Product; delay?: string; duration?: string }) {
   return (
-    <div className={`glass-dark rounded-2xl p-3.5 shadow-premium animate-float ${className}`} style={{ animationDelay: delay }}>
+    <div className="glass-dark rounded-2xl p-3.5 shadow-premium animate-float" style={{ animationDelay: delay, animationDuration: duration }}>
       <div className="flex items-center gap-3">
         <div className="h-11 w-11 rounded-xl bg-gradient-primary grid place-items-center overflow-hidden text-xl shadow-glow shrink-0">
           {product.thumbnailUrl ? (
