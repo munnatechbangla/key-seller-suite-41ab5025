@@ -191,7 +191,59 @@ function AdminSettings() {
           <Area label="Custom footer scripts (raw HTML, runs at end of <body>)" value={data.analytics.custom_footer} onChange={(v) => set("analytics", "custom_footer", v)} />
           <SaveBtn onClick={() => save("analytics")} saving={saving === "analytics"} />
         </TabsContent>
+
+        <TabsContent value="theme" className="mt-4 space-y-4">
+          <p className="text-xs text-muted-foreground">Colors and font apply instantly across the storefront via CSS variables. Preview updates as you type — Save to persist.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <ColorField label="Primary" value={data.theme.primary_color} onChange={(v) => set("theme", "primary_color", v)} />
+            <ColorField label="Secondary" value={data.theme.secondary_color} onChange={(v) => set("theme", "secondary_color", v)} />
+            <ColorField label="Accent" value={data.theme.accent_color} onChange={(v) => set("theme", "accent_color", v)} />
+          </div>
+          <Field label="Font Family (CSS name)" value={data.theme.font_family} onChange={(v) => set("theme", "font_family", v)} />
+          <Field label="Font Stylesheet URL (e.g. Google Fonts)" value={data.theme.font_url} onChange={(v) => set("theme", "font_url", v)} />
+          <ThemePreview theme={data.theme} />
+          <SaveBtn onClick={() => save("theme")} saving={saving === "theme"} />
+        </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="space-y-1.5">
+      <Label>{label}</Label>
+      <div className="flex items-center gap-2">
+        <input
+          type="color"
+          value={value || "#000000"}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-10 w-12 rounded border bg-background cursor-pointer"
+          aria-label={`${label} color picker`}
+        />
+        <Input value={value ?? ""} onChange={(e) => onChange(e.target.value)} placeholder="#6C5CE7" />
+      </div>
+    </div>
+  );
+}
+
+function ThemePreview({ theme }: { theme: AllSettings["theme"] }) {
+  const gradient = `linear-gradient(135deg, ${theme.primary_color} 0%, ${theme.secondary_color} 60%, ${theme.accent_color} 100%)`;
+  return (
+    <div
+      className="rounded-xl border p-5 space-y-3"
+      style={{ fontFamily: `"${theme.font_family}", ui-sans-serif, system-ui, sans-serif` }}
+    >
+      <div className="text-sm font-medium text-muted-foreground">Live preview</div>
+      <div className="rounded-lg p-5 text-white" style={{ background: gradient }}>
+        <div className="text-xl font-bold">Heading sample</div>
+        <div className="text-sm opacity-90">Body text rendered in {theme.font_family || "default"} font.</div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className="px-3 py-2 rounded-md text-white text-sm font-medium" style={{ background: theme.primary_color }}>Primary</button>
+        <button type="button" className="px-3 py-2 rounded-md text-white text-sm font-medium" style={{ background: theme.secondary_color }}>Secondary</button>
+        <button type="button" className="px-3 py-2 rounded-md text-sm font-medium" style={{ background: theme.accent_color, color: "#0b0a1a" }}>Accent</button>
+      </div>
     </div>
   );
 }
