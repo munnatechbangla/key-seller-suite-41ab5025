@@ -4,7 +4,9 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Breadcrumbs } from "@/components/site/PageHero";
+import { ReviewsSection } from "@/components/site/ReviewsSection";
 import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelated, useProductsBySlugs } from "@/lib/catalog";
+import { reviewsQuery } from "@/lib/reviews";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
 import { useEffect, useState } from "react";
 import {
@@ -19,10 +21,12 @@ export const Route = createFileRoute("/products/$slug")({
     const product = await context.queryClient.ensureQueryData(productQuery(params.slug));
     if (!product) throw notFound();
     context.queryClient.ensureQueryData(relatedQuery(params.slug, 4));
-    return { product };
+    const reviews = await context.queryClient.ensureQueryData(reviewsQuery(product.id));
+    return { product, reviews };
   },
   head: ({ loaderData, params }) => {
     const p = loaderData?.product;
+    const reviews = loaderData?.reviews ?? [];
     const path = `/products/${params.slug}`;
     if (!p) return { meta: seoMeta({ path }) };
     const scripts = [
@@ -37,6 +41,13 @@ export const Route = createFileRoute("/products/$slug")({
         reviews: p.reviews,
         category: p.categoryName ?? p.category,
         inStock: (p.stock ?? 1) > 0,
+        reviewSamples: reviews.slice(0, 5).map((r) => ({
+          author: r.display_name || "Verified Customer",
+          rating: r.rating,
+          title: r.title,
+          body: r.body,
+          createdAt: r.created_at,
+        })),
       })),
       jsonLdScript(breadcrumbJsonLd([
         { name: "Home", path: "/" },
