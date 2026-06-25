@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Product } from "./catalog";
+import { track } from "./analytics/track";
 
 type CartItem = { slug: string; qty: number; product: Product };
 
