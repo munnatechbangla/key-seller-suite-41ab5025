@@ -47,7 +47,7 @@ function ThankYou() {
       currency: q.data.order?.currency ?? "USD",
       value: Number(q.data.order?.total ?? 0),
       items: q.data.items.map((it) => ({
-        item_id: it.product_id ?? it.id,
+        item_id: it.id,
         item_name: it.product_name,
         price: Number(it.unit_price),
         quantity: it.qty,
