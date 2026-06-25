@@ -26,6 +26,7 @@ const GROUP_KEYS: Array<{ group: keyof AllSettings; group_key: string; setting_k
   { group: "email", group_key: "email", setting_key: "senders" },
   { group: "social", group_key: "social", setting_key: "links" },
   { group: "payment", group_key: "payment", setting_key: "config" },
+  { group: "analytics", group_key: "analytics", setting_key: "config" },
 ];
 
 function AdminSettings() {
