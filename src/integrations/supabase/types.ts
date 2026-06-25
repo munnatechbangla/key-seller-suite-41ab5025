@@ -1631,6 +1631,21 @@ export type Database = {
         }
         Returns: boolean
       }
+      list_public_payment_gateways: {
+        Args: never
+        Returns: {
+          config: Json
+          description: string
+          id: string
+          is_enabled: boolean
+          logo_url: string
+          mode: string
+          name: string
+          slug: string
+          sort_order: number
+          type: string
+        }[]
+      }
       mark_order_failed: {
         Args: { _gateway_response?: Json; _order_id: string; _reason?: string }
         Returns: Json
