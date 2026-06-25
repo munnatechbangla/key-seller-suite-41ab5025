@@ -32,7 +32,11 @@ export function AuthShell({ title, subtitle, children, footer }: { title: string
       <div className="flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-md space-y-6">
           <Link to="/" className="lg:hidden flex items-center gap-2">
-            <div className="h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center shadow-glow"><Zap className="h-5 w-5 text-primary-foreground" /></div>
+            {s.branding.logo_url ? (
+              <img src={s.branding.logo_url} alt={s.branding.name} className="h-9 w-9 rounded-xl object-contain" />
+            ) : (
+              <div className="h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center shadow-glow"><Zap className="h-5 w-5 text-primary-foreground" /></div>
+            )}
             <span className="font-bold text-xl">{brand_lead}<span className="text-gradient">{brand_accent}</span></span>
           </Link>
           <div>
