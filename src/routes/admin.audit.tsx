@@ -20,7 +20,7 @@ function AuditReport() {
 
   // Heuristic scores
   const whitelabel = score([
-    !!s.branding.name && s.branding.name !== "TopupHut",
+    !!s.branding.name && s.branding.name !== "DigitalNest",
     !!s.branding.tagline,
     !!s.branding.logo_url,
     !!s.branding.favicon_url,
