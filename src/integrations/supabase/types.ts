@@ -230,6 +230,102 @@ export type Database = {
           },
         ]
       }
+      email_logs: {
+        Row: {
+          attempts: number
+          created_at: string
+          error_message: string | null
+          id: string
+          max_attempts: number
+          next_retry_at: string | null
+          payload: Json
+          provider: string | null
+          provider_message_id: string | null
+          recipient: string
+          rendered_html: string | null
+          sent_at: string | null
+          status: string
+          subject: string
+          template_key: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          max_attempts?: number
+          next_retry_at?: string | null
+          payload?: Json
+          provider?: string | null
+          provider_message_id?: string | null
+          recipient: string
+          rendered_html?: string | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          template_key: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          max_attempts?: number
+          next_retry_at?: string | null
+          payload?: Json
+          provider?: string | null
+          provider_message_id?: string | null
+          recipient?: string
+          rendered_html?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          template_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          html_body: string
+          id: string
+          name: string
+          subject: string
+          template_key: string
+          text_body: string | null
+          updated_at: string
+          variables: Json
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          html_body: string
+          id?: string
+          name: string
+          subject: string
+          template_key: string
+          text_body?: string | null
+          updated_at?: string
+          variables?: Json
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          html_body?: string
+          id?: string
+          name?: string
+          subject?: string
+          template_key?: string
+          text_body?: string | null
+          updated_at?: string
+          variables?: Json
+        }
+        Relationships: []
+      }
       featured_products: {
         Row: {
           created_at: string
