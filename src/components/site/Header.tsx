@@ -3,7 +3,7 @@ import { Heart, ShoppingCart, User, Search, Menu, X, GitCompare } from "lucide-r
 import { useEffect, useState } from "react";
 import { useCart, useWishlist, useCompare, useAuth } from "@/lib/stores";
 import { primaryNav, announcementBar, resolveIcon } from "@/lib/cms";
-import { useSettings } from "@/lib/cms/settings";
+
 import { ThemeToggle } from "@/components/site/ThemeToggle";
 import { Logo } from "@/components/site/Logo";
 
