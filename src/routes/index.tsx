@@ -35,7 +35,8 @@ import { categoriesQuery } from "@/lib/catalog";
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    meta: seoMeta({}),
+    meta: seoMeta({ path: "/" }),
+    links: [canonicalLink("/")],
   }),
   loader: ({ context }) => {
     context.queryClient.ensureQueryData(categoriesQuery());
