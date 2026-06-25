@@ -41,5 +41,13 @@ export const adminUpsertSettingFn = createServerFn({ method: "POST" })
         { onConflict: "group_key,setting_key" },
       );
     if (error) throw error;
+    const { logAudit } = await import("./audit.server");
+    await logAudit({
+      actorId: context.userId,
+      actorEmail: (context.claims as any)?.email ?? null,
+      action: "settings.update",
+      entityType: "site_settings",
+      entityId: `${data.group_key}/${data.setting_key}`,
+    });
     return { ok: true };
   });
