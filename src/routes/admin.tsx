@@ -2,8 +2,9 @@ import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tan
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/stores";
-import { LayoutDashboard, Package, ShoppingBag, Users, KeyRound, Loader2, Ticket } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Users, KeyRound, Loader2, Ticket, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSettings } from "@/lib/cms/settings";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
