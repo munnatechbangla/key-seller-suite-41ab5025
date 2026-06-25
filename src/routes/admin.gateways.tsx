@@ -17,6 +17,8 @@ import {
   listSubmissionsFn, reviewSubmissionFn,
   type GatewayRow, type GatewayType, type JsonValue,
 } from "@/lib/payments/gateways.functions";
+import { testGatewayConnectionFn, getGatewayHealthFn } from "@/lib/payments/admin.functions";
+import { Activity, CheckCircle, AlertCircle } from "lucide-react";
 
 export const Route = createFileRoute("/admin/gateways")({
   component: GatewaysPage,
@@ -169,6 +171,7 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
             <Textarea value={form.configText} onChange={(e) => setForm({ ...form, configText: e.target.value })} rows={12} className="font-mono text-xs" />
             <p className="text-xs text-muted-foreground mt-1">{configHelp(form.type)}</p>
           </div>
+          {gateway && form.type === "custom_auto" && <GatewayHealthPanel id={gateway.id} slug={gateway.slug} />}
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
@@ -195,6 +198,70 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
     </Dialog>
   );
 }
+
+function GatewayHealthPanel({ id, slug }: { id: string; slug: string }) {
+  const testFn = useServerFn(testGatewayConnectionFn);
+  const healthFn = useServerFn(getGatewayHealthFn);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ ok: boolean; message: string; latencyMs: number; status?: number } | null>(null);
+  const h = useQuery({
+    queryKey: ["gateway-health", slug],
+    queryFn: () => healthFn({ data: { slug, limit: 10 } }),
+  });
+
+  return (
+    <div className="rounded-lg border bg-muted/30 p-3 space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="text-sm font-semibold flex items-center gap-2"><Activity className="h-4 w-4" />Health & Logs</div>
+        <Button size="sm" variant="outline" disabled={testing} onClick={async () => {
+          setTesting(true); setTestResult(null);
+          try { const r = await testFn({ data: { id } }); setTestResult(r); h.refetch(); }
+          catch (e) { setTestResult({ ok: false, message: e instanceof Error ? e.message : "failed", latencyMs: 0 }); }
+          finally { setTesting(false); }
+        }}>{testing ? <Loader2 className="h-3 w-3 animate-spin" /> : "Test Connection"}</Button>
+      </div>
+      {testResult && (
+        <div className={cn("text-xs rounded px-2 py-1.5 flex items-center gap-2",
+          testResult.ok ? "bg-emerald-500/10 text-emerald-600" : "bg-destructive/10 text-destructive")}>
+          {testResult.ok ? <CheckCircle className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
+          {testResult.message}{testResult.status ? ` · HTTP ${testResult.status}` : ""} · {testResult.latencyMs}ms
+        </div>
+      )}
+      <div className="grid grid-cols-2 gap-2 text-xs">
+        <div className="rounded border bg-card p-2">
+          <div className="text-muted-foreground">Last success</div>
+          <div className="font-mono truncate">{h.data?.lastSuccess ? new Date(h.data.lastSuccess.created_at).toLocaleString() : "—"}</div>
+        </div>
+        <div className="rounded border bg-card p-2">
+          <div className="text-muted-foreground">Last failure</div>
+          <div className="font-mono truncate">{h.data?.lastFailure ? new Date(h.data.lastFailure.created_at).toLocaleString() : "—"}</div>
+          {h.data?.lastFailure?.error_message && <div className="text-destructive truncate">{h.data.lastFailure.error_message}</div>}
+        </div>
+      </div>
+      <div className="max-h-48 overflow-y-auto border rounded bg-card">
+        <table className="w-full text-[11px]">
+          <thead className="bg-muted/40 text-muted-foreground"><tr>
+            <th className="text-left p-1.5">Time</th><th className="text-left p-1.5">Event</th><th className="text-left p-1.5">Status</th><th className="text-left p-1.5">Order / Txn</th>
+          </tr></thead>
+          <tbody>
+            {(h.data?.logs ?? []).map((l) => (
+              <tr key={l.id} className="border-t">
+                <td className="p-1.5 whitespace-nowrap">{new Date(l.created_at).toLocaleTimeString()}</td>
+                <td className="p-1.5">{l.event_type}</td>
+                <td className="p-1.5">{l.status ?? "—"}</td>
+                <td className="p-1.5 font-mono truncate max-w-[140px]">{l.order_number ?? l.transaction_id ?? "—"}</td>
+              </tr>
+            ))}
+            {!h.isLoading && (h.data?.logs.length ?? 0) === 0 && (
+              <tr><td colSpan={4} className="p-3 text-center text-muted-foreground">No events yet.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 
 function defaultConfig(type: GatewayType): { [k: string]: JsonValue } {
   if (type === "manual") {
