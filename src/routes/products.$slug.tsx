@@ -12,6 +12,7 @@ import {
   Facebook, Twitter, MessageCircle, Mail, Truck, RefreshCcw, Lock,
 } from "lucide-react";
 import { toast } from "sonner";
+import { track } from "@/lib/analytics/track";
 
 export const Route = createFileRoute("/products/$slug")({
   loader: async ({ params, context }) => {
