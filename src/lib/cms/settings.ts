@@ -80,6 +80,14 @@ export type AnalyticsConfig = {
   custom_footer: string;
 };
 
+export type ThemeConfig = {
+  primary_color: string;
+  secondary_color: string;
+  accent_color: string;
+  font_family: string;
+  font_url: string;
+};
+
 export type AllSettings = {
   branding: SiteBranding;
   contact: SiteContact;
@@ -88,6 +96,7 @@ export type AllSettings = {
   social: SocialLinksMap;
   payment: PaymentConfig;
   analytics: AnalyticsConfig;
+  theme: ThemeConfig;
 };
 
 export const defaultSettings: AllSettings = {
