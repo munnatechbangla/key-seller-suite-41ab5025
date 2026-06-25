@@ -181,17 +181,17 @@ function FloatingCard({ product, delay = "0s", duration = "7s" }: { product: Pro
 function TrustStrip() {
   return (
     <div className="container mx-auto px-4 -mt-12 relative z-10">
-      <div className="bg-card border border-border rounded-3xl shadow-premium p-6 grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="bg-card border border-border rounded-3xl shadow-premium p-5 sm:p-6 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5 sm:gap-6">
         {trustStripItems.map((item) => {
           const Icon = resolveIcon(item.icon);
           return (
-            <div key={item.title} className="flex items-center gap-3">
-              <div className="h-12 w-12 grid place-items-center rounded-2xl bg-gradient-primary text-primary-foreground shadow-elegant shrink-0">
+            <div key={item.title} className="flex items-center gap-3 min-h-12">
+              <div className="h-11 w-11 sm:h-12 sm:w-12 grid place-items-center rounded-2xl bg-primary/10 text-primary shrink-0">
                 <Icon className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <div className="font-semibold text-sm text-foreground">{item.title}</div>
-                <div className="text-xs text-muted-foreground">{item.desc}</div>
+                <div className="font-semibold text-sm text-foreground leading-tight">{item.title}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{item.desc}</div>
               </div>
             </div>
           );
