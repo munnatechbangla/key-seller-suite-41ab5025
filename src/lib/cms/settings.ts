@@ -80,6 +80,14 @@ export type AnalyticsConfig = {
   custom_footer: string;
 };
 
+export type ThemeConfig = {
+  primary_color: string;
+  secondary_color: string;
+  accent_color: string;
+  font_family: string;
+  font_url: string;
+};
+
 export type AllSettings = {
   branding: SiteBranding;
   contact: SiteContact;
@@ -88,6 +96,7 @@ export type AllSettings = {
   social: SocialLinksMap;
   payment: PaymentConfig;
   analytics: AnalyticsConfig;
+  theme: ThemeConfig;
 };
 
 export const defaultSettings: AllSettings = {
@@ -160,6 +169,13 @@ export const defaultSettings: AllSettings = {
     custom_footer_enabled: false,
     custom_footer: "",
   },
+  theme: {
+    primary_color: "#6C5CE7",
+    secondary_color: "#8E44AD",
+    accent_color: "#00D084",
+    font_family: "Poppins",
+    font_url: "https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap",
+  },
 };
 
 type SettingsState = {
@@ -204,6 +220,8 @@ export const useSettings = create<SettingsState>((set) => ({
           next.payment = merge(next.payment, v as Partial<PaymentConfig>);
         } else if (row.group_key === "analytics" && row.setting_key === "config") {
           next.analytics = merge(next.analytics, v as Partial<AnalyticsConfig>);
+        } else if (row.group_key === "theme" && row.setting_key === "config") {
+          next.theme = merge(next.theme, v as Partial<ThemeConfig>);
         }
       }
       set({ settings: next, loaded: true });
