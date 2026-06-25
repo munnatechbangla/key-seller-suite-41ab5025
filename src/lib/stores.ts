@@ -29,6 +29,11 @@ export const useCart = create<CartState>()(
       couponDiscount: 0,
       add: (p, qty = 1) =>
         set((s) => {
+          track("add_to_cart", {
+            currency: "USD",
+            value: p.price * qty,
+            items: [{ item_id: p.slug, item_name: p.name, price: p.price, quantity: qty, item_category: p.category }],
+          });
           const ex = s.items.find((i) => i.slug === p.slug);
           if (ex) return { items: s.items.map((i) => (i.slug === p.slug ? { ...i, qty: i.qty + qty } : i)) };
           return { items: [...s.items, { slug: p.slug, qty, product: p }] };
@@ -37,7 +42,10 @@ export const useCart = create<CartState>()(
       setQty: (slug, qty) =>
         set((s) => ({ items: s.items.map((i) => (i.slug === slug ? { ...i, qty: Math.max(1, qty) } : i)) })),
       clear: () => set({ items: [], coupon: null, couponDiscount: 0 }),
-      setCoupon: (code, discount) => set({ coupon: code.trim().toUpperCase(), couponDiscount: discount }),
+      setCoupon: (code, discount) => {
+        track("coupon_applied", { coupon: code.trim().toUpperCase(), discount });
+        set({ coupon: code.trim().toUpperCase(), couponDiscount: discount });
+      },
       clearCoupon: () => set({ coupon: null, couponDiscount: 0 }),
       subtotal: () => get().items.reduce((s, i) => s + i.product.price * i.qty, 0),
       discount: () => {
