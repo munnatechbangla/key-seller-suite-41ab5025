@@ -15,7 +15,7 @@ import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
 import { useEffect, useState } from "react";
 import {
   Star, Zap, Shield, Heart, GitCompare, ShoppingCart, Check,
-  Truck, Lock,
+  Truck, Lock, Package,
 } from "lucide-react";
 import { toast } from "sonner";
 import { track } from "@/lib/analytics/track";
@@ -208,11 +208,12 @@ function ProductPage() {
             <button onClick={() => { cmp.toggle(product.slug); toast(cmp.has(product.slug) ? "Removed from compare" : "Added to compare"); }} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border ${cmp.has(product.slug) ? "bg-primary/10 border-primary text-primary" : "border-border hover:bg-muted"}`}>
               <GitCompare className="h-4 w-4" /> Compare
             </button>
-            <div className="inline-flex items-center gap-1 ml-auto">
-              <span className="text-muted-foreground mr-1"><Share2 className="h-4 w-4" /></span>
-              {[Facebook, Twitter, MessageCircle, Mail].map((Icon, i) => (
-                <a key={i} href="#" className="h-9 w-9 grid place-items-center rounded-lg hover:bg-muted"><Icon className="h-4 w-4" /></a>
-              ))}
+            <div className="ml-auto">
+              <ShareButtons
+                path={`/products/${product.slug}`}
+                title={product.name}
+                description={product.short ?? undefined}
+              />
             </div>
           </div>
 
@@ -253,7 +254,7 @@ function ProductPage() {
                 </ul>
               </div>
               <div className="rounded-2xl bg-card border border-border p-6 space-y-3">
-                <h3 className="font-semibold flex items-center gap-2"><RefreshCcw className="h-4 w-4 text-primary" /> What's included</h3>
+                <h3 className="font-semibold flex items-center gap-2"><Package className="h-4 w-4 text-primary" /> What's included</h3>
                 <ul className="space-y-2">
                   {product.included?.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm"><Check className="h-4 w-4 text-primary mt-0.5" /> {f}</li>
