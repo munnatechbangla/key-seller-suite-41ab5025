@@ -16,6 +16,7 @@ export const Route = createFileRoute("/admin")({
 
 const items = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/admin/homepage", label: "Homepage Builder", icon: LayoutTemplate },
   { to: "/admin/products", label: "Products", icon: Package },
   { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { to: "/admin/customers", label: "Customers", icon: Users },
