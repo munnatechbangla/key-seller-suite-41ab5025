@@ -37,10 +37,17 @@ export type SocialProofConfig = {
   new_arrival: BadgeConfig & { days: number };
 };
 
+export type ProductExperienceConfig = {
+  quick_view_enabled: boolean;
+  sticky_buy_bar_enabled: boolean;
+  share_buttons_enabled: boolean;
+};
+
 export type MarketplaceConfig = {
   recently_purchased: RecentlyPurchasedConfig;
   live_visitors: LiveVisitorsConfig;
   social_proof: SocialProofConfig;
+  product_experience: ProductExperienceConfig;
   ui: {
     animation_speed_ms: number;
   };
