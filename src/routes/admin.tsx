@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tan
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/stores";
-import { LayoutDashboard, Package, ShoppingBag, Users, KeyRound, Loader2, Ticket, Settings as SettingsIcon, Mail, FileText, CreditCard, Wallet, Star, ScrollText, Wand2, HeartPulse, Database, BookOpen, ClipboardCheck, History, LayoutTemplate } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Users, KeyRound, Loader2, Ticket, Settings as SettingsIcon, Mail, FileText, CreditCard, Wallet, Star, ScrollText, Wand2, HeartPulse, Database, BookOpen, ClipboardCheck, History, LayoutTemplate, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/site/Logo";
 
@@ -17,6 +17,7 @@ export const Route = createFileRoute("/admin")({
 const items = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/homepage", label: "Homepage Builder", icon: LayoutTemplate },
+  { to: "/admin/marketplace", label: "Marketplace", icon: Sparkles },
   { to: "/admin/products", label: "Products", icon: Package },
   { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { to: "/admin/customers", label: "Customers", icon: Users },
