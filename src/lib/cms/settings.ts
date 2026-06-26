@@ -145,7 +145,11 @@ export const defaultSettings: AllSettings = {
     youtube: defaultSocial.find((s) => s.label === "YouTube")?.href ?? "",
     tiktok: "",
     linkedin: "",
+    telegram: "",
+    discord: "",
+    github: "",
   },
+
   payment: {
     currency: "USD",
     currency_symbol: "$",
