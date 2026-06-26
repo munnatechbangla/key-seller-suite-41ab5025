@@ -305,6 +305,7 @@ function ProductPage() {
         )}
       </div>
       <Footer />
+      <StickyBuyBar product={product} />
     </div>
   );
 }
