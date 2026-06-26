@@ -17,7 +17,7 @@ import {
   type Product,
 } from "@/lib/catalog";
 import { useProductSection, useResolvedProducts, resolveIcon } from "@/lib/cms";
-import { useHomepage, type HomeProductSection, type SectionId } from "@/lib/cms/homepage";
+import { useHomepage, defaultHomepageConfig, type HomeProductSection, type SectionId } from "@/lib/cms/homepage";
 import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { categoriesQuery } from "@/lib/catalog";
