@@ -45,6 +45,7 @@ import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminPaymentLogsRouteImport } from './routes/admin.payment-logs'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
+import { Route as AdminMarketplaceRouteImport } from './routes/admin.marketplace'
 import { Route as AdminLicensesRouteImport } from './routes/admin.licenses'
 import { Route as AdminLegalRouteImport } from './routes/admin.legal'
 import { Route as AdminHomepageRouteImport } from './routes/admin.homepage'
@@ -243,6 +244,11 @@ const AdminOrdersRoute = AdminOrdersRouteImport.update({
   path: '/orders',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminMarketplaceRoute = AdminMarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLicensesRoute = AdminLicensesRouteImport.update({
   id: '/licenses',
   path: '/licenses',
@@ -368,6 +374,7 @@ export interface FileRoutesByFullPath {
   '/admin/homepage': typeof AdminHomepageRoute
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
+  '/admin/marketplace': typeof AdminMarketplaceRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRoute
@@ -422,6 +429,7 @@ export interface FileRoutesByTo {
   '/admin/homepage': typeof AdminHomepageRoute
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
+  '/admin/marketplace': typeof AdminMarketplaceRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRoute
@@ -478,6 +486,7 @@ export interface FileRoutesById {
   '/admin/homepage': typeof AdminHomepageRoute
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
+  '/admin/marketplace': typeof AdminMarketplaceRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRoute
@@ -535,6 +544,7 @@ export interface FileRouteTypes {
     | '/admin/homepage'
     | '/admin/legal'
     | '/admin/licenses'
+    | '/admin/marketplace'
     | '/admin/orders'
     | '/admin/payment-logs'
     | '/admin/products'
@@ -589,6 +599,7 @@ export interface FileRouteTypes {
     | '/admin/homepage'
     | '/admin/legal'
     | '/admin/licenses'
+    | '/admin/marketplace'
     | '/admin/orders'
     | '/admin/payment-logs'
     | '/admin/products'
@@ -644,6 +655,7 @@ export interface FileRouteTypes {
     | '/admin/homepage'
     | '/admin/legal'
     | '/admin/licenses'
+    | '/admin/marketplace'
     | '/admin/orders'
     | '/admin/payment-logs'
     | '/admin/products'
@@ -954,6 +966,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOrdersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/marketplace': {
+      id: '/admin/marketplace'
+      path: '/marketplace'
+      fullPath: '/admin/marketplace'
+      preLoaderRoute: typeof AdminMarketplaceRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/licenses': {
       id: '/admin/licenses'
       path: '/licenses'
@@ -1090,6 +1109,7 @@ interface AdminRouteChildren {
   AdminHomepageRoute: typeof AdminHomepageRoute
   AdminLegalRoute: typeof AdminLegalRoute
   AdminLicensesRoute: typeof AdminLicensesRoute
+  AdminMarketplaceRoute: typeof AdminMarketplaceRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminPaymentLogsRoute: typeof AdminPaymentLogsRoute
   AdminProductsRoute: typeof AdminProductsRoute
@@ -1113,6 +1133,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminHomepageRoute: AdminHomepageRoute,
   AdminLegalRoute: AdminLegalRoute,
   AdminLicensesRoute: AdminLicensesRoute,
+  AdminMarketplaceRoute: AdminMarketplaceRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminPaymentLogsRoute: AdminPaymentLogsRoute,
   AdminProductsRoute: AdminProductsRoute,
