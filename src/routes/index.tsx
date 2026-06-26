@@ -163,7 +163,8 @@ function FloatingCard({ product, delay = "0s", duration = "7s", size = "md", cla
 }
 
 function TrustStrip() {
-  const items = useHomepage((s) => s.config.trust.items.filter((i) => i.enabled));
+  const rawItems = useHomepage((s) => s.config.trust.items);
+  const items = useMemo(() => rawItems.filter((i) => i.enabled), [rawItems]);
   return (
     <div className="container mx-auto px-4 -mt-12 relative z-10">
       <div className="bg-card border border-border rounded-3xl shadow-premium p-4 sm:p-6 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 items-stretch">
