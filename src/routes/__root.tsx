@@ -127,6 +127,7 @@ function RootComponent() {
   const favicon = useSettings((s) => s.settings.branding.favicon_url);
   useEffect(() => initAuth(), [initAuth]);
   useEffect(() => { loadSettings(); }, [loadSettings]);
+  useEffect(() => { import("@/lib/cms/homepage").then((m) => m.useHomepage.getState().load()); }, []);
   useEffect(() => { import("@/lib/sentry").then((m) => m.initSentry()); }, []);
   useEffect(() => {
     if (typeof document === "undefined" || !favicon) return;
