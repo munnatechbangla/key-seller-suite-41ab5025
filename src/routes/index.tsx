@@ -79,9 +79,9 @@ function Home() {
 function Hero() {
   const BadgeIcon = resolveIcon(heroConfig.badge.icon);
   const floatingProducts = useResolvedProducts(heroConfig.floatingProductSlugs);
-  // 6 cards in a tidy 3-row × 2-col grid — no overlaps at any breakpoint.
-  const durations = ["6s", "7s", "8s", "6.5s", "7.5s", "8.5s"];
-  const delays = ["0s", "1.2s", "2.4s", "0.6s", "1.8s", "3s"];
+  // 6 cards: 2 medium (top, full-width rows) + 4 small (2×2 grid). No overlap.
+  const durations = ["6.5s", "8s", "7s", "7.8s", "6.8s", "8.4s"];
+  const delays = ["0s", "1.4s", "0.6s", "2.2s", "1s", "2.8s"];
   return (
     <section className="relative overflow-hidden bg-gradient-hero text-white">
       <div className="absolute inset-0 opacity-50 pointer-events-none">
@@ -137,13 +137,25 @@ function Hero() {
           </div>
         </div>
 
-        <div className="hidden lg:grid grid-cols-2 gap-4 self-stretch content-center">
-          {floatingProducts.slice(0, 6).map((p, i) => (
+        {/* Floating showcase: 2 medium cards on top (each spans full row), 4 small below in a 2×2 grid. */}
+        <div className="hidden lg:grid grid-cols-2 gap-4 self-center">
+          {floatingProducts.slice(0, 2).map((p, i) => (
             <FloatingCard
               key={p.slug}
               product={p}
-              delay={delays[i % delays.length]}
-              duration={durations[i % durations.length]}
+              size="md"
+              className="col-span-2"
+              delay={delays[i]}
+              duration={durations[i]}
+            />
+          ))}
+          {floatingProducts.slice(2, 6).map((p, i) => (
+            <FloatingCard
+              key={p.slug}
+              product={p}
+              size="sm"
+              delay={delays[i + 2]}
+              duration={durations[i + 2]}
             />
           ))}
         </div>
@@ -152,11 +164,28 @@ function Hero() {
   );
 }
 
-function FloatingCard({ product, delay = "0s", duration = "7s" }: { product: Product; delay?: string; duration?: string }) {
+function FloatingCard({
+  product,
+  delay = "0s",
+  duration = "7s",
+  size = "md",
+  className = "",
+}: {
+  product: Product;
+  delay?: string;
+  duration?: string;
+  size?: "sm" | "md";
+  className?: string;
+}) {
+  const isMd = size === "md";
   return (
-    <div className="glass-dark rounded-2xl p-3.5 shadow-premium animate-float" style={{ animationDelay: delay, animationDuration: duration }}>
-      <div className="flex items-center gap-3">
-        <div className="h-11 w-11 rounded-xl bg-gradient-primary grid place-items-center overflow-hidden text-xl shadow-glow shrink-0">
+    <div
+      className={`relative glass-dark rounded-2xl shadow-premium animate-float ring-1 ring-white/10 hover:ring-accent/40 transition-smooth ${isMd ? "p-4" : "p-3"} ${className}`}
+      style={{ animationDelay: delay, animationDuration: duration }}
+    >
+      <div className="absolute -inset-px rounded-2xl bg-gradient-primary opacity-20 blur-xl pointer-events-none" />
+      <div className="relative flex items-center gap-3">
+        <div className={`${isMd ? "h-12 w-12" : "h-10 w-10"} rounded-xl bg-gradient-primary grid place-items-center overflow-hidden text-xl shadow-glow shrink-0`}>
           {product.thumbnailUrl ? (
             <img src={product.thumbnailUrl} alt={product.name} className="h-full w-full object-cover" />
           ) : (
@@ -164,13 +193,13 @@ function FloatingCard({ product, delay = "0s", duration = "7s" }: { product: Pro
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-semibold truncate">{product.name}</div>
-          <div className="flex items-center gap-1 text-xs text-white/60">
+          <div className={`${isMd ? "text-sm" : "text-xs"} font-semibold truncate`}>{product.name}</div>
+          <div className="flex items-center gap-1 text-[11px] text-white/60">
             <Star className="h-3 w-3 fill-accent text-accent" /> {product.rating} · {product.delivery}
           </div>
         </div>
         <div className="text-right shrink-0">
-          <div className="text-sm font-bold text-accent">${product.price}</div>
+          <div className={`${isMd ? "text-sm" : "text-xs"} font-bold text-accent`}>${product.price}</div>
           {product.oldPrice && <div className="text-[10px] text-white/40 line-through">${product.oldPrice}</div>}
         </div>
       </div>
