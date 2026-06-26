@@ -432,7 +432,7 @@ function PaymentMethods() {
   });
   const gateways = data?.gateways ?? [];
   return (
-    <div className="container mx-auto px-4 pb-4">
+    <div className="container mx-auto px-4 py-16">
       <div className="rounded-3xl bg-card border border-border p-6 sm:p-8 text-center">
         <div className="inline-flex items-center gap-2 text-xs font-semibold text-primary mb-2">
           <ShieldCheck className="h-4 w-4" /> {cfg.trustLabel}
