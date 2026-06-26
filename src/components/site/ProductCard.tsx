@@ -19,7 +19,7 @@ export function ProductCard({ product }: { product: Product }) {
               src={product.thumbnailUrl}
               alt={product.name}
               loading="lazy"
-              className="h-full w-full object-cover group-hover:scale-110 transition-smooth"
+              className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
             />
           ) : (
             <span className="text-7xl group-hover:scale-110 transition-smooth">{product.emoji}</span>
