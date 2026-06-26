@@ -1,18 +1,26 @@
 import { Link } from "@tanstack/react-router";
-import { Star, ShoppingCart, Zap, Heart } from "lucide-react";
+import { Star, ShoppingCart, Zap, Heart, Eye } from "lucide-react";
 import type { Product } from "@/lib/catalog";
 import { useCart, useWishlist } from "@/lib/stores";
 import { SaleBadges } from "@/components/site/SaleBadges";
+import { QuickViewModal } from "@/components/site/QuickViewModal";
+import { useMarketplace } from "@/lib/cms/marketplace";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export function ProductCard({ product }: { product: Product }) {
   const off = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
   const cart = useCart();
   const wish = useWishlist();
   const wished = wish.has(product.slug);
+  const quickViewEnabled = useMarketplace((s) => s.config.product_experience.quick_view_enabled);
+  const [quickOpen, setQuickOpen] = useState(false);
 
   return (
     <article className="group relative rounded-2xl bg-card border border-border overflow-hidden hover:shadow-2xl hover:border-primary/30 hover:-translate-y-1.5 transition-all duration-300 ease-out">
+      {quickViewEnabled && (
+        <QuickViewModal slug={quickOpen ? product.slug : null} open={quickOpen} onOpenChange={setQuickOpen} />
+      )}
       <Link to="/products/$slug" params={{ slug: product.slug }} className="block">
         <div className="relative aspect-square bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center overflow-hidden">
           {product.thumbnailUrl ? (
