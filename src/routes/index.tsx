@@ -121,7 +121,7 @@ function Hero() {
           </div>
         </div>
 
-        <div className="hidden lg:grid grid-cols-2 gap-4 self-center">
+        <div className="hidden lg:grid grid-cols-2 gap-6 xl:gap-7 self-center">
           {floatingProducts.slice(0, 2).map((p, i) => (
             <FloatingCard key={p.slug} product={p} size="md" className="col-span-2" delay={delays[i]} duration={durations[i]} />
           ))}
@@ -137,8 +137,14 @@ function Hero() {
 function FloatingCard({ product, delay = "0s", duration = "7s", size = "md", className = "" }: { product: Product; delay?: string; duration?: string; size?: "sm" | "md"; className?: string }) {
   const isMd = size === "md";
   return (
-    <div className={`relative glass-dark rounded-2xl shadow-premium animate-float ring-1 ring-white/10 hover:ring-accent/40 transition-smooth ${isMd ? "p-4" : "p-3"} ${className}`} style={{ animationDelay: delay, animationDuration: duration }}>
-      <div className="absolute -inset-px rounded-2xl bg-gradient-primary opacity-20 blur-xl pointer-events-none" />
+    <Link
+      to="/products/$slug"
+      params={{ slug: product.slug }}
+      aria-label={`View ${product.name}`}
+      className={`group relative block cursor-pointer glass-dark rounded-2xl shadow-premium animate-float ring-1 ring-white/10 hover:ring-accent/50 hover:-translate-y-1 hover:shadow-glow transition-all duration-300 ${isMd ? "p-4" : "p-3"} ${className}`}
+      style={{ animationDelay: delay, animationDuration: duration }}
+    >
+      <div className="absolute -inset-px rounded-2xl bg-gradient-primary opacity-20 blur-xl pointer-events-none group-hover:opacity-40 transition-opacity duration-300" />
       <div className="relative flex items-center gap-3">
         <div className={`${isMd ? "h-12 w-12" : "h-10 w-10"} rounded-xl bg-gradient-primary grid place-items-center overflow-hidden text-xl shadow-glow shrink-0`}>
           {product.thumbnailUrl ? (
@@ -158,9 +164,10 @@ function FloatingCard({ product, delay = "0s", duration = "7s", size = "md", cla
           {product.oldPrice && <div className="text-[10px] text-white/40 line-through">${product.oldPrice}</div>}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
+
 
 function TrustStrip() {
   const rawItems = useHomepage((s) => s.config.trust.items);
