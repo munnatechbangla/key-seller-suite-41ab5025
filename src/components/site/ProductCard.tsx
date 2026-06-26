@@ -35,6 +35,9 @@ export function ProductCard({ product }: { product: Product }) {
               -{off}%
             </span>
           )}
+          <div className="absolute bottom-2 left-2 right-2 flex justify-start">
+            <SaleBadges product={product} extra={{ stock: product.stock ?? null }} max={2} />
+          </div>
         </div>
       </Link>
       <button
