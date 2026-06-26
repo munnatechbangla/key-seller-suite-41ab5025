@@ -216,7 +216,8 @@ function CategoriesGrid() {
 }
 
 function ProductSectionsBlock() {
-  const sections = useHomepage((s) => s.config.productSections.filter((p) => p.enabled));
+  const rawSections = useHomepage((s) => s.config.productSections);
+  const sections = useMemo(() => rawSections.filter((p) => p.enabled), [rawSections]);
   return (
     <>
       {sections.map((s, i) => (
