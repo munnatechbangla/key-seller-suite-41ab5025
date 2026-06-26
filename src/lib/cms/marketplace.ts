@@ -37,10 +37,17 @@ export type SocialProofConfig = {
   new_arrival: BadgeConfig & { days: number };
 };
 
+export type ProductExperienceConfig = {
+  quick_view_enabled: boolean;
+  sticky_buy_bar_enabled: boolean;
+  share_buttons_enabled: boolean;
+};
+
 export type MarketplaceConfig = {
   recently_purchased: RecentlyPurchasedConfig;
   live_visitors: LiveVisitorsConfig;
   social_proof: SocialProofConfig;
+  product_experience: ProductExperienceConfig;
   ui: {
     animation_speed_ms: number;
   };
@@ -70,6 +77,11 @@ export const defaultMarketplace: MarketplaceConfig = {
     bestseller:  { enabled: true,  label: "Bestseller",     color: "#F59E0B", text_color: "#1f1300" },
     trending:    { enabled: true,  label: "Trending",       color: "#8B5CF6", text_color: "#ffffff" },
     new_arrival: { enabled: true,  label: "New",            color: "#10B981", text_color: "#ffffff", days: 14 },
+  },
+  product_experience: {
+    quick_view_enabled: true,
+    sticky_buy_bar_enabled: true,
+    share_buttons_enabled: true,
   },
   ui: { animation_speed_ms: 300 },
 };

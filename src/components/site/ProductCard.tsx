@@ -1,18 +1,26 @@
 import { Link } from "@tanstack/react-router";
-import { Star, ShoppingCart, Zap, Heart } from "lucide-react";
+import { Star, ShoppingCart, Zap, Heart, Eye } from "lucide-react";
 import type { Product } from "@/lib/catalog";
 import { useCart, useWishlist } from "@/lib/stores";
 import { SaleBadges } from "@/components/site/SaleBadges";
+import { QuickViewModal } from "@/components/site/QuickViewModal";
+import { useMarketplace } from "@/lib/cms/marketplace";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export function ProductCard({ product }: { product: Product }) {
   const off = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
   const cart = useCart();
   const wish = useWishlist();
   const wished = wish.has(product.slug);
+  const quickViewEnabled = useMarketplace((s) => s.config.product_experience.quick_view_enabled);
+  const [quickOpen, setQuickOpen] = useState(false);
 
   return (
     <article className="group relative rounded-2xl bg-card border border-border overflow-hidden hover:shadow-2xl hover:border-primary/30 hover:-translate-y-1.5 transition-all duration-300 ease-out">
+      {quickViewEnabled && (
+        <QuickViewModal slug={quickOpen ? product.slug : null} open={quickOpen} onOpenChange={setQuickOpen} />
+      )}
       <Link to="/products/$slug" params={{ slug: product.slug }} className="block">
         <div className="relative aspect-square bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center overflow-hidden">
           {product.thumbnailUrl ? (
@@ -40,13 +48,24 @@ export function ProductCard({ product }: { product: Product }) {
           </div>
         </div>
       </Link>
-      <button
-        onClick={(e) => { e.preventDefault(); wish.toggle(product.slug); toast(wished ? "Removed from wishlist" : "Added to wishlist"); }}
-        aria-label="Wishlist"
-        className="absolute top-3 right-3 mt-9 h-8 w-8 grid place-items-center rounded-full bg-card/90 backdrop-blur border border-border opacity-0 group-hover:opacity-100 transition-smooth"
-      >
-        <Heart className={`h-4 w-4 ${wished ? "fill-accent text-accent" : ""}`} />
-      </button>
+      <div className="absolute top-3 right-3 mt-9 flex flex-col gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-smooth">
+        <button
+          onClick={(e) => { e.preventDefault(); wish.toggle(product.slug); toast(wished ? "Removed from wishlist" : "Added to wishlist"); }}
+          aria-label="Wishlist"
+          className="h-8 w-8 grid place-items-center rounded-full bg-card/90 backdrop-blur border border-border hover:border-primary/40"
+        >
+          <Heart className={`h-4 w-4 ${wished ? "fill-accent text-accent" : ""}`} />
+        </button>
+        {quickViewEnabled && (
+          <button
+            onClick={(e) => { e.preventDefault(); setQuickOpen(true); }}
+            aria-label="Quick view"
+            className="h-8 w-8 grid place-items-center rounded-full bg-card/90 backdrop-blur border border-border hover:border-primary/40"
+          >
+            <Eye className="h-4 w-4" />
+          </button>
+        )}
+      </div>
       <div className="p-4 space-y-2">
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Star className="h-3.5 w-3.5 fill-accent text-accent" />
