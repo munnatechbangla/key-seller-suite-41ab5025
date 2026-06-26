@@ -242,16 +242,16 @@ function CategoriesGrid() {
         </Link>
       }
     >
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
         {useCategories().map((c) => (
           <Link
             key={c.slug}
             to="/products"
-            className="group relative rounded-2xl bg-card border border-border p-5 hover:border-primary/40 hover:shadow-premium hover:-translate-y-1 transition-smooth overflow-hidden"
+            className="group relative rounded-2xl bg-card border border-border p-5 sm:p-6 hover:border-primary/40 hover:shadow-premium hover:-translate-y-1 transition-smooth overflow-hidden"
           >
-            <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-5 transition-smooth" />
-            <div className="text-4xl mb-3">{c.emoji}</div>
-            <div className="font-semibold text-sm">{c.name}</div>
+            <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-[0.06] transition-smooth" />
+            <div className="text-4xl sm:text-5xl mb-3 group-hover:scale-110 transition-smooth origin-left">{c.emoji}</div>
+            <div className="font-semibold text-sm sm:text-base leading-tight">{c.name}</div>
             <div className="text-xs text-muted-foreground mt-1">{c.count} products</div>
           </Link>
         ))}
