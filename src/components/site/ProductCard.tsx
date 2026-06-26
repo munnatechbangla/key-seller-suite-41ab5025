@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Star, ShoppingCart, Zap, Heart } from "lucide-react";
 import type { Product } from "@/lib/catalog";
 import { useCart, useWishlist } from "@/lib/stores";
+import { SaleBadges } from "@/components/site/SaleBadges";
 import { toast } from "sonner";
 
 export function ProductCard({ product }: { product: Product }) {

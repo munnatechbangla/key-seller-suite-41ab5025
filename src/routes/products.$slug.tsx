@@ -155,6 +155,11 @@ function ProductPage() {
             </div>
           </div>
 
+          <div className="flex flex-wrap gap-2 items-center">
+            <SaleBadges product={product} extra={{ stock: product.stock ?? null, salesCount: (product as any).salesCount ?? null, createdAt: (product as any).createdAt ?? null }} max={4} />
+            <LiveVisitorsCounter surface="product" seed={product.slug} />
+          </div>
+
           <p className="text-muted-foreground leading-relaxed">{product.short}</p>
 
           <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 p-5 flex items-end gap-4 flex-wrap">
