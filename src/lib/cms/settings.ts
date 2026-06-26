@@ -49,7 +49,11 @@ export type SocialLinksMap = {
   youtube: string;
   tiktok: string;
   linkedin: string;
+  telegram: string;
+  discord: string;
+  github: string;
 };
+
 
 export type PaymentConfig = {
   currency: string;
