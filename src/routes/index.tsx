@@ -33,8 +33,8 @@ export const Route = createFileRoute("/")({
     context.queryClient.ensureQueryData(featuredQuery());
     context.queryClient.ensureQueryData(trendingQuery());
     context.queryClient.ensureQueryData(bestSellersQuery());
-    // Floating products: use defaults to prefetch; actual slugs read from CMS at render.
-    context.queryClient.ensureQueryData(productsBySlugsQuery([]));
+    const { defaultHomepageConfig } = require("@/lib/cms/homepage") as typeof import("@/lib/cms/homepage");
+    context.queryClient.ensureQueryData(productsBySlugsQuery(defaultHomepageConfig.hero.floatingProductSlugs));
   },
   component: Home,
   errorComponent: () => <div className="p-8 text-center">Something went wrong loading the homepage.</div>,
