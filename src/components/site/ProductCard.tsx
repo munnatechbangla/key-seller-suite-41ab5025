@@ -11,7 +11,7 @@ export function ProductCard({ product }: { product: Product }) {
   const wished = wish.has(product.slug);
 
   return (
-    <article className="group relative rounded-2xl bg-card border border-border overflow-hidden hover:shadow-premium hover:-translate-y-1 transition-smooth">
+    <article className="group relative rounded-2xl bg-card border border-border overflow-hidden hover:shadow-2xl hover:border-primary/30 hover:-translate-y-1.5 transition-all duration-300 ease-out">
       <Link to="/products/$slug" params={{ slug: product.slug }} className="block">
         <div className="relative aspect-square bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center overflow-hidden">
           {product.thumbnailUrl ? (
