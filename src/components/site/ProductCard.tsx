@@ -48,13 +48,24 @@ export function ProductCard({ product }: { product: Product }) {
           </div>
         </div>
       </Link>
-      <button
-        onClick={(e) => { e.preventDefault(); wish.toggle(product.slug); toast(wished ? "Removed from wishlist" : "Added to wishlist"); }}
-        aria-label="Wishlist"
-        className="absolute top-3 right-3 mt-9 h-8 w-8 grid place-items-center rounded-full bg-card/90 backdrop-blur border border-border opacity-0 group-hover:opacity-100 transition-smooth"
-      >
-        <Heart className={`h-4 w-4 ${wished ? "fill-accent text-accent" : ""}`} />
-      </button>
+      <div className="absolute top-3 right-3 mt-9 flex flex-col gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-smooth">
+        <button
+          onClick={(e) => { e.preventDefault(); wish.toggle(product.slug); toast(wished ? "Removed from wishlist" : "Added to wishlist"); }}
+          aria-label="Wishlist"
+          className="h-8 w-8 grid place-items-center rounded-full bg-card/90 backdrop-blur border border-border hover:border-primary/40"
+        >
+          <Heart className={`h-4 w-4 ${wished ? "fill-accent text-accent" : ""}`} />
+        </button>
+        {quickViewEnabled && (
+          <button
+            onClick={(e) => { e.preventDefault(); setQuickOpen(true); }}
+            aria-label="Quick view"
+            className="h-8 w-8 grid place-items-center rounded-full bg-card/90 backdrop-blur border border-border hover:border-primary/40"
+          >
+            <Eye className="h-4 w-4" />
+          </button>
+        )}
+      </div>
       <div className="p-4 space-y-2">
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Star className="h-3.5 w-3.5 fill-accent text-accent" />
