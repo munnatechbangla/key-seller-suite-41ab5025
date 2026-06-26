@@ -7,13 +7,15 @@ import { Breadcrumbs } from "@/components/site/PageHero";
 import { ReviewsSection } from "@/components/site/ReviewsSection";
 import { LiveVisitorsCounter } from "@/components/site/LiveVisitorsCounter";
 import { SaleBadges } from "@/components/site/SaleBadges";
+import { ShareButtons } from "@/components/site/ShareButtons";
+import { StickyBuyBar } from "@/components/site/StickyBuyBar";
 import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelated, useProductsBySlugs } from "@/lib/catalog";
 import { reviewsQuery } from "@/lib/reviews";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
 import { useEffect, useState } from "react";
 import {
-  Star, Zap, Shield, Heart, GitCompare, ShoppingCart, Share2, Check,
-  Facebook, Twitter, MessageCircle, Mail, Truck, RefreshCcw, Lock,
+  Star, Zap, Shield, Heart, GitCompare, ShoppingCart, Check,
+  Truck, Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { track } from "@/lib/analytics/track";
