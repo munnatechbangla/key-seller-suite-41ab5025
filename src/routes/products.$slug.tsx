@@ -5,6 +5,8 @@ import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Breadcrumbs } from "@/components/site/PageHero";
 import { ReviewsSection } from "@/components/site/ReviewsSection";
+import { LiveVisitorsCounter } from "@/components/site/LiveVisitorsCounter";
+import { SaleBadges } from "@/components/site/SaleBadges";
 import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelated, useProductsBySlugs } from "@/lib/catalog";
 import { reviewsQuery } from "@/lib/reviews";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
