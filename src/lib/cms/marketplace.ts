@@ -78,6 +78,11 @@ export const defaultMarketplace: MarketplaceConfig = {
     trending:    { enabled: true,  label: "Trending",       color: "#8B5CF6", text_color: "#ffffff" },
     new_arrival: { enabled: true,  label: "New",            color: "#10B981", text_color: "#ffffff", days: 14 },
   },
+  product_experience: {
+    quick_view_enabled: true,
+    sticky_buy_bar_enabled: true,
+    share_buttons_enabled: true,
+  },
   ui: { animation_speed_ms: 300 },
 };
 
