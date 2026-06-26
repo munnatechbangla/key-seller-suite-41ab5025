@@ -1,5 +1,5 @@
 
-import { Send, Facebook, Twitter, Instagram, Youtube, Linkedin } from "lucide-react";
+import { Send, Facebook, Twitter, Instagram, Youtube, Linkedin, Github, MessageSquare } from "lucide-react";
 import { siteConfig, footerColumns, paymentBadges } from "@/lib/cms";
 import { useSettings, formatCopyright } from "@/lib/cms/settings";
 import { Logo } from "@/components/site/Logo";
@@ -8,11 +8,14 @@ export function Footer() {
   const s = useSettings((st) => st.settings);
   const social: { label: string; href: string; Icon: typeof Facebook }[] = [
     { label: "Facebook", href: s.social.facebook, Icon: Facebook },
-    { label: "Twitter", href: s.social.twitter, Icon: Twitter },
     { label: "Instagram", href: s.social.instagram, Icon: Instagram },
-    { label: "YouTube", href: s.social.youtube, Icon: Youtube },
+    { label: "X (Twitter)", href: s.social.twitter, Icon: Twitter },
     { label: "LinkedIn", href: s.social.linkedin, Icon: Linkedin },
-  ].filter((x) => x.href);
+    { label: "YouTube", href: s.social.youtube, Icon: Youtube },
+    { label: "Telegram", href: s.social.telegram, Icon: Send },
+    { label: "Discord", href: s.social.discord, Icon: MessageSquare },
+    { label: "GitHub", href: s.social.github, Icon: Github },
+  ].filter((x) => !!x.href);
   return (
     <footer className="mt-24 bg-gradient-hero text-white">
       <div className="container mx-auto px-4 py-16 grid gap-10 md:grid-cols-2 lg:grid-cols-5">
@@ -20,14 +23,28 @@ export function Footer() {
           <Logo size="lg" variant="dark" />
 
           <p className="text-white/70 max-w-sm text-sm leading-relaxed">{s.branding.description}</p>
-          <div className="flex gap-2 pt-2">
-            {social.map((item) => (
-              <a key={item.label} href={item.href} aria-label={item.label} className="h-10 w-10 grid place-items-center rounded-xl glass-dark hover:bg-white/15 transition-smooth">
-                <item.Icon className="h-4 w-4" />
-              </a>
-            ))}
-          </div>
+          {social.length > 0 && (
+            <div className="pt-2">
+              <div className="text-xs font-semibold uppercase tracking-wider text-white/50 mb-2.5">Follow us</div>
+              <div className="flex flex-wrap gap-2">
+                {social.map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={item.label}
+                    title={item.label}
+                    className="h-10 w-10 grid place-items-center rounded-xl glass-dark hover:bg-white/15 hover:text-accent transition-smooth"
+                  >
+                    <item.Icon className="h-4 w-4" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
+
 
         {footerColumns.map((col) => (
           <FooterCol key={col.title} title={col.title} links={col.links} />

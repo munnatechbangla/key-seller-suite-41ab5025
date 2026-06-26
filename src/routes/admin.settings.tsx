@@ -152,6 +152,11 @@ function AdminSettings() {
           <Field label="YouTube URL" value={data.social.youtube} onChange={(v) => set("social", "youtube", v)} />
           <Field label="TikTok URL" value={data.social.tiktok} onChange={(v) => set("social", "tiktok", v)} />
           <Field label="LinkedIn URL" value={data.social.linkedin} onChange={(v) => set("social", "linkedin", v)} />
+          <Field label="Telegram URL" value={data.social.telegram} onChange={(v) => set("social", "telegram", v)} />
+          <Field label="Discord URL" value={data.social.discord} onChange={(v) => set("social", "discord", v)} />
+          <Field label="GitHub URL" value={data.social.github} onChange={(v) => set("social", "github", v)} />
+          <p className="text-xs text-muted-foreground">Leave any field empty to hide that icon from the footer automatically.</p>
+
           <SaveBtn onClick={() => save("social")} saving={saving === "social"} />
         </TabsContent>
 

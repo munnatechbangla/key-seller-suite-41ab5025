@@ -133,10 +133,16 @@ function RootComponent() {
   useEffect(() => { import("@/lib/sentry").then((m) => m.initSentry()); }, []);
   useEffect(() => {
     if (typeof document === "undefined" || !favicon) return;
-    let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
-    if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
-    link.href = favicon;
+    const ensure = (rel: string) => {
+      let link = document.head.querySelector<HTMLLinkElement>(`link[rel='${rel}']`);
+      if (!link) { link = document.createElement("link"); link.rel = rel; document.head.appendChild(link); }
+      return link;
+    };
+    ensure("icon").href = favicon;
+    ensure("shortcut icon").href = favicon;
+    ensure("apple-touch-icon").href = favicon;
   }, [favicon]);
+
 
   return (
     <QueryClientProvider client={queryClient}>

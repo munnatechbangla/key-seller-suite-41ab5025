@@ -49,7 +49,11 @@ export type SocialLinksMap = {
   youtube: string;
   tiktok: string;
   linkedin: string;
+  telegram: string;
+  discord: string;
+  github: string;
 };
+
 
 export type PaymentConfig = {
   currency: string;
@@ -141,7 +145,11 @@ export const defaultSettings: AllSettings = {
     youtube: defaultSocial.find((s) => s.label === "YouTube")?.href ?? "",
     tiktok: "",
     linkedin: "",
+    telegram: "",
+    discord: "",
+    github: "",
   },
+
   payment: {
     currency: "USD",
     currency_symbol: "$",
