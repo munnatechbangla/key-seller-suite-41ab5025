@@ -5,6 +5,8 @@ import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Breadcrumbs } from "@/components/site/PageHero";
 import { ReviewsSection } from "@/components/site/ReviewsSection";
+import { LiveVisitorsCounter } from "@/components/site/LiveVisitorsCounter";
+import { SaleBadges } from "@/components/site/SaleBadges";
 import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelated, useProductsBySlugs } from "@/lib/catalog";
 import { reviewsQuery } from "@/lib/reviews";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
@@ -151,6 +153,11 @@ function ProductPage() {
               <span className="text-muted-foreground">({product.reviews.toLocaleString()} reviews)</span>
               <span className="text-emerald-600 font-medium inline-flex items-center gap-1"><Check className="h-4 w-4" /> In stock</span>
             </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2 items-center">
+            <SaleBadges product={product} extra={{ stock: product.stock ?? null, salesCount: (product as any).salesCount ?? null, createdAt: (product as any).createdAt ?? null }} max={4} />
+            <LiveVisitorsCounter surface="product" seed={product.slug} />
           </div>
 
           <p className="text-muted-foreground leading-relaxed">{product.short}</p>

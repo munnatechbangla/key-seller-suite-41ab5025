@@ -1752,6 +1752,17 @@ export type Database = {
           type: string
         }[]
       }
+      list_recent_public_purchases: {
+        Args: { _limit?: number }
+        Returns: {
+          country: string
+          first_name: string
+          product_name: string
+          product_slug: string
+          product_thumbnail: string
+          purchased_at: string
+        }[]
+      }
       mark_order_failed: {
         Args: { _gateway_response?: Json; _order_id: string; _reason?: string }
         Returns: Json

@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Star, ShoppingCart, Zap, Heart } from "lucide-react";
 import type { Product } from "@/lib/catalog";
 import { useCart, useWishlist } from "@/lib/stores";
+import { SaleBadges } from "@/components/site/SaleBadges";
 import { toast } from "sonner";
 
 export function ProductCard({ product }: { product: Product }) {
@@ -34,6 +35,9 @@ export function ProductCard({ product }: { product: Product }) {
               -{off}%
             </span>
           )}
+          <div className="absolute bottom-2 left-2 right-2 flex justify-start">
+            <SaleBadges product={product} extra={{ stock: product.stock ?? null }} max={2} />
+          </div>
         </div>
       </Link>
       <button
