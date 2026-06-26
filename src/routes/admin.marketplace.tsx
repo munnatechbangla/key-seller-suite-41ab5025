@@ -104,6 +104,7 @@ function AdminMarketplace() {
           <TabsTrigger value="popup">Recent Purchase Popup</TabsTrigger>
           <TabsTrigger value="visitors">Live Visitors</TabsTrigger>
           <TabsTrigger value="badges">Sales Badges</TabsTrigger>
+          <TabsTrigger value="experience">Product Experience</TabsTrigger>
           <TabsTrigger value="ui">UI</TabsTrigger>
         </TabsList>
 
@@ -158,6 +159,27 @@ function AdminMarketplace() {
               </div>
             );
           })}
+        </TabsContent>
+
+        <TabsContent value="experience" className="mt-4 space-y-3">
+          <ToggleRow
+            label="Enable Quick View"
+            checked={cfg.product_experience.quick_view_enabled}
+            onChange={(v) => patch({ product_experience: { ...cfg.product_experience, quick_view_enabled: v } })}
+            hint="Show a Quick View button on product cards that opens a modal preview."
+          />
+          <ToggleRow
+            label="Enable Sticky Buy Bar"
+            checked={cfg.product_experience.sticky_buy_bar_enabled}
+            onChange={(v) => patch({ product_experience: { ...cfg.product_experience, sticky_buy_bar_enabled: v } })}
+            hint="Mobile-only floating buy bar shown after scrolling past the hero on product pages."
+          />
+          <ToggleRow
+            label="Enable Share Buttons"
+            checked={cfg.product_experience.share_buttons_enabled}
+            onChange={(v) => patch({ product_experience: { ...cfg.product_experience, share_buttons_enabled: v } })}
+            hint="Show share buttons (Web Share API + copy link, Facebook, X, WhatsApp, Telegram) on product pages."
+          />
         </TabsContent>
 
         <TabsContent value="ui" className="mt-4 space-y-4">
