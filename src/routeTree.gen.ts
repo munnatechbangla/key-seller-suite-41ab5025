@@ -47,6 +47,7 @@ import { Route as AdminPaymentLogsRouteImport } from './routes/admin.payment-log
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminLicensesRouteImport } from './routes/admin.licenses'
 import { Route as AdminLegalRouteImport } from './routes/admin.legal'
+import { Route as AdminHomepageRouteImport } from './routes/admin.homepage'
 import { Route as AdminHealthRouteImport } from './routes/admin.health'
 import { Route as AdminGatewaysRouteImport } from './routes/admin.gateways'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
@@ -252,6 +253,11 @@ const AdminLegalRoute = AdminLegalRouteImport.update({
   path: '/legal',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminHomepageRoute = AdminHomepageRouteImport.update({
+  id: '/homepage',
+  path: '/homepage',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminHealthRoute = AdminHealthRouteImport.update({
   id: '/health',
   path: '/health',
@@ -359,6 +365,7 @@ export interface FileRoutesByFullPath {
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/gateways': typeof AdminGatewaysRoute
   '/admin/health': typeof AdminHealthRoute
+  '/admin/homepage': typeof AdminHomepageRoute
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -412,6 +419,7 @@ export interface FileRoutesByTo {
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/gateways': typeof AdminGatewaysRoute
   '/admin/health': typeof AdminHealthRoute
+  '/admin/homepage': typeof AdminHomepageRoute
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -467,6 +475,7 @@ export interface FileRoutesById {
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/gateways': typeof AdminGatewaysRoute
   '/admin/health': typeof AdminHealthRoute
+  '/admin/homepage': typeof AdminHomepageRoute
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -523,6 +532,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/gateways'
     | '/admin/health'
+    | '/admin/homepage'
     | '/admin/legal'
     | '/admin/licenses'
     | '/admin/orders'
@@ -576,6 +586,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/gateways'
     | '/admin/health'
+    | '/admin/homepage'
     | '/admin/legal'
     | '/admin/licenses'
     | '/admin/orders'
@@ -630,6 +641,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/gateways'
     | '/admin/health'
+    | '/admin/homepage'
     | '/admin/legal'
     | '/admin/licenses'
     | '/admin/orders'
@@ -956,6 +968,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLegalRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/homepage': {
+      id: '/admin/homepage'
+      path: '/homepage'
+      fullPath: '/admin/homepage'
+      preLoaderRoute: typeof AdminHomepageRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/health': {
       id: '/admin/health'
       path: '/health'
@@ -1068,6 +1087,7 @@ interface AdminRouteChildren {
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminGatewaysRoute: typeof AdminGatewaysRoute
   AdminHealthRoute: typeof AdminHealthRoute
+  AdminHomepageRoute: typeof AdminHomepageRoute
   AdminLegalRoute: typeof AdminLegalRoute
   AdminLicensesRoute: typeof AdminLicensesRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
@@ -1090,6 +1110,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminEmailsRoute: AdminEmailsRoute,
   AdminGatewaysRoute: AdminGatewaysRoute,
   AdminHealthRoute: AdminHealthRoute,
+  AdminHomepageRoute: AdminHomepageRoute,
   AdminLegalRoute: AdminLegalRoute,
   AdminLicensesRoute: AdminLicensesRoute,
   AdminOrdersRoute: AdminOrdersRoute,
