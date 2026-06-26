@@ -43,7 +43,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const config = useHomepage((s) => s.config);
-  const renderers: Record<SectionId, () => JSX.Element | null> = {
+  const renderers: Record<SectionId, () => ReactElement | null> = {
     hero: () => (config.hero.enabled ? <Hero /> : null),
     trust: () => (config.trust.enabled ? <TrustStrip /> : null),
     categories: () => (config.categories.enabled ? <CategoriesGrid /> : null),
