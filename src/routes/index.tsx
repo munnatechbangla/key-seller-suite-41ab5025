@@ -291,7 +291,8 @@ function WhyChoose() {
 }
 
 function Stats() {
-  const items = useHomepage((s) => s.config.stats.items.filter((i) => i.enabled));
+  const rawItems = useHomepage((s) => s.config.stats.items);
+  const items = useMemo(() => rawItems.filter((i) => i.enabled), [rawItems]);
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="rounded-3xl bg-gradient-hero text-white p-10 lg:p-16 shadow-premium relative overflow-hidden">
