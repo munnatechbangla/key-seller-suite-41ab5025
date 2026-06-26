@@ -33,7 +33,6 @@ export const Route = createFileRoute("/")({
     context.queryClient.ensureQueryData(featuredQuery());
     context.queryClient.ensureQueryData(trendingQuery());
     context.queryClient.ensureQueryData(bestSellersQuery());
-    const { defaultHomepageConfig } = require("@/lib/cms/homepage") as typeof import("@/lib/cms/homepage");
     context.queryClient.ensureQueryData(productsBySlugsQuery(defaultHomepageConfig.hero.floatingProductSlugs));
   },
   component: Home,
