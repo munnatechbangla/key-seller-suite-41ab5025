@@ -210,17 +210,17 @@ function FloatingCard({
 function TrustStrip() {
   return (
     <div className="container mx-auto px-4 -mt-12 relative z-10">
-      <div className="bg-card border border-border rounded-3xl shadow-premium p-5 sm:p-6 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5 sm:gap-6">
+      <div className="bg-card border border-border rounded-3xl shadow-premium p-4 sm:p-6 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 items-stretch">
         {trustStripItems.map((item) => {
           const Icon = resolveIcon(item.icon);
           return (
-            <div key={item.title} className="flex items-center gap-3 min-h-12">
-              <div className="h-11 w-11 sm:h-12 sm:w-12 grid place-items-center rounded-2xl bg-primary/10 text-primary shrink-0">
-                <Icon className="h-5 w-5" />
+            <div key={item.title} className="flex h-full items-center gap-3 sm:gap-4 rounded-2xl p-3 sm:p-2 bg-muted/40 md:bg-transparent">
+              <div className="h-12 w-12 sm:h-14 sm:w-14 grid place-items-center rounded-2xl bg-primary/10 text-primary shrink-0">
+                <Icon className="h-6 w-6 sm:h-7 sm:w-7" />
               </div>
               <div className="min-w-0">
-                <div className="font-semibold text-sm text-foreground leading-tight">{item.title}</div>
-                <div className="text-xs text-muted-foreground mt-0.5">{item.desc}</div>
+                <div className="font-bold text-sm sm:text-base text-foreground leading-tight">{item.title}</div>
+                <div className="text-xs sm:text-[13px] text-muted-foreground mt-1 leading-snug">{item.desc}</div>
               </div>
             </div>
           );
