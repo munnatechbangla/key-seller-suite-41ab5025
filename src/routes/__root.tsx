@@ -20,6 +20,7 @@ import { useSettings } from "@/lib/cms/settings";
 import { AnalyticsScripts } from "@/components/site/AnalyticsScripts";
 import { seoMeta, organizationJsonLd, websiteJsonLd, jsonLdScript } from "@/lib/cms/seo";
 import { SetupGate } from "@/components/setup/SetupGate";
+import { RecentlyPurchasedPopup } from "@/components/site/RecentlyPurchasedPopup";
 
 function NotFoundComponent() {
   return (
@@ -128,6 +129,7 @@ function RootComponent() {
   useEffect(() => initAuth(), [initAuth]);
   useEffect(() => { loadSettings(); }, [loadSettings]);
   useEffect(() => { import("@/lib/cms/homepage").then((m) => m.useHomepage.getState().load()); }, []);
+  useEffect(() => { import("@/lib/cms/marketplace").then((m) => m.useMarketplace.getState().load()); }, []);
   useEffect(() => { import("@/lib/sentry").then((m) => m.initSentry()); }, []);
   useEffect(() => {
     if (typeof document === "undefined" || !favicon) return;
@@ -146,6 +148,7 @@ function RootComponent() {
         <Outlet />
       </div>
       <MobileBottomNav />
+      <RecentlyPurchasedPopup />
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
   );
