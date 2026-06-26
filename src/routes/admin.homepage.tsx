@@ -1,0 +1,437 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+import { Loader2, Save, Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import { adminListSettingsFn, adminUpsertSettingFn } from "@/lib/admin-settings.functions";
+import {
+  defaultHomepageConfig,
+  useHomepage,
+  reorder,
+  newId,
+  type HomepageConfig,
+  type SectionId,
+  type HomeProductSection,
+  type HomeTrustItem,
+  type HomeWhyChooseItem,
+  type HomeStatItem,
+  type HomeTestimonial,
+  type HomeFaqItem,
+} from "@/lib/cms/homepage";
+import type { IconName } from "@/lib/cms/icons";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+export const Route = createFileRoute("/admin/homepage")({
+  component: HomepageBuilder,
+});
+
+const SECTION_LABELS: Record<SectionId, string> = {
+  hero: "Hero",
+  trust: "Trust Features",
+  categories: "Categories",
+  productSections: "Product Sections",
+  whyChoose: "Why Choose",
+  stats: "Statistics",
+  testimonials: "Testimonials",
+  blog: "Blog",
+  faq: "FAQ",
+  paymentMethods: "Payment Methods",
+  newsletter: "Newsletter",
+};
+
+function HomepageBuilder() {
+  const list = useServerFn(adminListSettingsFn);
+  const upsert = useServerFn(adminUpsertSettingFn);
+  const setLocal = useHomepage((s) => s.setLocal);
+  const reloadStore = useHomepage((s) => s.load);
+  const [cfg, setCfg] = useState<HomepageConfig>(defaultHomepageConfig);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const rows = (await list()) as Array<{ group_key: string; setting_key: string; value: Record<string, unknown> }>;
+        const row = rows.find((r) => r.group_key === "homepage" && r.setting_key === "config");
+        if (row?.value) {
+          setCfg({ ...defaultHomepageConfig, ...(row.value as Partial<HomepageConfig>) });
+        }
+      } catch (e: unknown) {
+        toast.error(e instanceof Error ? e.message : "Failed to load");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [list]);
+
+  async function save() {
+    setSaving(true);
+    try {
+      await upsert({ data: { group_key: "homepage", setting_key: "config", value: cfg as unknown as Record<string, unknown> } });
+      setLocal(cfg);
+      await reloadStore();
+      toast.success("Homepage saved — changes are live");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const patch = <K extends keyof HomepageConfig>(k: K, v: HomepageConfig[K]) => setCfg((c) => ({ ...c, [k]: v }));
+
+  if (loading) {
+    return <div className="p-8 flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading homepage config…</div>;
+  }
+
+  return (
+    <div className="p-6 md:p-8 max-w-5xl">
+      <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold">Homepage Builder</h1>
+          <p className="text-sm text-muted-foreground">Edit every homepage section. Save to apply changes instantly.</p>
+        </div>
+        <Button onClick={save} disabled={saving} className="gap-2">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          Save Homepage
+        </Button>
+      </div>
+
+      <Tabs defaultValue="layout">
+        <TabsList className="flex flex-wrap h-auto">
+          <TabsTrigger value="layout">Layout & Order</TabsTrigger>
+          <TabsTrigger value="hero">Hero</TabsTrigger>
+          <TabsTrigger value="trust">Trust</TabsTrigger>
+          <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger value="products">Products</TabsTrigger>
+          <TabsTrigger value="whyChoose">Why Choose</TabsTrigger>
+          <TabsTrigger value="stats">Stats</TabsTrigger>
+          <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
+          <TabsTrigger value="blog">Blog</TabsTrigger>
+          <TabsTrigger value="faq">FAQ</TabsTrigger>
+          <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
+        </TabsList>
+
+        {/* ---------------- Layout & Order ---------------- */}
+        <TabsContent value="layout" className="mt-4 space-y-3">
+          <p className="text-xs text-muted-foreground">Reorder sections with the arrows. Toggle visibility on each section's tab.</p>
+          {cfg.sectionOrder.map((id, i) => (
+            <div key={id} className="flex items-center justify-between rounded-md border p-3 gap-3">
+              <div className="font-medium text-sm">{i + 1}. {SECTION_LABELS[id]}</div>
+              <div className="flex items-center gap-1">
+                <Button variant="outline" size="icon" disabled={i === 0} onClick={() => patch("sectionOrder", reorder(cfg.sectionOrder, i, i - 1))}><ArrowUp className="h-4 w-4" /></Button>
+                <Button variant="outline" size="icon" disabled={i === cfg.sectionOrder.length - 1} onClick={() => patch("sectionOrder", reorder(cfg.sectionOrder, i, i + 1))}><ArrowDown className="h-4 w-4" /></Button>
+              </div>
+            </div>
+          ))}
+        </TabsContent>
+
+        {/* ---------------- Hero ---------------- */}
+        <TabsContent value="hero" className="mt-4 space-y-4">
+          <EnableToggle label="Enable Hero section" value={cfg.hero.enabled} onChange={(v) => patch("hero", { ...cfg.hero, enabled: v })} />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Badge icon" value={cfg.hero.badge.icon} onChange={(v) => patch("hero", { ...cfg.hero, badge: { ...cfg.hero.badge, icon: v as IconName } })} />
+            <Field label="Badge text" value={cfg.hero.badge.text} onChange={(v) => patch("hero", { ...cfg.hero, badge: { ...cfg.hero.badge, text: v } })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Title (lead)" value={cfg.hero.title.lead} onChange={(v) => patch("hero", { ...cfg.hero, title: { ...cfg.hero.title, lead: v } })} />
+            <Field label="Title (highlight)" value={cfg.hero.title.accent} onChange={(v) => patch("hero", { ...cfg.hero, title: { ...cfg.hero.title, accent: v } })} />
+          </div>
+          <Area label="Description" value={cfg.hero.description} onChange={(v) => patch("hero", { ...cfg.hero, description: v })} />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Primary button label" value={cfg.hero.primaryCta.label} onChange={(v) => patch("hero", { ...cfg.hero, primaryCta: { ...cfg.hero.primaryCta, label: v } })} />
+            <Field label="Primary button link" value={cfg.hero.primaryCta.to} onChange={(v) => patch("hero", { ...cfg.hero, primaryCta: { ...cfg.hero.primaryCta, to: v } })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Secondary button label" value={cfg.hero.secondaryCta.label} onChange={(v) => patch("hero", { ...cfg.hero, secondaryCta: { ...cfg.hero.secondaryCta, label: v } })} />
+            <Field label="Secondary button href" value={cfg.hero.secondaryCta.href} onChange={(v) => patch("hero", { ...cfg.hero, secondaryCta: { ...cfg.hero.secondaryCta, href: v } })} />
+          </div>
+          <Field label="Floating product slugs (comma-separated, max 6)" value={cfg.hero.floatingProductSlugs.join(", ")} onChange={(v) => patch("hero", { ...cfg.hero, floatingProductSlugs: v.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 6) })} />
+        </TabsContent>
+
+        {/* ---------------- Trust ---------------- */}
+        <TabsContent value="trust" className="mt-4 space-y-3">
+          <EnableToggle label="Enable Trust section" value={cfg.trust.enabled} onChange={(v) => patch("trust", { ...cfg.trust, enabled: v })} />
+          <ItemList<HomeTrustItem>
+            items={cfg.trust.items}
+            onChange={(items) => patch("trust", { ...cfg.trust, items })}
+            renderItem={(it, set) => (
+              <div className="grid grid-cols-3 gap-2">
+                <Field label="Icon" value={it.icon} onChange={(v) => set({ ...it, icon: v as IconName })} />
+                <Field label="Title" value={it.title} onChange={(v) => set({ ...it, title: v })} />
+                <Field label="Description" value={it.desc} onChange={(v) => set({ ...it, desc: v })} />
+              </div>
+            )}
+            makeNew={() => ({ id: newId("trust"), icon: "Zap", title: "New feature", desc: "Describe it.", enabled: true })}
+          />
+        </TabsContent>
+
+        {/* ---------------- Categories ---------------- */}
+        <TabsContent value="categories" className="mt-4 space-y-4">
+          <EnableToggle label="Enable Categories section" value={cfg.categories.enabled} onChange={(v) => patch("categories", { ...cfg.categories, enabled: v })} />
+          <Field label="Eyebrow" value={cfg.categories.eyebrow} onChange={(v) => patch("categories", { ...cfg.categories, eyebrow: v })} />
+          <Field label="Title" value={cfg.categories.title} onChange={(v) => patch("categories", { ...cfg.categories, title: v })} />
+          <Area label="Subtitle" value={cfg.categories.subtitle} onChange={(v) => patch("categories", { ...cfg.categories, subtitle: v })} />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="View all label" value={cfg.categories.viewAllLabel} onChange={(v) => patch("categories", { ...cfg.categories, viewAllLabel: v })} />
+            <NumberField label="Limit" value={cfg.categories.limit} onChange={(v) => patch("categories", { ...cfg.categories, limit: v })} />
+          </div>
+        </TabsContent>
+
+        {/* ---------------- Product sections ---------------- */}
+        <TabsContent value="products" className="mt-4 space-y-3">
+          <p className="text-xs text-muted-foreground">Source pulls products from curated lists (featured / trending / best sellers).</p>
+          <ItemList<HomeProductSection>
+            items={cfg.productSections}
+            onChange={(items) => patch("productSections", items)}
+            renderItem={(it, set) => (
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  <Field label="Eyebrow" value={it.eyebrow} onChange={(v) => set({ ...it, eyebrow: v })} />
+                  <Field label="Title" value={it.title} onChange={(v) => set({ ...it, title: v })} />
+                </div>
+                <Field label="Subtitle" value={it.subtitle} onChange={(v) => set({ ...it, subtitle: v })} />
+                <div className="grid grid-cols-2 gap-2">
+                  <SelectField label="Source" value={it.source} options={[{ value: "featured", label: "Featured" }, { value: "trending", label: "Trending" }, { value: "bestSellers", label: "Best sellers" }]} onChange={(v) => set({ ...it, source: v as HomeProductSection["source"] })} />
+                  <NumberField label="Limit" value={it.limit} onChange={(v) => set({ ...it, limit: v })} />
+                </div>
+              </>
+            )}
+            makeNew={() => ({ id: newId("psec"), enabled: true, eyebrow: "New section", title: "Untitled", subtitle: "", source: "featured", limit: 8 })}
+          />
+        </TabsContent>
+
+        {/* ---------------- Why choose ---------------- */}
+        <TabsContent value="whyChoose" className="mt-4 space-y-3">
+          <EnableToggle label="Enable Why Choose section" value={cfg.whyChoose.enabled} onChange={(v) => patch("whyChoose", { ...cfg.whyChoose, enabled: v })} />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Eyebrow" value={cfg.whyChoose.eyebrow} onChange={(v) => patch("whyChoose", { ...cfg.whyChoose, eyebrow: v })} />
+            <Field label="Title" value={cfg.whyChoose.title} onChange={(v) => patch("whyChoose", { ...cfg.whyChoose, title: v })} />
+          </div>
+          <ItemList<HomeWhyChooseItem>
+            items={cfg.whyChoose.items}
+            onChange={(items) => patch("whyChoose", { ...cfg.whyChoose, items })}
+            renderItem={(it, set) => (
+              <div className="grid grid-cols-3 gap-2">
+                <Field label="Icon" value={it.icon} onChange={(v) => set({ ...it, icon: v as IconName })} />
+                <Field label="Title" value={it.title} onChange={(v) => set({ ...it, title: v })} />
+                <Field label="Description" value={it.desc} onChange={(v) => set({ ...it, desc: v })} />
+              </div>
+            )}
+            makeNew={() => ({ id: newId("why"), icon: "Zap", title: "New benefit", desc: "Describe it.", enabled: true })}
+          />
+        </TabsContent>
+
+        {/* ---------------- Stats ---------------- */}
+        <TabsContent value="stats" className="mt-4 space-y-3">
+          <EnableToggle label="Enable Stats section" value={cfg.stats.enabled} onChange={(v) => patch("stats", { ...cfg.stats, enabled: v })} />
+          <ItemList<HomeStatItem>
+            items={cfg.stats.items}
+            onChange={(items) => patch("stats", { ...cfg.stats, items })}
+            renderItem={(it, set) => (
+              <div className="grid grid-cols-2 gap-2">
+                <Field label="Value (e.g. 200K+, 4.9★)" value={it.value} onChange={(v) => set({ ...it, value: v })} />
+                <Field label="Label" value={it.label} onChange={(v) => set({ ...it, label: v })} />
+              </div>
+            )}
+            makeNew={() => ({ id: newId("stat"), value: "100+", label: "New metric", enabled: true })}
+          />
+        </TabsContent>
+
+        {/* ---------------- Testimonials ---------------- */}
+        <TabsContent value="testimonials" className="mt-4 space-y-3">
+          <EnableToggle label="Enable Testimonials" value={cfg.testimonials.enabled} onChange={(v) => patch("testimonials", { ...cfg.testimonials, enabled: v })} />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Eyebrow" value={cfg.testimonials.eyebrow} onChange={(v) => patch("testimonials", { ...cfg.testimonials, eyebrow: v })} />
+            <Field label="Title" value={cfg.testimonials.title} onChange={(v) => patch("testimonials", { ...cfg.testimonials, title: v })} />
+          </div>
+          <ItemList<HomeTestimonial>
+            items={cfg.testimonials.items}
+            onChange={(items) => patch("testimonials", { ...cfg.testimonials, items })}
+            renderItem={(it, set) => (
+              <>
+                <div className="grid grid-cols-3 gap-2">
+                  <Field label="Name" value={it.name} onChange={(v) => set({ ...it, name: v })} />
+                  <Field label="Role" value={it.role} onChange={(v) => set({ ...it, role: v })} />
+                  <Field label="Avatar (emoji)" value={it.emoji} onChange={(v) => set({ ...it, emoji: v })} />
+                </div>
+                <div className="grid grid-cols-[100px_1fr] gap-2">
+                  <NumberField label="Rating" value={it.rating} onChange={(v) => set({ ...it, rating: Math.min(5, Math.max(1, v)) })} />
+                  <Area label="Review" value={it.text} onChange={(v) => set({ ...it, text: v })} />
+                </div>
+              </>
+            )}
+            makeNew={() => ({ id: newId("test"), name: "Customer", role: "Buyer", emoji: "🙂", rating: 5, text: "Great service!", enabled: true })}
+          />
+        </TabsContent>
+
+        {/* ---------------- Blog ---------------- */}
+        <TabsContent value="blog" className="mt-4 space-y-4">
+          <EnableToggle label="Enable Blog section" value={cfg.blog.enabled} onChange={(v) => patch("blog", { ...cfg.blog, enabled: v })} />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Eyebrow" value={cfg.blog.eyebrow} onChange={(v) => patch("blog", { ...cfg.blog, eyebrow: v })} />
+            <Field label="Title" value={cfg.blog.title} onChange={(v) => patch("blog", { ...cfg.blog, title: v })} />
+          </div>
+          <Area label="Subtitle" value={cfg.blog.subtitle} onChange={(v) => patch("blog", { ...cfg.blog, subtitle: v })} />
+          <div className="grid grid-cols-2 gap-3">
+            <NumberField label="Posts limit" value={cfg.blog.limit} onChange={(v) => patch("blog", { ...cfg.blog, limit: v })} />
+            <Field label="View all label" value={cfg.blog.viewAllLabel} onChange={(v) => patch("blog", { ...cfg.blog, viewAllLabel: v })} />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Toggle label="Show image" value={cfg.blog.showImage} onChange={(v) => patch("blog", { ...cfg.blog, showImage: v })} />
+            <Toggle label="Show date" value={cfg.blog.showDate} onChange={(v) => patch("blog", { ...cfg.blog, showDate: v })} />
+            <Toggle label="Show excerpt" value={cfg.blog.showExcerpt} onChange={(v) => patch("blog", { ...cfg.blog, showExcerpt: v })} />
+            <Toggle label="Show Read More" value={cfg.blog.showReadMore} onChange={(v) => patch("blog", { ...cfg.blog, showReadMore: v })} />
+          </div>
+        </TabsContent>
+
+        {/* ---------------- FAQ ---------------- */}
+        <TabsContent value="faq" className="mt-4 space-y-3">
+          <EnableToggle label="Enable FAQ section" value={cfg.faq.enabled} onChange={(v) => patch("faq", { ...cfg.faq, enabled: v })} />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Eyebrow" value={cfg.faq.eyebrow} onChange={(v) => patch("faq", { ...cfg.faq, eyebrow: v })} />
+            <Field label="Title" value={cfg.faq.title} onChange={(v) => patch("faq", { ...cfg.faq, title: v })} />
+          </div>
+          <ItemList<HomeFaqItem>
+            items={cfg.faq.items}
+            onChange={(items) => patch("faq", { ...cfg.faq, items })}
+            renderItem={(it, set) => (
+              <>
+                <Field label="Question" value={it.q} onChange={(v) => set({ ...it, q: v })} />
+                <Area label="Answer" value={it.a} onChange={(v) => set({ ...it, a: v })} />
+              </>
+            )}
+            makeNew={() => ({ id: newId("faq"), q: "New question?", a: "Answer here.", enabled: true })}
+          />
+        </TabsContent>
+
+        {/* ---------------- Newsletter ---------------- */}
+        <TabsContent value="newsletter" className="mt-4 space-y-4">
+          <EnableToggle label="Enable Newsletter section" value={cfg.newsletter.enabled} onChange={(v) => patch("newsletter", { ...cfg.newsletter, enabled: v })} />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Badge icon" value={cfg.newsletter.badge.icon} onChange={(v) => patch("newsletter", { ...cfg.newsletter, badge: { ...cfg.newsletter.badge, icon: v as IconName } })} />
+            <Field label="Badge text" value={cfg.newsletter.badge.text} onChange={(v) => patch("newsletter", { ...cfg.newsletter, badge: { ...cfg.newsletter.badge, text: v } })} />
+          </div>
+          <Field label="Title" value={cfg.newsletter.title} onChange={(v) => patch("newsletter", { ...cfg.newsletter, title: v })} />
+          <Area label="Description" value={cfg.newsletter.subtitle} onChange={(v) => patch("newsletter", { ...cfg.newsletter, subtitle: v })} />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Input placeholder" value={cfg.newsletter.placeholder} onChange={(v) => patch("newsletter", { ...cfg.newsletter, placeholder: v })} />
+            <Field label="Button label" value={cfg.newsletter.buttonLabel} onChange={(v) => patch("newsletter", { ...cfg.newsletter, buttonLabel: v })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Button icon" value={cfg.newsletter.buttonIcon} onChange={(v) => patch("newsletter", { ...cfg.newsletter, buttonIcon: v as IconName })} />
+            <Field label="Success message" value={cfg.newsletter.successMessage} onChange={(v) => patch("newsletter", { ...cfg.newsletter, successMessage: v })} />
+          </div>
+        </TabsContent>
+
+        {/* ---------------- Payments ---------------- */}
+        <TabsContent value="payments" className="mt-4 space-y-4">
+          <EnableToggle label="Enable Payments strip" value={cfg.paymentMethods.enabled} onChange={(v) => patch("paymentMethods", { ...cfg.paymentMethods, enabled: v })} />
+          <Field label="Trust label" value={cfg.paymentMethods.trustLabel} onChange={(v) => patch("paymentMethods", { ...cfg.paymentMethods, trustLabel: v })} />
+          <Field label="Title" value={cfg.paymentMethods.title} onChange={(v) => patch("paymentMethods", { ...cfg.paymentMethods, title: v })} />
+          <Area label="Subtitle" value={cfg.paymentMethods.subtitle} onChange={(v) => patch("paymentMethods", { ...cfg.paymentMethods, subtitle: v })} />
+          <p className="text-xs text-muted-foreground">Payment logos are managed in <a className="text-primary underline" href="/admin/gateways">Admin → Gateways</a>. Upload an SVG/PNG/WEBP per gateway, set the order, and toggle enabled — the homepage renders them automatically.</p>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+// ---------------- Reusable inputs ----------------
+
+function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs">{label}</Label>
+      <Input value={value ?? ""} onChange={(e) => onChange(e.target.value)} />
+    </div>
+  );
+}
+
+function NumberField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs">{label}</Label>
+      <Input type="number" value={Number.isFinite(value) ? value : 0} onChange={(e) => onChange(parseInt(e.target.value || "0", 10))} />
+    </div>
+  );
+}
+
+function Area({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs">{label}</Label>
+      <Textarea value={value ?? ""} onChange={(e) => onChange(e.target.value)} rows={3} />
+    </div>
+  );
+}
+
+function SelectField({ label, value, options, onChange }: { label: string; value: string; options: { value: string; label: string }[]; onChange: (v: string) => void }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs">{label}</Label>
+      <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full h-10 px-3 rounded-md border bg-background text-sm">
+        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    </div>
+  );
+}
+
+function Toggle({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="flex items-center justify-between rounded-md border p-3">
+      <Label className="cursor-pointer text-sm">{label}</Label>
+      <Switch checked={!!value} onCheckedChange={onChange} />
+    </div>
+  );
+}
+
+function EnableToggle({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="flex items-center justify-between rounded-md border border-primary/30 bg-primary/5 p-3">
+      <Label className="cursor-pointer text-sm font-semibold">{label}</Label>
+      <Switch checked={!!value} onCheckedChange={onChange} />
+    </div>
+  );
+}
+
+type Identified = { id: string; enabled: boolean };
+
+function ItemList<T extends Identified>({ items, onChange, renderItem, makeNew }: {
+  items: T[];
+  onChange: (items: T[]) => void;
+  renderItem: (item: T, set: (next: T) => void) => React.ReactNode;
+  makeNew: () => T;
+}) {
+  const setAt = (i: number, next: T) => onChange(items.map((it, idx) => (idx === i ? next : it)));
+  const move = (i: number, dir: -1 | 1) => onChange(reorder(items, i, i + dir));
+  const remove = (i: number) => onChange(items.filter((_, idx) => idx !== i));
+  return (
+    <div className="space-y-3">
+      {items.map((it, i) => (
+        <div key={it.id} className="rounded-lg border p-3 space-y-2 bg-muted/20">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-xs text-muted-foreground">#{i + 1}</div>
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-muted-foreground mr-2">Enabled</span>
+              <Switch checked={it.enabled} onCheckedChange={(v) => setAt(i, { ...it, enabled: v })} />
+              <Button variant="outline" size="icon" disabled={i === 0} onClick={() => move(i, -1)}><ArrowUp className="h-4 w-4" /></Button>
+              <Button variant="outline" size="icon" disabled={i === items.length - 1} onClick={() => move(i, 1)}><ArrowDown className="h-4 w-4" /></Button>
+              <Button variant="outline" size="icon" onClick={() => remove(i)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+            </div>
+          </div>
+          {renderItem(it, (next) => setAt(i, next))}
+        </div>
+      ))}
+      <Button variant="outline" onClick={() => onChange([...items, makeNew()])} className="gap-2">
+        <Plus className="h-4 w-4" /> Add item
+      </Button>
+    </div>
+  );
+}

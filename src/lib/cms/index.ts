@@ -1,6 +1,7 @@
 export * from "./icons";
 export * from "./site";
 export * from "./home";
+export * from "./homepage";
 
 import {
   featuredQuery,
