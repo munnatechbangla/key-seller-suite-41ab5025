@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { X, ShoppingBag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMarketplace } from "@/lib/cms/marketplace";
-import { storageSlug } from "@/lib/storage-slug";
+import { STORAGE_SLUG } from "@/lib/storage-slug";
 
 type Purchase = {
   first_name: string;
@@ -46,7 +46,7 @@ function genDemo(): Purchase {
   };
 }
 
-const CLOSE_KEY = `${storageSlug()}_rp_closed`;
+const CLOSE_KEY = `${STORAGE_SLUG}_rp_closed`;
 
 export function RecentlyPurchasedPopup() {
   const cfg = useMarketplace((s) => s.config.recently_purchased);
