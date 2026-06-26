@@ -1,7 +1,7 @@
 import { seoMeta, canonicalLink } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Star, ChevronRight, Calendar, ArrowRight, ShieldCheck } from "lucide-react";
-import { useEffect, useRef, useState, type ReactElement } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 import { useQuery as useTQuery } from "@tanstack/react-query";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -163,7 +163,8 @@ function FloatingCard({ product, delay = "0s", duration = "7s", size = "md", cla
 }
 
 function TrustStrip() {
-  const items = useHomepage((s) => s.config.trust.items.filter((i) => i.enabled));
+  const rawItems = useHomepage((s) => s.config.trust.items);
+  const items = useMemo(() => rawItems.filter((i) => i.enabled), [rawItems]);
   return (
     <div className="container mx-auto px-4 -mt-12 relative z-10">
       <div className="bg-card border border-border rounded-3xl shadow-premium p-4 sm:p-6 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 items-stretch">
@@ -215,7 +216,8 @@ function CategoriesGrid() {
 }
 
 function ProductSectionsBlock() {
-  const sections = useHomepage((s) => s.config.productSections.filter((p) => p.enabled));
+  const rawSections = useHomepage((s) => s.config.productSections);
+  const sections = useMemo(() => rawSections.filter((p) => p.enabled), [rawSections]);
   return (
     <>
       {sections.map((s, i) => (
@@ -289,7 +291,8 @@ function WhyChoose() {
 }
 
 function Stats() {
-  const items = useHomepage((s) => s.config.stats.items.filter((i) => i.enabled));
+  const rawItems = useHomepage((s) => s.config.stats.items);
+  const items = useMemo(() => rawItems.filter((i) => i.enabled), [rawItems]);
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="rounded-3xl bg-gradient-hero text-white p-10 lg:p-16 shadow-premium relative overflow-hidden">
