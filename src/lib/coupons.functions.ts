@@ -15,6 +15,7 @@ export type ValidateCouponResult =
   | { ok: false; reason: string; min?: number };
 
 export const validateCouponFn = createServerFn({ method: "POST" })
+  .middleware([csrfGuard])
   .inputValidator((d: unknown) => validateSchema.parse(d))
   .handler(async ({ data }): Promise<ValidateCouponResult> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
