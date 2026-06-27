@@ -1,11 +1,17 @@
 // Public payment gateway webhook receiver.
 //
-// Real gateway integrations (SSLCommerz, bKash, Nagad, Stripe, PayPal) post
-// signed callbacks here. The handler verifies an HMAC-SHA256 signature of the
-// raw request body using PAYMENTS_WEBHOOK_SECRET (env), then delegates to the
-// shared processPaymentCallback() so license keys and downloads are only
-// generated once payment is verified. Replay protection lives in the database
-// (payments.transaction_id is unique; orders pinned to status='paid' once).
+// Security layers (in order):
+//   1. Per-IP rate limiting (in-memory sliding window).
+//   2. Body size cap (defensive).
+//   3. HMAC-SHA256 signature verification over the raw body using
+//      PAYMENTS_WEBHOOK_SECRET.
+//   4. Optional timestamp window (x-th-timestamp) to block replays of
+//      previously-captured signed payloads outside a 5-minute skew.
+//   5. Database-level idempotency: payments.transaction_id is unique and
+//      orders pin to status='paid' once via mark_order_paid().
+//
+// Delegates to processPaymentCallback() so license keys, downloads, and
+// transactional emails are only generated once payment is verified.
 
 import { createFileRoute } from "@tanstack/react-router";
 import { createHmac, timingSafeEqual } from "crypto";
@@ -19,6 +25,9 @@ const bodySchema = z.object({
   raw: z.record(z.unknown()).optional(),
 });
 
+const MAX_BODY_BYTES = 32 * 1024;
+const TIMESTAMP_SKEW_MS = 5 * 60 * 1000;
+
 function verifySignature(rawBody: string, header: string | null): boolean {
   if (!header) return false;
   const secret = process.env.PAYMENTS_WEBHOOK_SECRET;
@@ -30,11 +39,34 @@ function verifySignature(rawBody: string, header: string | null): boolean {
   try { return timingSafeEqual(a, b); } catch { return false; }
 }
 
+function verifyTimestamp(header: string | null): boolean {
+  if (!header) return true; // optional header — legacy callers may omit
+  const ts = Number(header);
+  if (!Number.isFinite(ts)) return false;
+  return Math.abs(Date.now() - ts) <= TIMESTAMP_SKEW_MS;
+}
+
 export const Route = createFileRoute("/api/public/payments/webhook")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const { rateLimit, clientIp } = await import("@/lib/payments/rate-limit.server");
+        const ip = clientIp(request);
+        const rl = rateLimit(`webhook:${ip}`, { limit: 60, windowMs: 60_000 });
+        if (!rl.ok) {
+          return new Response(JSON.stringify({ ok: false, error: "rate_limited" }), {
+            status: 429,
+            headers: { "Content-Type": "application/json", "Retry-After": String(rl.retryAfter) },
+          });
+        }
+
         const raw = await request.text();
+        if (raw.length > MAX_BODY_BYTES) {
+          return new Response(JSON.stringify({ ok: false, error: "payload_too_large" }), { status: 413, headers: { "Content-Type": "application/json" } });
+        }
+        if (!verifyTimestamp(request.headers.get("x-th-timestamp"))) {
+          return new Response(JSON.stringify({ ok: false, error: "stale_timestamp" }), { status: 401, headers: { "Content-Type": "application/json" } });
+        }
         const sig = request.headers.get("x-th-signature");
         if (!verifySignature(raw, sig)) {
           return new Response(JSON.stringify({ ok: false, error: "invalid_signature" }), { status: 401, headers: { "Content-Type": "application/json" } });

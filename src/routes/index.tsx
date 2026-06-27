@@ -85,7 +85,7 @@ function Hero() {
         <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-accent/30 blur-3xl animate-float" style={{ animationDelay: "3s" }} />
       </div>
 
-      <div className="container mx-auto px-4 pt-14 pb-20 lg:pt-20 lg:pb-24 relative grid lg:grid-cols-[1.05fr_1fr] gap-10 items-center">
+      <div className="container mx-auto px-4 pt-14 pb-20 lg:pt-20 lg:pb-24 relative grid xl:grid-cols-[1.05fr_1fr] gap-10 items-center">
         <div className="space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-dark text-sm">
             <BadgeIcon className="h-4 w-4 text-accent" />
@@ -121,7 +121,7 @@ function Hero() {
           </div>
         </div>
 
-        <div className="hidden lg:grid grid-cols-2 gap-6 xl:gap-7 self-center">
+        <div className="hidden xl:grid grid-cols-2 gap-6 xl:gap-7 self-center">
           {floatingProducts.slice(0, 2).map((p, i) => (
             <FloatingCard key={p.slug} product={p} size="md" className="col-span-2" delay={delays[i]} duration={durations[i]} />
           ))}
