@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { csrfGuard } from "@/lib/security/csrf.server";
+
 
 const subscribeSchema = z.object({
   email: z.string().trim().email().max(254),
