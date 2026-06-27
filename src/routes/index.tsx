@@ -81,16 +81,16 @@ function Hero() {
   return (
     <section className="relative overflow-hidden bg-gradient-hero text-white">
       <div className="absolute inset-0 opacity-50 pointer-events-none">
-        <div className="absolute -top-40 -left-20 h-96 w-96 rounded-full bg-primary/40 blur-3xl animate-float" />
-        <div className="absolute top-20 right-0 h-96 w-96 rounded-full bg-secondary/40 blur-3xl animate-float" style={{ animationDelay: "1.5s" }} />
-        <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-accent/30 blur-3xl animate-float" style={{ animationDelay: "3s" }} />
+        <div className="absolute -top-40 left-0 h-96 w-96 max-w-full rounded-full bg-primary/40 blur-3xl animate-float" />
+        <div className="absolute top-20 right-0 h-80 w-80 max-w-full rounded-full bg-secondary/40 blur-3xl animate-float" style={{ animationDelay: "1.5s" }} />
+        <div className="absolute bottom-0 left-1/3 h-72 w-72 max-w-[70vw] rounded-full bg-accent/30 blur-3xl animate-float" style={{ animationDelay: "3s" }} />
       </div>
 
       <div className="container mx-auto px-4 pt-14 pb-20 lg:pt-20 lg:pb-24 relative grid xl:grid-cols-[1.05fr_1fr] gap-10 items-center">
-        <div className="space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-dark text-sm">
+        <div className="min-w-0 space-y-6">
+          <div className="inline-flex max-w-full min-w-0 items-center gap-2 px-4 py-1.5 rounded-full glass-dark text-sm">
             <BadgeIcon className="h-4 w-4 text-accent" />
-            <span>{hero.badge.text}</span>
+            <span className="min-w-0 truncate">{hero.badge.text}</span>
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight">
             {hero.title.lead}
@@ -107,15 +107,15 @@ function Hero() {
               {hero.secondaryCta.label}
             </a>
           </div>
-          <div className="flex flex-wrap gap-6 pt-6 text-sm">
+          <div className="flex min-w-0 flex-wrap gap-6 pt-6 text-sm">
             {hero.trustItems.map((item) => {
               const Icon = resolveIcon(item.icon);
               return (
-                <div key={item.id} className="flex items-center gap-2 text-white/80">
-                  <div className="h-8 w-8 grid place-items-center rounded-lg bg-white/10">
+                <div key={item.id} className="flex min-w-0 items-center gap-2 text-white/80">
+                  <div className="h-8 w-8 shrink-0 grid place-items-center rounded-lg bg-white/10">
                     <Icon className="h-4 w-4 text-accent" />
                   </div>
-                  {item.label}
+                  <span className="min-w-0 break-words">{item.label}</span>
                 </div>
               );
             })}
@@ -303,9 +303,9 @@ function Stats() {
   const items = useMemo(() => rawItems.filter((i) => i.enabled), [rawItems]);
   return (
     <div className="container mx-auto px-4 py-16">
-      <div className="rounded-3xl bg-gradient-hero text-white p-10 lg:p-16 shadow-premium relative overflow-hidden">
-        <div className="absolute -top-20 -right-20 h-80 w-80 rounded-full bg-primary/40 blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 h-80 w-80 rounded-full bg-accent/30 blur-3xl" />
+      <div className="rounded-3xl bg-gradient-hero text-white p-6 sm:p-10 lg:p-16 shadow-premium relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-72 w-72 max-w-full rounded-full bg-primary/40 blur-3xl" />
+        <div className="absolute bottom-0 left-0 h-72 w-72 max-w-full rounded-full bg-accent/30 blur-3xl" />
         <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
           {items.map((s, i) => (
             <div key={s.id} className="animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
@@ -518,16 +518,16 @@ function CTA() {
 
   return (
     <div className="container mx-auto px-4 py-16">
-      <div className="rounded-3xl bg-gradient-primary text-primary-foreground p-10 lg:p-16 shadow-premium relative overflow-hidden text-center">
-        <div className="absolute -top-24 -right-24 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-accent/30 blur-3xl" />
+      <div className="rounded-3xl bg-gradient-primary text-primary-foreground p-6 sm:p-10 lg:p-16 shadow-premium relative overflow-hidden text-center">
+        <div className="absolute top-0 right-0 h-72 w-72 max-w-full rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute bottom-0 left-0 h-72 w-72 max-w-full rounded-full bg-accent/30 blur-3xl" />
         <div className="relative max-w-2xl mx-auto space-y-5">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-xs font-semibold">
             <BadgeIcon className="h-3.5 w-3.5" /> {cfg.badge.text}
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold">{cfg.title}</h2>
           <p className="text-white/85 text-lg">{cfg.subtitle}</p>
-          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto pt-2 items-stretch" onSubmit={submit}>
+          <form className="flex min-w-0 flex-col sm:flex-row gap-3 max-w-md mx-auto pt-2 items-stretch" onSubmit={submit}>
             <input
               type="email"
               required
@@ -536,7 +536,7 @@ function CTA() {
               placeholder={cfg.placeholder}
               maxLength={254}
               disabled={status === "loading"}
-              className="flex-1 h-12 px-4 rounded-xl bg-white/15 backdrop-blur text-white placeholder:text-white/60 outline-none focus:bg-white/20 border border-white/20 disabled:opacity-60"
+              className="min-w-0 flex-1 h-12 px-4 rounded-xl bg-white/15 backdrop-blur text-white placeholder:text-white/60 outline-none focus:bg-white/20 border border-white/20 disabled:opacity-60"
             />
             <button
               type="submit"
