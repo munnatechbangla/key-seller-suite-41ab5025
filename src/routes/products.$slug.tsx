@@ -3,6 +3,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
+import { FrequentlyBoughtTogether } from "@/components/site/FrequentlyBoughtTogether";
 import { Breadcrumbs } from "@/components/site/PageHero";
 import { ReviewsSection } from "@/components/site/ReviewsSection";
 import { LiveVisitorsCounter } from "@/components/site/LiveVisitorsCounter";
