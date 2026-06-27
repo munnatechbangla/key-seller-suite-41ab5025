@@ -151,6 +151,7 @@ export function Header() {
           </div>
         )}
       </header>
+      <MiniCart open={miniCartOpen} onOpenChange={setMiniCartOpen} />
     </>
   );
 }
