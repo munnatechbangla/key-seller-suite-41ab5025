@@ -15,7 +15,7 @@ export type SubscribeResult =
   | { ok: false; reason: "invalid" | "rate_limited" | "error"; message: string };
 
 export const subscribeNewsletterFn = createServerFn({ method: "POST" })
-  .middleware([(await import("@/lib/security/csrf.server")).csrfGuard])
+  .middleware([csrfGuard])
   .inputValidator((d: unknown) => subscribeSchema.parse(d))
   .handler(async ({ data }): Promise<SubscribeResult> => {
     try {
