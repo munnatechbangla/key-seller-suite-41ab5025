@@ -6,12 +6,14 @@ import { primaryNav, announcementBar, resolveIcon } from "@/lib/cms";
 
 import { ThemeToggle } from "@/components/site/ThemeToggle";
 import { Logo } from "@/components/site/Logo";
+import { MiniCart } from "@/components/site/MiniCart";
 
 const nav = primaryNav;
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [miniCartOpen, setMiniCartOpen] = useState(false);
   const [q, setQ] = useState("");
   const navigate = useNavigate();
   const cartCount = useCart((s) => s.count());
