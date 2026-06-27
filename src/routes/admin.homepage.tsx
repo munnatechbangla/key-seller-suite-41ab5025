@@ -6,6 +6,7 @@ import { Loader2, Save, Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { adminListSettingsFn, adminUpsertSettingFn } from "@/lib/admin-settings.functions";
 import {
   defaultHomepageConfig,
+  mergeConfig,
   useHomepage,
   reorder,
   newId,
@@ -59,7 +60,7 @@ function HomepageBuilder() {
         const rows = (await list()) as Array<{ group_key: string; setting_key: string; value: Record<string, unknown> }>;
         const row = rows.find((r) => r.group_key === "homepage" && r.setting_key === "config");
         if (row?.value) {
-          setCfg({ ...defaultHomepageConfig, ...(row.value as Partial<HomepageConfig>) });
+          setCfg(mergeConfig(defaultHomepageConfig, row.value as Partial<HomepageConfig>));
         }
       } catch (e: unknown) {
         toast.error(e instanceof Error ? e.message : "Failed to load");

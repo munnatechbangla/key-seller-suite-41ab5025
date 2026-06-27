@@ -10,6 +10,14 @@ async function assertAdmin(ctx: { supabase: any; userId: string }) {
   if (error || !data) throw new Error("Forbidden");
 }
 
+export const adminGetEmailStatusFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { getEmailSystemStatus } = await import("./service.server");
+    return getEmailSystemStatus();
+  });
+
 export const adminListEmailLogsFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>

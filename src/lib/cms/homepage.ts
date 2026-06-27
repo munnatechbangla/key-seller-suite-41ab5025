@@ -244,7 +244,7 @@ type State = {
   setLocal: (next: HomepageConfig) => void;
 };
 
-function mergeConfig(base: HomepageConfig, override: Partial<HomepageConfig> | null | undefined): HomepageConfig {
+export function mergeConfig(base: HomepageConfig, override: Partial<HomepageConfig> | null | undefined): HomepageConfig {
   if (!override) return base;
   return {
     ...base,

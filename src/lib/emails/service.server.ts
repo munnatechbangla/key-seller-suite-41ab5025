@@ -41,6 +41,29 @@ async function loadSenderSettings() {
   return out;
 }
 
+export async function getEmailSystemStatus() {
+  const sender = await loadSenderSettings();
+  const hasProvider = !!process.env.RESEND_API_KEY;
+  const enabledFlag = (process.env.EMAILS_ENABLED ?? "false").toLowerCase() === "true";
+  const hasSender = !!sender.sender_email;
+  const sendingEnabled = hasProvider && hasSender && enabledFlag;
+  const issues: string[] = [];
+  if (!hasProvider) issues.push("RESEND_API_KEY is not set — add it as an environment variable.");
+  if (!hasSender) issues.push("No sender email configured — set it in Settings → Email.");
+  if (!enabledFlag) issues.push("EMAILS_ENABLED is not 'true' — emails are queued but not delivered.");
+  return {
+    sendingEnabled,
+    devMode: !sendingEnabled,
+    hasProvider,
+    hasSender,
+    enabledFlag,
+    provider: hasProvider ? "resend" : "none",
+    senderEmail: sender.sender_email ?? null,
+    senderName: sender.sender_name ?? null,
+    issues,
+  };
+}
+
 export async function enqueueEmail(args: EnqueueArgs) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: tpl } = await supabaseAdmin
