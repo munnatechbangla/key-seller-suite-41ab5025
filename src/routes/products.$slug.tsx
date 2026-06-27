@@ -3,6 +3,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
+import { FrequentlyBoughtTogether } from "@/components/site/FrequentlyBoughtTogether";
 import { Breadcrumbs } from "@/components/site/PageHero";
 import { ReviewsSection } from "@/components/site/ReviewsSection";
 import { LiveVisitorsCounter } from "@/components/site/LiveVisitorsCounter";
@@ -60,14 +61,22 @@ export const Route = createFileRoute("/products/$slug")({
       ])),
     ];
     if (p.faqs && p.faqs.length) scripts.push(jsonLdScript(faqJsonLd(p.faqs)));
+    const meta = seoMeta({
+      title: p.name,
+      description: p.short ?? undefined,
+      ogType: "product",
+      image: p.thumbnailUrl ?? undefined,
+      path,
+    });
+    meta.push(
+      { property: "product:price:amount", content: p.price.toFixed(2) },
+      { property: "product:price:currency", content: "USD" },
+      { property: "og:price:amount", content: p.price.toFixed(2) },
+      { property: "og:price:currency", content: "USD" },
+      { property: "product:availability", content: (p.stock ?? 1) > 0 ? "in stock" : "out of stock" },
+    );
     return {
-      meta: seoMeta({
-        title: p.name,
-        description: p.short ?? undefined,
-        ogType: "product",
-        image: p.thumbnailUrl ?? undefined,
-        path,
-      }),
+      meta,
       links: [canonicalLink(path)],
       scripts,
     };
@@ -287,6 +296,8 @@ function ProductPage() {
             </div>
           )}
         </div>
+
+        <FrequentlyBoughtTogether current={product} candidates={related} />
 
         <section className="mt-12">
           <h2 className="text-2xl font-bold mb-5">Related products</h2>

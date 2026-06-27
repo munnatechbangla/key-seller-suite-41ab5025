@@ -6,12 +6,14 @@ import { primaryNav, announcementBar, resolveIcon } from "@/lib/cms";
 
 import { ThemeToggle } from "@/components/site/ThemeToggle";
 import { Logo } from "@/components/site/Logo";
+import { MiniCart } from "@/components/site/MiniCart";
 
 const nav = primaryNav;
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [miniCartOpen, setMiniCartOpen] = useState(false);
   const [q, setQ] = useState("");
   const navigate = useNavigate();
   const cartCount = useCart((s) => s.count());
@@ -83,7 +85,19 @@ export function Header() {
             <IconLink to="/compare" label="Compare" badge={cmpCount} className="hidden sm:grid"><GitCompare className="h-5 w-5" /></IconLink>
             <IconLink to="/wishlist" label="Wishlist" badge={wishCount} className="hidden sm:grid"><Heart className="h-5 w-5" /></IconLink>
             <IconLink to={user ? "/account" : "/auth/login"} label="Account"><User className="h-5 w-5" /></IconLink>
-            <IconLink to="/cart" label="Cart" badge={cartCount}><ShoppingCart className="h-5 w-5" /></IconLink>
+            <button
+              type="button"
+              onClick={() => setMiniCartOpen(true)}
+              aria-label="Cart"
+              className="relative h-10 w-10 grid place-items-center rounded-xl hover:bg-muted transition-smooth shrink-0"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {cartCount ? (
+                <span className="absolute -top-0.5 -right-0.5 h-5 min-w-5 px-1 rounded-full bg-accent text-accent-foreground text-[10px] font-bold grid place-items-center">
+                  {cartCount}
+                </span>
+              ) : null}
+            </button>
             <button
               onClick={() => setOpen((v) => !v)}
               className="lg:hidden h-10 w-10 grid place-items-center rounded-xl hover:bg-muted transition-smooth shrink-0"
@@ -137,6 +151,7 @@ export function Header() {
           </div>
         )}
       </header>
+      <MiniCart open={miniCartOpen} onOpenChange={setMiniCartOpen} />
     </>
   );
 }

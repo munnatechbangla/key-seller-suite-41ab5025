@@ -19,6 +19,7 @@ import {
 import { useProductSection, useResolvedProducts, resolveIcon } from "@/lib/cms";
 import { useHomepage, defaultHomepageConfig, type HomeProductSection, type SectionId } from "@/lib/cms/homepage";
 import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
+import { subscribeNewsletterFn } from "@/lib/newsletter.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { categoriesQuery } from "@/lib/catalog";
 import { flashDealCountdown } from "@/lib/cms/home";
@@ -148,7 +149,7 @@ function FloatingCard({ product, delay = "0s", duration = "7s", size = "md", cla
       <div className="relative flex items-center gap-3">
         <div className={`${isMd ? "h-12 w-12" : "h-10 w-10"} rounded-xl bg-gradient-primary grid place-items-center overflow-hidden text-xl shadow-glow shrink-0`}>
           {product.thumbnailUrl ? (
-            <img src={product.thumbnailUrl} alt={product.name} className="h-full w-full object-cover" />
+            <img src={product.thumbnailUrl} alt={product.name} className="h-full w-full object-cover" loading="lazy" decoding="async" />
           ) : (
             <span>{product.emoji}</span>
           )}
@@ -485,6 +486,36 @@ function CTA() {
   const cfg = useHomepage((s) => s.config.newsletter);
   const BadgeIcon = resolveIcon(cfg.badge.icon);
   const BtnIcon = resolveIcon(cfg.buttonIcon);
+  const subscribe = useServerFn(subscribeNewsletterFn);
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "ok" | "err">("idle");
+  const [message, setMessage] = useState<string>("");
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const value = email.trim();
+    if (!value || !/^\S+@\S+\.\S+$/.test(value)) {
+      setStatus("err");
+      setMessage("Please enter a valid email address.");
+      return;
+    }
+    setStatus("loading");
+    try {
+      const r = await subscribe({ data: { email: value, source: "homepage" } });
+      if (r.ok) {
+        setStatus("ok");
+        setMessage(r.already ? "You're already subscribed — thanks!" : "Thanks! You're subscribed.");
+        setEmail("");
+      } else {
+        setStatus("err");
+        setMessage(r.message || "Subscription failed. Please try again.");
+      }
+    } catch (err) {
+      setStatus("err");
+      setMessage(err instanceof Error ? err.message : "Subscription failed.");
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="rounded-3xl bg-gradient-primary text-primary-foreground p-10 lg:p-16 shadow-premium relative overflow-hidden text-center">
@@ -496,12 +527,33 @@ function CTA() {
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold">{cfg.title}</h2>
           <p className="text-white/85 text-lg">{cfg.subtitle}</p>
-          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto pt-2 items-stretch" onSubmit={(e) => { e.preventDefault(); }}>
-            <input type="email" required placeholder={cfg.placeholder} className="flex-1 h-12 px-4 rounded-xl bg-white/15 backdrop-blur text-white placeholder:text-white/60 outline-none focus:bg-white/20 border border-white/20" />
-            <button className="h-12 px-6 rounded-xl bg-accent text-accent-foreground font-semibold hover:scale-105 transition-smooth inline-flex items-center justify-center gap-2">
-              <BtnIcon className="h-4 w-4" /> {cfg.buttonLabel}
+          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto pt-2 items-stretch" onSubmit={submit}>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder={cfg.placeholder}
+              maxLength={254}
+              disabled={status === "loading"}
+              className="flex-1 h-12 px-4 rounded-xl bg-white/15 backdrop-blur text-white placeholder:text-white/60 outline-none focus:bg-white/20 border border-white/20 disabled:opacity-60"
+            />
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="h-12 px-6 rounded-xl bg-accent text-accent-foreground font-semibold hover:scale-105 transition-smooth inline-flex items-center justify-center gap-2 disabled:opacity-60 disabled:hover:scale-100"
+            >
+              <BtnIcon className="h-4 w-4" /> {status === "loading" ? "Subscribing…" : cfg.buttonLabel}
             </button>
           </form>
+          {message && (
+            <p
+              role="status"
+              className={`text-sm pt-1 ${status === "ok" ? "text-emerald-100" : "text-red-100"}`}
+            >
+              {message}
+            </p>
+          )}
         </div>
       </div>
     </div>
