@@ -121,6 +121,14 @@ export function Header() {
                   />
                 </div>
               </form>
+              <div className="flex sm:hidden items-center gap-2 pt-2">
+                <Link to="/compare" onClick={() => setOpen(false)} className="flex-1 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-muted flex items-center gap-2">
+                  <GitCompare className="h-4 w-4" /> Compare {cmpCount ? `(${cmpCount})` : ""}
+                </Link>
+                <Link to="/wishlist" onClick={() => setOpen(false)} className="flex-1 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-muted flex items-center gap-2">
+                  <Heart className="h-4 w-4" /> Wishlist {wishCount ? `(${wishCount})` : ""}
+                </Link>
+              </div>
               <div className="flex items-center justify-between pt-3 mt-1 border-t border-border">
                 <span className="text-xs font-medium text-muted-foreground">Theme</span>
                 <ThemeToggle />
