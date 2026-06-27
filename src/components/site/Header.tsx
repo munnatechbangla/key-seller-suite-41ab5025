@@ -133,12 +133,12 @@ export function Header() {
   );
 }
 
-function IconLink({ children, label, badge, to }: { children: React.ReactNode; label: string; badge?: number; to: string }) {
+function IconLink({ children, label, badge, to, className }: { children: React.ReactNode; label: string; badge?: number; to: string; className?: string }) {
   return (
     <Link
       to={to}
       aria-label={label}
-      className="relative h-10 w-10 grid place-items-center rounded-xl hover:bg-muted transition-smooth"
+      className={`relative h-10 w-10 grid place-items-center rounded-xl hover:bg-muted transition-smooth shrink-0 ${className ?? ""}`}
     >
       {children}
       {badge ? (
