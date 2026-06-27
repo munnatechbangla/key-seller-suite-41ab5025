@@ -14,8 +14,14 @@ export const Route = createFileRoute("/api/public/payments/sslcommerz/ipn")({
         const { validateSslcommerzPayment } = await import("@/lib/payments/sslcommerz.server");
         const { processPaymentCallback } = await import("@/lib/payments.server");
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { rateLimit, clientIp } = await import("@/lib/payments/rate-limit.server");
 
-        const ip = request.headers.get("x-forwarded-for") ?? request.headers.get("cf-connecting-ip") ?? null;
+        const ipAddr = clientIp(request);
+        const rl = rateLimit(`sslcz-ipn:${ipAddr}`, { limit: 120, windowMs: 60_000 });
+        if (!rl.ok) {
+          return new Response("rate_limited", { status: 429, headers: { "Retry-After": String(rl.retryAfter) } });
+        }
+        const ip = ipAddr === "unknown" ? null : ipAddr;
         const ua = request.headers.get("user-agent") ?? null;
 
         let formData: Record<string, string> = {};
