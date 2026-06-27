@@ -289,6 +289,8 @@ function ProductPage() {
           )}
         </div>
 
+        <FrequentlyBoughtTogether current={product} candidates={related} />
+
         <section className="mt-12">
           <h2 className="text-2xl font-bold mb-5">Related products</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
