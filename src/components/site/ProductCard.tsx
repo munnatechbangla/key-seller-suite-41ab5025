@@ -22,9 +22,12 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <article className="group relative rounded-2xl bg-card border border-border overflow-hidden hover:shadow-2xl hover:border-primary/30 hover:-translate-y-1.5 transition-all duration-300 ease-out">
-      {quickViewEnabled && (
-        <QuickViewModal slug={quickOpen ? product.slug : null} open={quickOpen} onOpenChange={setQuickOpen} />
+      {quickViewEnabled && quickOpen && (
+        <Suspense fallback={null}>
+          <QuickViewModal slug={product.slug} open={quickOpen} onOpenChange={setQuickOpen} />
+        </Suspense>
       )}
+
       <Link to="/products/$slug" params={{ slug: product.slug }} className="block">
         <div className="relative aspect-square bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center overflow-hidden">
           {product.thumbnailUrl ? (
