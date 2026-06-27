@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { csrfGuard } from "@/lib/security/csrf.server";
 
 const itemSchema = z.object({
   slug: z.string(),
@@ -138,11 +139,12 @@ async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string
 }
 
 export const placeOrderGuestFn = createServerFn({ method: "POST" })
+  .middleware([csrfGuard])
   .inputValidator((d: unknown) => placeSchema.parse(d))
   .handler(async ({ data }) => placeOrderCore(data, null));
 
 export const placeOrderAuthFn = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([csrfGuard, requireSupabaseAuth])
   .inputValidator((d: unknown) => placeSchema.parse(d))
   .handler(async ({ data, context }) => placeOrderCore(data, context.userId));
 
@@ -151,6 +153,7 @@ export const placeOrderAuthFn = createServerFn({ method: "POST" })
 // (see src/routes/api/public/payments.webhook.ts). This server fn exists so the UI
 // can drive a full pending -> paid lifecycle while real merchant accounts aren't connected.
 export const simulateGatewayPaymentFn = createServerFn({ method: "POST" })
+  .middleware([csrfGuard])
   .inputValidator((d: unknown) =>
     z
       .object({

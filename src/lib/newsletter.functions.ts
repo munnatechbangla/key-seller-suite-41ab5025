@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { csrfGuard } from "@/lib/security/csrf.server";
+
 
 const subscribeSchema = z.object({
   email: z.string().trim().email().max(254),
@@ -13,6 +15,7 @@ export type SubscribeResult =
   | { ok: false; reason: "invalid" | "rate_limited" | "error"; message: string };
 
 export const subscribeNewsletterFn = createServerFn({ method: "POST" })
+  .middleware([csrfGuard])
   .inputValidator((d: unknown) => subscribeSchema.parse(d))
   .handler(async ({ data }): Promise<SubscribeResult> => {
     try {

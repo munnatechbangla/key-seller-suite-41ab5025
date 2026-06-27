@@ -4,6 +4,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { csrfGuard } from "@/lib/security/csrf.server";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -128,6 +129,7 @@ export const toggleGatewayFn = createServerFn({ method: "POST" })
 // ---------------- Manual submissions ----------------
 
 export const submitManualPaymentFn = createServerFn({ method: "POST" })
+  .middleware([csrfGuard])
   .inputValidator((d: {
     order_number: string;
     gateway_slug: string;

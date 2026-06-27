@@ -4,6 +4,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getRequestHost } from "@tanstack/react-start/server";
+import { csrfGuard } from "@/lib/security/csrf.server";
 
 const schema = z.object({
   orderNumber: z.string().min(1),
@@ -38,6 +39,7 @@ function baseUrlFromRequest(): string {
 }
 
 export const initPaymentFn = createServerFn({ method: "POST" })
+  .middleware([csrfGuard])
   .inputValidator((d: unknown) => schema.parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

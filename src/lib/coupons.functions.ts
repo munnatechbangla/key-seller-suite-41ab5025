@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { csrfGuard } from "@/lib/security/csrf.server";
 
 const validateSchema = z.object({
   code: z.string().min(1).max(64),
@@ -14,6 +15,7 @@ export type ValidateCouponResult =
   | { ok: false; reason: string; min?: number };
 
 export const validateCouponFn = createServerFn({ method: "POST" })
+  .middleware([csrfGuard])
   .inputValidator((d: unknown) => validateSchema.parse(d))
   .handler(async ({ data }): Promise<ValidateCouponResult> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
