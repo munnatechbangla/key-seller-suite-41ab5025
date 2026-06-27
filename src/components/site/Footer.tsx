@@ -53,12 +53,12 @@ export function Footer() {
         <div className="space-y-3">
           <h4 className="font-semibold text-lg">{siteConfig.newsletter.title}</h4>
           <p className="text-white/70 text-sm">{siteConfig.newsletter.subtitle}</p>
-          <form className="flex gap-2 items-stretch" onSubmit={(e) => e.preventDefault()}>
+          <form className="flex w-full min-w-0 gap-2 items-stretch" onSubmit={(e) => e.preventDefault()}>
             <input
               type="email"
               required
               placeholder={siteConfig.newsletter.placeholder}
-              className="flex-1 h-11 px-3 rounded-xl glass-dark text-white placeholder:text-white/40 text-sm outline-none focus:border-white/40"
+              className="min-w-0 flex-1 h-11 px-3 rounded-xl glass-dark text-white placeholder:text-white/40 text-sm outline-none focus:border-white/40"
             />
             <button aria-label="Subscribe" className="h-11 w-11 shrink-0 grid place-items-center rounded-xl bg-gradient-primary hover:opacity-90 transition-smooth">
               <Send className="h-4 w-4" />
