@@ -3,10 +3,14 @@ import { Star, ShoppingCart, Zap, Heart, Eye } from "lucide-react";
 import type { Product } from "@/lib/catalog";
 import { useCart, useWishlist } from "@/lib/stores";
 import { SaleBadges } from "@/components/site/SaleBadges";
-import { QuickViewModal } from "@/components/site/QuickViewModal";
 import { useMarketplace } from "@/lib/cms/marketplace";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
+
+const QuickViewModal = lazy(() =>
+  import("@/components/site/QuickViewModal").then((m) => ({ default: m.QuickViewModal })),
+);
+
 
 export function ProductCard({ product }: { product: Product }) {
   const off = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
