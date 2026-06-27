@@ -149,7 +149,7 @@ function FloatingCard({ product, delay = "0s", duration = "7s", size = "md", cla
       <div className="relative flex items-center gap-3">
         <div className={`${isMd ? "h-12 w-12" : "h-10 w-10"} rounded-xl bg-gradient-primary grid place-items-center overflow-hidden text-xl shadow-glow shrink-0`}>
           {product.thumbnailUrl ? (
-            <img src={product.thumbnailUrl} alt={product.name} className="h-full w-full object-cover" />
+            <img src={product.thumbnailUrl} alt={product.name} className="h-full w-full object-cover" loading="lazy" decoding="async" />
           ) : (
             <span>{product.emoji}</span>
           )}
