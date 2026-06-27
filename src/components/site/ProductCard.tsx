@@ -74,11 +74,11 @@ export function ProductCard({ product }: { product: Product }) {
         )}
       </div>
       <div className="p-4 space-y-2">
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+        <div className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
           <Star className="h-3.5 w-3.5 fill-accent text-accent" />
           <span className="font-semibold text-foreground">{product.rating}</span>
           <span>({product.reviews.toLocaleString()})</span>
-          <span className="ml-auto inline-flex items-center gap-1 text-accent font-medium">
+          <span className="ml-auto inline-flex min-w-0 items-center gap-1 text-accent font-medium">
             <Zap className="h-3 w-3" /> {product.delivery}
           </span>
         </div>
@@ -86,8 +86,8 @@ export function ProductCard({ product }: { product: Product }) {
           <h3 className="font-semibold text-sm leading-snug line-clamp-2 min-h-10 hover:text-primary transition-smooth">{product.name}</h3>
         </Link>
         <p className="text-xs text-muted-foreground line-clamp-2">{product.short}</p>
-        <div className="flex items-end justify-between pt-2">
-          <div>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2 pt-2">
+          <div className="min-w-0">
             <div className="text-lg font-bold text-primary">${product.price}</div>
             {product.oldPrice && (
               <div className="text-xs text-muted-foreground line-through">${product.oldPrice}</div>
