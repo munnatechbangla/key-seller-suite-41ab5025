@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { adminListEmailLogsFn, adminRetryEmailFn, adminProcessQueueFn, adminSendTestEmailFn } from "@/lib/emails/admin.functions";
+import { adminListEmailLogsFn, adminRetryEmailFn, adminProcessQueueFn, adminSendTestEmailFn, adminGetEmailStatusFn } from "@/lib/emails/admin.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,9 @@ function EmailLogsPage() {
   const [status, setStatus] = useState<string>("");
   const [testTo, setTestTo] = useState("");
   const qc = useQueryClient();
+
+  const getStatus = useServerFn(adminGetEmailStatusFn);
+  const { data: emailStatus } = useQuery({ queryKey: ["admin-email-status"], queryFn: () => getStatus() });
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-email-logs", status],
@@ -59,11 +62,30 @@ function EmailLogsPage() {
 
   return (
     <div className="p-8 space-y-6">
+      {emailStatus && !emailStatus.sendingEnabled ? (
+        <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
+          <div className="flex items-start justify-between gap-3 flex-wrap">
+            <div>
+              <p className="font-semibold text-amber-900 dark:text-amber-200">Email delivery is in development mode</p>
+              <p className="text-sm text-amber-800/90 dark:text-amber-200/80">Outgoing emails are queued/logged but not sent. Authentication and password reset emails are unaffected — they are delivered by the platform.</p>
+              <ul className="mt-2 list-disc pl-5 text-sm text-amber-900 dark:text-amber-100 space-y-0.5">
+                {emailStatus.issues.map((i) => (<li key={i}>{i}</li>))}
+              </ul>
+            </div>
+            <Badge className="bg-amber-500/20 text-amber-900 dark:text-amber-100">Provider: {emailStatus.provider}</Badge>
+          </div>
+        </div>
+      ) : emailStatus?.sendingEnabled ? (
+        <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-900 dark:text-emerald-100">
+          Email delivery is live via <b>{emailStatus.provider}</b> from <b>{emailStatus.senderEmail}</b>.
+        </div>
+      ) : null}
+
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold">Email Logs</h1>
           <p className="text-sm text-muted-foreground">
-            Sending is in development mode until a sender domain is configured in Settings → Email.
+            Configure a sender domain in Settings → Email and set RESEND_API_KEY + EMAILS_ENABLED=true to deliver mail.
           </p>
         </div>
         <div className="flex gap-2">
