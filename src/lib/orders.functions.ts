@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { csrfGuard } from "@/lib/security/csrf.server";
 
 const itemSchema = z.object({
   slug: z.string(),
