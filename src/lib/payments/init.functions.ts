@@ -39,6 +39,7 @@ function baseUrlFromRequest(): string {
 }
 
 export const initPaymentFn = createServerFn({ method: "POST" })
+  .middleware([csrfGuard])
   .inputValidator((d: unknown) => schema.parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
