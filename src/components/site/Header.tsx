@@ -38,21 +38,20 @@ export function Header() {
       {announcementBar.enabled && (() => {
         const AnnouncementIcon = resolveIcon(announcementBar.icon);
         return (
-          <div className="bg-gradient-primary text-primary-foreground text-xs sm:text-sm">
-            <div className="container mx-auto px-4 py-2 flex items-center justify-center gap-2 text-center">
-              <AnnouncementIcon className="h-3.5 w-3.5" />
-              <span dangerouslySetInnerHTML={{ __html: announcementBar.html }} />
+          <div className="bg-gradient-primary text-primary-foreground text-xs sm:text-sm overflow-hidden">
+            <div className="container mx-auto px-4 py-2 flex items-center justify-center gap-2 text-center min-w-0">
+              <AnnouncementIcon className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate" dangerouslySetInnerHTML={{ __html: announcementBar.html }} />
             </div>
           </div>
         );
       })()}
 
       <header className={`sticky top-0 z-50 transition-smooth ${scrolled ? "glass shadow-elegant" : "bg-background/80 backdrop-blur-sm"}`}>
-        <div className="container mx-auto px-4 py-3 flex items-center gap-6">
-          <Logo size="md" />
+        <div className="container mx-auto px-3 sm:px-4 py-3 flex items-center gap-2 sm:gap-4 lg:gap-6 min-w-0">
+          <div className="shrink-0"><Logo size="md" /></div>
 
-
-          <nav className="hidden lg:flex items-center gap-1 ml-4">
+          <nav className="hidden lg:flex items-center gap-1 ml-4 min-w-0">
             {nav.map((n) => (
               <Link
                 key={n.to}
@@ -66,7 +65,7 @@ export function Header() {
             ))}
           </nav>
 
-          <form onSubmit={submitSearch} className="hidden md:flex flex-1 max-w-md ml-auto">
+          <form onSubmit={submitSearch} className="hidden md:flex flex-1 max-w-md ml-auto min-w-0">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
@@ -79,15 +78,15 @@ export function Header() {
             </div>
           </form>
 
-          <div className="flex items-center gap-1 ml-auto md:ml-0">
+          <div className="flex items-center gap-0.5 sm:gap-1 ml-auto md:ml-0 shrink-0">
             <div className="hidden md:block mr-1"><ThemeToggle /></div>
-            <IconLink to="/compare" label="Compare" badge={cmpCount}><GitCompare className="h-5 w-5" /></IconLink>
-            <IconLink to="/wishlist" label="Wishlist" badge={wishCount}><Heart className="h-5 w-5" /></IconLink>
+            <IconLink to="/compare" label="Compare" badge={cmpCount} className="hidden sm:grid"><GitCompare className="h-5 w-5" /></IconLink>
+            <IconLink to="/wishlist" label="Wishlist" badge={wishCount} className="hidden sm:grid"><Heart className="h-5 w-5" /></IconLink>
             <IconLink to={user ? "/account" : "/auth/login"} label="Account"><User className="h-5 w-5" /></IconLink>
             <IconLink to="/cart" label="Cart" badge={cartCount}><ShoppingCart className="h-5 w-5" /></IconLink>
             <button
               onClick={() => setOpen((v) => !v)}
-              className="lg:hidden h-10 w-10 grid place-items-center rounded-xl hover:bg-muted transition-smooth"
+              className="lg:hidden h-10 w-10 grid place-items-center rounded-xl hover:bg-muted transition-smooth shrink-0"
               aria-label="Menu"
             >
               {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -122,6 +121,14 @@ export function Header() {
                   />
                 </div>
               </form>
+              <div className="flex sm:hidden items-center gap-2 pt-2">
+                <Link to="/compare" onClick={() => setOpen(false)} className="flex-1 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-muted flex items-center gap-2">
+                  <GitCompare className="h-4 w-4" /> Compare {cmpCount ? `(${cmpCount})` : ""}
+                </Link>
+                <Link to="/wishlist" onClick={() => setOpen(false)} className="flex-1 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-muted flex items-center gap-2">
+                  <Heart className="h-4 w-4" /> Wishlist {wishCount ? `(${wishCount})` : ""}
+                </Link>
+              </div>
               <div className="flex items-center justify-between pt-3 mt-1 border-t border-border">
                 <span className="text-xs font-medium text-muted-foreground">Theme</span>
                 <ThemeToggle />
@@ -134,12 +141,12 @@ export function Header() {
   );
 }
 
-function IconLink({ children, label, badge, to }: { children: React.ReactNode; label: string; badge?: number; to: string }) {
+function IconLink({ children, label, badge, to, className }: { children: React.ReactNode; label: string; badge?: number; to: string; className?: string }) {
   return (
     <Link
       to={to}
       aria-label={label}
-      className="relative h-10 w-10 grid place-items-center rounded-xl hover:bg-muted transition-smooth"
+      className={`relative h-10 w-10 grid place-items-center rounded-xl hover:bg-muted transition-smooth shrink-0 ${className ?? ""}`}
     >
       {children}
       {badge ? (
