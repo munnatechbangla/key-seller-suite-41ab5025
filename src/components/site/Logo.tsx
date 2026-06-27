@@ -38,19 +38,19 @@ export function Logo({ variant = "light", size = "md", asPlainText, className }:
   const content = (
     <span
       className={cn(
-        "font-extrabold tracking-tight leading-none select-none inline-flex",
+        "font-extrabold tracking-tight leading-none select-none inline-flex max-w-full min-w-0",
         sizeMap[size],
         className,
       )}
     >
-      <span className={leadClass}>{lead}</span>
-      <span className="text-gradient">{accent}</span>
+      <span className={`${leadClass} min-w-0 truncate`}>{lead}</span>
+      <span className="text-gradient min-w-0 truncate">{accent}</span>
     </span>
   );
 
   if (asPlainText) return content;
   return (
-    <Link to="/" aria-label={branding.name} className="inline-flex items-center">
+    <Link to="/" aria-label={branding.name} className="inline-flex min-w-0 max-w-full items-center">
       {content}
     </Link>
   );

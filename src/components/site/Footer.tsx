@@ -18,11 +18,11 @@ export function Footer() {
   ].filter((x) => !!x.href);
   return (
     <footer className="mt-24 bg-gradient-hero text-white">
-      <div className="container mx-auto px-4 py-16 grid gap-10 md:grid-cols-2 lg:grid-cols-5">
-        <div className="lg:col-span-2 space-y-4">
+      <div className="container mx-auto px-4 py-16 grid grid-cols-[minmax(0,1fr)] gap-10 md:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))_minmax(0,1fr)]">
+        <div className="min-w-0 lg:col-span-1 space-y-4">
           <Logo size="lg" variant="dark" />
 
-          <p className="text-white/70 max-w-sm text-sm leading-relaxed">{s.branding.description}</p>
+          <p className="text-white/70 max-w-sm text-sm leading-relaxed break-words">{s.branding.description}</p>
           {social.length > 0 && (
             <div className="pt-2">
               <div className="text-xs font-semibold uppercase tracking-wider text-white/50 mb-2.5">Follow us</div>
@@ -50,7 +50,7 @@ export function Footer() {
           <FooterCol key={col.title} title={col.title} links={col.links} />
         ))}
 
-        <div className="space-y-3">
+        <div className="min-w-0 space-y-3">
           <h4 className="font-semibold text-lg">{siteConfig.newsletter.title}</h4>
           <p className="text-white/70 text-sm">{siteConfig.newsletter.subtitle}</p>
           <form className="flex w-full min-w-0 gap-2 items-stretch" onSubmit={(e) => e.preventDefault()}>
@@ -64,9 +64,9 @@ export function Footer() {
               <Send className="h-4 w-4" />
             </button>
           </form>
-          <div className="flex flex-wrap gap-1.5 pt-3">
+          <div className="flex min-w-0 flex-wrap gap-1.5 pt-3">
             {paymentBadges.map((p) => (
-              <span key={p.code} title={p.label} className="text-[10px] font-bold px-2 py-1 rounded-md glass-dark">{p.code}</span>
+              <span key={p.code} title={p.label} className="min-w-0 max-w-full truncate text-[10px] font-bold px-2 py-1 rounded-md glass-dark">{p.code}</span>
             ))}
           </div>
         </div>
@@ -84,12 +84,12 @@ export function Footer() {
 
 function FooterCol({ title, links }: { title: string; links: { label: string; href: string }[] }) {
   return (
-    <div className="space-y-3">
+    <div className="min-w-0 space-y-3">
       <h4 className="font-semibold text-lg">{title}</h4>
       <ul className="space-y-2">
         {links.map((l) => (
           <li key={l.label}>
-            <a href={l.href} className="text-sm text-white/70 hover:text-accent transition-smooth">{l.label}</a>
+            <a href={l.href} className="text-sm text-white/70 hover:text-accent transition-smooth break-words">{l.label}</a>
           </li>
         ))}
       </ul>

@@ -43,7 +43,7 @@ export function Header() {
           <div className="bg-gradient-primary text-primary-foreground text-xs sm:text-sm overflow-hidden">
             <div className="container mx-auto px-4 py-2 flex items-center justify-center gap-2 text-center min-w-0">
               <AnnouncementIcon className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate" dangerouslySetInnerHTML={{ __html: announcementBar.html }} />
+              <span className="min-w-0 truncate" dangerouslySetInnerHTML={{ __html: announcementBar.html }} />
             </div>
           </div>
         );
@@ -51,7 +51,7 @@ export function Header() {
 
       <header className={`sticky top-0 z-50 transition-smooth ${scrolled ? "glass shadow-elegant" : "bg-background/80 backdrop-blur-sm"}`}>
         <div className="container mx-auto px-3 sm:px-4 py-3 flex items-center gap-2 sm:gap-4 lg:gap-6 min-w-0">
-          <div className="shrink-0"><Logo size="md" /></div>
+          <div className="min-w-0 shrink"><Logo size="md" /></div>
 
           <nav className="hidden lg:flex items-center gap-1 ml-4 min-w-0">
             {nav.map((n) => (

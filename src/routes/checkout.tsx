@@ -108,10 +108,10 @@ function CheckoutPage() {
     <div className="min-h-screen">
       <Header />
       <PageHero title="Secure checkout" crumbs={[{ label: "Home", to: "/" }, { label: "Cart", to: "/cart" }, { label: "Checkout" }]} />
-      <form onSubmit={submit} className="container mx-auto px-4 py-10 grid lg:grid-cols-[1fr_400px] gap-8">
-        <div className="space-y-6">
+      <form onSubmit={submit} className="container mx-auto px-4 py-10 grid grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_400px] gap-8">
+        <div className="min-w-0 space-y-6">
           {!user && (
-            <div className="rounded-2xl bg-primary/5 border border-primary/20 p-4 flex items-center justify-between text-sm">
+            <div className="rounded-2xl bg-primary/5 border border-primary/20 p-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 text-sm">
               <span>Already a customer?</span>
               <Link to="/auth/login" className="font-semibold text-primary hover:underline">Sign in</Link>
             </div>
@@ -145,15 +145,15 @@ function CheckoutPage() {
             ) : (
               <div className="space-y-2">
                 {gateways.map((g) => (
-                  <label key={g.slug} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-smooth ${gateway === g.slug ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
-                    <input type="radio" name="gateway" checked={gateway === g.slug} onChange={() => setGateway(g.slug)} className="accent-[var(--primary)]" />
+                  <label key={g.slug} className={`flex min-w-0 items-center gap-3 p-4 rounded-xl border cursor-pointer transition-smooth ${gateway === g.slug ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
+                    <input type="radio" name="gateway" checked={gateway === g.slug} onChange={() => setGateway(g.slug)} className="shrink-0 accent-[var(--primary)]" />
                     {g.logo_url ? (
-                      <img src={g.logo_url} alt="" className="h-6 w-6 object-contain" />
+                      <img src={g.logo_url} alt="" className="h-6 w-6 shrink-0 object-contain" />
                     ) : (
-                      <Wallet className="h-5 w-5 text-primary" />
+                      <Wallet className="h-5 w-5 shrink-0 text-primary" />
                     )}
-                    <div className="flex-1">
-                      <div className="font-semibold text-sm flex items-center gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold text-sm flex min-w-0 flex-wrap items-center gap-2">
                         {g.name}
                         {g.type === "manual" && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600">MANUAL</span>}
                       </div>
@@ -201,8 +201,8 @@ function CheckoutPage() {
             <div className="flex justify-between font-bold text-lg pt-2 border-t border-border">
               <span>Total</span><span className="text-primary">${cart.total().toFixed(2)}</span>
             </div>
-            <div className="flex gap-2">
-              <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Coupon" className="flex-1 px-3 py-2 rounded-lg bg-muted/60 border border-border text-sm outline-none" />
+            <div className="flex min-w-0 gap-2">
+              <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Coupon" className="min-w-0 flex-1 px-3 py-2 rounded-lg bg-muted/60 border border-border text-sm outline-none" />
               <button type="button" onClick={applyCoupon} disabled={applying} className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold inline-flex items-center gap-1 disabled:opacity-60">
                 <Tag className="h-4 w-4" /> {applying ? "..." : "Apply"}
               </button>

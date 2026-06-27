@@ -73,10 +73,10 @@ function CartPage() {
     <div className="min-h-screen">
       <Header />
       <PageHero title="Your cart" subtitle={`${cart.count()} items`} crumbs={[{ label: "Home", to: "/" }, { label: "Cart" }]} />
-      <div className="container mx-auto px-4 py-10 grid lg:grid-cols-[1fr_380px] gap-8">
-        <div className="space-y-3">
+      <div className="container mx-auto px-4 py-10 grid grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_380px] gap-8">
+        <div className="min-w-0 space-y-3">
           {cart.items.map((it) => (
-            <div key={it.slug} className="rounded-2xl bg-card border border-border p-4 flex gap-4 items-center">
+            <div key={it.slug} className="rounded-2xl bg-card border border-border p-3 sm:p-4 grid grid-cols-[auto_minmax(0,1fr)_auto] gap-3 sm:gap-4 items-center">
               <Link to="/products/$slug" params={{ slug: it.slug }} className="h-20 w-20 shrink-0 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 grid place-items-center text-4xl">
                 {it.product.emoji}
               </Link>
@@ -94,7 +94,7 @@ function CartPage() {
                   </button>
                 </div>
               </div>
-              <div className="text-right">
+              <div className="shrink-0 text-right">
                 <div className="font-bold text-primary">${(it.product.price * it.qty).toFixed(2)}</div>
                 {it.product.oldPrice && <div className="text-xs text-muted-foreground line-through">${(it.product.oldPrice * it.qty).toFixed(2)}</div>}
               </div>
@@ -133,8 +133,8 @@ function CartPage() {
 
           <div className="rounded-2xl bg-card border border-border p-5 space-y-3">
             <div className="font-semibold flex items-center gap-2"><Tag className="h-4 w-4 text-primary" /> Have a coupon?</div>
-            <div className="flex gap-2">
-              <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="TOPUP10" className="flex-1 px-3 py-2 rounded-lg bg-muted/60 border border-border text-sm outline-none focus:border-primary" />
+            <div className="flex min-w-0 gap-2">
+              <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="TOPUP10" className="min-w-0 flex-1 px-3 py-2 rounded-lg bg-muted/60 border border-border text-sm outline-none focus:border-primary" />
               <button
                 onClick={apply}
                 disabled={applying}
