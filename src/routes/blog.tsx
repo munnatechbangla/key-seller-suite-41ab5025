@@ -45,12 +45,12 @@ function BlogPage() {
           ))}
         </div>
 
-        <section className="mt-16 rounded-3xl bg-gradient-hero text-white p-10 sm:p-14 text-center">
+        <section className="mt-16 rounded-3xl bg-gradient-hero text-white p-5 sm:p-14 text-center">
           <h2 className="text-3xl font-bold mb-2">Join our newsletter</h2>
           <p className="text-white/70 mb-6">Get weekly deals and product guides straight to your inbox.</p>
-          <form onSubmit={(e) => e.preventDefault()} className="max-w-md mx-auto flex gap-2">
-            <input type="email" required placeholder="you@email.com" className="flex-1 px-4 py-3 rounded-xl glass-dark text-white placeholder:text-white/40 outline-none" />
-            <button className="px-5 rounded-xl bg-gradient-primary font-semibold inline-flex items-center gap-2 shadow-glow"><Send className="h-4 w-4" /> Subscribe</button>
+          <form onSubmit={(e) => e.preventDefault()} className="max-w-md mx-auto grid grid-cols-[minmax(0,1fr)] gap-2 sm:flex sm:min-w-0">
+            <input type="email" required placeholder="you@email.com" className="min-w-0 flex-1 px-4 py-3 rounded-xl glass-dark text-white placeholder:text-white/40 outline-none" />
+            <button className="justify-center px-5 py-3 rounded-xl bg-gradient-primary font-semibold inline-flex items-center gap-2 shadow-glow"><Send className="h-4 w-4 shrink-0" /> Subscribe</button>
           </form>
         </section>
       </div>
