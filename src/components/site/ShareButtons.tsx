@@ -50,7 +50,7 @@ export function ShareButtons({ path, title, description }: { path: string; title
   };
 
   return (
-    <div className="inline-flex items-center gap-1 flex-wrap" aria-label={`Share ${siteName()} product`}>
+    <div className="inline-flex max-w-full min-w-0 items-center gap-1 flex-wrap" aria-label={`Share ${siteName()} product`}>
       <button
         onClick={nativeShare}
         className="h-9 px-3 inline-flex items-center gap-1.5 rounded-lg border border-border hover:bg-muted text-xs font-semibold"
