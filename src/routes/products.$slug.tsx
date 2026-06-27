@@ -61,14 +61,22 @@ export const Route = createFileRoute("/products/$slug")({
       ])),
     ];
     if (p.faqs && p.faqs.length) scripts.push(jsonLdScript(faqJsonLd(p.faqs)));
+    const meta = seoMeta({
+      title: p.name,
+      description: p.short ?? undefined,
+      ogType: "product",
+      image: p.thumbnailUrl ?? undefined,
+      path,
+    });
+    meta.push(
+      { property: "product:price:amount", content: p.price.toFixed(2) },
+      { property: "product:price:currency", content: "USD" },
+      { property: "og:price:amount", content: p.price.toFixed(2) },
+      { property: "og:price:currency", content: "USD" },
+      { property: "product:availability", content: (p.stock ?? 1) > 0 ? "in stock" : "out of stock" },
+    );
     return {
-      meta: seoMeta({
-        title: p.name,
-        description: p.short ?? undefined,
-        ogType: "product",
-        image: p.thumbnailUrl ?? undefined,
-        path,
-      }),
+      meta,
       links: [canonicalLink(path)],
       scripts,
     };
