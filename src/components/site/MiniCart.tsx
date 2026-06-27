@@ -17,11 +17,11 @@ export function MiniCart({ open, onOpenChange }: { open: boolean; onOpenChange: 
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0">
+      <SheetContent side="right" className="flex flex-col p-0 sm:max-w-md">
         <SheetHeader className="px-5 py-4 border-b border-border">
-          <SheetTitle className="flex items-center gap-2 text-base">
-            <ShoppingBag className="h-5 w-5 text-primary" />
-            Your Cart ({cart.count()})
+          <SheetTitle className="flex min-w-0 items-center gap-2 text-base pr-8">
+            <ShoppingBag className="h-5 w-5 shrink-0 text-primary" />
+            <span className="min-w-0 truncate">Your Cart ({cart.count()})</span>
           </SheetTitle>
         </SheetHeader>
 
@@ -46,7 +46,7 @@ export function MiniCart({ open, onOpenChange }: { open: boolean; onOpenChange: 
           <>
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
               {cart.items.map((it) => (
-                <div key={it.slug} className="flex gap-3 p-3 rounded-xl border border-border bg-card">
+                <div key={it.slug} className="flex min-w-0 gap-3 p-3 rounded-xl border border-border bg-card">
                   <Link
                     to="/products/$slug"
                     params={{ slug: it.slug }}
@@ -83,7 +83,7 @@ export function MiniCart({ open, onOpenChange }: { open: boolean; onOpenChange: 
                           aria-label="Increase"
                         >+</button>
                       </div>
-                      <div className="text-sm font-bold text-primary">
+                    <div className="shrink-0 text-sm font-bold text-primary">
                         ${(it.product.price * it.qty).toFixed(2)}
                       </div>
                     </div>
@@ -116,7 +116,7 @@ export function MiniCart({ open, onOpenChange }: { open: boolean; onOpenChange: 
                   <span className="text-primary">${cart.total().toFixed(2)}</span>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 w-full">
+              <div className="grid min-w-0 grid-cols-2 gap-2 w-full">
                 <Link
                   to="/cart"
                   onClick={close}
