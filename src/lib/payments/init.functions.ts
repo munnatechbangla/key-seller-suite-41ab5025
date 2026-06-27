@@ -4,6 +4,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getRequestHost } from "@tanstack/react-start/server";
+import { csrfGuard } from "@/lib/security/csrf.server";
 
 const schema = z.object({
   orderNumber: z.string().min(1),
