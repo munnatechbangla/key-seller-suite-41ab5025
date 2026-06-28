@@ -515,12 +515,17 @@ function FAQ() {
       <Section eyebrow={cfg.eyebrow} title={cfg.title}>
         <div className="max-w-3xl mx-auto space-y-3">
           {items.map((f) => (
-            <details key={f.id} className="group rounded-2xl bg-card border border-border p-5 hover:border-primary/30 transition-smooth [&_summary::-webkit-details-marker]:hidden">
-              <summary className="flex items-center justify-between cursor-pointer font-semibold">
-                {f.q}
-                <ChevronRight className="h-5 w-5 text-primary group-open:rotate-90 transition-transform" />
+            <details
+              key={f.id}
+              className="group rounded-2xl bg-card border border-border p-5 hover:border-primary/30 open:border-primary/50 open:shadow-elegant transition-all duration-300 [&_summary::-webkit-details-marker]:hidden"
+            >
+              <summary className="flex items-center justify-between gap-4 cursor-pointer font-semibold list-none group-open:text-primary transition-colors">
+                <span>{f.q}</span>
+                <span className="h-8 w-8 shrink-0 grid place-items-center rounded-full bg-primary/10 text-primary group-open:bg-primary group-open:text-primary-foreground transition-all duration-300">
+                  <ChevronRight className="h-4 w-4 group-open:rotate-90 transition-transform duration-300" />
+                </span>
               </summary>
-              <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{f.a}</p>
+              <p className="text-sm text-muted-foreground mt-3 leading-relaxed animate-fade-in">{f.a}</p>
             </details>
           ))}
         </div>
