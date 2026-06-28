@@ -18,7 +18,7 @@ export function Footer() {
   ].filter((x) => !!x.href);
   return (
     <footer className="mt-24 bg-gradient-hero text-white">
-      <div className="container mx-auto px-4 py-16 grid grid-cols-[minmax(0,1fr)] gap-10 md:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))_minmax(0,1fr)]">
+      <div className="container mx-auto px-4 py-16 grid grid-cols-[minmax(0,1fr)] gap-10 md:grid-cols-2 lg:gap-8 lg:grid-cols-[minmax(0,1.8fr)_repeat(3,minmax(0,1fr))_minmax(0,1.4fr)]">
         <div className="min-w-0 lg:col-span-1 space-y-4">
           <Logo size="lg" variant="dark" />
 
