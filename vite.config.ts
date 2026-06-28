@@ -8,10 +8,13 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 // Nitro preset selection.
 //   - Inside the Lovable sandbox: forced to `cloudflare-module` automatically.
-//   - Outside Lovable (cPanel / VPS / PM2 / Render / Railway / DigitalOcean):
-//     defaults to `node-server`. Override with NITRO_PRESET env var if needed
-//     (e.g. `vercel`, `netlify`, `bun`, `deno-server`, `cloudflare-module`).
-const nitroPreset = process.env.NITRO_PRESET || "node-server";
+//   - Production target: Cloudflare Workers (`cloudflare-module`). This is the
+//     officially supported preset for TanStack Start + Nitro on Cloudflare and
+//     emits `.output/server/index.mjs` (Worker) + `.output/public/` (assets),
+//     consumed by `wrangler.toml`.
+//   - Override with NITRO_PRESET for other hosts: `node-server`, `vercel`,
+//     `netlify`, `bun`, `deno-server`.
+const nitroPreset = process.env.NITRO_PRESET || "cloudflare-module";
 
 export default defineConfig({
   tanstackStart: {
