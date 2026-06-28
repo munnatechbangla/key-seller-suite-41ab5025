@@ -74,8 +74,8 @@ function Hero() {
   const hero = useHomepage((s) => s.config.hero);
   const BadgeIcon = resolveIcon(hero.badge.icon);
   const floatingProducts = useResolvedProducts(hero.floatingProductSlugs);
-  const durations = ["6.5s", "8s", "7s", "7.8s", "6.8s", "8.4s"];
-  const delays = ["0s", "1.4s", "0.6s", "2.2s", "1s", "2.8s"];
+  const durations = ["10s", "11.5s", "9s", "12s", "9.5s", "11s"];
+  const delays = ["0s", "1.6s", "0.8s", "2.4s", "1.2s", "3s"];
   const PrimaryIcon = hero.primaryCta.icon ? resolveIcon(hero.primaryCta.icon) : null;
   const SecondaryIcon = hero.secondaryCta.icon ? resolveIcon(hero.secondaryCta.icon) : null;
   return (
