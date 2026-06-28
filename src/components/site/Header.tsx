@@ -38,9 +38,8 @@ export function Header() {
   return (
     <>
       {announcementBar.enabled && (
-        <Link
-          to="/products"
-          search={{ "flash-sale": "true" } as never}
+        <a
+          href="/products?flash-sale=true"
           aria-label="Flash Sale — view deals"
           className="block bg-gradient-primary text-primary-foreground text-xs sm:text-sm overflow-hidden group"
         >
