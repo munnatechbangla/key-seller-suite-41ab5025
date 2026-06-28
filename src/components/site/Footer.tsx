@@ -35,7 +35,7 @@ export function Footer() {
                     rel="noopener noreferrer"
                     aria-label={item.label}
                     title={item.label}
-                    className="h-10 w-10 grid place-items-center rounded-xl glass-dark hover:bg-white/15 hover:text-accent transition-smooth"
+                    className="h-10 w-10 grid place-items-center rounded-xl glass-dark hover:bg-white/15 hover:text-accent hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-8px_color-mix(in_oklab,var(--accent)_60%,transparent)] transition-all duration-300"
                   >
                     <item.Icon className="h-4 w-4" />
                   </a>

@@ -1,6 +1,7 @@
 import { seoMeta, canonicalLink } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Star, ChevronRight, Calendar, ArrowRight, ShieldCheck } from "lucide-react";
+import { Star, ChevronRight, Calendar, ArrowRight, ShieldCheck, BadgeCheck } from "lucide-react";
+import { Reveal } from "@/components/site/Reveal";
 import { useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 import { useQuery as useTQuery } from "@tanstack/react-query";
 import { Header } from "@/components/site/Header";
@@ -60,9 +61,17 @@ function Home() {
     <div className="min-h-screen">
       <Header />
       <main>
-        {config.sectionOrder.map((id) => {
+        {config.sectionOrder.map((id, i) => {
           const node = renderers[id]?.();
-          return node ? <div key={id}>{node}</div> : null;
+          if (!node) return null;
+          // Hero already animates internally; wrap the rest in Reveal.
+          return id === "hero" ? (
+            <div key={id}>{node}</div>
+          ) : (
+            <Reveal key={id} delay={Math.min(i * 40, 200)}>
+              {node}
+            </Reveal>
+          );
         })}
       </main>
       <Footer />
@@ -98,12 +107,21 @@ function Hero() {
           </h1>
           <p className="text-lg text-white/75 max-w-xl leading-relaxed">{hero.description}</p>
           <div className="flex flex-wrap gap-3 pt-2">
-            <Link to={hero.primaryCta.to} className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:scale-105 transition-smooth">
-              {hero.primaryCta.label}
-              {PrimaryIcon ? <PrimaryIcon className="h-4 w-4" /> : null}
+            <Link
+              to={hero.primaryCta.to}
+              className="group relative inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:shadow-[0_18px_60px_-12px_color-mix(in_oklab,var(--primary-glow)_70%,transparent)] hover:scale-[1.03] active:scale-[0.99] transition-all duration-300 ease-out overflow-hidden"
+            >
+              <span className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-300" />
+              <span className="relative">{hero.primaryCta.label}</span>
+              {PrimaryIcon ? (
+                <PrimaryIcon className="relative h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              ) : null}
             </Link>
-            <a href={hero.secondaryCta.href || "#"} className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl glass-dark text-white font-semibold hover:bg-white/15 transition-smooth">
-              {SecondaryIcon ? <SecondaryIcon className="h-4 w-4 fill-white" /> : null}
+            <a
+              href={hero.secondaryCta.href || "#"}
+              className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl glass-dark text-white font-semibold hover:bg-white/15 hover:scale-[1.02] transition-all duration-300"
+            >
+              {SecondaryIcon ? <SecondaryIcon className="h-4 w-4 fill-white transition-transform duration-300 group-hover:scale-110" /> : null}
               {hero.secondaryCta.label}
             </a>
           </div>
@@ -217,11 +235,16 @@ function CategoriesGrid() {
     >
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
         {cats.map((c) => (
-          <Link key={c.slug} to="/products" className="group relative rounded-2xl bg-card border border-border p-5 sm:p-6 hover:border-primary/40 hover:shadow-premium hover:-translate-y-1 transition-smooth overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-[0.06] transition-smooth" />
-            <div className="text-4xl sm:text-5xl mb-3 group-hover:scale-110 transition-smooth origin-left">{c.emoji}</div>
-            <div className="font-semibold text-sm sm:text-base leading-tight">{c.name}</div>
-            <div className="text-xs text-muted-foreground mt-1">{c.count} products</div>
+          <Link
+            key={c.slug}
+            to="/products"
+            className="group relative rounded-2xl bg-card border border-border p-5 sm:p-6 hover:border-primary/50 hover:shadow-premium hover:-translate-y-1.5 transition-all duration-400 ease-out overflow-hidden"
+          >
+            <div className="absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none [background:linear-gradient(135deg,color-mix(in_oklab,var(--primary)_25%,transparent),transparent_60%)]" />
+            <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-[0.05] transition-opacity duration-500" />
+            <div className="relative text-4xl sm:text-5xl mb-3 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-400 origin-left">{c.emoji}</div>
+            <div className="relative font-semibold text-sm sm:text-base leading-tight group-hover:text-primary transition-colors duration-300">{c.name}</div>
+            <div className="relative text-xs text-muted-foreground mt-1">{c.count} products</div>
           </Link>
         ))}
       </div>
@@ -376,17 +399,24 @@ function Testimonials() {
     <Section eyebrow={cfg.eyebrow} title={cfg.title}>
       <div className="grid md:grid-cols-3 gap-5 items-stretch">
         {items.map((r) => (
-          <div key={r.id} className="flex flex-col h-full rounded-2xl bg-card border border-border p-6 hover:shadow-elegant transition-smooth">
+          <div
+            key={r.id}
+            className="group relative flex flex-col h-full rounded-2xl bg-card border border-border p-6 hover:border-primary/30 hover:shadow-premium hover:-translate-y-1 transition-all duration-400 ease-out"
+          >
+            <div className="absolute -top-3 left-6 text-5xl leading-none text-primary/15 select-none pointer-events-none font-serif">"</div>
             <div className="flex gap-0.5 mb-3">
               {Array.from({ length: r.rating }).map((_, i) => (
-                <Star key={i} className="h-4 w-4 fill-accent text-accent" />
+                <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
               ))}
             </div>
             <p className="text-sm leading-relaxed text-foreground/90 mb-5 flex-1">"{r.text}"</p>
             <div className="flex items-center gap-3 mt-auto">
-              <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-primary grid place-items-center text-xl">{r.emoji}</div>
-              <div className="min-w-0">
-                <div className="font-semibold text-sm truncate">{r.name}</div>
+              <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-primary grid place-items-center text-xl ring-2 ring-background shadow-elegant">{r.emoji}</div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <div className="font-semibold text-sm truncate">{r.name}</div>
+                  <BadgeCheck className="h-4 w-4 shrink-0 text-primary" aria-label="Verified buyer" />
+                </div>
                 <div className="text-xs text-muted-foreground truncate">{r.role}</div>
               </div>
             </div>
@@ -485,12 +515,17 @@ function FAQ() {
       <Section eyebrow={cfg.eyebrow} title={cfg.title}>
         <div className="max-w-3xl mx-auto space-y-3">
           {items.map((f) => (
-            <details key={f.id} className="group rounded-2xl bg-card border border-border p-5 hover:border-primary/30 transition-smooth [&_summary::-webkit-details-marker]:hidden">
-              <summary className="flex items-center justify-between cursor-pointer font-semibold">
-                {f.q}
-                <ChevronRight className="h-5 w-5 text-primary group-open:rotate-90 transition-transform" />
+            <details
+              key={f.id}
+              className="group rounded-2xl bg-card border border-border p-5 hover:border-primary/30 open:border-primary/50 open:shadow-elegant transition-all duration-300 [&_summary::-webkit-details-marker]:hidden"
+            >
+              <summary className="flex items-center justify-between gap-4 cursor-pointer font-semibold list-none group-open:text-primary transition-colors">
+                <span>{f.q}</span>
+                <span className="h-8 w-8 shrink-0 grid place-items-center rounded-full bg-primary/10 text-primary group-open:bg-primary group-open:text-primary-foreground transition-all duration-300">
+                  <ChevronRight className="h-4 w-4 group-open:rotate-90 transition-transform duration-300" />
+                </span>
               </summary>
-              <p className="text-sm text-muted-foreground mt-3 leading-relaxed">{f.a}</p>
+              <p className="text-sm text-muted-foreground mt-3 leading-relaxed animate-fade-in">{f.a}</p>
             </details>
           ))}
         </div>
