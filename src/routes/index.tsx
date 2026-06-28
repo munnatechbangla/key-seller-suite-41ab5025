@@ -61,9 +61,17 @@ function Home() {
     <div className="min-h-screen">
       <Header />
       <main>
-        {config.sectionOrder.map((id) => {
+        {config.sectionOrder.map((id, i) => {
           const node = renderers[id]?.();
-          return node ? <div key={id}>{node}</div> : null;
+          if (!node) return null;
+          // Hero already animates internally; wrap the rest in Reveal.
+          return id === "hero" ? (
+            <div key={id}>{node}</div>
+          ) : (
+            <Reveal key={id} delay={Math.min(i * 40, 200)}>
+              {node}
+            </Reveal>
+          );
         })}
       </main>
       <Footer />
