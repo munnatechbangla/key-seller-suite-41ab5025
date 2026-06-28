@@ -1,0 +1,44 @@
+#:schema node_modules/wrangler/config-schema.json
+# Cloudflare Workers configuration for DigitalNest (TanStack Start + Nitro).
+# Build command: NITRO_PRESET=cloudflare-module npm run build
+# Deploy command: npx wrangler deploy
+name = "digitalnest"
+main = ".output/server/index.mjs"
+compatibility_date = "2025-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Serve the SSR bundle's static assets (.output/public) from Cloudflare's
+# edge asset server. `binding = "ASSETS"` is what Nitro's cloudflare-module
+# preset expects for static fallthrough.
+[assets]
+directory = ".output/public"
+binding = "ASSETS"
+
+# Runtime env vars (non-secret, public). Secrets must be set with
+#   npx wrangler secret put <NAME>
+# or via the Cloudflare dashboard (Workers & Pages → Settings → Variables).
+#
+# Required secrets (do NOT put values here):
+#   SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, SUPABASE_SERVICE_ROLE_KEY
+#   RESEND_API_KEY, EMAILS_ENABLED
+#   SSLCOMMERZ_STORE_ID, SSLCOMMERZ_STORE_PASSWORD
+#   STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
+#   BKASH_APP_KEY, BKASH_APP_SECRET, BKASH_USERNAME, BKASH_PASSWORD
+#   PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET
+#   CUSTOM_GATEWAY_WEBHOOK_SECRET, PAYMENT_WEBHOOK_SECRET
+#   SENTRY_DSN
+#
+# VITE_* values are baked into the client bundle at build time, not read here.
+
+[vars]
+NODE_ENV = "production"
+
+# [observability]
+# enabled = true
+
+# Custom domain — configure in the Cloudflare dashboard (Workers → Triggers →
+# Custom Domains) or uncomment and edit the route below.
+# [[routes]]
+# pattern = "your-domain.com/*"
+# zone_name = "your-domain.com"
+# custom_domain = true
