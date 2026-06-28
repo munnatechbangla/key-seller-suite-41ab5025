@@ -50,9 +50,9 @@ export function Footer() {
           <FooterCol key={col.title} title={col.title} links={col.links} />
         ))}
 
-        <div className="min-w-0 space-y-3">
+        <div className="min-w-0 flex flex-col gap-3">
           <h4 className="font-semibold text-lg">{siteConfig.newsletter.title}</h4>
-          <p className="text-white/70 text-sm">{siteConfig.newsletter.subtitle}</p>
+          <p className="text-white/70 text-sm leading-relaxed">{siteConfig.newsletter.subtitle}</p>
           <form className="flex w-full min-w-0 gap-2 items-stretch" onSubmit={(e) => e.preventDefault()}>
             <input
               type="email"
@@ -64,12 +64,16 @@ export function Footer() {
               <Send className="h-4 w-4" />
             </button>
           </form>
-          <div className="flex min-w-0 flex-wrap gap-1.5 pt-3">
-            {paymentBadges.map((p) => (
-              <span key={p.code} title={p.label} className="min-w-0 max-w-full truncate text-[10px] font-bold px-2 py-1 rounded-md glass-dark">{p.code}</span>
-            ))}
+          <div className="mt-1">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-white/45 mb-1.5">We accept</div>
+            <div className="flex min-w-0 flex-wrap gap-1.5">
+              {paymentBadges.map((p) => (
+                <span key={p.code} title={p.label} className="min-w-0 max-w-full truncate text-[10px] font-bold px-2 py-1 rounded-md glass-dark">{p.code}</span>
+              ))}
+            </div>
           </div>
         </div>
+
       </div>
 
       <div className="border-t border-white/10">
