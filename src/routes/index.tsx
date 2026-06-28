@@ -107,12 +107,21 @@ function Hero() {
           </h1>
           <p className="text-lg text-white/75 max-w-xl leading-relaxed">{hero.description}</p>
           <div className="flex flex-wrap gap-3 pt-2">
-            <Link to={hero.primaryCta.to} className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:scale-105 transition-smooth">
-              {hero.primaryCta.label}
-              {PrimaryIcon ? <PrimaryIcon className="h-4 w-4" /> : null}
+            <Link
+              to={hero.primaryCta.to}
+              className="group relative inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:shadow-[0_18px_60px_-12px_color-mix(in_oklab,var(--primary-glow)_70%,transparent)] hover:scale-[1.03] active:scale-[0.99] transition-all duration-300 ease-out overflow-hidden"
+            >
+              <span className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-300" />
+              <span className="relative">{hero.primaryCta.label}</span>
+              {PrimaryIcon ? (
+                <PrimaryIcon className="relative h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              ) : null}
             </Link>
-            <a href={hero.secondaryCta.href || "#"} className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl glass-dark text-white font-semibold hover:bg-white/15 transition-smooth">
-              {SecondaryIcon ? <SecondaryIcon className="h-4 w-4 fill-white" /> : null}
+            <a
+              href={hero.secondaryCta.href || "#"}
+              className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl glass-dark text-white font-semibold hover:bg-white/15 hover:scale-[1.02] transition-all duration-300"
+            >
+              {SecondaryIcon ? <SecondaryIcon className="h-4 w-4 fill-white transition-transform duration-300 group-hover:scale-110" /> : null}
               {hero.secondaryCta.label}
             </a>
           </div>
