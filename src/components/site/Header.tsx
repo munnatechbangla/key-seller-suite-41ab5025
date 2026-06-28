@@ -63,7 +63,7 @@ export function Header() {
               </div>
             </div>
           </div>
-        </Link>
+        </a>
       )}
 
       <header className={`sticky top-0 z-50 transition-smooth ${scrolled ? "glass shadow-elegant" : "bg-background/80 backdrop-blur-sm"}`}>
