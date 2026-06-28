@@ -2,7 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Heart, ShoppingCart, User, Search, Menu, X, GitCompare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCart, useWishlist, useCompare, useAuth } from "@/lib/stores";
-import { primaryNav, announcementBar, resolveIcon } from "@/lib/cms";
+import { primaryNav, announcementBar } from "@/lib/cms";
 
 import { ThemeToggle } from "@/components/site/ThemeToggle";
 import { Logo } from "@/components/site/Logo";
@@ -37,17 +37,34 @@ export function Header() {
 
   return (
     <>
-      {announcementBar.enabled && (() => {
-        const AnnouncementIcon = resolveIcon(announcementBar.icon);
-        return (
-          <div className="bg-gradient-primary text-primary-foreground text-xs sm:text-sm overflow-hidden">
-            <div className="container mx-auto px-4 py-2 flex items-center justify-center gap-2 text-center min-w-0">
-              <AnnouncementIcon className="h-3.5 w-3.5 shrink-0" />
-              <span className="min-w-0 truncate" dangerouslySetInnerHTML={{ __html: announcementBar.html }} />
+      {announcementBar.enabled && (
+        <a
+          href="/products?flash-sale=true"
+          aria-label="Flash Sale — view deals"
+          className="block bg-gradient-primary text-primary-foreground text-xs sm:text-sm overflow-hidden group"
+        >
+          <div className="relative flex items-center gap-3 py-2 pl-3 sm:pl-4 min-w-0">
+            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-white/15 backdrop-blur px-2.5 py-0.5 text-[10px] sm:text-xs font-bold uppercase tracking-wide">
+              🔥 Flash Sale
+            </span>
+            <div className="relative flex-1 min-w-0 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
+              <div className="flex w-max animate-marquee group-hover:[animation-play-state:paused] motion-reduce:animate-none will-change-transform">
+                {[0, 1].map((i) => (
+                  <span
+                    key={i}
+                    aria-hidden={i === 1}
+                    className="shrink-0 px-8 whitespace-nowrap"
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        "Up to <b>70% OFF</b> on Premium Digital Products • Instant Delivery 24/7 • Limited Time Offer",
+                    }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
-        );
-      })()}
+        </a>
+      )}
 
       <header className={`sticky top-0 z-50 transition-smooth ${scrolled ? "glass shadow-elegant" : "bg-background/80 backdrop-blur-sm"}`}>
         <div className="container mx-auto px-3 sm:px-4 py-3 flex items-center gap-2 sm:gap-4 lg:gap-6 min-w-0">

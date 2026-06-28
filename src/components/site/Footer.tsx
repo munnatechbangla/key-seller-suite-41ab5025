@@ -53,14 +53,14 @@ export function Footer() {
         <div className="min-w-0 flex flex-col gap-3">
           <h4 className="font-semibold text-lg">{siteConfig.newsletter.title}</h4>
           <p className="text-white/70 text-sm leading-relaxed">{siteConfig.newsletter.subtitle}</p>
-          <form className="flex w-full min-w-0 gap-2 items-stretch" onSubmit={(e) => e.preventDefault()}>
+          <form className="flex w-full min-w-0 gap-2 sm:gap-2.5 items-stretch" onSubmit={(e) => e.preventDefault()}>
             <input
               type="email"
               required
               placeholder={siteConfig.newsletter.placeholder}
-              className="min-w-0 flex-1 h-11 px-3 rounded-xl glass-dark text-white placeholder:text-white/40 text-sm outline-none focus:border-white/40"
+              className="min-w-0 flex-1 h-12 sm:h-11 px-4 sm:px-3 py-3 sm:py-2 rounded-xl glass-dark text-white placeholder:text-white/50 text-sm leading-none outline-none border border-white/15 focus:border-accent/60 focus:ring-2 focus:ring-accent/30 transition-all"
             />
-            <button aria-label="Subscribe" className="h-11 w-11 shrink-0 grid place-items-center rounded-xl bg-gradient-primary hover:opacity-90 transition-smooth">
+            <button aria-label="Subscribe" className="h-12 w-12 sm:h-11 sm:w-11 shrink-0 grid place-items-center rounded-xl bg-gradient-primary hover:opacity-90 hover:shadow-[0_8px_24px_-8px_color-mix(in_oklab,var(--primary)_60%,transparent)] transition-smooth">
               <Send className="h-4 w-4" />
             </button>
           </form>
@@ -77,7 +77,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="container mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/60">
+        <div className="container mx-auto px-4 py-5 flex flex-col md:flex-row items-center md:justify-between gap-2 md:gap-3 text-xs text-white/60 text-center md:text-left">
           <p>{formatCopyright(s.branding.copyright, s.branding.name)}</p>
           <p>{s.branding.footer_text}</p>
         </div>
