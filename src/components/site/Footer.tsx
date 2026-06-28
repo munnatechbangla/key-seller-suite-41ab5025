@@ -77,7 +77,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="container mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/60">
+        <div className="container mx-auto px-4 py-5 flex flex-col md:flex-row items-center md:justify-between gap-2 md:gap-3 text-xs text-white/60 text-center md:text-left">
           <p>{formatCopyright(s.branding.copyright, s.branding.name)}</p>
           <p>{s.branding.footer_text}</p>
         </div>
