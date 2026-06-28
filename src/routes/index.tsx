@@ -235,11 +235,16 @@ function CategoriesGrid() {
     >
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
         {cats.map((c) => (
-          <Link key={c.slug} to="/products" className="group relative rounded-2xl bg-card border border-border p-5 sm:p-6 hover:border-primary/40 hover:shadow-premium hover:-translate-y-1 transition-smooth overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-[0.06] transition-smooth" />
-            <div className="text-4xl sm:text-5xl mb-3 group-hover:scale-110 transition-smooth origin-left">{c.emoji}</div>
-            <div className="font-semibold text-sm sm:text-base leading-tight">{c.name}</div>
-            <div className="text-xs text-muted-foreground mt-1">{c.count} products</div>
+          <Link
+            key={c.slug}
+            to="/products"
+            className="group relative rounded-2xl bg-card border border-border p-5 sm:p-6 hover:border-primary/50 hover:shadow-premium hover:-translate-y-1.5 transition-all duration-400 ease-out overflow-hidden"
+          >
+            <div className="absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none [background:linear-gradient(135deg,color-mix(in_oklab,var(--primary)_25%,transparent),transparent_60%)]" />
+            <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-[0.05] transition-opacity duration-500" />
+            <div className="relative text-4xl sm:text-5xl mb-3 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-400 origin-left">{c.emoji}</div>
+            <div className="relative font-semibold text-sm sm:text-base leading-tight group-hover:text-primary transition-colors duration-300">{c.name}</div>
+            <div className="relative text-xs text-muted-foreground mt-1">{c.count} products</div>
           </Link>
         ))}
       </div>
