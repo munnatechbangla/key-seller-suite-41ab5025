@@ -307,7 +307,7 @@ function WhyChoose() {
 function Stats() {
   const rawItems = useHomepage((s) => s.config.stats.items);
   const items = useMemo(() => rawItems.filter((i) => i.enabled), [rawItems]);
-  const fallbackIcons = ["Users", "Package", "Star", "Headphones"] as const;
+  const fallbackIcons = ["Users", "Gift", "Star", "Headphones"] as const;
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="rounded-3xl bg-gradient-hero text-white p-6 sm:p-10 lg:p-14 shadow-premium relative overflow-hidden">
