@@ -307,20 +307,31 @@ function WhyChoose() {
 function Stats() {
   const rawItems = useHomepage((s) => s.config.stats.items);
   const items = useMemo(() => rawItems.filter((i) => i.enabled), [rawItems]);
+  const fallbackIcons = ["Users", "Package", "Star", "Headphones"] as const;
   return (
     <div className="container mx-auto px-4 py-16">
-      <div className="rounded-3xl bg-gradient-hero text-white p-6 sm:p-10 lg:p-16 shadow-premium relative overflow-hidden">
-        <div className="absolute top-0 right-0 h-72 w-72 max-w-full rounded-full bg-primary/40 blur-3xl" />
-        <div className="absolute bottom-0 left-0 h-72 w-72 max-w-full rounded-full bg-accent/30 blur-3xl" />
-        <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-          {items.map((s, i) => (
-            <div key={s.id} className="animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
-              <div className="text-4xl lg:text-5xl font-extrabold text-gradient mb-1">
-                <CountUp value={s.value} />
+      <div className="rounded-3xl bg-gradient-hero text-white p-6 sm:p-10 lg:p-14 shadow-premium relative overflow-hidden">
+        <div className="absolute top-0 right-0 h-72 w-72 max-w-full rounded-full bg-primary/40 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 h-72 w-72 max-w-full rounded-full bg-accent/30 blur-3xl pointer-events-none" />
+        <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+          {items.map((s, i) => {
+            const Icon = resolveIcon(s.icon ?? fallbackIcons[i % fallbackIcons.length]);
+            return (
+              <div
+                key={s.id}
+                className="group relative rounded-2xl border border-white/15 bg-white/[0.07] backdrop-blur-xl p-5 sm:p-6 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] hover:border-white/30 hover:bg-white/[0.1] hover:-translate-y-0.5 transition-all duration-300 animate-fade-in"
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <div className="mx-auto mb-3 h-11 w-11 grid place-items-center rounded-xl bg-white/10 ring-1 ring-inset ring-white/15 text-accent">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-none">
+                  <CountUp value={s.value} />
+                </div>
+                <div className="mt-2 text-xs sm:text-sm font-medium text-white/85">{s.label}</div>
               </div>
-              <div className="text-sm text-white/70">{s.label}</div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
