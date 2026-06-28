@@ -22,11 +22,58 @@ npm start                 # serves on http://0.0.0.0:$PORT  (default 3000)
 | Default port | `process.env.PORT` (falls back to `3000`) |
 | Listen host | `process.env.HOST` (falls back to `0.0.0.0`) |
 
-The Nitro preset is selected via `NITRO_PRESET` (default `node-server`). To build for Cloudflare, Vercel, Netlify, Bun or Deno instead:
+The Nitro preset is selected via `NITRO_PRESET` (default `cloudflare-module`). To build for Node, Vercel, Netlify, Bun or Deno instead:
 
 ```bash
-NITRO_PRESET=cloudflare-module npm run build
+NITRO_PRESET=node-server npm run build   # or use: npm run build:node
 ```
+
+---
+
+## 1b. Cloudflare Workers (recommended)
+
+This project is configured to deploy to **Cloudflare Workers** via Nitro's
+`cloudflare-module` preset (the officially supported TanStack Start target on
+Cloudflare). The Worker bundle is `.output/server/index.mjs`; static assets
+in `.output/public/` are served via the `ASSETS` binding declared in
+[`wrangler.toml`](./wrangler.toml).
+
+```bash
+npm install
+npm run build:cf            # NITRO_PRESET=cloudflare-module vite build
+npx wrangler login          # one-time
+npx wrangler secret put SUPABASE_URL
+npx wrangler secret put SUPABASE_PUBLISHABLE_KEY
+npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+# …repeat for every secret in .env.example…
+npm run deploy              # build:cf + wrangler deploy
+```
+
+GitHub → Cloudflare automatic deployments:
+
+1. Cloudflare dashboard → **Workers & Pages → Create → Connect to Git**.
+2. Select the repository, framework preset **"None"**.
+3. Build command: `npm run build:cf`
+4. Deploy command: `npx wrangler deploy`
+5. Root directory: `/`
+6. Add every variable from `.env.example` under **Settings → Variables**
+   (mark all `SUPABASE_SERVICE_ROLE_KEY`, gateway keys, `RESEND_API_KEY` as
+   **Encrypted**). `VITE_*` vars must be set as plain build-time vars so they
+   bake into the client bundle.
+7. Add `nodejs_compat` compatibility flag (already declared in `wrangler.toml`).
+
+Custom domains: Workers → your worker → **Triggers → Custom Domains → Add**.
+
+Cloudflare Workers runtime notes (already handled in code):
+- `crypto`, `Buffer`, `process.env`, `path`, `fs` (virtual), `stream` work
+  via `nodejs_compat`. No code paths use `child_process`, `sharp`, native
+  binaries, or filesystem writes outside the bundle.
+- Webhooks (`/api/public/payments/**`) and server functions (checkout,
+  auth, newsletter, payment init, admin) run as standard Worker `fetch`
+  handlers — no changes required.
+- Security headers + CSP are applied in `src/server.ts` for every response.
+
+
 
 ---
 
