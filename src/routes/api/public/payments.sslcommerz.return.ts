@@ -28,15 +28,16 @@ async function handle(request: Request): Promise<Response> {
       });
 
       if (valId && (type === "success" || type === "fail")) {
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
         const { validateSslcommerzPayment } = await import("@/lib/payments/sslcommerz.server");
         const { processPaymentCallback } = await import("@/lib/payments.server");
+        const sb: any = createServerSupabaseClient();
 
-        const { data: ord } = await supabaseAdmin
-          .from("orders").select("id, order_number, total, currency").eq("order_number", order ?? "").maybeSingle();
+        const { data: ordData } = await sb.rpc("get_order_basic_by_number", { _order_number: order ?? "" });
+        const ord = ordData as { id: string; order_number: string; total: number; currency: string } | null;
         if (ord) {
-          const { data: intent } = await supabaseAdmin
-            .from("payment_intents").select("mode").eq("order_id", ord.id).eq("gateway", "sslcommerz").order("created_at", { ascending: false }).limit(1).maybeSingle();
+          const { data: intentData } = await sb.rpc("get_latest_payment_intent", { _order_id: ord.id, _gateway: "sslcommerz" });
+          const intent = intentData as { mode?: string } | null;
           const mode: "sandbox" | "live" = intent?.mode === "live" ? "live" : "sandbox";
 
           const replay = await claimWebhookEvent("sslcommerz", valId, ord.id);

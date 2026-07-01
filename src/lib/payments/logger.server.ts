@@ -1,10 +1,10 @@
-// Append-only payment audit logger. Used by gateway implementations and
-// webhook handlers. Failures here must never break the payment flow — log
-// errors are swallowed and printed to console.
+// Append-only payment audit logger. Uses SECURITY DEFINER RPC so it works
+// without a service-role key. Failures never break the payment flow — errors
+// are swallowed and printed to console.
 
 export type PaymentLogEntry = {
   gateway: string;
-  event_type: string; // init | redirect | ipn | validate | success | failed | error | replay
+  event_type: string;
   order_id?: string | null;
   order_number?: string | null;
   payment_intent_id?: string | null;
@@ -20,10 +20,15 @@ export type PaymentLogEntry = {
   error_message?: string | null;
 };
 
+async function serverClient() {
+  const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
+  return createServerSupabaseClient() as any;
+}
+
 export async function logPaymentEvent(entry: PaymentLogEntry): Promise<void> {
   try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("payment_logs").insert({
+    const sb = await serverClient();
+    const payload = {
       gateway: entry.gateway,
       event_type: entry.event_type,
       order_id: entry.order_id ?? null,
@@ -39,7 +44,8 @@ export async function logPaymentEvent(entry: PaymentLogEntry): Promise<void> {
       request_body: entry.request_body ? JSON.parse(JSON.stringify(entry.request_body)) : null,
       response_body: entry.response_body ? JSON.parse(JSON.stringify(entry.response_body)) : null,
       error_message: entry.error_message ?? null,
-    });
+    };
+    await sb.rpc("log_payment_event", { _entry: payload });
   } catch (e) {
     console.error("[payment_logs] insert failed", e);
   }
@@ -48,17 +54,17 @@ export async function logPaymentEvent(entry: PaymentLogEntry): Promise<void> {
 /** Returns true if this event was processed before (replay). Otherwise records it. */
 export async function claimWebhookEvent(gateway: string, eventId: string, orderId?: string | null): Promise<boolean> {
   try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("webhook_events")
-      .insert({ gateway, event_id: eventId, order_id: orderId ?? null });
+    const sb = await serverClient();
+    const { data, error } = await sb.rpc("claim_webhook_event", {
+      _gateway: gateway,
+      _event_id: eventId,
+      _order_id: orderId ?? null,
+    });
     if (error) {
-      // Unique violation = replay
-      if (error.code === "23505") return true;
-      console.error("[webhook_events] insert error", error);
+      console.error("[webhook_events] claim error", error);
       return false;
     }
-    return false;
+    return Boolean(data);
   } catch (e) {
     console.error("[webhook_events] claim failed", e);
     return false;
