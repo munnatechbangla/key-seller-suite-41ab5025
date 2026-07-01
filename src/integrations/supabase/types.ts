@@ -1789,6 +1789,14 @@ export type Database = {
       }
       enqueue_email_log: { Args: { _row: Json }; Returns: string }
       generate_order_number: { Args: never; Returns: string }
+      get_latest_payment_intent: {
+        Args: { _gateway: string; _order_id: string }
+        Returns: Json
+      }
+      get_order_basic_by_number: {
+        Args: { _order_number: string }
+        Returns: Json
+      }
       get_order_summary_by_number: {
         Args: { _email?: string; _order_number: string }
         Returns: Json
@@ -1883,6 +1891,15 @@ export type Database = {
       subscribe_newsletter: {
         Args: { _email: string; _name?: string; _source?: string }
         Returns: Json
+      }
+      update_payment_intent_status: {
+        Args: {
+          _gateway_payment_id?: string
+          _id: string
+          _response?: Json
+          _status: string
+        }
+        Returns: undefined
       }
       user_purchased_product: {
         Args: { _product_id: string; _user_id: string }
