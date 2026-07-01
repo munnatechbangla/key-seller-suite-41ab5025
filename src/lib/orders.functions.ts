@@ -86,18 +86,18 @@ export const getOrderByNumberFn = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
-    const sb = createServerSupabaseClient();
+    const sb: any = createServerSupabaseClient();
     const { data: rpcData, error } = await sb.rpc("get_order_summary_by_number", {
       _order_number: data.orderNumber,
-      _email: data.email ?? null,
+      _email: data.email ?? undefined,
     });
     if (error) throw new Error(error.message);
     if (!rpcData) return null;
     const r = rpcData as {
-      order: unknown;
-      items: unknown[];
-      payments: unknown[];
-      assignments: unknown[];
+      order: any;
+      items: any[];
+      payments: any[];
+      assignments: any[];
       paymentStatus: string;
     };
     return {
