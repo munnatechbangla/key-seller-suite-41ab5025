@@ -5,8 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { csrfGuard } from "@/lib/security/csrf.server";
-import { getRuntimeEnv } from "@/lib/runtime-env";
-import { createClient } from "@supabase/supabase-js";
+import type { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
 export type GatewayType = "builtin" | "custom_auto" | "manual";
