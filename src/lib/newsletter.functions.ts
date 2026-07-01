@@ -19,29 +19,17 @@ export const subscribeNewsletterFn = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => subscribeSchema.parse(d))
   .handler(async ({ data }): Promise<SubscribeResult> => {
     try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const email = data.email.toLowerCase();
-      const { data: existing } = await supabaseAdmin
-        .from("newsletter_subscribers")
-        .select("id, status")
-        .eq("email", email)
-        .maybeSingle();
-      if (existing) {
-        if (existing.status !== "subscribed") {
-          await supabaseAdmin
-            .from("newsletter_subscribers")
-            .update({ status: "subscribed", unsubscribed_at: null })
-            .eq("id", existing.id);
-        }
-        return { ok: true, already: true };
-      }
-      const { error } = await supabaseAdmin.from("newsletter_subscribers").insert({
-        email,
-        name: data.name ?? null,
-        source: data.source ?? "homepage",
+      const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
+      const sb: any = createServerSupabaseClient();
+      const { data: result, error } = await sb.rpc("subscribe_newsletter", {
+        _email: data.email.toLowerCase(),
+        _name: data.name ?? null,
+        _source: data.source ?? "homepage",
       });
       if (error) return { ok: false, reason: "error", message: error.message };
-      return { ok: true, already: false };
+      const r = result as { ok: boolean; already?: boolean; reason?: string } | null;
+      if (!r?.ok) return { ok: false, reason: "error", message: r?.reason ?? "unknown" };
+      return { ok: true, already: Boolean(r.already) };
     } catch (e) {
       return { ok: false, reason: "error", message: e instanceof Error ? e.message : "Unknown error" };
     }
