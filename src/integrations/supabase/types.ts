@@ -1783,6 +1783,11 @@ export type Database = {
         Returns: number
       }
       claim_first_admin: { Args: never; Returns: Json }
+      claim_webhook_event: {
+        Args: { _event_id: string; _gateway: string; _order_id?: string }
+        Returns: boolean
+      }
+      enqueue_email_log: { Args: { _row: Json }; Returns: string }
       generate_order_number: { Args: never; Returns: string }
       get_order_summary_by_number: {
         Args: { _email?: string; _order_number: string }
@@ -1795,6 +1800,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      insert_audit_log: { Args: { _entry: Json }; Returns: undefined }
       list_public_payment_gateways: {
         Args: never
         Returns: {
@@ -1821,6 +1827,7 @@ export type Database = {
           purchased_at: string
         }[]
       }
+      log_payment_event: { Args: { _entry: Json }; Returns: undefined }
       mark_order_failed: {
         Args: { _gateway_response?: Json; _order_id: string; _reason?: string }
         Returns: Json
@@ -1829,6 +1836,25 @@ export type Database = {
         Args: {
           _gateway_response?: Json
           _order_id: string
+          _transaction_id: string
+        }
+        Returns: Json
+      }
+      place_order: {
+        Args: {
+          _coupon_code?: string
+          _customer: Json
+          _items: Json
+          _payment_method: string
+        }
+        Returns: Json
+      }
+      process_payment_callback: {
+        Args: {
+          _gateway: string
+          _order_number: string
+          _raw?: Json
+          _status: string
           _transaction_id: string
         }
         Returns: Json
@@ -1852,6 +1878,10 @@ export type Database = {
           _sender_name?: string
           _transaction_id?: string
         }
+        Returns: Json
+      }
+      subscribe_newsletter: {
+        Args: { _email: string; _name?: string; _source?: string }
         Returns: Json
       }
       user_purchased_product: {
