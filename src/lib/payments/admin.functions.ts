@@ -21,8 +21,7 @@ export const listPaymentLogsFn = createServerFn({ method: "GET" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase as never, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    let q = supabaseAdmin
+    let q = context.supabase
       .from("payment_logs")
       .select("id, gateway, event_type, order_number, transaction_id, amount, currency, status, signature_valid, ip_address, error_message, created_at, request_body, response_body")
       .order("created_at", { ascending: false })
@@ -39,9 +38,8 @@ export const gatewayStatusFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase as never, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: settingRow } = await supabaseAdmin
+    const { data: settingRow } = await context.supabase
       .from("site_settings").select("value").eq("group_key", "payment").eq("setting_key", "config").maybeSingle();
     const cfg = (settingRow?.value as Record<string, unknown>) ?? {};
 
@@ -63,7 +61,7 @@ export const gatewayStatusFn = createServerFn({ method: "GET" })
 
     // Recent stats (last 24h)
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const { data: recent } = await supabaseAdmin
+    const { data: recent } = await context.supabase
       .from("payment_logs").select("gateway, event_type, status").gte("created_at", since);
     const stats: Record<string, { success: number; failed: number; total: number }> = {};
     for (const g of gateways) stats[g.id] = { success: 0, failed: 0, total: 0 };
@@ -85,8 +83,7 @@ export const testGatewayConnectionFn = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase as never, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: gw, error } = await supabaseAdmin
+    const { data: gw, error } = await context.supabase
       .from("payment_gateways").select("slug, type, config").eq("id", data.id).single();
     if (error) throw new Error(error.message);
     if (gw.type !== "custom_auto") return { ok: false, message: "Test only supported for custom_auto gateways", latencyMs: 0 };
@@ -99,8 +96,7 @@ export const getGatewayHealthFn = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1), limit: z.number().int().min(1).max(50).default(10) }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase as never, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: logs } = await supabaseAdmin
+    const { data: logs } = await context.supabase
       .from("payment_logs")
       .select("id, event_type, status, transaction_id, order_number, signature_valid, error_message, created_at, request_body, response_body")
       .eq("gateway", data.slug)
