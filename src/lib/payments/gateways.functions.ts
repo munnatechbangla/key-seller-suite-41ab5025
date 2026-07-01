@@ -142,12 +142,12 @@ export const submitManualPaymentFn = createServerFn({ method: "POST" })
     const { data: result, error } = await sb.rpc("submit_manual_payment_proof", {
       _order_number: data.order_number,
       _gateway_slug: data.gateway_slug,
-      _transaction_id: data.transaction_id ?? null,
-      _sender_name: data.sender_name ?? null,
-      _sender_account: data.sender_account ?? null,
-      _screenshot_url: data.screenshot_url ?? null,
-      _note: data.note ?? null,
-      _email: data.email ?? null,
+      _transaction_id: data.transaction_id,
+      _sender_name: data.sender_name,
+      _sender_account: data.sender_account,
+      _screenshot_url: data.screenshot_url,
+      _note: data.note,
+      _email: data.email,
     });
     if (error) throw new Error(error.message);
     if (result && typeof result === "object" && "ok" in result && !(result as { ok?: boolean }).ok) {
