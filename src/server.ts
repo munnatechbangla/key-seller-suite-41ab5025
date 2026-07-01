@@ -87,7 +87,8 @@ async function injectPublicRuntimeEnv(response: Response, env: unknown): Promise
   }
   if (!publicEnv.SUPABASE_URL || !publicEnv.SUPABASE_PUBLISHABLE_KEY) return response;
 
-  const script = `<script>globalThis.__digitalNestRuntimeEnv=Object.assign({},globalThis.__digitalNestRuntimeEnv,${JSON.stringify(publicEnv).replace(/</g, "\\u003c")});</script>`;
+  const payload = JSON.stringify(publicEnv).replace(/</g, "\\u003c");
+  const script = `<script>globalThis.__digitalNestRuntimeEnv=Object.assign({},globalThis.__digitalNestRuntimeEnv,${payload});globalThis.process=globalThis.process||{};globalThis.process.env=Object.assign({},globalThis.process.env,${payload});</script>`;
   const html = await response.text();
   const body = html.includes("</head>") ? html.replace("</head>", `${script}</head>`) : `${script}${html}`;
   const headers = new Headers(response.headers);
