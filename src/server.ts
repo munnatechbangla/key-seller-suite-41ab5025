@@ -85,11 +85,23 @@ function applySecurityHeaders(response: Response): Response {
 let envBridged = false;
 function bridgeEnvToProcess(env: unknown) {
   if (envBridged || !env || typeof env !== "object") return;
-  const target = ((globalThis as { process?: { env?: Record<string, string> } }).process ??= { env: {} });
-  target.env ??= {};
+  const g = globalThis as { process?: { env?: Record<string, string> } };
+  if (!g.process) g.process = { env: {} } as { env: Record<string, string> };
+  if (!g.process.env) g.process.env = {};
+  const targets: Array<Record<string, string>> = [g.process.env];
+  try {
+    // In some Cloudflare/workerd builds `process.env` is a distinct object
+    // from what `node:process` exposes. Populate both to be safe.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const nodeProc = (globalThis as any).process;
+    if (nodeProc?.env && !targets.includes(nodeProc.env)) targets.push(nodeProc.env);
+  } catch {}
   for (const [k, v] of Object.entries(env as Record<string, unknown>)) {
-    if (typeof v === "string" && target.env![k] === undefined) {
-      target.env![k] = v;
+    if (typeof v !== "string") continue;
+    for (const t of targets) {
+      try {
+        if (t[k] === undefined) t[k] = v;
+      } catch {}
     }
   }
   envBridged = true;
