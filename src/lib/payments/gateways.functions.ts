@@ -5,6 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { csrfGuard } from "@/lib/security/csrf.server";
+import { getRuntimeEnv } from "@/lib/runtime-env";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -31,9 +32,14 @@ export type GatewayRow = {
 export const listEnabledGatewaysFn = createServerFn({ method: "GET" }).handler(async () => {
   // Uses SECURITY DEFINER RPC `list_public_payment_gateways` which strips
   // credentials from `config` (only safe fields exposed for manual methods).
+  const supabaseUrl = getRuntimeEnv("SUPABASE_URL");
+  const supabaseKey = getRuntimeEnv("SUPABASE_PUBLISHABLE_KEY");
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error("Missing Supabase environment variable(s): SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY.");
+  }
   const supabase = createClient<Database>(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY!,
+    supabaseUrl,
+    supabaseKey,
     { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
   );
   const { data, error } = await supabase.rpc("list_public_payment_gateways");
