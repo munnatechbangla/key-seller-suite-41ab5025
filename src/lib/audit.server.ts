@@ -1,5 +1,5 @@
-// Server-only audit logger. Use from within server functions/routes after
-// authorizing the caller. Always uses the service-role client to bypass RLS.
+// Server-only audit logger. Uses SECURITY DEFINER RPC so it works without a
+// service-role key. Never let audit logging break the underlying action.
 export type AuditEntry = {
   actorId?: string | null;
   actorEmail?: string | null;
@@ -13,19 +13,21 @@ export type AuditEntry = {
 
 export async function logAudit(entry: AuditEntry): Promise<void> {
   try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("audit_logs").insert({
-      actor_id: entry.actorId ?? null,
-      actor_email: entry.actorEmail ?? null,
-      action: entry.action,
-      entity_type: entry.entityType,
-      entity_id: entry.entityId ?? null,
-      metadata: (entry.metadata ?? {}) as any,
-      ip_address: entry.ipAddress ?? null,
-      user_agent: entry.userAgent ?? null,
+    const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
+    const sb: any = createServerSupabaseClient();
+    await sb.rpc("insert_audit_log", {
+      _entry: {
+        actor_id: entry.actorId ?? null,
+        actor_email: entry.actorEmail ?? null,
+        action: entry.action,
+        entity_type: entry.entityType,
+        entity_id: entry.entityId ?? null,
+        metadata: entry.metadata ?? {},
+        ip_address: entry.ipAddress ?? null,
+        user_agent: entry.userAgent ?? null,
+      },
     });
   } catch (err) {
-    // Never let audit logging break the underlying action.
     console.error("[audit] failed to record entry", err);
   }
 }
