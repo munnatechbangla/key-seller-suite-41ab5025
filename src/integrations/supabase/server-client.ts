@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
+import { getRuntimeEnv } from "@/lib/runtime-env";
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
@@ -25,8 +26,8 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 }
 
 export function createServerSupabaseClient() {
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
+  const SUPABASE_URL = getRuntimeEnv("SUPABASE_URL");
+  const SUPABASE_PUBLISHABLE_KEY = getRuntimeEnv("SUPABASE_PUBLISHABLE_KEY");
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
@@ -43,5 +44,5 @@ export function createServerSupabaseClient() {
 }
 
 export function paymentRpcSecret(): string | null {
-  return process.env.PAYMENTS_WEBHOOK_SECRET || process.env.PAYMENT_WEBHOOK_SECRET || null;
+  return getRuntimeEnv("PAYMENTS_WEBHOOK_SECRET") || getRuntimeEnv("PAYMENT_WEBHOOK_SECRET") || null;
 }

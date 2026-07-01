@@ -2,6 +2,7 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { bridgeRuntimeEnv } from "./lib/runtime-env";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -75,45 +76,38 @@ function applySecurityHeaders(response: Response): Response {
   });
 }
 
-// On Cloudflare Workers, secrets and vars arrive via the `env` argument to
-// fetch(), not via process.env. Nitro's cloudflare-module preset bridges
-// wrangler.toml [vars] into process.env, but dashboard-set secrets
-// (SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, RESEND_API_KEY, etc.) can be
-// missing from process.env at the moment SSR modules first evaluate. Copy
-// every string binding into process.env on the first request so downstream
-// code that reads process.env.* keeps working unchanged.
-let envBridged = false;
-function bridgeEnvToProcess(env: unknown) {
-  if (envBridged || !env || typeof env !== "object") return;
-  const g = globalThis as { process?: { env?: Record<string, string> } };
-  if (!g.process) g.process = { env: {} } as { env: Record<string, string> };
-  if (!g.process.env) g.process.env = {};
-  const targets: Array<Record<string, string>> = [g.process.env];
-  try {
-    // In some Cloudflare/workerd builds `process.env` is a distinct object
-    // from what `node:process` exposes. Populate both to be safe.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const nodeProc = (globalThis as any).process;
-    if (nodeProc?.env && !targets.includes(nodeProc.env)) targets.push(nodeProc.env);
-  } catch {}
-  for (const [k, v] of Object.entries(env as Record<string, unknown>)) {
-    if (typeof v !== "string") continue;
-    for (const t of targets) {
-      try {
-        if (t[k] === undefined) t[k] = v;
-      } catch {}
-    }
+async function injectPublicRuntimeEnv(response: Response, env: unknown): Promise<Response> {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("text/html") || !env || typeof env !== "object") return response;
+
+  const bindings = env as Record<string, unknown>;
+  const publicEnv: Record<string, string> = {};
+  for (const key of ["SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY"]) {
+    if (typeof bindings[key] === "string") publicEnv[key] = bindings[key] as string;
   }
-  envBridged = true;
+  if (!publicEnv.SUPABASE_URL || !publicEnv.SUPABASE_PUBLISHABLE_KEY) return response;
+
+  const payload = JSON.stringify(publicEnv).replace(/</g, "\\u003c");
+  const script = `<script>globalThis.__digitalNestRuntimeEnv=Object.assign({},globalThis.__digitalNestRuntimeEnv,${payload});globalThis.process=globalThis.process||{};globalThis.process.env=Object.assign({},globalThis.process.env,${payload});</script>`;
+  const html = await response.text();
+  const body = html.includes("</head>") ? html.replace("</head>", `${script}</head>`) : `${script}${html}`;
+  const headers = new Headers(response.headers);
+  headers.delete("content-length");
+  return new Response(body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 }
 
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
-      bridgeEnvToProcess(env);
+      await bridgeRuntimeEnv(env);
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return applySecurityHeaders(await normalizeCatastrophicSsrResponse(response));
+      const normalized = await normalizeCatastrophicSsrResponse(response);
+      return applySecurityHeaders(await injectPublicRuntimeEnv(normalized, env));
     } catch (error) {
       console.error(error);
       return applySecurityHeaders(new Response(renderErrorPage(), {
