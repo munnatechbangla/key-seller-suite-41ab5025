@@ -76,13 +76,37 @@ function applySecurityHeaders(response: Response): Response {
   });
 }
 
+async function injectPublicRuntimeEnv(response: Response, env: unknown): Promise<Response> {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("text/html") || !env || typeof env !== "object") return response;
+
+  const bindings = env as Record<string, unknown>;
+  const publicEnv: Record<string, string> = {};
+  for (const key of ["SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY"]) {
+    if (typeof bindings[key] === "string") publicEnv[key] = bindings[key] as string;
+  }
+  if (!publicEnv.SUPABASE_URL || !publicEnv.SUPABASE_PUBLISHABLE_KEY) return response;
+
+  const script = `<script>globalThis.__digitalNestRuntimeEnv=Object.assign({},globalThis.__digitalNestRuntimeEnv,${JSON.stringify(publicEnv).replace(/</g, "\\u003c")});</script>`;
+  const html = await response.text();
+  const body = html.includes("</head>") ? html.replace("</head>", `${script}</head>`) : `${script}${html}`;
+  const headers = new Headers(response.headers);
+  headers.delete("content-length");
+  return new Response(body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       await bridgeRuntimeEnv(env);
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return applySecurityHeaders(await normalizeCatastrophicSsrResponse(response));
+      const normalized = await normalizeCatastrophicSsrResponse(response);
+      return applySecurityHeaders(await injectPublicRuntimeEnv(normalized, env));
     } catch (error) {
       console.error(error);
       return applySecurityHeaders(new Response(renderErrorPage(), {

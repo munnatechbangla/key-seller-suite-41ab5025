@@ -4,6 +4,7 @@
 // Admin UI work must therefore use the authenticated RLS client from auth-middleware.
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
+import { getRuntimeEnv } from '@/lib/runtime-env';
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
@@ -30,9 +31,9 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 }
 
 function createSupabaseAdminClient() {
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
+  const SUPABASE_URL = getRuntimeEnv('SUPABASE_URL');
+  const SUPABASE_SERVICE_ROLE_KEY = getRuntimeEnv('SUPABASE_SERVICE_ROLE_KEY');
+  const SUPABASE_PUBLISHABLE_KEY = getRuntimeEnv('SUPABASE_PUBLISHABLE_KEY');
   const key = SUPABASE_SERVICE_ROLE_KEY || SUPABASE_PUBLISHABLE_KEY;
 
   if (!SUPABASE_URL || !key) {
