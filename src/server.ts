@@ -85,7 +85,7 @@ async function injectPublicRuntimeEnv(response: Response, env: unknown): Promise
   for (const key of ["SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY"]) {
     if (typeof bindings[key] === "string") publicEnv[key] = bindings[key] as string;
   }
-  if (!publicEnv.SUPABASE_URL || !publicEnv.SUPABASE_PUBLISHABLE_KEY) return response;
+  if (!publicEnv["SUPABASE_URL"] || !publicEnv["SUPABASE_PUBLISHABLE_KEY"]) return response;
 
   const payload = JSON.stringify(publicEnv).replace(/</g, "\\u003c");
   const script = `<script>globalThis.__digitalNestRuntimeEnv=Object.assign({},globalThis.__digitalNestRuntimeEnv,${payload});globalThis.process=globalThis.process||{};globalThis.process.env=Object.assign({},globalThis.process.env,${payload});</script>`;
@@ -103,9 +103,9 @@ async function injectPublicRuntimeEnv(response: Response, env: unknown): Promise
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
-      const cfEnv = env as { SUPABASE_URL?: unknown; SUPABASE_PUBLISHABLE_KEY?: unknown };
-      console.log("CF ENV SUPABASE_URL:", !!cfEnv.SUPABASE_URL);
-      console.log("CF ENV SUPABASE_PUBLISHABLE_KEY:", !!cfEnv.SUPABASE_PUBLISHABLE_KEY);
+      const cfEnv = env as { SUPABASE_URL?: unknown; SUPABASE_PUBLISHABLE_KEY?: unknown } | undefined;
+      console.log("CF ENV SUPABASE_URL:", !!cfEnv?.SUPABASE_URL);
+      console.log("CF ENV SUPABASE_PUBLISHABLE_KEY:", !!cfEnv?.SUPABASE_PUBLISHABLE_KEY);
       await bridgeRuntimeEnv(env);
       console.log("bridgeRuntimeEnv executed");
       console.log(`SUPABASE_URL available = ${Boolean(getRuntimeEnv("SUPABASE_URL"))}`);

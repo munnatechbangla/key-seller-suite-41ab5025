@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
+import { getRuntimeEnv } from "@/lib/runtime-env";
 
 interface SitemapEntry {
   path: string;
@@ -26,8 +27,8 @@ const STATIC_ENTRIES: SitemapEntry[] = [
 async function resolveBaseUrl(request: Request): Promise<string> {
   // Try site_settings.seo.site_url first; fall back to the request origin.
   try {
-    const url = process.env.SUPABASE_URL;
-    const key = process.env.SUPABASE_PUBLISHABLE_KEY;
+    const url = getRuntimeEnv("SUPABASE_URL");
+    const key = getRuntimeEnv("SUPABASE_PUBLISHABLE_KEY");
     if (url && key) {
       const sb = createClient(url, key, {
         auth: { persistSession: false, autoRefreshToken: false },
@@ -49,8 +50,8 @@ async function resolveBaseUrl(request: Request): Promise<string> {
 }
 
 async function fetchDynamicEntries(): Promise<SitemapEntry[]> {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY;
+  const url = getRuntimeEnv("SUPABASE_URL");
+  const key = getRuntimeEnv("SUPABASE_PUBLISHABLE_KEY");
   if (!url || !key) return [];
   const sb = createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
