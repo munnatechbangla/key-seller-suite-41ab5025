@@ -53,6 +53,7 @@ async function handle(request: Request): Promise<Response> {
           }
         }
       }
+    }
   } catch (e) {
     console.error("[sslcommerz return]", e);
   }
