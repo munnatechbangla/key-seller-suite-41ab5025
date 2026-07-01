@@ -22,18 +22,15 @@ const placeSchema = z.object({
   couponCode: z.string().nullable().optional(),
 });
 
-async function placeOrderViaRpc(
-  input: z.infer<typeof placeSchema>,
-  sb: { rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> },
-) {
+async function placeOrderViaRpc(input: z.infer<typeof placeSchema>, sb: any) {
   const { data, error } = await sb.rpc("place_order", {
-    _items: input.items,
-    _customer: input.customer,
+    _items: input.items as any,
+    _customer: input.customer as any,
     _payment_method: input.paymentMethod,
     _coupon_code: input.couponCode ?? null,
   });
   if (error) throw new Error(error.message);
-  const result = data as { ok: boolean; order_id: string; order_number: string; total: number; reason?: string };
+  const result = data as { ok: boolean; order_id: string; order_number: string; total: number; reason?: string } | null;
   if (!result?.ok) throw new Error(result?.reason ?? "order_failed");
 
   try {
