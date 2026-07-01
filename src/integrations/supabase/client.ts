@@ -33,11 +33,17 @@ function createSupabaseClient() {
   const runtimeEnv = typeof globalThis !== 'undefined'
     ? (globalThis as typeof globalThis & {
         __digitalNestRuntimeEnv?: Record<string, string>;
-        process?: { env?: Record<string, string | undefined> };
+        process?: unknown;
       })
     : undefined;
-  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || runtimeEnv?.__digitalNestRuntimeEnv?.['SUPABASE_URL'] || runtimeEnv?.process?.env?.['SUPABASE_URL'];
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || runtimeEnv?.__digitalNestRuntimeEnv?.['SUPABASE_PUBLISHABLE_KEY'] || runtimeEnv?.process?.env?.['SUPABASE_PUBLISHABLE_KEY'];
+
+  const viteEnv = import.meta.env as Record<string, string | undefined> | undefined;
+  const processLike = runtimeEnv?.process && typeof runtimeEnv.process === 'object'
+    ? runtimeEnv.process as { env?: Record<string, string | undefined> }
+    : undefined;
+
+  const SUPABASE_URL = viteEnv?.['VITE_SUPABASE_URL'] || runtimeEnv?.__digitalNestRuntimeEnv?.['SUPABASE_URL'] || processLike?.env?.['SUPABASE_URL'];
+  const SUPABASE_PUBLISHABLE_KEY = viteEnv?.['VITE_SUPABASE_PUBLISHABLE_KEY'] || runtimeEnv?.__digitalNestRuntimeEnv?.['SUPABASE_PUBLISHABLE_KEY'] || processLike?.env?.['SUPABASE_PUBLISHABLE_KEY'];
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
