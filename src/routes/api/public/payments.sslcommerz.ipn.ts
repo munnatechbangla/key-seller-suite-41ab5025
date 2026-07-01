@@ -13,8 +13,9 @@ export const Route = createFileRoute("/api/public/payments/sslcommerz/ipn")({
         const { logPaymentEvent, claimWebhookEvent } = await import("@/lib/payments/logger.server");
         const { validateSslcommerzPayment } = await import("@/lib/payments/sslcommerz.server");
         const { processPaymentCallback } = await import("@/lib/payments.server");
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
         const { rateLimit, clientIp } = await import("@/lib/payments/rate-limit.server");
+        const sb: any = createServerSupabaseClient();
 
         const ipAddr = clientIp(request);
         const rl = rateLimit(`sslcz-ipn:${ipAddr}`, { limit: 120, windowMs: 60_000 });
@@ -41,37 +42,24 @@ export const Route = createFileRoute("/api/public/payments/sslcommerz/ipn")({
           return new Response("missing_fields", { status: 400 });
         }
 
-        // Look up order + intent
-        const { data: order } = await supabaseAdmin
-          .from("orders")
-          .select("id, order_number, total, currency, status")
-          .eq("order_number", tranId)
-          .maybeSingle();
+        const { data: orderData } = await sb.rpc("get_order_basic_by_number", { _order_number: tranId });
+        const order = orderData as { id: string; order_number: string; total: number; currency: string; status: string } | null;
 
         if (!order) {
           await logPaymentEvent({ gateway: "sslcommerz", event_type: "ipn", order_number: tranId, transaction_id: valId, status: "order_not_found", request_body: formData, ip_address: ip, user_agent: ua });
           return new Response("order_not_found", { status: 404 });
         }
 
-        // Replay protection: val_id is unique per validated transaction.
         const replay = await claimWebhookEvent("sslcommerz", valId, order.id);
         if (replay) {
           await logPaymentEvent({ gateway: "sslcommerz", event_type: "replay", order_id: order.id, order_number: order.order_number, transaction_id: valId, status: "duplicate", request_body: formData, ip_address: ip, user_agent: ua });
           return new Response("replay_ignored", { status: 200 });
         }
 
-        // Determine mode from intent
-        const { data: intent } = await supabaseAdmin
-          .from("payment_intents")
-          .select("id, mode")
-          .eq("order_id", order.id)
-          .eq("gateway", "sslcommerz")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        const { data: intentData } = await sb.rpc("get_latest_payment_intent", { _order_id: order.id, _gateway: "sslcommerz" });
+        const intent = intentData as { id: string; mode: string; status: string } | null;
         const mode: "sandbox" | "live" = intent?.mode === "live" ? "live" : "sandbox";
 
-        // Re-validate against SSLCommerz validator API
         const validation = await validateSslcommerzPayment(valId, mode);
 
         await logPaymentEvent({
@@ -91,7 +79,6 @@ export const Route = createFileRoute("/api/public/payments/sslcommerz/ipn")({
           user_agent: ua,
         });
 
-        // Amount tampering check
         if (validation.ok && validation.amount != null && Math.abs(validation.amount - Number(order.total)) > 0.01 && order.currency !== "USD") {
           await logPaymentEvent({ gateway: "sslcommerz", event_type: "error", order_id: order.id, order_number: order.order_number, transaction_id: valId, status: "amount_mismatch", error_message: `expected ${order.total} got ${validation.amount}`, response_body: validation.raw });
           return new Response("amount_mismatch", { status: 400 });
@@ -105,7 +92,9 @@ export const Route = createFileRoute("/api/public/payments/sslcommerz/ipn")({
             gateway: "sslcommerz",
             raw: { ipn: formData, validation: validation.raw },
           });
-          await supabaseAdmin.from("payment_intents").update({ status: "failed", gateway_payment_id: valId, response_payload: validation.raw as never }).eq("id", intent?.id ?? "");
+          if (intent?.id) {
+            await sb.rpc("update_payment_intent_status", { _id: intent.id, _status: "failed", _gateway_payment_id: valId, _response: validation.raw as any });
+          }
           return new Response("failed_recorded", { status: 200 });
         }
 
@@ -117,7 +106,9 @@ export const Route = createFileRoute("/api/public/payments/sslcommerz/ipn")({
           raw: { ipn: formData, validation: validation.raw },
         });
 
-        await supabaseAdmin.from("payment_intents").update({ status: "paid", gateway_payment_id: valId, response_payload: validation.raw as never }).eq("id", intent?.id ?? "");
+        if (intent?.id) {
+          await sb.rpc("update_payment_intent_status", { _id: intent.id, _status: "paid", _gateway_payment_id: valId, _response: validation.raw as any });
+        }
         await logPaymentEvent({ gateway: "sslcommerz", event_type: "success", order_id: order.id, order_number: order.order_number, transaction_id: valId, status: "paid", response_body: result });
 
         return new Response("ok", { status: 200 });
