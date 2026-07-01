@@ -2,7 +2,7 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
-import { bridgeRuntimeEnv } from "./lib/runtime-env";
+import { bridgeRuntimeEnv, getRuntimeEnv } from "./lib/runtime-env";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -104,6 +104,9 @@ export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       await bridgeRuntimeEnv(env);
+      console.log("bridgeRuntimeEnv executed");
+      console.log(`SUPABASE_URL available = ${Boolean(getRuntimeEnv("SUPABASE_URL"))}`);
+      console.log(`SUPABASE_PUBLISHABLE_KEY available = ${Boolean(getRuntimeEnv("SUPABASE_PUBLISHABLE_KEY"))}`);
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       const normalized = await normalizeCatastrophicSsrResponse(response);
