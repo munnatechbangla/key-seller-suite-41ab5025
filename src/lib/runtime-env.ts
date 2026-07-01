@@ -1,8 +1,23 @@
 type RuntimeEnvGlobal = typeof globalThis & {
   __digitalNestRuntimeEnv?: Record<string, string>;
   __digitalNestCloudflareEnv?: Record<string, unknown>;
+  __env__?: Record<string, unknown>;
   process?: { env?: Record<string, string | undefined> };
 };
+
+function readStringBinding(env: unknown, name: string): string | undefined {
+  if (!env || typeof env !== "object") return undefined;
+
+  try {
+    const value = (env as Record<string, unknown>)[name];
+    if (typeof value === "string" && value) return value;
+  } catch {
+    // Some runtime binding objects can be proxy-backed. Treat unreadable
+    // properties as unavailable and continue to the next source.
+  }
+
+  return undefined;
+}
 
 function stringBindings(env: unknown): Record<string, string> {
   if (!env || typeof env !== "object") return {};
@@ -74,11 +89,15 @@ export function getRuntimeEnv(name: string): string | undefined {
 
   // 3. Raw Cloudflare Worker env object — direct property read handles
   //    Proxy-backed bindings and secrets that aren't enumerable.
-  const cf = g.__digitalNestCloudflareEnv;
-  if (cf) {
-    const value = cf[name];
-    if (typeof value === "string" && value) return value;
-  }
+  const cf = readStringBinding(g.__digitalNestCloudflareEnv, name);
+  if (cf) return cf;
+
+  // 4. Nitro's cloudflare-module runtime stores Worker bindings on
+  //    globalThis.__env__ before dispatching the request. TanStack server
+  //    function requests can reach middleware through this Nitro request path,
+  //    so auth middleware must be able to read this source too.
+  const nitro = readStringBinding(g.__env__, name);
+  if (nitro) return nitro;
 
   return undefined;
 }
