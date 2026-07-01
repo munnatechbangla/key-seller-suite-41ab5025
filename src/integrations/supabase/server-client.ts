@@ -26,6 +26,8 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 }
 
 export function createServerSupabaseClient() {
+  console.log("getRuntimeEnv SUPABASE_URL:", !!getRuntimeEnv("SUPABASE_URL"));
+  console.log("getRuntimeEnv SUPABASE_PUBLISHABLE_KEY:", !!getRuntimeEnv("SUPABASE_PUBLISHABLE_KEY"));
   const SUPABASE_URL = getRuntimeEnv("SUPABASE_URL");
   const SUPABASE_PUBLISHABLE_KEY = getRuntimeEnv("SUPABASE_PUBLISHABLE_KEY");
 

@@ -103,6 +103,9 @@ async function injectPublicRuntimeEnv(response: Response, env: unknown): Promise
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const cfEnv = env as { SUPABASE_URL?: unknown; SUPABASE_PUBLISHABLE_KEY?: unknown };
+      console.log("CF ENV SUPABASE_URL:", !!cfEnv.SUPABASE_URL);
+      console.log("CF ENV SUPABASE_PUBLISHABLE_KEY:", !!cfEnv.SUPABASE_PUBLISHABLE_KEY);
       await bridgeRuntimeEnv(env);
       console.log("bridgeRuntimeEnv executed");
       console.log(`SUPABASE_URL available = ${Boolean(getRuntimeEnv("SUPABASE_URL"))}`);
