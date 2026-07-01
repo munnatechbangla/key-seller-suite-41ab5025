@@ -75,9 +75,30 @@ function applySecurityHeaders(response: Response): Response {
   });
 }
 
+// On Cloudflare Workers, secrets and vars arrive via the `env` argument to
+// fetch(), not via process.env. Nitro's cloudflare-module preset bridges
+// wrangler.toml [vars] into process.env, but dashboard-set secrets
+// (SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, RESEND_API_KEY, etc.) can be
+// missing from process.env at the moment SSR modules first evaluate. Copy
+// every string binding into process.env on the first request so downstream
+// code that reads process.env.* keeps working unchanged.
+let envBridged = false;
+function bridgeEnvToProcess(env: unknown) {
+  if (envBridged || !env || typeof env !== "object") return;
+  const target = ((globalThis as { process?: { env?: Record<string, string> } }).process ??= { env: {} });
+  target.env ??= {};
+  for (const [k, v] of Object.entries(env as Record<string, unknown>)) {
+    if (typeof v === "string" && target.env![k] === undefined) {
+      target.env![k] = v;
+    }
+  }
+  envBridged = true;
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      bridgeEnvToProcess(env);
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return applySecurityHeaders(await normalizeCatastrophicSsrResponse(response));
