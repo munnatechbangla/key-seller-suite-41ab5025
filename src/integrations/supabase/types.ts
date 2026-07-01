@@ -1755,6 +1755,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_mark_order_failed: {
+        Args: { _gateway_response?: Json; _order_id: string; _reason?: string }
+        Returns: Json
+      }
+      admin_mark_order_paid: {
+        Args: {
+          _gateway_response?: Json
+          _order_id: string
+          _transaction_id: string
+        }
+        Returns: Json
+      }
       apply_coupon_usage: {
         Args: {
           _coupon_id: string
@@ -1772,6 +1784,10 @@ export type Database = {
       }
       claim_first_admin: { Args: never; Returns: Json }
       generate_order_number: { Args: never; Returns: string }
+      get_order_summary_by_number: {
+        Args: { _email?: string; _order_number: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1820,6 +1836,23 @@ export type Database = {
       recalc_product_rating: {
         Args: { _product_id: string }
         Returns: undefined
+      }
+      record_coupon_usage_for_order: {
+        Args: { _coupon_id: string; _email?: string; _order_id: string }
+        Returns: Json
+      }
+      submit_manual_payment_proof: {
+        Args: {
+          _email?: string
+          _gateway_slug: string
+          _note?: string
+          _order_number: string
+          _screenshot_url?: string
+          _sender_account?: string
+          _sender_name?: string
+          _transaction_id?: string
+        }
+        Returns: Json
       }
       user_purchased_product: {
         Args: { _product_id: string; _user_id: string }
