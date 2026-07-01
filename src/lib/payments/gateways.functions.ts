@@ -31,16 +31,8 @@ export type GatewayRow = {
 export const listEnabledGatewaysFn = createServerFn({ method: "GET" }).handler(async () => {
   // Uses SECURITY DEFINER RPC `list_public_payment_gateways` which strips
   // credentials from `config` (only safe fields exposed for manual methods).
-  const supabaseUrl = getRuntimeEnv("SUPABASE_URL");
-  const supabaseKey = getRuntimeEnv("SUPABASE_PUBLISHABLE_KEY");
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Missing Supabase environment variable(s): SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY.");
-  }
-  const supabase = createClient<Database>(
-    supabaseUrl,
-    supabaseKey,
-    { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
-  );
+  const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
+  const supabase = createServerSupabaseClient();
   const { data, error } = await supabase.rpc("list_public_payment_gateways");
   if (error) throw new Error(error.message);
   return { gateways: (data ?? []) as unknown as GatewayRow[] };
