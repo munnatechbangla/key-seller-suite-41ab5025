@@ -20,7 +20,7 @@ export async function bridgeRuntimeEnv(env: unknown): Promise<void> {
   const g = globalThis as RuntimeEnvGlobal;
   g.__digitalNestRuntimeEnv = { ...(g.__digitalNestRuntimeEnv ?? {}), ...bindings };
 
-  if (!g.process) g.process = { env: {} };
+  if (!g.process) g.process = { env: {} } as RuntimeEnvGlobal["process"];
   if (!g.process.env) g.process.env = {};
 
   const targets: Array<Record<string, string | undefined>> = [g.process.env];
