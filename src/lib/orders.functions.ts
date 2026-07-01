@@ -3,10 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { csrfGuard } from "@/lib/security/csrf.server";
 
-const itemSchema = z.object({
-  slug: z.string(),
-  qty: z.number().int().positive(),
-});
+const itemSchema = z.object({ slug: z.string(), qty: z.number().int().positive() });
 
 const customerSchema = z.object({
   email: z.string().email(),
@@ -25,142 +22,53 @@ const placeSchema = z.object({
   couponCode: z.string().nullable().optional(),
 });
 
-async function placeOrderCore(input: z.infer<typeof placeSchema>, userId: string | null) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const slugs = input.items.map((i) => i.slug);
-
-  const { data: products, error: pErr } = await supabaseAdmin
-    .from("products")
-    .select("id, slug, title, regular_price, sale_price")
-    .in("slug", slugs);
-  if (pErr) throw new Error(pErr.message);
-  if (!products || products.length === 0) throw new Error("Products not found");
-
-  let subtotal = 0;
-  const itemsToInsert = input.items.map((it) => {
-    const p = products.find((x) => x.slug === it.slug);
-    if (!p) throw new Error(`Product not found: ${it.slug}`);
-    const unit = Number(p.sale_price ?? p.regular_price);
-    const line = unit * it.qty;
-    subtotal += line;
-    return {
-      product_id: p.id,
-      product_slug: p.slug,
-      product_name: p.title,
-      unit_price: unit,
-      qty: it.qty,
-      line_total: line,
-    };
+async function placeOrderViaRpc(
+  input: z.infer<typeof placeSchema>,
+  sb: { rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> },
+) {
+  const { data, error } = await sb.rpc("place_order", {
+    _items: input.items,
+    _customer: input.customer,
+    _payment_method: input.paymentMethod,
+    _coupon_code: input.couponCode ?? null,
   });
-
-  const couponCode = input.couponCode?.trim().toUpperCase() || null;
-  let discount = 0;
-  let couponId: string | null = null;
-  if (couponCode) {
-    const productIds = products.map((p) => p.id);
-    const { data: vRow } = await supabaseAdmin.rpc("validate_coupon", {
-      _code: couponCode,
-      _subtotal: subtotal,
-      _user_id: userId ?? undefined,
-      _email: input.customer.email,
-      _product_ids: productIds,
-    });
-    const v = vRow as { ok: boolean; discount?: number; coupon_id?: string; reason?: string } | null;
-    if (!v?.ok) throw new Error(`Coupon invalid: ${v?.reason ?? "unknown"}`);
-    discount = Number(v.discount ?? 0);
-    couponId = v.coupon_id ?? null;
-  }
-  const total = +(subtotal - discount).toFixed(2);
-
-  const { data: numRow, error: nErr } = await supabaseAdmin.rpc("generate_order_number");
-  if (nErr) throw new Error(nErr.message);
-  const orderNumber = numRow as unknown as string;
-
-  const customerName = [input.customer.firstName, input.customer.lastName].filter(Boolean).join(" ").trim() || null;
-
-  // Order + payment are created as PENDING. License keys and downloads are
-  // generated only after a verified payment callback via the webhook route.
-  const { data: order, error: oErr } = await supabaseAdmin
-    .from("orders")
-    .insert({
-      order_number: orderNumber,
-      user_id: userId,
-      email: input.customer.email,
-      customer_name: customerName,
-      phone: input.customer.phone || null,
-      country: input.customer.country || null,
-      address: input.customer.address || null,
-      notes: input.customer.notes || null,
-      status: "pending",
-      subtotal,
-      discount,
-      total,
-      currency: "USD",
-      coupon_code: couponCode,
-      payment_method: input.paymentMethod,
-    })
-    .select()
-    .single();
-  if (oErr || !order) throw new Error(oErr?.message ?? "Order insert failed");
-
-  const { error: iErr } = await supabaseAdmin
-    .from("order_items")
-    .insert(itemsToInsert.map((it) => ({ ...it, order_id: order.id })));
-  if (iErr) throw new Error(iErr.message);
-
-  const { error: payErr } = await supabaseAdmin.from("payments").insert({
-    order_id: order.id,
-    amount: total,
-    currency: "USD",
-    method: input.paymentMethod,
-    status: "pending",
-  });
-  if (payErr) throw new Error(payErr.message);
-
-  if (couponId) {
-    await supabaseAdmin.rpc("apply_coupon_usage", {
-      _coupon_id: couponId,
-      _order_id: order.id,
-      _user_id: (userId ?? null) as string,
-      _email: input.customer.email,
-      _discount: discount,
-      _order_total: total,
-    });
-  }
+  if (error) throw new Error(error.message);
+  const result = data as { ok: boolean; order_id: string; order_number: string; total: number; reason?: string };
+  if (!result?.ok) throw new Error(result?.reason ?? "order_failed");
 
   try {
     const { sendOrderConfirmation } = await import("@/lib/emails/triggers.server");
-    await sendOrderConfirmation(order.id);
+    await sendOrderConfirmation(result.order_id);
   } catch (e) {
     console.error("[emails] order confirmation failed", e);
   }
 
-  return { orderNumber: order.order_number, orderId: order.id, total, paymentUrl: `/pay/${order.order_number}` };
+  return {
+    orderNumber: result.order_number,
+    orderId: result.order_id,
+    total: result.total,
+    paymentUrl: `/pay/${result.order_number}`,
+  };
 }
 
 export const placeOrderGuestFn = createServerFn({ method: "POST" })
   .middleware([csrfGuard])
   .inputValidator((d: unknown) => placeSchema.parse(d))
-  .handler(async ({ data }) => placeOrderCore(data, null));
+  .handler(async ({ data }) => {
+    const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
+    return placeOrderViaRpc(data, createServerSupabaseClient());
+  });
 
 export const placeOrderAuthFn = createServerFn({ method: "POST" })
   .middleware([csrfGuard, requireSupabaseAuth])
   .inputValidator((d: unknown) => placeSchema.parse(d))
-  .handler(async ({ data, context }) => placeOrderCore(data, context.userId));
+  .handler(async ({ data, context }) => placeOrderViaRpc(data, context.supabase));
 
-// ----- Dev / sandbox: simulate a gateway callback (real gateways post to the webhook) -----
-// In production these calls come from SSLCommerz/bKash/Nagad/Stripe/PayPal webhooks
-// (see src/routes/api/public/payments.webhook.ts). This server fn exists so the UI
-// can drive a full pending -> paid lifecycle while real merchant accounts aren't connected.
+// Dev/sandbox simulate: real gateways post to the webhook route.
 export const simulateGatewayPaymentFn = createServerFn({ method: "POST" })
   .middleware([csrfGuard])
   .inputValidator((d: unknown) =>
-    z
-      .object({
-        orderNumber: z.string(),
-        outcome: z.enum(["paid", "failed"]).default("paid"),
-      })
-      .parse(d),
+    z.object({ orderNumber: z.string(), outcome: z.enum(["paid", "failed"]).default("paid") }).parse(d),
   )
   .handler(async ({ data }) => {
     const { processPaymentCallback } = await import("@/lib/payments.server");
@@ -175,28 +83,33 @@ export const simulateGatewayPaymentFn = createServerFn({ method: "POST" })
     return { ok: r.ok, transactionId: txn, outcome: data.outcome };
   });
 
-// ----- Reads -----
-
 export const getOrderByNumberFn = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) => z.object({ orderNumber: z.string(), email: z.string().email().optional() }).parse(d))
+  .inputValidator((d: unknown) =>
+    z.object({ orderNumber: z.string(), email: z.string().email().optional() }).parse(d),
+  )
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    let q = supabaseAdmin.from("orders").select("*").eq("order_number", data.orderNumber).limit(1);
-    if (data.email) q = q.eq("email", data.email);
-    const { data: orderRows, error } = await q;
+    const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
+    const sb = createServerSupabaseClient();
+    const { data: rpcData, error } = await sb.rpc("get_order_summary_by_number", {
+      _order_number: data.orderNumber,
+      _email: data.email ?? null,
+    });
     if (error) throw new Error(error.message);
-    const order = orderRows?.[0];
-    if (!order) return null;
-    const [{ data: items }, { data: payments }, { data: assignments }] = await Promise.all([
-      supabaseAdmin.from("order_items").select("*").eq("order_id", order.id),
-      supabaseAdmin.from("payments").select("*").eq("order_id", order.id).order("created_at", { ascending: false }),
-      supabaseAdmin
-        .from("license_assignments")
-        .select("id, order_item_id, license_keys(key_value)")
-        .eq("order_id", order.id),
-    ]);
-    const paymentStatus = payments?.[0]?.status ?? "pending";
-    return { order, items: items ?? [], payments: payments ?? [], assignments: assignments ?? [], paymentStatus };
+    if (!rpcData) return null;
+    const r = rpcData as {
+      order: unknown;
+      items: unknown[];
+      payments: unknown[];
+      assignments: unknown[];
+      paymentStatus: string;
+    };
+    return {
+      order: r.order,
+      items: r.items ?? [],
+      payments: r.payments ?? [],
+      assignments: r.assignments ?? [],
+      paymentStatus: r.paymentStatus ?? "pending",
+    };
   });
 
 export const getMyOrdersFn = createServerFn({ method: "GET" })
