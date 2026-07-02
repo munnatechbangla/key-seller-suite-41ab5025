@@ -25,14 +25,17 @@ export const Route = createFileRoute("/pay/$orderNumber")({
 function PayPage() {
   const { orderNumber } = Route.useParams();
   const navigate = useNavigate();
-  const fetchOrder = useServerFn(getOrderByNumberFn);
+  const user = useAuth((s) => s.user);
+  const fetchOrderPublic = useServerFn(getOrderByNumberFn);
+  const fetchOrderAuthed = useServerFn(getMyOrderByNumberFn);
+  const fetchOrder = user ? fetchOrderAuthed : fetchOrderPublic;
   const simulate = useServerFn(simulateGatewayPaymentFn);
   const initPayment = useServerFn(initPaymentFn);
   const listGateways = useServerFn(listEnabledGatewaysFn);
   const qc = useQueryClient();
   const [working, setWorking] = useState<null | "paid" | "failed" | "redirect" | "manual">(null);
 
-  const q = useQuery({ queryKey: ["order", orderNumber], queryFn: () => fetchOrder({ data: { orderNumber } }) });
+  const q = useQuery({ queryKey: ["order", orderNumber, user?.id ?? "guest"], queryFn: () => fetchOrder({ data: { orderNumber } }) });
   const gw = useQuery({ queryKey: ["enabled-gateways"], queryFn: () => listGateways() });
 
   const order = q.data?.order;
