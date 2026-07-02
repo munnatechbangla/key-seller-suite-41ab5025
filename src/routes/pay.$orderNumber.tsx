@@ -211,7 +211,9 @@ function ManualForm({
       if (file) {
         setUploading(true);
         const ext = file.name.split(".").pop() || "png";
-        const path = `submissions/${orderNumber}/${Date.now()}.${ext}`;
+        const { data: sess } = await supabase.auth.getSession();
+        const ownerSegment = sess.session?.user?.id ?? "guest";
+        const path = `submissions/${ownerSegment}/${orderNumber}/${Date.now()}.${ext}`;
         const { error } = await supabase.storage.from("payments").upload(path, file, { upsert: true, contentType: file.type });
         if (error) throw new Error(error.message);
         // Store the object path; admins fetch a short-lived signed URL on demand.
