@@ -135,7 +135,23 @@ export const submitManualPaymentFn = createServerFn({ method: "POST" })
   }) => d)
   .handler(async ({ data }) => {
     const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
+    const { getRequest } = await import("@tanstack/react-start/server");
     const sb = createServerSupabaseClient();
+    // Forward the caller's bearer token (if any) so auth.uid() resolves inside
+    // the SECURITY DEFINER RPC for logged-in customers. Guests have no header
+    // and continue to work because the RPC only enforces ownership when
+    // orders.user_id IS NOT NULL.
+    try {
+      const authHeader = getRequest()?.headers.get("authorization");
+      if (authHeader?.startsWith("Bearer ")) {
+        const token = authHeader.slice("Bearer ".length);
+        if (token && token.split(".").length === 3) {
+          await sb.auth.setSession({ access_token: token, refresh_token: token });
+        }
+      }
+    } catch {
+      // No request context or invalid token — proceed as anonymous (guest).
+    }
     const { data: result, error } = await sb.rpc("submit_manual_payment_proof", {
       _order_number: data.order_number,
       _gateway_slug: data.gateway_slug,
