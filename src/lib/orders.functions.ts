@@ -80,34 +80,47 @@ export const simulateGatewayPaymentFn = createServerFn({ method: "POST" })
     return { ok: r.ok, transactionId: txn, outcome: data.outcome };
   });
 
+async function runOrderSummary(sb: any, orderNumber: string, email?: string) {
+  const { data: rpcData, error } = await sb.rpc("get_order_summary_by_number", {
+    _order_number: orderNumber,
+    _email: email ?? undefined,
+  });
+  if (error) throw new Error(error.message);
+  if (!rpcData) return null;
+  const r = rpcData as {
+    order: any;
+    items: any[];
+    payments: any[];
+    assignments: any[];
+    paymentStatus: string;
+  };
+  return {
+    order: r.order,
+    items: r.items ?? [],
+    payments: r.payments ?? [],
+    assignments: r.assignments ?? [],
+    paymentStatus: r.paymentStatus ?? "pending",
+  };
+}
+
+// Public / guest fetch — used when no user session is available.
 export const getOrderByNumberFn = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) =>
     z.object({ orderNumber: z.string(), email: z.string().email().optional() }).parse(d),
   )
   .handler(async ({ data }) => {
     const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
-    const sb: any = createServerSupabaseClient();
-    const { data: rpcData, error } = await sb.rpc("get_order_summary_by_number", {
-      _order_number: data.orderNumber,
-      _email: data.email ?? undefined,
-    });
-    if (error) throw new Error(error.message);
-    if (!rpcData) return null;
-    const r = rpcData as {
-      order: any;
-      items: any[];
-      payments: any[];
-      assignments: any[];
-      paymentStatus: string;
-    };
-    return {
-      order: r.order,
-      items: r.items ?? [],
-      payments: r.payments ?? [],
-      assignments: r.assignments ?? [],
-      paymentStatus: r.paymentStatus ?? "pending",
-    };
+    return runOrderSummary(createServerSupabaseClient(), data.orderNumber, data.email);
   });
+
+// Authenticated variant — forwards the user's bearer so auth.uid() matches
+// orders.user_id inside get_order_summary_by_number's ownership check.
+export const getMyOrderByNumberFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ orderNumber: z.string(), email: z.string().email().optional() }).parse(d),
+  )
+  .handler(async ({ data, context }) => runOrderSummary(context.supabase, data.orderNumber, data.email));
 
 export const getMyOrdersFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
