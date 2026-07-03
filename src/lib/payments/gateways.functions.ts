@@ -25,6 +25,18 @@ export type GatewayRow = {
   config: { [k: string]: JsonValue };
 };
 
+function decodeJwtClaims(token: string): Record<string, unknown> | null {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(payload.length / 4) * 4, "=");
+    return JSON.parse(atob(base64)) as Record<string, unknown>;
+  } catch (error) {
+    console.log("[payment-proof-audit] JWT decode failed", error);
+    return null;
+  }
+}
+
 
 // ---------------- Public (checkout) ----------------
 
@@ -137,22 +149,62 @@ export const submitManualPaymentFn = createServerFn({ method: "POST" })
     const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
     const { getRequest } = await import("@tanstack/react-start/server");
     const sb = createServerSupabaseClient();
+    let authHeader: string | null = null;
+    let jwtClaims: Record<string, unknown> | null = null;
+    let tokenForwardedToClient = false;
     // Forward the caller's bearer token (if any) so auth.uid() resolves inside
     // the SECURITY DEFINER RPC for logged-in customers. Guests send no header
     // and continue to work because the RPC only enforces ownership when
     // orders.user_id IS NOT NULL.
     try {
-      const authHeader = getRequest()?.headers.get("authorization");
+      authHeader = getRequest()?.headers.get("authorization") ?? null;
       if (authHeader?.startsWith("Bearer ")) {
         const token = authHeader.slice("Bearer ".length).trim();
+        jwtClaims = decodeJwtClaims(token);
         if (token && token.split(".").length === 3) {
           // Attach the user's JWT to every PostgREST/RPC request from this client.
           (sb as unknown as { rest: { headers: Record<string, string> } }).rest.headers.Authorization = `Bearer ${token}`;
+          tokenForwardedToClient = true;
         }
       }
-    } catch {
+    } catch (error) {
+      console.log("[payment-proof-audit] request auth inspection failed", error);
       // No request context — proceed as anonymous (guest).
     }
+
+    const restHeaders = (sb as unknown as { rest?: { headers?: Record<string, string> } }).rest?.headers;
+    const forwardedAuthorization = restHeaders?.Authorization ?? restHeaders?.authorization ?? null;
+    const authUserResponse = await sb.auth.getUser();
+    const { data: orderAuditData, error: orderAuditError } = await sb.rpc("get_order_summary_by_number", {
+      _order_number: data.order_number,
+      _email: data.email,
+    });
+    const orderAudit = orderAuditData as { order?: { user_id?: string | null } } | null;
+
+    console.log("[payment-proof-audit] submitManualPaymentFn before RPC", {
+      file: "src/lib/payments/gateways.functions.ts",
+      function: "submitManualPaymentFn",
+      rpcCallLine: 196,
+      orderNumber: data.order_number,
+      authorizationHeaderReceived: authHeader
+        ? {
+            present: true,
+            scheme: authHeader.split(" ")[0],
+            tokenLength: authHeader.slice("Bearer ".length).length,
+          }
+        : { present: false },
+      jwtSub: jwtClaims?.sub ?? null,
+      jwtClaims,
+      authUidFromGetUser: authUserResponse.data.user?.id ?? null,
+      authGetUserResponse: authUserResponse,
+      orderUserId: orderAudit?.order?.user_id ?? null,
+      orderAuditError,
+      supabaseClientInstance: "sb = createServerSupabaseClient() from src/integrations/supabase/server-client.ts",
+      clientExecutionMode: forwardedAuthorization ? "authenticated-bearer" : "anonymous-publishable",
+      tokenForwardedToClient,
+      forwardedAuthorizationHeaderPresent: Boolean(forwardedAuthorization),
+      forwardedAuthorizationScheme: forwardedAuthorization?.split(" ")[0] ?? null,
+    });
 
     const { data: result, error } = await sb.rpc("submit_manual_payment_proof", {
       _order_number: data.order_number,
@@ -163,6 +215,13 @@ export const submitManualPaymentFn = createServerFn({ method: "POST" })
       _screenshot_url: data.screenshot_url,
       _note: data.note,
       _email: data.email,
+    });
+    console.log("[payment-proof-audit] submit_manual_payment_proof RPC response", {
+      file: "src/lib/payments/gateways.functions.ts",
+      function: "submitManualPaymentFn",
+      rpcCallLine: 196,
+      result,
+      error,
     });
     if (error) throw new Error(error.message);
     if (result && typeof result === "object" && "ok" in result && !(result as { ok?: boolean }).ok) {

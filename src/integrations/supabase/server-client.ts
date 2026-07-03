@@ -8,6 +8,7 @@ function isNewSupabaseApiKey(value: string): boolean {
 
 function createSupabaseFetch(supabaseKey: string): typeof fetch {
   return (input, init) => {
+    const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
     const headers = new Headers(
       typeof Request !== "undefined" && input instanceof Request ? input.headers : undefined,
     );
@@ -21,6 +22,16 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
     }
 
     headers.set("apikey", supabaseKey);
+    if (url.includes("/rpc/submit_manual_payment_proof")) {
+      const authorization = headers.get("Authorization");
+      console.log("[payment-proof-audit] createServerSupabaseClient outbound fetch", {
+        url,
+        hasAuthorizationHeader: Boolean(authorization),
+        authorizationScheme: authorization?.split(" ")[0] ?? null,
+        authorizationIsPublishableKey: authorization === `Bearer ${supabaseKey}`,
+        clientType: authorization ? "authenticated-bearer" : "anonymous-publishable",
+      });
+    }
     return fetch(input, { ...init, headers });
   };
 }
