@@ -211,11 +211,25 @@ function ManualForm({
       if (file) {
         setUploading(true);
         const ext = file.name.split(".").pop() || "png";
-        const { data: sess } = await supabase.auth.getSession();
+        const { data: sess, error: sessErr } = await supabase.auth.getSession();
+        const { data: userData, error: userErr } = await supabase.auth.getUser();
+        console.log("[storage-auth-audit] pre-upload", {
+          sessionExists: !!sess.session,
+          accessTokenExists: !!sess.session?.access_token,
+          accessTokenParts: sess.session?.access_token?.split(".").length ?? null,
+          accessTokenPreview: sess.session?.access_token ? `${sess.session.access_token.slice(0, 12)}…${sess.session.access_token.slice(-6)}` : null,
+          sessionUserId: sess.session?.user?.id ?? null,
+          getUserUserId: userData?.user?.id ?? null,
+          sessErr,
+          userErr,
+          supabaseClientId: (supabase as unknown as { __id?: string }).__id ?? "proxy-singleton",
+        });
         const ownerSegment = sess.session?.user?.id ?? "guest";
         const path = `submissions/${ownerSegment}/${orderNumber}/${Date.now()}.${ext}`;
-        const { error } = await supabase.storage.from("payments").upload(path, file, { upsert: false, contentType: file.type });
-        if (error) throw new Error(error.message);
+        const uploadRes = await supabase.storage.from("payments").upload(path, file, { upsert: false, contentType: file.type });
+        console.log("[storage-auth-audit] upload result", { path, error: uploadRes.error, data: uploadRes.data });
+        if (uploadRes.error) throw new Error(uploadRes.error.message);
+
         // Store the object path; admins fetch a short-lived signed URL on demand.
         screenshot_url = path;
         setUploading(false);
