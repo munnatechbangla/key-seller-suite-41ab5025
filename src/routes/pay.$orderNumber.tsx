@@ -226,7 +226,9 @@ function ManualForm({
         });
         const ownerSegment = sess.session?.user?.id ?? "guest";
         const path = `submissions/${ownerSegment}/${orderNumber}/${Date.now()}.${ext}`;
+        console.log("[flow] before upload", { path });
         const uploadRes = await supabase.storage.from("payments").upload(path, file, { upsert: false, contentType: file.type });
+        console.log("[flow] after upload", { error: uploadRes.error, data: uploadRes.data });
         console.log("[storage-auth-audit] upload result", { path, error: uploadRes.error, data: uploadRes.data });
         if (uploadRes.error) throw new Error(uploadRes.error.message);
 
@@ -234,7 +236,12 @@ function ManualForm({
         screenshot_url = path;
         setUploading(false);
       }
-      await submit({
+      console.log("[flow] before submit()", {
+        submitFnName: (submit as unknown as { name?: string })?.name ?? null,
+        submitFnUrl: (submitManualPaymentFn as unknown as { url?: string })?.url ?? null,
+        submitManualPaymentFnName: (submitManualPaymentFn as unknown as { name?: string })?.name ?? null,
+      });
+      const submitResult = await submit({
         data: {
           order_number: orderNumber,
           gateway_slug: gateway.slug,
