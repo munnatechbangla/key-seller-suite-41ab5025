@@ -22,9 +22,31 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
     }
 
     headers.set('apikey', supabaseKey);
+
+    // TEMP AUDIT: log Authorization for Storage payments-bucket writes.
+    try {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request).url;
+      if (url && url.includes('/storage/v1/object/payments/')) {
+        const authz = headers.get('Authorization');
+        // eslint-disable-next-line no-console
+        console.log('[storage-auth-audit] outbound storage fetch', {
+          url,
+          method: (init?.method) || (input instanceof Request ? input.method : 'GET'),
+          hasAuthorization: !!authz,
+          authorizationScheme: authz?.split(' ')[0] ?? null,
+          authorizationIsPublishableKey: authz === `Bearer ${supabaseKey}`,
+          authorizationTokenParts: authz?.startsWith('Bearer ') ? authz.slice(7).split('.').length : null,
+          apikeyPresent: !!headers.get('apikey'),
+        });
+      }
+    } catch {
+      // ignore audit errors
+    }
+
     return fetch(input, { ...init, headers });
   };
 }
+
 
 
 function createSupabaseClient() {
