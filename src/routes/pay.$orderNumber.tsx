@@ -252,9 +252,11 @@ function ManualForm({
           note: note.trim() || undefined,
         },
       });
+      console.log("[flow] after submit()", { submitResult });
       toast.success("Payment submitted — awaiting admin verification");
       onSubmitted();
     } catch (err) {
+      console.log("[flow] submit threw", err);
       toast.error(err instanceof Error ? err.message : "Could not submit");
       onSubmitting(false);
       setUploading(false);
