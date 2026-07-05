@@ -187,6 +187,23 @@ export const getMySubmissionsFn = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+// Read-only: latest submission for a specific order (authenticated user only).
+// Guests fall back to order.status alone. This does NOT modify payment logic.
+export const getMySubmissionForOrderFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { orderNumber: string }) => d)
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase
+      .from("manual_payment_submissions")
+      .select("id, status, admin_note, gateway_slug, transaction_id, screenshot_url, reviewed_at, created_at, orders!inner(order_number)")
+      .eq("orders.order_number", data.orderNumber)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (error) throw new Error(error.message);
+    return { submission: rows?.[0] ?? null };
+  });
+
+
 export const listSubmissionsFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { status?: "pending" | "approved" | "rejected" | "all" }) => d ?? {})
