@@ -94,6 +94,18 @@ export type ThemeConfig = {
   font_url: string;
 };
 
+export type SupportConfig = {
+  whatsapp_number: string;
+  whatsapp_button_text: string;
+  greeting_message: string;
+  support_name: string;
+  working_hours: string;
+  enable_whatsapp: boolean;
+  enable_telegram: boolean;
+  enable_email: boolean;
+  enable_live_chat: boolean;
+};
+
 export type AllSettings = {
   branding: SiteBranding;
   contact: SiteContact;
@@ -103,6 +115,7 @@ export type AllSettings = {
   payment: PaymentConfig;
   analytics: AnalyticsConfig;
   theme: ThemeConfig;
+  support: SupportConfig;
 };
 
 export const defaultSettings: AllSettings = {
@@ -186,6 +199,18 @@ export const defaultSettings: AllSettings = {
     font_family: "Poppins",
     font_url: "https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap",
   },
+  support: {
+    whatsapp_number: "",
+    whatsapp_button_text: "WhatsApp Support",
+    greeting_message:
+      "Hello,\nI need help regarding my order.\n\nOrder Number: {{order_number}}\nCustomer: {{customer_name}}\nEmail: {{customer_email}}\nStatus: {{order_status}}",
+    support_name: "Support Team",
+    working_hours: "Sat–Thu, 10:00–20:00",
+    enable_whatsapp: true,
+    enable_telegram: false,
+    enable_email: true,
+    enable_live_chat: false,
+  },
 };
 
 type SettingsState = {
@@ -232,6 +257,8 @@ export const useSettings = create<SettingsState>((set) => ({
           next.analytics = merge(next.analytics, v as Partial<AnalyticsConfig>);
         } else if (row.group_key === "theme" && row.setting_key === "config") {
           next.theme = merge(next.theme, v as Partial<ThemeConfig>);
+        } else if (row.group_key === "site" && row.setting_key === "support") {
+          next.support = merge(next.support, v as Partial<SupportConfig>);
         }
       }
       set({ settings: next, loaded: true });

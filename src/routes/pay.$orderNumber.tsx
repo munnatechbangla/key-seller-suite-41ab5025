@@ -4,14 +4,36 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
-import { Loader2, ShieldCheck, CreditCard, XCircle, ExternalLink, Upload, ClipboardCheck } from "lucide-react";
+import {
+  Loader2,
+  ShieldCheck,
+  CreditCard,
+  XCircle,
+  ExternalLink,
+  Upload,
+  ClipboardCheck,
+  CheckCircle2,
+  Clock,
+  MessageCircle,
+  RefreshCw,
+  Download,
+  AlertTriangle,
+  Sparkles,
+} from "lucide-react";
 import { getOrderByNumberFn, getMyOrderByNumberFn, simulateGatewayPaymentFn } from "@/lib/orders.functions";
 import { useAuth } from "@/lib/stores";
+import { useSettings } from "@/lib/cms/settings";
 import { initPaymentFn } from "@/lib/payments/init.functions";
-import { listEnabledGatewaysFn, submitManualPaymentFn, type GatewayRow } from "@/lib/payments/gateways.functions";
+import {
+  listEnabledGatewaysFn,
+  submitManualPaymentFn,
+  getMySubmissionForOrderFn,
+  type GatewayRow,
+} from "@/lib/payments/gateways.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 
 const BUILTIN_AUTO = new Set(["sslcommerz", "bkash", "stripe"]);
 
@@ -21,6 +43,46 @@ export const Route = createFileRoute("/pay/$orderNumber")({
   errorComponent: () => <div className="p-8 text-center">Payment page unavailable.</div>,
   notFoundComponent: () => <div className="p-8 text-center">Order not found.</div>,
 });
+
+type TimelineStep = { key: string; label: string; state: "done" | "current" | "todo" | "error" };
+
+function buildTimeline(opts: {
+  submitted: boolean;
+  underReview: boolean;
+  rejected: boolean;
+  approved: boolean;
+  hasLicense: boolean;
+}): TimelineStep[] {
+  const { submitted, underReview, rejected, approved, hasLicense } = opts;
+  const s = (cond: "done" | "current" | "todo" | "error"): "done" | "current" | "todo" | "error" => cond;
+  return [
+    { key: "created", label: "Order Created", state: s("done") },
+    {
+      key: "submitted",
+      label: "Payment Submitted",
+      state: submitted || approved ? "done" : rejected ? "error" : "current",
+    },
+    {
+      key: "review",
+      label: rejected ? "Payment Rejected" : "Under Verification",
+      state: rejected ? "error" : approved ? "done" : underReview ? "current" : "todo",
+    },
+    {
+      key: "approved",
+      label: "Payment Approved",
+      state: approved ? "done" : rejected ? "todo" : "todo",
+    },
+    {
+      key: "delivered",
+      label: "License Delivered",
+      state: approved && hasLicense ? "done" : approved ? "current" : "todo",
+    },
+  ];
+}
+
+function submittedFlag(orderNumber: string) {
+  return `pay:submitted:${orderNumber}`;
+}
 
 function PayPage() {
   const { orderNumber } = Route.useParams();
@@ -32,19 +94,77 @@ function PayPage() {
   const simulate = useServerFn(simulateGatewayPaymentFn);
   const initPayment = useServerFn(initPaymentFn);
   const listGateways = useServerFn(listEnabledGatewaysFn);
+  const fetchSubmission = useServerFn(getMySubmissionForOrderFn);
+  const support = useSettings((s) => s.settings.support);
+  const contact = useSettings((s) => s.settings.contact);
+  const loadSettings = useSettings((s) => s.load);
+  const settingsLoaded = useSettings((s) => s.loaded);
   const qc = useQueryClient();
   const [working, setWorking] = useState<null | "paid" | "failed" | "redirect" | "manual">(null);
+  const [resubmit, setResubmit] = useState(false);
+  const [locallySubmitted, setLocallySubmitted] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem(submittedFlag(orderNumber)) === "1";
+  });
 
-  const q = useQuery({ queryKey: ["order", orderNumber, user?.id ?? "guest"], queryFn: () => fetchOrder({ data: { orderNumber } }) });
+  useEffect(() => {
+    if (!settingsLoaded) loadSettings();
+  }, [settingsLoaded, loadSettings]);
+
+  const q = useQuery({
+    queryKey: ["order", orderNumber, user?.id ?? "guest"],
+    queryFn: () => fetchOrder({ data: { orderNumber } }),
+    refetchInterval: (query) => {
+      const data = query.state.data as { order?: { status?: string } } | undefined;
+      const status = data?.order?.status;
+      return status === "pending" ? 15000 : false;
+    },
+  });
+
+  const subQ = useQuery({
+    queryKey: ["submission", orderNumber],
+    queryFn: () => fetchSubmission({ data: { orderNumber } }),
+    enabled: !!user,
+    refetchInterval: (query) => {
+      const s = (query.state.data as { submission?: { status?: string } } | undefined)?.submission?.status;
+      return s === "pending" ? 15000 : false;
+    },
+  });
+
   const gw = useQuery({ queryKey: ["enabled-gateways"], queryFn: () => listGateways() });
 
   const order = q.data?.order;
-  const alreadyDone = order && order.status !== "pending";
-  const slug = order?.payment_method ?? "";
+  const assignments = (q.data?.assignments as unknown as Array<unknown>) ?? [];
+  const submission = subQ.data?.submission ?? null;
+  const slug: string = order?.payment_method ?? "";
   const gateway: GatewayRow | undefined = gw.data?.gateways.find((g) => g.slug === slug);
   const isManual = gateway?.type === "manual";
   const isCustomAuto = gateway?.type === "custom_auto";
   const isBuiltinAuto = gateway?.type === "builtin" && BUILTIN_AUTO.has(slug);
+
+  const orderStatus = order?.status ?? "pending";
+  const approved = orderStatus === "paid" || orderStatus === "completed";
+  const rejected = submission?.status === "rejected";
+  const pendingSubmission = submission?.status === "pending" || submission?.status === "under_review";
+  const hasSubmission = !!submission || locallySubmitted;
+  const submitted = hasSubmission && !approved;
+  const underReview = pendingSubmission || (locallySubmitted && !rejected && !approved);
+  const showForm = !approved && (!isManual ? true : (!hasSubmission || (rejected && resubmit)));
+  const showSubmittedPanel = isManual && submitted && !rejected && !approved && !resubmit;
+
+  useEffect(() => {
+    if (approved && typeof window !== "undefined") {
+      window.localStorage.removeItem(submittedFlag(orderNumber));
+    }
+  }, [approved, orderNumber]);
+
+  const timeline = buildTimeline({
+    submitted,
+    underReview,
+    rejected,
+    approved,
+    hasLicense: assignments.length > 0,
+  });
 
   const redirectToGateway = async () => {
     if (working || !order) return;
@@ -74,55 +194,102 @@ function PayPage() {
     }
   };
 
+  const refreshStatus = async () => {
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: ["order", orderNumber] }),
+      qc.invalidateQueries({ queryKey: ["submission", orderNumber] }),
+    ]);
+    toast.success("Status refreshed");
+  };
+
+  const customerName = [order?.customer_first_name, order?.customer_last_name].filter(Boolean).join(" ") || (user?.name ?? "Customer");
+  const customerEmail = order?.customer_email ?? user?.email ?? "";
+  const whatsappHref = useMemo(() => {
+    const num = (support.whatsapp_number || contact.whatsapp || "").replace(/[^\d+]/g, "");
+    if (!num) return null;
+    const msg = (support.greeting_message || "")
+      .replaceAll("{{order_number}}", orderNumber)
+      .replaceAll("{{customer_name}}", customerName)
+      .replaceAll("{{customer_email}}", customerEmail)
+      .replaceAll("{{order_status}}", orderStatus);
+    return `https://wa.me/${num.replace(/^\+/, "")}?text=${encodeURIComponent(msg)}`;
+  }, [support, contact, orderNumber, customerName, customerEmail, orderStatus]);
+
   return (
     <div className="min-h-screen">
       <Header />
-      <div className="container mx-auto px-4 py-16 max-w-xl">
-        <div className="rounded-2xl bg-card border border-border p-6 space-y-5">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <ShieldCheck className="h-4 w-4 text-emerald-500" /> Secure checkout
+      <div className="container mx-auto px-4 py-12 md:py-16 max-w-2xl">
+        <div className="rounded-2xl bg-card border border-border p-6 md:p-8 space-y-6 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <ShieldCheck className="h-4 w-4 text-emerald-500" /> Secure checkout
+            </div>
+            <span className={cn(
+              "text-[10px] uppercase tracking-wider px-2 py-1 rounded-full font-semibold",
+              approved ? "bg-emerald-500/15 text-emerald-600"
+              : rejected ? "bg-destructive/15 text-destructive"
+              : underReview ? "bg-amber-500/15 text-amber-600"
+              : "bg-muted text-muted-foreground",
+            )}>
+              {approved ? "Approved" : rejected ? "Rejected" : underReview ? "Under verification" : orderStatus}
+            </span>
           </div>
+
           <div>
             <div className="text-xs text-muted-foreground">Order</div>
-            <div className="font-bold text-lg">#{orderNumber}</div>
+            <div className="font-bold text-2xl tracking-tight">#{orderNumber}</div>
           </div>
 
-          {(q.isLoading || gw.isLoading) && (
-            <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
+          {(q.isLoading || gw.isLoading) ? (
+            <div className="flex items-center justify-center py-10 text-muted-foreground text-sm">
               <Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading…
             </div>
-          )}
-
-          {!q.isLoading && !order && (
+          ) : !order ? (
             <div className="p-4 rounded-xl bg-destructive/10 text-destructive text-sm">Order not found.</div>
-          )}
-
-          {order && !q.isLoading && !gw.isLoading && (
+          ) : (
             <>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <Row label="Amount" value={`$${Number(order.total).toFixed(2)} ${order.currency}`} />
-                <Row label="Method" value={gateway?.name ?? slug ?? "—"} />
-                <Row label="Order status" value={order.status} className="capitalize" />
-                <Row label="Payment status" value={q.data?.paymentStatus ?? "pending"} className="capitalize" />
+                <SummaryRow label="Amount" value={`${Number(order.total).toFixed(2)} ${order.currency}`} />
+                <SummaryRow label="Method" value={gateway?.name ?? slug ?? "—"} />
               </div>
 
-              {alreadyDone ? (
-                <div className="p-4 rounded-xl bg-primary/10 text-sm">
-                  This order has already been processed.{" "}
-                  <Link to="/thank-you" search={{ order: orderNumber }} className="font-semibold text-primary hover:underline">
-                    View confirmation →
-                  </Link>
-                </div>
-              ) : isManual && gateway ? (
+              <Timeline steps={timeline} />
+
+              {approved ? (
+                <ApprovedPanel orderNumber={orderNumber} />
+              ) : rejected && !resubmit ? (
+                <RejectedPanel
+                  reason={submission?.admin_note ?? null}
+                  onResubmit={() => setResubmit(true)}
+                  whatsappHref={support.enable_whatsapp ? whatsappHref : null}
+                  whatsappLabel={support.whatsapp_button_text}
+                  onRefresh={refreshStatus}
+                />
+              ) : showSubmittedPanel ? (
+                <SubmittedPanel
+                  supportName={support.support_name}
+                  workingHours={support.working_hours}
+                  whatsappHref={support.enable_whatsapp ? whatsappHref : null}
+                  whatsappLabel={support.whatsapp_button_text}
+                  onRefresh={refreshStatus}
+                />
+              ) : showForm && isManual && gateway ? (
                 <ManualForm
                   gateway={gateway}
                   orderNumber={orderNumber}
                   working={working === "manual"}
                   onSubmitting={(v) => setWorking(v ? "manual" : null)}
-                  onSubmitted={() => navigate({ to: "/thank-you", search: { order: orderNumber } })}
+                  onSubmitted={() => {
+                    try { window.localStorage.setItem(submittedFlag(orderNumber), "1"); } catch { /* ignore */ }
+                    setLocallySubmitted(true);
+                    setResubmit(false);
+                    setWorking(null);
+                    qc.invalidateQueries({ queryKey: ["submission", orderNumber] });
+                    qc.invalidateQueries({ queryKey: ["order", orderNumber] });
+                  }}
                 />
               ) : isBuiltinAuto || isCustomAuto ? (
-                <>
+                <div className="space-y-3">
                   <p className="text-xs text-muted-foreground">
                     You will be redirected to <span className="font-medium">{gateway?.name ?? slug}</span> to complete payment.
                   </p>
@@ -130,17 +297,15 @@ function PayPage() {
                     type="button"
                     onClick={redirectToGateway}
                     disabled={!!working}
-                    className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow disabled:opacity-60"
+                    className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow disabled:opacity-60 transition-transform active:scale-[.98]"
                   >
                     {working === "redirect" ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
                     Continue to {gateway?.name ?? slug} →
                   </button>
-                </>
+                </div>
               ) : (
-                <>
-                  <p className="text-xs text-muted-foreground">
-                    Sandbox controls — gateway adapter not yet implemented.
-                  </p>
+                <div className="space-y-3">
+                  <p className="text-xs text-muted-foreground">Sandbox controls — gateway adapter not yet implemented.</p>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       type="button"
@@ -161,13 +326,217 @@ function PayPage() {
                       Simulate failure
                     </button>
                   </div>
-                </>
+                </div>
               )}
             </>
           )}
         </div>
       </div>
       <Footer />
+    </div>
+  );
+}
+
+function Timeline({ steps }: { steps: TimelineStep[] }) {
+  return (
+    <ol className="relative space-y-1">
+      {steps.map((s, i) => {
+        const isLast = i === steps.length - 1;
+        const dot =
+          s.state === "done" ? "bg-emerald-500 text-white"
+          : s.state === "current" ? "bg-amber-500 text-white animate-pulse"
+          : s.state === "error" ? "bg-destructive text-white"
+          : "bg-muted text-muted-foreground";
+        const line =
+          s.state === "done" ? "bg-emerald-500/60"
+          : s.state === "error" ? "bg-destructive/60"
+          : "bg-border";
+        const Icon =
+          s.state === "done" ? CheckCircle2
+          : s.state === "error" ? AlertTriangle
+          : s.state === "current" ? Clock
+          : Clock;
+        return (
+          <li key={s.key} className="relative flex items-start gap-3 pb-3">
+            <div className="flex flex-col items-center">
+              <div className={cn("h-7 w-7 rounded-full grid place-items-center shadow-sm transition-all", dot)}>
+                <Icon className="h-3.5 w-3.5" />
+              </div>
+              {!isLast && <div className={cn("w-px flex-1 mt-1 min-h-6", line)} />}
+            </div>
+            <div className="pt-0.5 pb-1">
+              <div className={cn(
+                "text-sm font-semibold",
+                s.state === "todo" && "text-muted-foreground font-medium",
+              )}>{s.label}</div>
+              {s.state === "current" && <div className="text-[11px] text-muted-foreground">In progress…</div>}
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function SummaryRow({ label, value, className = "" }: { label: string; value: string; className?: string }) {
+  return (
+    <div className="rounded-xl bg-muted/40 p-3">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={`font-semibold text-sm ${className}`}>{value}</div>
+    </div>
+  );
+}
+
+function SubmittedPanel({
+  supportName,
+  workingHours,
+  whatsappHref,
+  whatsappLabel,
+  onRefresh,
+}: {
+  supportName: string;
+  workingHours: string;
+  whatsappHref: string | null;
+  whatsappLabel: string;
+  onRefresh: () => void;
+}) {
+  return (
+    <div className="rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent p-5 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className="flex items-start gap-3">
+        <div className="h-10 w-10 rounded-full bg-emerald-500/20 text-emerald-600 grid place-items-center shrink-0">
+          <CheckCircle2 className="h-5 w-5" />
+        </div>
+        <div>
+          <div className="font-bold text-lg">Payment Proof Submitted</div>
+          <p className="text-sm text-muted-foreground">
+            Thank you. We have received your payment proof and our team is verifying it.
+          </p>
+          <div className="mt-2 inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400">
+            <Clock className="h-3 w-3" /> Estimated verification: <span className="font-semibold">5–30 minutes</span>
+          </div>
+        </div>
+      </div>
+      {(supportName || workingHours) && (
+        <div className="text-[11px] text-muted-foreground">
+          {supportName}{workingHours ? ` · ${workingHours}` : ""}
+        </div>
+      )}
+      <ActionButtons onRefresh={onRefresh} whatsappHref={whatsappHref} whatsappLabel={whatsappLabel} />
+    </div>
+  );
+}
+
+function RejectedPanel({
+  reason,
+  onResubmit,
+  whatsappHref,
+  whatsappLabel,
+  onRefresh,
+}: {
+  reason: string | null;
+  onResubmit: () => void;
+  whatsappHref: string | null;
+  whatsappLabel: string;
+  onRefresh: () => void;
+}) {
+  return (
+    <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className="flex items-start gap-3">
+        <div className="h-10 w-10 rounded-full bg-destructive/15 text-destructive grid place-items-center shrink-0">
+          <XCircle className="h-5 w-5" />
+        </div>
+        <div className="min-w-0">
+          <div className="font-bold text-lg">Payment Rejected</div>
+          <p className="text-sm text-muted-foreground">Your previous payment proof was not approved.</p>
+          {reason && (
+            <div className="mt-2 rounded-lg bg-background border border-border p-3 text-sm">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Reason from our team</div>
+              <div className="whitespace-pre-line">{reason}</div>
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={onResubmit}
+          className="inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow text-sm"
+        >
+          <RefreshCw className="h-4 w-4" /> Resubmit Payment
+        </button>
+        {whatsappHref && (
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-card border border-border font-semibold text-sm hover:bg-muted"
+          >
+            <MessageCircle className="h-4 w-4 text-emerald-500" /> {whatsappLabel}
+          </a>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={onRefresh}
+        className="w-full inline-flex items-center justify-center gap-2 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground"
+      >
+        <RefreshCw className="h-3 w-3" /> Check Status
+      </button>
+    </div>
+  );
+}
+
+function ApprovedPanel({ orderNumber }: { orderNumber: string }) {
+  return (
+    <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent p-5 space-y-4 animate-in fade-in zoom-in-95 duration-500">
+      <div className="flex items-start gap-3">
+        <div className="h-10 w-10 rounded-full bg-emerald-500 text-white grid place-items-center shrink-0 shadow-glow">
+          <Sparkles className="h-5 w-5" />
+        </div>
+        <div>
+          <div className="font-bold text-lg">Payment Approved</div>
+          <p className="text-sm text-muted-foreground">Your order is complete. Your product is ready to download.</p>
+        </div>
+      </div>
+      <Link
+        to="/thank-you"
+        search={{ order: orderNumber }}
+        className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow"
+      >
+        <Download className="h-4 w-4" /> Download Product
+      </Link>
+    </div>
+  );
+}
+
+function ActionButtons({
+  onRefresh,
+  whatsappHref,
+  whatsappLabel,
+}: {
+  onRefresh: () => void;
+  whatsappHref: string | null;
+  whatsappLabel: string;
+}) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <button
+        type="button"
+        onClick={onRefresh}
+        className="inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-card border border-border font-semibold text-sm hover:bg-muted transition-colors"
+      >
+        <RefreshCw className="h-4 w-4" /> Check Status
+      </button>
+      {whatsappHref && (
+        <a
+          href={whatsappHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-600 transition-colors"
+        >
+          <MessageCircle className="h-4 w-4" /> {whatsappLabel}
+        </a>
+      )}
     </div>
   );
 }
@@ -211,37 +580,15 @@ function ManualForm({
       if (file) {
         setUploading(true);
         const ext = file.name.split(".").pop() || "png";
-        const { data: sess, error: sessErr } = await supabase.auth.getSession();
-        const { data: userData, error: userErr } = await supabase.auth.getUser();
-        console.log("[storage-auth-audit] pre-upload", {
-          sessionExists: !!sess.session,
-          accessTokenExists: !!sess.session?.access_token,
-          accessTokenParts: sess.session?.access_token?.split(".").length ?? null,
-          accessTokenPreview: sess.session?.access_token ? `${sess.session.access_token.slice(0, 12)}…${sess.session.access_token.slice(-6)}` : null,
-          sessionUserId: sess.session?.user?.id ?? null,
-          getUserUserId: userData?.user?.id ?? null,
-          sessErr,
-          userErr,
-          supabaseClientId: (supabase as unknown as { __id?: string }).__id ?? "proxy-singleton",
-        });
+        const { data: sess } = await supabase.auth.getSession();
         const ownerSegment = sess.session?.user?.id ?? "guest";
         const path = `submissions/${ownerSegment}/${orderNumber}/${Date.now()}.${ext}`;
-        console.log("[flow] before upload", { path });
         const uploadRes = await supabase.storage.from("payments").upload(path, file, { upsert: false, contentType: file.type });
-        console.log("[flow] after upload", { error: uploadRes.error, data: uploadRes.data });
-        console.log("[storage-auth-audit] upload result", { path, error: uploadRes.error, data: uploadRes.data });
         if (uploadRes.error) throw new Error(uploadRes.error.message);
-
-        // Store the object path; admins fetch a short-lived signed URL on demand.
         screenshot_url = path;
         setUploading(false);
       }
-      console.log("[flow] before submit()", {
-        submitFnName: (submit as unknown as { name?: string })?.name ?? null,
-        submitFnUrl: (submitManualPaymentFn as unknown as { url?: string })?.url ?? null,
-        submitManualPaymentFnName: (submitManualPaymentFn as unknown as { name?: string })?.name ?? null,
-      });
-      const submitResult = await submit({
+      await submit({
         data: {
           order_number: orderNumber,
           gateway_slug: gateway.slug,
@@ -252,11 +599,9 @@ function ManualForm({
           note: note.trim() || undefined,
         },
       });
-      console.log("[flow] after submit()", { submitResult });
       toast.success("Payment submitted — awaiting admin verification");
       onSubmitted();
     } catch (err) {
-      console.log("[flow] submit threw", err);
       toast.error(err instanceof Error ? err.message : "Could not submit");
       onSubmitting(false);
       setUploading(false);
@@ -264,14 +609,14 @@ function ManualForm({
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4 animate-in fade-in duration-300">
       {(instructions || accountName || accountNumber || qrUrl) && (
         <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-2 text-sm">
           {instructions && <p className="whitespace-pre-line">{instructions}</p>}
           {(accountName || accountNumber) && (
             <div className="grid grid-cols-2 gap-2 pt-2">
-              {accountName && <Row label="Account name" value={accountName} />}
-              {accountNumber && <Row label="Account number" value={accountNumber} />}
+              {accountName && <SummaryRow label="Account name" value={accountName} />}
+              {accountNumber && <SummaryRow label="Account number" value={accountNumber} />}
             </div>
           )}
           {qrUrl && (
@@ -292,7 +637,7 @@ function ManualForm({
         <label className="text-xs font-semibold block mb-1.5">
           Payment screenshot{requireScreenshot ? " *" : " (optional)"}
         </label>
-        <label className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-card border border-dashed border-border cursor-pointer hover:border-primary text-sm">
+        <label className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-card border border-dashed border-border cursor-pointer hover:border-primary text-sm transition-colors">
           <Upload className="h-4 w-4 text-muted-foreground" />
           <span className="truncate">{file ? file.name : "Choose image…"}</span>
           <input
@@ -310,10 +655,10 @@ function ManualForm({
       <button
         type="submit"
         disabled={working || uploading}
-        className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow disabled:opacity-60"
+        className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow disabled:opacity-60 transition-transform active:scale-[.98]"
       >
         {working || uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ClipboardCheck className="h-4 w-4" />}
-        {uploading ? "Uploading…" : working ? "Submitting…" : "Submit payment proof"}
+        {uploading ? "Uploading…" : working ? "Submitting…" : "Submit Payment Proof"}
       </button>
       <p className="text-[11px] text-muted-foreground text-center">
         Your order will be marked paid after an admin verifies this submission.
@@ -327,15 +672,6 @@ function FieldInput({ label, value, onChange, placeholder }: { label: string; va
     <div>
       <label className="text-xs font-semibold block mb-1.5">{label}</label>
       <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full px-3 py-2 rounded-xl bg-card border border-border text-sm outline-none focus:border-primary" />
-    </div>
-  );
-}
-
-function Row({ label, value, className = "" }: { label: string; value: string; className?: string }) {
-  return (
-    <div className="rounded-xl bg-muted/40 p-3">
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className={`font-semibold ${className}`}>{value}</div>
     </div>
   );
 }

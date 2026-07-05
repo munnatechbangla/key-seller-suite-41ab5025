@@ -22,6 +22,7 @@ type GroupRow = { group_key: string; setting_key: string; value: Record<string, 
 const GROUP_KEYS: Array<{ group: keyof AllSettings; group_key: string; setting_key: string }> = [
   { group: "branding", group_key: "site", setting_key: "branding" },
   { group: "contact", group_key: "site", setting_key: "contact" },
+  { group: "support", group_key: "site", setting_key: "support" },
   { group: "seo", group_key: "seo", setting_key: "defaults" },
   { group: "email", group_key: "email", setting_key: "senders" },
   { group: "social", group_key: "social", setting_key: "links" },
@@ -95,6 +96,7 @@ function AdminSettings() {
         <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="branding">Branding</TabsTrigger>
           <TabsTrigger value="contact">Contact</TabsTrigger>
+          <TabsTrigger value="support">Support</TabsTrigger>
           <TabsTrigger value="seo">SEO</TabsTrigger>
           <TabsTrigger value="email">Email</TabsTrigger>
           <TabsTrigger value="social">Social</TabsTrigger>
@@ -125,6 +127,24 @@ function AdminSettings() {
           <Field label="Telegram" value={data.contact.telegram} onChange={(v) => set("contact", "telegram", v)} />
           <Area label="Address" value={data.contact.address} onChange={(v) => set("contact", "address", v)} />
           <SaveBtn onClick={() => save("contact")} saving={saving === "contact"} />
+        </TabsContent>
+
+        <TabsContent value="support" className="mt-4 space-y-4">
+          <p className="text-xs text-muted-foreground">Support channels shown on the payment status page and elsewhere in the storefront. Templates may use {"{{order_number}}"}, {"{{customer_name}}"}, {"{{customer_email}}"}, and {"{{order_status}}"}.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Field label="Support Name" value={data.support.support_name} onChange={(v) => set("support", "support_name", v)} />
+            <Field label="Working Hours" value={data.support.working_hours} onChange={(v) => set("support", "working_hours", v)} />
+            <Field label="WhatsApp Number (with country code, e.g. +8801XXXXXXXXX)" value={data.support.whatsapp_number} onChange={(v) => set("support", "whatsapp_number", v)} />
+            <Field label="WhatsApp Button Text" value={data.support.whatsapp_button_text} onChange={(v) => set("support", "whatsapp_button_text", v)} />
+          </div>
+          <Area label="Greeting / Prefilled Message Template" value={data.support.greeting_message} onChange={(v) => set("support", "greeting_message", v)} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Toggle label="Enable WhatsApp" value={data.support.enable_whatsapp} onChange={(v) => set("support", "enable_whatsapp", v)} />
+            <Toggle label="Enable Telegram" value={data.support.enable_telegram} onChange={(v) => set("support", "enable_telegram", v)} />
+            <Toggle label="Enable Email" value={data.support.enable_email} onChange={(v) => set("support", "enable_email", v)} />
+            <Toggle label="Enable Live Chat" value={data.support.enable_live_chat} onChange={(v) => set("support", "enable_live_chat", v)} />
+          </div>
+          <SaveBtn onClick={() => save("support")} saving={saving === "support"} />
         </TabsContent>
 
         <TabsContent value="seo" className="mt-4 space-y-4">
