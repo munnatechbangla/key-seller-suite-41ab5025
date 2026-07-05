@@ -94,6 +94,18 @@ export type ThemeConfig = {
   font_url: string;
 };
 
+export type SupportConfig = {
+  whatsapp_number: string;
+  whatsapp_button_text: string;
+  greeting_message: string;
+  support_name: string;
+  working_hours: string;
+  enable_whatsapp: boolean;
+  enable_telegram: boolean;
+  enable_email: boolean;
+  enable_live_chat: boolean;
+};
+
 export type AllSettings = {
   branding: SiteBranding;
   contact: SiteContact;
@@ -103,6 +115,7 @@ export type AllSettings = {
   payment: PaymentConfig;
   analytics: AnalyticsConfig;
   theme: ThemeConfig;
+  support: SupportConfig;
 };
 
 export const defaultSettings: AllSettings = {
