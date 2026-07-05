@@ -25,17 +25,6 @@ export type GatewayRow = {
   config: { [k: string]: JsonValue };
 };
 
-function decodeJwtClaims(token: string): Record<string, unknown> | null {
-  try {
-    const payload = token.split(".")[1];
-    if (!payload) return null;
-    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(payload.length / 4) * 4, "=");
-    return JSON.parse(atob(base64)) as Record<string, unknown>;
-  } catch (error) {
-    console.log("[payment-proof-audit] JWT decode failed", error);
-    return null;
-  }
-}
 
 
 // ---------------- Public (checkout) ----------------
