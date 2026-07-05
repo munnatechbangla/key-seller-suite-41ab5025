@@ -96,6 +96,7 @@ function AdminSettings() {
         <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="branding">Branding</TabsTrigger>
           <TabsTrigger value="contact">Contact</TabsTrigger>
+          <TabsTrigger value="support">Support</TabsTrigger>
           <TabsTrigger value="seo">SEO</TabsTrigger>
           <TabsTrigger value="email">Email</TabsTrigger>
           <TabsTrigger value="social">Social</TabsTrigger>
