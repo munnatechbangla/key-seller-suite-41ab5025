@@ -257,6 +257,8 @@ export const useSettings = create<SettingsState>((set) => ({
           next.analytics = merge(next.analytics, v as Partial<AnalyticsConfig>);
         } else if (row.group_key === "theme" && row.setting_key === "config") {
           next.theme = merge(next.theme, v as Partial<ThemeConfig>);
+        } else if (row.group_key === "site" && row.setting_key === "support") {
+          next.support = merge(next.support, v as Partial<SupportConfig>);
         }
       }
       set({ settings: next, loaded: true });
