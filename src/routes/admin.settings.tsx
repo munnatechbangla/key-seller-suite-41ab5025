@@ -22,6 +22,7 @@ type GroupRow = { group_key: string; setting_key: string; value: Record<string, 
 const GROUP_KEYS: Array<{ group: keyof AllSettings; group_key: string; setting_key: string }> = [
   { group: "branding", group_key: "site", setting_key: "branding" },
   { group: "contact", group_key: "site", setting_key: "contact" },
+  { group: "support", group_key: "site", setting_key: "support" },
   { group: "seo", group_key: "seo", setting_key: "defaults" },
   { group: "email", group_key: "email", setting_key: "senders" },
   { group: "social", group_key: "social", setting_key: "links" },
