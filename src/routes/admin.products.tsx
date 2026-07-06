@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import { MediaPicker } from "@/components/admin/MediaLibrary";
 
 export const Route = createFileRoute("/admin/products")({ component: AdminProducts });
 
