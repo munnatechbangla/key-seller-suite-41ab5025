@@ -326,3 +326,16 @@ function SettingsPointer() {
     </CardContent></Card>
   );
 }
+
+function SeoCenterPointer() {
+  return (
+    <Card><CardContent className="p-6 space-y-2">
+      <p className="text-sm text-muted-foreground">
+        Configure site-wide SEO, search engine verification, analytics pixels, custom scripts, cookie consent, performance hints, and URL redirects.
+      </p>
+      <div className="flex gap-2">
+        <Button asChild><a href="/admin/seo">Open SEO &amp; Analytics Center</a></Button>
+      </div>
+    </CardContent></Card>
+  );
+}
