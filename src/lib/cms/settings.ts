@@ -336,6 +336,8 @@ export const useSettings = create<SettingsState>((set) => ({
           next.theme = merge(next.theme, v as Partial<ThemeConfig>);
         } else if (row.group_key === "site" && row.setting_key === "support") {
           next.support = merge(next.support, v as Partial<SupportConfig>);
+        } else if (row.group_key === "seo_center" && row.setting_key === "config") {
+          next.seo_center = merge(next.seo_center, v as Partial<SeoCenterConfig>);
         }
       }
       set({ settings: next, loaded: true });
