@@ -44,11 +44,13 @@ function ManageProduct() {
           <TabsTrigger value="variations">Variations</TabsTrigger>
           <TabsTrigger value="gallery">Gallery</TabsTrigger>
           <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
+          <TabsTrigger value="rich-content">Rich Content</TabsTrigger>
         </TabsList>
         <TabsContent value="downloads"><DownloadsTab productId={id} /></TabsContent>
         <TabsContent value="variations"><VariationsTab productId={id} /></TabsContent>
         <TabsContent value="gallery"><GalleryTab productId={id} /></TabsContent>
         <TabsContent value="custom-fields"><CustomFieldsTab productId={id} /></TabsContent>
+        <TabsContent value="rich-content"><RichContentTab productId={id} /></TabsContent>
       </Tabs>
     </div>
   );
