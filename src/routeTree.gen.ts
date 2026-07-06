@@ -45,6 +45,7 @@ import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminPaymentLogsRouteImport } from './routes/admin.payment-logs'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
+import { Route as AdminMediaRouteImport } from './routes/admin.media'
 import { Route as AdminMarketplaceRouteImport } from './routes/admin.marketplace'
 import { Route as AdminLicensesRouteImport } from './routes/admin.licenses'
 import { Route as AdminLegalRouteImport } from './routes/admin.legal'
@@ -245,6 +246,11 @@ const AdminOrdersRoute = AdminOrdersRouteImport.update({
   path: '/orders',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminMediaRoute = AdminMediaRouteImport.update({
+  id: '/media',
+  path: '/media',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminMarketplaceRoute = AdminMarketplaceRouteImport.update({
   id: '/marketplace',
   path: '/marketplace',
@@ -381,6 +387,7 @@ export interface FileRoutesByFullPath {
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/marketplace': typeof AdminMarketplaceRoute
+  '/admin/media': typeof AdminMediaRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
@@ -437,6 +444,7 @@ export interface FileRoutesByTo {
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/marketplace': typeof AdminMarketplaceRoute
+  '/admin/media': typeof AdminMediaRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
@@ -495,6 +503,7 @@ export interface FileRoutesById {
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/marketplace': typeof AdminMarketplaceRoute
+  '/admin/media': typeof AdminMediaRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
@@ -554,6 +563,7 @@ export interface FileRouteTypes {
     | '/admin/legal'
     | '/admin/licenses'
     | '/admin/marketplace'
+    | '/admin/media'
     | '/admin/orders'
     | '/admin/payment-logs'
     | '/admin/products'
@@ -610,6 +620,7 @@ export interface FileRouteTypes {
     | '/admin/legal'
     | '/admin/licenses'
     | '/admin/marketplace'
+    | '/admin/media'
     | '/admin/orders'
     | '/admin/payment-logs'
     | '/admin/products'
@@ -667,6 +678,7 @@ export interface FileRouteTypes {
     | '/admin/legal'
     | '/admin/licenses'
     | '/admin/marketplace'
+    | '/admin/media'
     | '/admin/orders'
     | '/admin/payment-logs'
     | '/admin/products'
@@ -978,6 +990,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOrdersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/media': {
+      id: '/admin/media'
+      path: '/media'
+      fullPath: '/admin/media'
+      preLoaderRoute: typeof AdminMediaRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/marketplace': {
       id: '/admin/marketplace'
       path: '/marketplace'
@@ -1141,6 +1160,7 @@ interface AdminRouteChildren {
   AdminLegalRoute: typeof AdminLegalRoute
   AdminLicensesRoute: typeof AdminLicensesRoute
   AdminMarketplaceRoute: typeof AdminMarketplaceRoute
+  AdminMediaRoute: typeof AdminMediaRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminPaymentLogsRoute: typeof AdminPaymentLogsRoute
   AdminProductsRoute: typeof AdminProductsRouteWithChildren
@@ -1165,6 +1185,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminLegalRoute: AdminLegalRoute,
   AdminLicensesRoute: AdminLicensesRoute,
   AdminMarketplaceRoute: AdminMarketplaceRoute,
+  AdminMediaRoute: AdminMediaRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminPaymentLogsRoute: AdminPaymentLogsRoute,
   AdminProductsRoute: AdminProductsRouteWithChildren,
