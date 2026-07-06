@@ -66,6 +66,7 @@ import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminProductsIdRouteImport } from './routes/admin.products.$id'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments.webhook'
+import { Route as ApiPublicNotificationsProcessRouteImport } from './routes/api/public/notifications.process'
 import { Route as ApiPublicPaymentsSslcommerzReturnRouteImport } from './routes/api/public/payments.sslcommerz.return'
 import { Route as ApiPublicPaymentsSslcommerzIpnRouteImport } from './routes/api/public/payments.sslcommerz.ipn'
 import { Route as ApiPublicPaymentsCustomWebhookSlugRouteImport } from './routes/api/public/payments.custom-webhook.$slug'
@@ -356,6 +357,12 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicNotificationsProcessRoute =
+  ApiPublicNotificationsProcessRouteImport.update({
+    id: '/api/public/notifications/process',
+    path: '/api/public/notifications/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPaymentsSslcommerzReturnRoute =
   ApiPublicPaymentsSslcommerzReturnRouteImport.update({
     id: '/api/public/payments/sslcommerz/return',
@@ -432,6 +439,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
+  '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
   '/api/public/payments/sslcommerz/ipn': typeof ApiPublicPaymentsSslcommerzIpnRoute
@@ -493,6 +501,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/products': typeof ProductsIndexRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
+  '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
   '/api/public/payments/sslcommerz/ipn': typeof ApiPublicPaymentsSslcommerzIpnRoute
@@ -556,6 +565,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
+  '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
   '/api/public/payments/sslcommerz/ipn': typeof ApiPublicPaymentsSslcommerzIpnRoute
@@ -620,6 +630,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/products/'
     | '/admin/products/$id'
+    | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
     | '/api/public/payments/custom-webhook/$slug'
     | '/api/public/payments/sslcommerz/ipn'
@@ -681,6 +692,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/products'
     | '/admin/products/$id'
+    | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
     | '/api/public/payments/custom-webhook/$slug'
     | '/api/public/payments/sslcommerz/ipn'
@@ -743,6 +755,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/products/'
     | '/admin/products/$id'
+    | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
     | '/api/public/payments/custom-webhook/$slug'
     | '/api/public/payments/sslcommerz/ipn'
@@ -778,6 +791,7 @@ export interface RootRouteChildren {
   PayOrderNumberRoute: typeof PayOrderNumberRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
+  ApiPublicNotificationsProcessRoute: typeof ApiPublicNotificationsProcessRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicPaymentsCustomWebhookSlugRoute: typeof ApiPublicPaymentsCustomWebhookSlugRoute
   ApiPublicPaymentsSslcommerzIpnRoute: typeof ApiPublicPaymentsSslcommerzIpnRoute
@@ -1185,6 +1199,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/notifications/process': {
+      id: '/api/public/notifications/process'
+      path: '/api/public/notifications/process'
+      fullPath: '/api/public/notifications/process'
+      preLoaderRoute: typeof ApiPublicNotificationsProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/sslcommerz/return': {
       id: '/api/public/payments/sslcommerz/return'
       path: '/api/public/payments/sslcommerz/return'
@@ -1320,6 +1341,7 @@ const rootRouteChildren: RootRouteChildren = {
   PayOrderNumberRoute: PayOrderNumberRoute,
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,
+  ApiPublicNotificationsProcessRoute: ApiPublicNotificationsProcessRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicPaymentsCustomWebhookSlugRoute:
     ApiPublicPaymentsCustomWebhookSlugRoute,
