@@ -15,6 +15,11 @@ import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValu
 import { DeliveryPanel } from "@/components/delivery/DeliveryPanel";
 import { getOrderDeliveryAuthFn, getOrderDeliveryGuestFn } from "@/lib/delivery.functions";
 import { FulfillmentPanel } from "@/components/fulfillment/FulfillmentPanel";
+import { SubscriptionDeliveryPanel, type SubscriptionDeliveryItem } from "@/components/subscriptions/SubscriptionDeliveryPanel";
+import {
+  getOrderSubscriptionDeliveryAuthedFn,
+  getOrderSubscriptionDeliveryGuestFn,
+} from "@/lib/subscriptions.functions";
 
 export const Route = createFileRoute("/thank-you")({
   validateSearch: z.object({ order: z.string().optional(), email: z.string().optional() }),
@@ -40,6 +45,18 @@ function ThankYou() {
       return s === "paid" || s === "failed" || s === "refunded" ? false : 4000;
     },
   });
+
+  const fetchSubAuth = useServerFn(getOrderSubscriptionDeliveryAuthedFn);
+  const fetchSubGuest = useServerFn(getOrderSubscriptionDeliveryGuestFn);
+  const fetchSub = user ? fetchSubAuth : fetchSubGuest;
+  const subQ = useQuery({
+    queryKey: ["sub-delivery", order, email, user?.id ?? "guest"],
+    queryFn: () =>
+      fetchSub({ data: { orderNumber: order!, email } }) as Promise<SubscriptionDeliveryItem[]>,
+    enabled: !!order && q.data?.paymentStatus === "paid",
+  });
+
+
 
   const fetchDeliveryAuth = useServerFn(getOrderDeliveryAuthFn);
   const fetchDeliveryGuest = useServerFn(getOrderDeliveryGuestFn);
@@ -174,6 +191,10 @@ function ThankYou() {
 
               {isPaid && deliveryQ.data && deliveryQ.data.length > 0 && (
                 <DeliveryPanel items={deliveryQ.data} />
+              )}
+
+              {isPaid && subQ.data && subQ.data.length > 0 && (
+                <SubscriptionDeliveryPanel items={subQ.data} />
               )}
 
               {isPaid && q.data.order?.id && (

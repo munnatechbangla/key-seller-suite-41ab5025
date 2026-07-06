@@ -15,6 +15,10 @@ import {
   deleteSubscriptionProfileFn,
   listSubscriptionAssignmentsFn,
   listSubscriptionLogsFn,
+  releaseSubscriptionAssignmentFn,
+  replaceSubscriptionAssignmentFn,
+  markSubscriptionExpiredFn,
+  addSubscriptionNoteFn,
 } from "@/lib/subscriptions.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -674,11 +678,35 @@ function ProfilesTab() {
 }
 
 function AssignmentsTab() {
+  const qc = useQueryClient();
   const fn = useServerFn(listSubscriptionAssignmentsFn);
+  const releaseFn = useServerFn(releaseSubscriptionAssignmentFn);
+  const replaceFn = useServerFn(replaceSubscriptionAssignmentFn);
+  const expireFn = useServerFn(markSubscriptionExpiredFn);
+  const noteFn = useServerFn(addSubscriptionNoteFn);
   const { data = [] } = useQuery({
     queryKey: ["sub-assignments"],
     queryFn: () => fn() as Promise<any[]>,
   });
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["sub-assignments"] });
+    qc.invalidateQueries({ queryKey: ["sub-accounts"] });
+    qc.invalidateQueries({ queryKey: ["sub-dashboard"] });
+    qc.invalidateQueries({ queryKey: ["sub-logs"] });
+  };
+
+  const runAction = async (label: string, p: Promise<any>) => {
+    try {
+      const r = await p;
+      if (r && r.ok === false) toast.error(r.reason ?? "Action failed");
+      else toast.success(label);
+      invalidate();
+    } catch (e: any) {
+      toast.error(e.message);
+    }
+  };
+
   return (
     <div className="rounded-lg border bg-card overflow-hidden">
       <Table>
@@ -690,12 +718,13 @@ function AssignmentsTab() {
             <TableHead>Status</TableHead>
             <TableHead>Assigned</TableHead>
             <TableHead>Expires</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {data.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+              <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                 No assignments yet.
               </TableCell>
             </TableRow>
@@ -714,6 +743,46 @@ function AssignmentsTab() {
                 <TableCell>
                   {a.expires_at ? new Date(a.expires_at).toLocaleDateString() : "—"}
                 </TableCell>
+                <TableCell className="text-right space-x-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      runAction("Replaced", replaceFn({ data: { id: a.id } }))
+                    }
+                  >
+                    Replace
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      runAction("Expired", expireFn({ data: { id: a.id } }))
+                    }
+                  >
+                    Expire
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      if (confirm("Deactivate this assignment?"))
+                        runAction("Deactivated", releaseFn({ data: { id: a.id } }));
+                    }}
+                  >
+                    Deactivate
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const note = prompt("Add a note");
+                      if (note) runAction("Note added", noteFn({ data: { id: a.id, note } }));
+                    }}
+                  >
+                    Note
+                  </Button>
+                </TableCell>
               </TableRow>
             ))
           )}
@@ -722,6 +791,7 @@ function AssignmentsTab() {
     </div>
   );
 }
+
 
 function LogsTab() {
   const fn = useServerFn(listSubscriptionLogsFn);
