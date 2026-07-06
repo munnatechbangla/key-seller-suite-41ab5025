@@ -193,6 +193,10 @@ function ThankYou() {
                 <DeliveryPanel items={deliveryQ.data} />
               )}
 
+              {isPaid && subQ.data && subQ.data.length > 0 && (
+                <SubscriptionDeliveryPanel items={subQ.data} />
+              )}
+
               {isPaid && q.data.order?.id && (
                 <div className="rounded-2xl border border-border bg-card p-4">
                   <h3 className="font-bold mb-3 text-sm">Order status</h3>
