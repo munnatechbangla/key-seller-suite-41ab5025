@@ -26,6 +26,7 @@ const items = [
   { to: "/admin/inventory", label: "Inventory", icon: Boxes },
   { to: "/admin/inventory-dashboard", label: "Inventory Dashboard", icon: TrendingDown },
   { to: "/admin/subscriptions", label: "Subscriptions", icon: Repeat },
+  { to: "/admin/notifications", label: "Notifications", icon: Bell },
   { to: "/admin/health", label: "Health Check", icon: HeartPulse },
   { to: "/admin/demo", label: "Demo Data", icon: Database },
   { to: "/admin/docs", label: "Documentation", icon: BookOpen },
