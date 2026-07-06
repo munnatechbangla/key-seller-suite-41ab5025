@@ -40,6 +40,18 @@ function CheckoutPage() {
   const placeGuest = useServerFn(placeOrderGuestFn);
   const placeAuth = useServerFn(placeOrderAuthFn);
   const validate = useServerFn(validateCouponFn);
+  const saveFieldsAuth = useServerFn(saveOrderCustomFieldsAuthFn);
+  const saveFieldsGuest = useServerFn(saveOrderCustomFieldsGuestFn);
+
+  const cartSlugs = cart.items.map((i) => i.slug);
+  const fieldsQuery = useCheckoutFields(cartSlugs);
+  const customFields = fieldsQuery.data ?? [];
+  const [fieldValues, setFieldValues] = useState<CheckoutFieldValues>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const setFieldValue = (id: string, v: string) => {
+    setFieldValues((s) => ({ ...s, [id]: v }));
+    if (fieldErrors[id]) setFieldErrors((e) => { const n = { ...e }; delete n[id]; return n; });
+  };
 
   const applyCoupon = async () => {
     if (!code.trim()) return;
