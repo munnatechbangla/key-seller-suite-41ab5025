@@ -100,7 +100,8 @@ function OrderRow({ order: o, onStatusChange }: { order: any; onStatusChange: (s
       </TableRow>
       {open && (
         <TableRow>
-          <TableCell colSpan={6} className="bg-muted/30">
+          <TableCell colSpan={6} className="bg-muted/30 space-y-4">
+            <FulfillmentPanel orderId={o.id} authed isAdmin />
             <OrderCustomFieldValues orderId={o.id} authed compact />
           </TableCell>
         </TableRow>
