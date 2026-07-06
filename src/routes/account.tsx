@@ -44,6 +44,7 @@ export const Route = createFileRoute("/account")({
 const tabs = [
   { id: "dashboard", label: "Dashboard", Icon: LayoutDashboard },
   { id: "orders", label: "My Orders", Icon: ShoppingBag },
+  { id: "subscriptions", label: "Subscriptions", Icon: KeyRound },
   { id: "downloads", label: "My Downloads", Icon: Download },
   { id: "licenses", label: "My Licenses", Icon: KeyRound },
   { id: "submissions", label: "Manual Payments", Icon: Receipt },
