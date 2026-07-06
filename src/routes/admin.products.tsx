@@ -152,7 +152,7 @@ function AdminProducts() {
                     <option value="external_url">External URL</option>
                   </select>
                 </div>
-                <div><Label>Thumbnail URL</Label><Input value={(editing as any).thumbnail_url ?? ""} onChange={(e) => setEditing({ ...editing, thumbnail_url: e.target.value } as any)} /></div>
+                <div className="col-span-2"><MediaPicker label="Thumbnail" value={(editing as any).thumbnail_url ?? ""} onChange={(url) => setEditing({ ...editing, thumbnail_url: url } as any)} /></div>
               </div>
               <div><Label>Short description</Label><Textarea rows={2} value={(editing as any).short_description ?? ""} onChange={(e) => setEditing({ ...editing, short_description: e.target.value } as any)} /></div>
               <div><Label>Description</Label><Textarea rows={4} value={(editing as any).description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value } as any)} /></div>
