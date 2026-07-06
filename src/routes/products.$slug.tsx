@@ -142,17 +142,8 @@ function LegacyProductPage() {
   const cart = useCart();
   const wish = useWishlist();
   const cmp = useCompare();
-  const push = useRecent((s) => s.push);
   const recent = useRecent((s) => s.slugs);
 
-  useEffect(() => { push(product.slug); }, [product.slug, push]);
-  useEffect(() => {
-    track("view_item", {
-      currency: "USD",
-      value: product.price,
-      items: [{ item_id: product.slug, item_name: product.name, price: product.price, item_category: product.category }],
-    });
-  }, [product.slug, product.price, product.name, product.category]);
 
   const off = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
   const recentSlugs = recent.filter((s) => s !== product.slug).slice(0, 4);
