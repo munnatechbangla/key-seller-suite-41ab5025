@@ -185,6 +185,12 @@ function ThankYou() {
                   </div>
                 </div>
               )}
+
+              <OrderCustomFieldValues
+                orderId={q.data.order?.id}
+                email={email}
+                authed={!!user}
+              />
             </>
           )}
 
