@@ -187,11 +187,21 @@ function ThankYou() {
             </>
           )}
 
-          <div className="flex flex-wrap gap-3">
-            <a href="https://wa.me/8801000000000" target="_blank" rel="noreferrer" className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-600">
-              <MessageCircle className="h-4 w-4" /> WhatsApp Support
+          <div className="grid grid-cols-2 gap-3">
+            <a
+              href="https://wa.me/8801000000000"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-[52px] items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-emerald-500 px-4 text-sm font-semibold text-white shadow-sm transition-smooth hover:bg-emerald-600 hover:shadow-md"
+            >
+              <MessageCircle className="h-4 w-4 shrink-0" />
+              <span className="sm:hidden">WhatsApp</span>
+              <span className="hidden sm:inline">WhatsApp Support</span>
             </a>
-            <Link to="/account" className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-card border border-border font-semibold text-sm hover:bg-muted">
+            <Link
+              to="/account"
+              className="inline-flex min-h-[52px] items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-border bg-card px-4 text-sm font-semibold shadow-sm transition-smooth hover:bg-muted hover:shadow-md"
+            >
               View my orders
             </Link>
           </div>
