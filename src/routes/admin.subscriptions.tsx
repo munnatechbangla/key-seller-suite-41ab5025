@@ -19,6 +19,13 @@ import {
   replaceSubscriptionAssignmentFn,
   markSubscriptionExpiredFn,
   addSubscriptionNoteFn,
+  extendSubscriptionFn,
+  renewSubscriptionFn,
+  suspendSubscriptionFn,
+  resumeSubscriptionFn,
+  cancelSubscriptionFn,
+  evaluateSubscriptionStatusFn,
+  getSubscriptionRenewalHistoryFn,
 } from "@/lib/subscriptions.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -684,6 +691,19 @@ function AssignmentsTab() {
   const replaceFn = useServerFn(replaceSubscriptionAssignmentFn);
   const expireFn = useServerFn(markSubscriptionExpiredFn);
   const noteFn = useServerFn(addSubscriptionNoteFn);
+  const extendFn = useServerFn(extendSubscriptionFn);
+  const renewFn = useServerFn(renewSubscriptionFn);
+  const suspendFn = useServerFn(suspendSubscriptionFn);
+  const resumeFn = useServerFn(resumeSubscriptionFn);
+  const cancelFn = useServerFn(cancelSubscriptionFn);
+  const evalFn = useServerFn(evaluateSubscriptionStatusFn);
+  const historyFn = useServerFn(getSubscriptionRenewalHistoryFn);
+  const [historyId, setHistoryId] = useState<string | null>(null);
+  const { data: historyRows = [] } = useQuery({
+    queryKey: ["sub-history", historyId],
+    queryFn: () => historyFn({ data: { id: historyId! } }) as Promise<any[]>,
+    enabled: !!historyId,
+  });
   const { data = [] } = useQuery({
     queryKey: ["sub-assignments"],
     queryFn: () => fn() as Promise<any[]>,
@@ -776,11 +796,58 @@ function AssignmentsTab() {
                     variant="ghost"
                     size="sm"
                     onClick={() => {
+                      const d = Number(prompt("Renew for how many days?", "30"));
+                      if (d > 0) runAction("Renewed", renewFn({ data: { id: a.id, days: d } }));
+                    }}
+                  >
+                    Renew
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const d = Number(prompt("Extend by how many days?", "7"));
+                      if (d > 0) runAction("Extended", extendFn({ data: { id: a.id, days: d } }));
+                    }}
+                  >
+                    Extend
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      runAction(
+                        a.status === "suspended" ? "Resumed" : "Suspended",
+                        a.status === "suspended"
+                          ? resumeFn({ data: { id: a.id } })
+                          : suspendFn({ data: { id: a.id } }),
+                      )
+                    }
+                  >
+                    {a.status === "suspended" ? "Resume" : "Suspend"}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      if (confirm("Cancel this subscription?"))
+                        runAction("Cancelled", cancelFn({ data: { id: a.id } }));
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
                       const note = prompt("Add a note");
                       if (note) runAction("Note added", noteFn({ data: { id: a.id, note } }));
                     }}
                   >
                     Note
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setHistoryId(a.id)}>
+                    History
                   </Button>
                 </TableCell>
               </TableRow>
@@ -788,6 +855,36 @@ function AssignmentsTab() {
           )}
         </TableBody>
       </Table>
+      <div className="p-2 border-t flex justify-end">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => runAction("Evaluated", evalFn({ data: {} }))}
+        >
+          Re-evaluate all
+        </Button>
+      </div>
+      <Dialog open={!!historyId} onOpenChange={(o) => !o && setHistoryId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Renewal history</DialogTitle>
+          </DialogHeader>
+          {historyRows.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No renewals recorded.</p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {historyRows.map((h: any) => (
+                <li key={h.id} className="border-b pb-1 flex justify-between">
+                  <span className="capitalize">{h.renewal_type}</span>
+                  <span className="text-muted-foreground">
+                    {h.new_expiry ? new Date(h.new_expiry).toLocaleString() : "—"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

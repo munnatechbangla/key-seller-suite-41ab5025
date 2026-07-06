@@ -2470,48 +2470,75 @@ export type Database = {
       }
       subscription_assignments: {
         Row: {
+          activated_at: string | null
           assigned_at: string
+          auto_renew: boolean
+          cancelled_at: string | null
           created_at: string
           customer_id: string | null
           email: string | null
           expires_at: string | null
           id: string
+          last_notification_at: string | null
           order_id: string | null
           order_item_id: string | null
           profile_id: string | null
+          remaining_days: number | null
+          renewal_count: number
+          renewal_date: string | null
           renewal_required: boolean
+          replaced_at: string | null
           status: Database["public"]["Enums"]["subscription_assignment_status"]
           subscription_account_id: string | null
+          suspended_at: string | null
           updated_at: string
         }
         Insert: {
+          activated_at?: string | null
           assigned_at?: string
+          auto_renew?: boolean
+          cancelled_at?: string | null
           created_at?: string
           customer_id?: string | null
           email?: string | null
           expires_at?: string | null
           id?: string
+          last_notification_at?: string | null
           order_id?: string | null
           order_item_id?: string | null
           profile_id?: string | null
+          remaining_days?: number | null
+          renewal_count?: number
+          renewal_date?: string | null
           renewal_required?: boolean
+          replaced_at?: string | null
           status?: Database["public"]["Enums"]["subscription_assignment_status"]
           subscription_account_id?: string | null
+          suspended_at?: string | null
           updated_at?: string
         }
         Update: {
+          activated_at?: string | null
           assigned_at?: string
+          auto_renew?: boolean
+          cancelled_at?: string | null
           created_at?: string
           customer_id?: string | null
           email?: string | null
           expires_at?: string | null
           id?: string
+          last_notification_at?: string | null
           order_id?: string | null
           order_item_id?: string | null
           profile_id?: string | null
+          remaining_days?: number | null
+          renewal_count?: number
+          renewal_date?: string | null
           renewal_required?: boolean
+          replaced_at?: string | null
           status?: Database["public"]["Enums"]["subscription_assignment_status"]
           subscription_account_id?: string | null
+          suspended_at?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -2647,6 +2674,47 @@ export type Database = {
           },
         ]
       }
+      subscription_renewal_history: {
+        Row: {
+          assignment_id: string
+          created_at: string
+          id: string
+          new_expiry: string | null
+          notes: string | null
+          old_expiry: string | null
+          renewal_type: string
+          renewed_by: string | null
+        }
+        Insert: {
+          assignment_id: string
+          created_at?: string
+          id?: string
+          new_expiry?: string | null
+          notes?: string | null
+          old_expiry?: string | null
+          renewal_type: string
+          renewed_by?: string | null
+        }
+        Update: {
+          assignment_id?: string
+          created_at?: string
+          id?: string
+          new_expiry?: string | null
+          notes?: string | null
+          old_expiry?: string | null
+          renewal_type?: string
+          renewed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_renewal_history_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trending_products: {
         Row: {
           created_at: string
@@ -2743,6 +2811,14 @@ export type Database = {
         Args: { _fulfillment_id: string; _reason?: string }
         Returns: Json
       }
+      admin_cancel_subscription: {
+        Args: { _assignment_id: string; _reason?: string }
+        Returns: Json
+      }
+      admin_extend_subscription: {
+        Args: { _assignment_id: string; _days: number; _notes?: string }
+        Returns: Json
+      }
       admin_get_asset_usage: { Args: { _asset_id: string }; Returns: Json }
       admin_inventory_pool_stats: {
         Args: never
@@ -2815,6 +2891,10 @@ export type Database = {
         Args: { _assignment_id: string; _reason?: string }
         Returns: Json
       }
+      admin_renew_subscription: {
+        Args: { _assignment_id: string; _days: number; _notes?: string }
+        Returns: Json
+      }
       admin_replace_inventory_assignment: {
         Args: { _assignment_id: string }
         Returns: Json
@@ -2827,11 +2907,19 @@ export type Database = {
         Args: { _fulfillment_id: string }
         Returns: Json
       }
+      admin_resume_subscription: {
+        Args: { _assignment_id: string }
+        Returns: Json
+      }
       admin_retry_fulfillment: {
         Args: { _fulfillment_id: string }
         Returns: Json
       }
       admin_subscription_dashboard: { Args: never; Returns: Json }
+      admin_suspend_subscription: {
+        Args: { _assignment_id: string; _reason?: string }
+        Returns: Json
+      }
       admin_update_order_custom_field_value: {
         Args: { _id: string; _value: string }
         Returns: Json
@@ -2865,11 +2953,32 @@ export type Database = {
         Returns: boolean
       }
       enqueue_email_log: { Args: { _row: Json }; Returns: string }
+      evaluate_all_subscriptions: { Args: never; Returns: number }
       evaluate_fulfillment: {
         Args: { _fulfillment_id: string }
         Returns: Database["public"]["Enums"]["fulfillment_status"]
       }
+      evaluate_subscription_status: {
+        Args: { _assignment_id: string }
+        Returns: undefined
+      }
       generate_order_number: { Args: never; Returns: string }
+      get_customer_subscriptions: {
+        Args: { _email?: string }
+        Returns: {
+          account_email: string
+          activated_at: string
+          assignment_id: string
+          auto_renew: boolean
+          expires_at: string
+          product_name: string
+          provider: string
+          remaining_days: number
+          renewal_count: number
+          renewal_date: string
+          status: Database["public"]["Enums"]["subscription_assignment_status"]
+        }[]
+      }
       get_fulfillment_timeline: {
         Args: { _email?: string; _fulfillment_id: string }
         Returns: Json
@@ -2897,6 +3006,25 @@ export type Database = {
       get_order_summary_by_number: {
         Args: { _email?: string; _order_number: string }
         Returns: Json
+      }
+      get_subscription_renewal_history: {
+        Args: { _assignment_id: string }
+        Returns: {
+          assignment_id: string
+          created_at: string
+          id: string
+          new_expiry: string | null
+          notes: string | null
+          old_expiry: string | null
+          renewal_type: string
+          renewed_by: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "subscription_renewal_history"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       has_role: {
         Args: {
@@ -3113,6 +3241,9 @@ export type Database = {
         | "expired"
         | "replaced"
         | "cancelled"
+        | "expiring_soon"
+        | "renewed"
+        | "suspended"
       subscription_mode:
         | "shared_account"
         | "individual_account"
@@ -3339,6 +3470,9 @@ export const Constants = {
         "expired",
         "replaced",
         "cancelled",
+        "expiring_soon",
+        "renewed",
+        "suspended",
       ],
       subscription_mode: [
         "shared_account",

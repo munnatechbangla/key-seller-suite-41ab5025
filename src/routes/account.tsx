@@ -20,7 +20,8 @@ import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValu
 import { DeliveryPanel } from "@/components/delivery/DeliveryPanel";
 import { getMyDeliveriesFn } from "@/lib/delivery.functions";
 import { SubscriptionDeliveryPanel, type SubscriptionDeliveryItem } from "@/components/subscriptions/SubscriptionDeliveryPanel";
-import { getOrderSubscriptionDeliveryAuthedFn } from "@/lib/subscriptions.functions";
+import { SubscriptionLifecycleCard, type LifecycleSubscription } from "@/components/subscriptions/SubscriptionLifecycleCard";
+import { getOrderSubscriptionDeliveryAuthedFn, getMySubscriptionsFn } from "@/lib/subscriptions.functions";
 
 function OrderSubscriptionSection({ orderId }: { orderId: string }) {
   const fn = useServerFn(getOrderSubscriptionDeliveryAuthedFn);
@@ -43,6 +44,7 @@ export const Route = createFileRoute("/account")({
 const tabs = [
   { id: "dashboard", label: "Dashboard", Icon: LayoutDashboard },
   { id: "orders", label: "My Orders", Icon: ShoppingBag },
+  { id: "subscriptions", label: "Subscriptions", Icon: KeyRound },
   { id: "downloads", label: "My Downloads", Icon: Download },
   { id: "licenses", label: "My Licenses", Icon: KeyRound },
   { id: "submissions", label: "Manual Payments", Icon: Receipt },
@@ -93,6 +95,7 @@ function AccountPage() {
         <section className="min-w-0">
           {active === "dashboard" && <DashboardTab />}
           {active === "orders" && <OrdersTab />}
+          {active === "subscriptions" && <SubscriptionsTab />}
           {active === "downloads" && <DownloadsTab />}
           {active === "licenses" && <LicensesTab />}
           {active === "submissions" && <SubmissionsTab />}
@@ -414,6 +417,24 @@ function Field({ label, type = "text", defaultValue, placeholder }: { label: str
     <div>
       <label className="text-sm font-semibold block mb-1.5">{label}</label>
       <input type={type} defaultValue={defaultValue} placeholder={placeholder} className="w-full px-4 py-2.5 rounded-xl bg-card border border-border outline-none focus:border-primary text-sm" />
+    </div>
+  );
+}
+
+function SubscriptionsTab() {
+  const fn = useServerFn(getMySubscriptionsFn);
+  const { data = [], isLoading } = useQuery({
+    queryKey: ["my-subscriptions"],
+    queryFn: () => fn() as Promise<LifecycleSubscription[]>,
+  });
+  if (isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
+  if (data.length === 0)
+    return <div className="text-sm text-muted-foreground">No subscriptions yet.</div>;
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      {data.map((s) => (
+        <SubscriptionLifecycleCard key={s.assignment_id} item={s} />
+      ))}
     </div>
   );
 }
