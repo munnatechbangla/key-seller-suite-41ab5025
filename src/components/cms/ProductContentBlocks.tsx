@@ -32,8 +32,9 @@ function RenderBlock({ block, product }: { block: ProductBlock; product?: any })
       return <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: c.html ?? "" }} />;
 
     case "heading": {
-      const Tag = (`h${Math.min(Math.max(c.level ?? 2, 1), 6)}`) as keyof JSX.IntrinsicElements;
-      const size = c.level <= 2 ? "text-3xl" : c.level === 3 ? "text-2xl" : "text-xl";
+      const level = Math.min(Math.max(Number(c.level ?? 2), 1), 6);
+      const Tag = `h${level}` as unknown as React.ElementType;
+      const size = level <= 2 ? "text-3xl" : level === 3 ? "text-2xl" : "text-xl";
       return <Tag className={cn("font-bold", size)} style={{ textAlign: c.align ?? "left" }}>{c.text}</Tag>;
     }
 
