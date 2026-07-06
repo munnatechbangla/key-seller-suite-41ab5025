@@ -183,8 +183,9 @@ function OrdersList({ orders }: { orders: OrderRow[] }) {
                 </div>
               </div>
             </summary>
-            <div className="border-t border-border p-3">
+            <div className="border-t border-border p-3 space-y-3">
               <OrderCustomFieldValues orderId={o.id} authed={true} compact />
+              <OrderSubscriptionSection orderId={o.id} />
             </div>
           </details>
         );
