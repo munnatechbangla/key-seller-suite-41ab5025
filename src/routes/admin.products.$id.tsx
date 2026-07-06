@@ -19,7 +19,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, Star } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, Star, Copy, GripVertical, ChevronDown, ChevronRight, Eye } from "lucide-react";
+import { CustomFieldsTab } from "@/components/admin/CustomFieldsTab";
 
 export const Route = createFileRoute("/admin/products/$id")({
   component: ManageProduct,
@@ -40,10 +41,12 @@ function ManageProduct() {
           <TabsTrigger value="downloads">Downloads</TabsTrigger>
           <TabsTrigger value="variations">Variations</TabsTrigger>
           <TabsTrigger value="gallery">Gallery</TabsTrigger>
+          <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
         </TabsList>
         <TabsContent value="downloads"><DownloadsTab productId={id} /></TabsContent>
         <TabsContent value="variations"><VariationsTab productId={id} /></TabsContent>
         <TabsContent value="gallery"><GalleryTab productId={id} /></TabsContent>
+        <TabsContent value="custom-fields"><CustomFieldsTab productId={id} /></TabsContent>
       </Tabs>
     </div>
   );
