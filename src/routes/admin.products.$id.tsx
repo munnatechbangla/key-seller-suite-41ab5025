@@ -221,7 +221,7 @@ function GalleryTab({ productId }: { productId: string }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-6 gap-2 items-end p-4 border rounded-lg">
-        <div className="col-span-3"><Label>Image URL</Label><Input value={url} onChange={(e) => setUrl(e.target.value)} /></div>
+        <div className="col-span-3"><MediaPicker label="Image" value={url} onChange={setUrl} /></div>
         <div className="col-span-2"><Label>Alt text</Label><Input value={alt} onChange={(e) => setAlt(e.target.value)} /></div>
         <div>
           <Button size="sm" onClick={() => {
