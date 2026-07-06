@@ -2188,6 +2188,9 @@ export type Database = {
           specs: Json
           status: Database["public"]["Enums"]["product_status"]
           stock_status: Database["public"]["Enums"]["stock_state"]
+          subscription_mode:
+            | Database["public"]["Enums"]["subscription_mode"]
+            | null
           thumbnail_url: string | null
           title: string
           updated_at: string
@@ -2228,6 +2231,9 @@ export type Database = {
           specs?: Json
           status?: Database["public"]["Enums"]["product_status"]
           stock_status?: Database["public"]["Enums"]["stock_state"]
+          subscription_mode?:
+            | Database["public"]["Enums"]["subscription_mode"]
+            | null
           thumbnail_url?: string | null
           title: string
           updated_at?: string
@@ -2268,6 +2274,9 @@ export type Database = {
           specs?: Json
           status?: Database["public"]["Enums"]["product_status"]
           stock_status?: Database["public"]["Enums"]["stock_state"]
+          subscription_mode?:
+            | Database["public"]["Enums"]["subscription_mode"]
+            | null
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
@@ -2377,6 +2386,256 @@ export type Database = {
           value?: Json
         }
         Relationships: []
+      }
+      subscription_accounts: {
+        Row: {
+          account_email: string
+          account_password_encrypted: string | null
+          auto_renew: boolean
+          created_at: string
+          expiry_date: string | null
+          id: string
+          last_checked_at: string | null
+          maximum_profiles: number
+          notes: string | null
+          product_id: string | null
+          provider: string | null
+          recovery_email: string | null
+          recovery_password_encrypted: string | null
+          renewal_date: string | null
+          status: Database["public"]["Enums"]["subscription_account_status"]
+          two_factor_enabled: boolean
+          updated_at: string
+          used_profiles: number
+        }
+        Insert: {
+          account_email: string
+          account_password_encrypted?: string | null
+          auto_renew?: boolean
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          last_checked_at?: string | null
+          maximum_profiles?: number
+          notes?: string | null
+          product_id?: string | null
+          provider?: string | null
+          recovery_email?: string | null
+          recovery_password_encrypted?: string | null
+          renewal_date?: string | null
+          status?: Database["public"]["Enums"]["subscription_account_status"]
+          two_factor_enabled?: boolean
+          updated_at?: string
+          used_profiles?: number
+        }
+        Update: {
+          account_email?: string
+          account_password_encrypted?: string | null
+          auto_renew?: boolean
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          last_checked_at?: string | null
+          maximum_profiles?: number
+          notes?: string | null
+          product_id?: string | null
+          provider?: string | null
+          recovery_email?: string | null
+          recovery_password_encrypted?: string | null
+          renewal_date?: string | null
+          status?: Database["public"]["Enums"]["subscription_account_status"]
+          two_factor_enabled?: boolean
+          updated_at?: string
+          used_profiles?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_accounts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_assignments: {
+        Row: {
+          assigned_at: string
+          created_at: string
+          customer_id: string | null
+          email: string | null
+          expires_at: string | null
+          id: string
+          order_id: string | null
+          order_item_id: string | null
+          profile_id: string | null
+          renewal_required: boolean
+          status: Database["public"]["Enums"]["subscription_assignment_status"]
+          subscription_account_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_at?: string
+          created_at?: string
+          customer_id?: string | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          order_id?: string | null
+          order_item_id?: string | null
+          profile_id?: string | null
+          renewal_required?: boolean
+          status?: Database["public"]["Enums"]["subscription_assignment_status"]
+          subscription_account_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_at?: string
+          created_at?: string
+          customer_id?: string | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          order_id?: string | null
+          order_item_id?: string | null
+          profile_id?: string | null
+          renewal_required?: boolean
+          status?: Database["public"]["Enums"]["subscription_assignment_status"]
+          subscription_account_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_assignments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_assignments_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_assignments_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_assignments_subscription_account_id_fkey"
+            columns: ["subscription_account_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          assignment_id: string | null
+          created_at: string
+          id: string
+          message: string | null
+          metadata: Json
+          profile_id: string | null
+          subscription_account_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          assignment_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          metadata?: Json
+          profile_id?: string | null
+          subscription_account_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          assignment_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          metadata?: Json
+          profile_id?: string | null
+          subscription_account_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_logs_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_logs_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_logs_subscription_account_id_fkey"
+            columns: ["subscription_account_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_profiles: {
+        Row: {
+          avatar: string | null
+          created_at: string
+          id: string
+          pin_code: string | null
+          profile_name: string
+          slot_number: number | null
+          status: Database["public"]["Enums"]["subscription_profile_status"]
+          subscription_account_id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar?: string | null
+          created_at?: string
+          id?: string
+          pin_code?: string | null
+          profile_name: string
+          slot_number?: number | null
+          status?: Database["public"]["Enums"]["subscription_profile_status"]
+          subscription_account_id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar?: string | null
+          created_at?: string
+          id?: string
+          pin_code?: string | null
+          profile_name?: string
+          slot_number?: number | null
+          status?: Database["public"]["Enums"]["subscription_profile_status"]
+          subscription_account_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_profiles_subscription_account_id_fkey"
+            columns: ["subscription_account_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trending_products: {
         Row: {
@@ -2546,6 +2805,7 @@ export type Database = {
         Args: { _fulfillment_id: string }
         Returns: Json
       }
+      admin_subscription_dashboard: { Args: never; Returns: Json }
       admin_update_order_custom_field_value: {
         Args: { _id: string; _value: string }
         Returns: Json
@@ -2791,6 +3051,12 @@ export type Database = {
         | "refunded"
         | "failed"
       payment_status: "pending" | "paid" | "failed" | "refunded"
+      product_delivery_type:
+        | "license"
+        | "download"
+        | "subscription"
+        | "manual"
+        | "external"
       product_status: "draft" | "published" | "archived" | "private"
       product_type:
         | "downloadable"
@@ -2802,6 +3068,25 @@ export type Database = {
       product_visibility: "public" | "members_only" | "hidden"
       review_status: "pending" | "approved" | "rejected"
       stock_state: "in_stock" | "out_of_stock" | "on_backorder"
+      subscription_account_status:
+        | "available"
+        | "assigned"
+        | "expired"
+        | "disabled"
+        | "maintenance"
+      subscription_assignment_status:
+        | "active"
+        | "expired"
+        | "replaced"
+        | "cancelled"
+      subscription_mode:
+        | "shared_account"
+        | "individual_account"
+        | "profile_based"
+        | "email_password"
+        | "activation_code"
+        | "custom"
+      subscription_profile_status: "available" | "assigned" | "blocked"
       variation_status: "active" | "inactive"
     }
     CompositeTypes: {
@@ -2989,6 +3274,13 @@ export const Constants = {
         "failed",
       ],
       payment_status: ["pending", "paid", "failed", "refunded"],
+      product_delivery_type: [
+        "license",
+        "download",
+        "subscription",
+        "manual",
+        "external",
+      ],
       product_status: ["draft", "published", "archived", "private"],
       product_type: [
         "downloadable",
@@ -3001,6 +3293,28 @@ export const Constants = {
       product_visibility: ["public", "members_only", "hidden"],
       review_status: ["pending", "approved", "rejected"],
       stock_state: ["in_stock", "out_of_stock", "on_backorder"],
+      subscription_account_status: [
+        "available",
+        "assigned",
+        "expired",
+        "disabled",
+        "maintenance",
+      ],
+      subscription_assignment_status: [
+        "active",
+        "expired",
+        "replaced",
+        "cancelled",
+      ],
+      subscription_mode: [
+        "shared_account",
+        "individual_account",
+        "profile_based",
+        "email_password",
+        "activation_code",
+        "custom",
+      ],
+      subscription_profile_status: ["available", "assigned", "blocked"],
       variation_status: ["active", "inactive"],
     },
   },
