@@ -678,10 +678,6 @@ function ProfilesTab() {
 }
 
 function AssignmentsTab() {
-  const fn = useServerFn(listSubscriptionAssignmentsFn);
-  const { data = [] } = useQuery({
-    queryKey: ["sub-assignments"],
-function AssignmentsTab() {
   const qc = useQueryClient();
   const fn = useServerFn(listSubscriptionAssignmentsFn);
   const releaseFn = useServerFn(releaseSubscriptionAssignmentFn);
