@@ -59,6 +59,7 @@ import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
+import { Route as AdminProductsIdRouteImport } from './routes/admin.products.$id'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments.webhook'
 import { Route as ApiPublicPaymentsSslcommerzReturnRouteImport } from './routes/api/public/payments.sslcommerz.return'
 import { Route as ApiPublicPaymentsSslcommerzIpnRouteImport } from './routes/api/public/payments.sslcommerz.ipn'
@@ -314,6 +315,11 @@ const AdminAuditRoute = AdminAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminProductsIdRoute = AdminProductsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminProductsRoute,
+} as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -377,7 +383,7 @@ export interface FileRoutesByFullPath {
   '/admin/marketplace': typeof AdminMarketplaceRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
-  '/admin/products': typeof AdminProductsRoute
+  '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/setup': typeof AdminSetupRoute
@@ -390,6 +396,7 @@ export interface FileRoutesByFullPath {
   '/products/$slug': typeof ProductsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/admin/products/$id': typeof AdminProductsIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
   '/api/public/payments/sslcommerz/ipn': typeof ApiPublicPaymentsSslcommerzIpnRoute
@@ -432,7 +439,7 @@ export interface FileRoutesByTo {
   '/admin/marketplace': typeof AdminMarketplaceRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
-  '/admin/products': typeof AdminProductsRoute
+  '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/setup': typeof AdminSetupRoute
@@ -445,6 +452,7 @@ export interface FileRoutesByTo {
   '/products/$slug': typeof ProductsSlugRoute
   '/admin': typeof AdminIndexRoute
   '/products': typeof ProductsIndexRoute
+  '/admin/products/$id': typeof AdminProductsIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
   '/api/public/payments/sslcommerz/ipn': typeof ApiPublicPaymentsSslcommerzIpnRoute
@@ -489,7 +497,7 @@ export interface FileRoutesById {
   '/admin/marketplace': typeof AdminMarketplaceRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
-  '/admin/products': typeof AdminProductsRoute
+  '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/setup': typeof AdminSetupRoute
@@ -502,6 +510,7 @@ export interface FileRoutesById {
   '/products/$slug': typeof ProductsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/admin/products/$id': typeof AdminProductsIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
   '/api/public/payments/sslcommerz/ipn': typeof ApiPublicPaymentsSslcommerzIpnRoute
@@ -560,6 +569,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/admin/'
     | '/products/'
+    | '/admin/products/$id'
     | '/api/public/payments/webhook'
     | '/api/public/payments/custom-webhook/$slug'
     | '/api/public/payments/sslcommerz/ipn'
@@ -615,6 +625,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/admin'
     | '/products'
+    | '/admin/products/$id'
     | '/api/public/payments/webhook'
     | '/api/public/payments/custom-webhook/$slug'
     | '/api/public/payments/sslcommerz/ipn'
@@ -671,6 +682,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/admin/'
     | '/products/'
+    | '/admin/products/$id'
     | '/api/public/payments/webhook'
     | '/api/public/payments/custom-webhook/$slug'
     | '/api/public/payments/sslcommerz/ipn'
@@ -1064,6 +1076,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuditRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/products/$id': {
+      id: '/admin/products/$id'
+      path: '/$id'
+      fullPath: '/admin/products/$id'
+      preLoaderRoute: typeof AdminProductsIdRouteImport
+      parentRoute: typeof AdminProductsRoute
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -1095,6 +1114,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminProductsRouteChildren {
+  AdminProductsIdRoute: typeof AdminProductsIdRoute
+}
+
+const AdminProductsRouteChildren: AdminProductsRouteChildren = {
+  AdminProductsIdRoute: AdminProductsIdRoute,
+}
+
+const AdminProductsRouteWithChildren = AdminProductsRoute._addFileChildren(
+  AdminProductsRouteChildren,
+)
+
 interface AdminRouteChildren {
   AdminAuditRoute: typeof AdminAuditRoute
   AdminAuditLogsRoute: typeof AdminAuditLogsRoute
@@ -1112,7 +1143,7 @@ interface AdminRouteChildren {
   AdminMarketplaceRoute: typeof AdminMarketplaceRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminPaymentLogsRoute: typeof AdminPaymentLogsRoute
-  AdminProductsRoute: typeof AdminProductsRoute
+  AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSetupRoute: typeof AdminSetupRoute
@@ -1136,7 +1167,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminMarketplaceRoute: AdminMarketplaceRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminPaymentLogsRoute: AdminPaymentLogsRoute,
-  AdminProductsRoute: AdminProductsRoute,
+  AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminReviewsRoute: AdminReviewsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSetupRoute: AdminSetupRoute,

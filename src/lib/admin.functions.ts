@@ -43,11 +43,20 @@ export const adminListProductsFn = createServerFn({ method: "GET" })
     await assertAdmin(context);
     const { data, error } = await context.supabase
       .from("products")
-      .select("id, title, slug, regular_price, sale_price, status, stock_status, is_featured, sales_count, created_at")
+      .select("id, title, slug, regular_price, sale_price, status, stock_status, is_featured, sales_count, created_at, product_type, delivery_type, visibility")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
   });
+
+const productTypeEnum = z.enum([
+  "downloadable", "license_key", "subscription", "account", "external", "manual",
+]);
+const deliveryTypeEnum = z.enum([
+  "download", "license_key", "account", "manual", "external_url",
+]);
+const productVisibilityEnum = z.enum(["public", "members_only", "hidden"]);
+const productStatusEnum = z.enum(["draft", "published", "private", "archived"]);
 
 const productSchema = z.object({
   id: z.string().uuid().optional(),
@@ -58,10 +67,14 @@ const productSchema = z.object({
   regular_price: z.number().nonnegative(),
   sale_price: z.number().nonnegative().nullable().optional(),
   thumbnail_url: z.string().nullable().optional(),
-  status: z.enum(["draft", "published", "archived"]).default("published"),
+  status: productStatusEnum.default("published"),
   is_featured: z.boolean().optional(),
   is_digital: z.boolean().optional(),
   is_license_key: z.boolean().optional(),
+  product_type: productTypeEnum.nullable().optional(),
+  delivery_type: deliveryTypeEnum.nullable().optional(),
+  visibility: productVisibilityEnum.nullable().optional(),
+  external_url: z.string().nullable().optional(),
 });
 
 export const adminUpsertProductFn = createServerFn({ method: "POST" })
@@ -69,12 +82,16 @@ export const adminUpsertProductFn = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => productSchema.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    if (data.id) {
-      const { error } = await context.supabase.from("products").update(data).eq("id", data.id);
+    const payload: any = { ...data };
+    if (payload.visibility == null) delete payload.visibility;
+    if (payload.product_type == null) delete payload.product_type;
+    if (payload.delivery_type == null) delete payload.delivery_type;
+    if (payload.id) {
+      const { error } = await context.supabase.from("products").update(payload).eq("id", payload.id);
       if (error) throw new Error(error.message);
-      return { ok: true, id: data.id };
+      return { ok: true, id: payload.id };
     }
-    const { data: row, error } = await context.supabase.from("products").insert(data).select("id").single();
+    const { data: row, error } = await context.supabase.from("products").insert(payload).select("id").single();
     if (error) throw new Error(error.message);
     return { ok: true, id: row.id };
   });
@@ -216,4 +233,176 @@ export const adminImportLicenseKeysFn = createServerFn({ method: "POST" })
     const { error, count } = await context.supabase.from("license_keys").insert(rows, { count: "exact" });
     if (error) throw new Error(error.message);
     return { ok: true, inserted: count ?? rows.length };
+  });
+
+// ---------- Product Downloads ----------
+export const adminListProductDownloadsFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ product_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: rows, error } = await (context.supabase as any)
+      .from("product_downloads")
+      .select("id, product_id, file_name, file_url, version, file_size, sort_order, created_at")
+      .eq("product_id", data.product_id)
+      .order("sort_order", { ascending: true });
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+const downloadSchema = z.object({
+  id: z.string().uuid().optional(),
+  product_id: z.string().uuid(),
+  file_name: z.string().min(1),
+  file_url: z.string().min(1),
+  version: z.string().nullable().optional(),
+  file_size: z.number().int().nonnegative().nullable().optional(),
+  sort_order: z.number().int().optional(),
+});
+
+export const adminUpsertProductDownloadFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => downloadSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const sb = context.supabase as any;
+    if (data.id) {
+      const { error } = await sb.from("product_downloads").update(data).eq("id", data.id);
+      if (error) throw new Error(error.message);
+      return { ok: true, id: data.id };
+    }
+    const { data: row, error } = await sb.from("product_downloads").insert(data).select("id").single();
+    if (error) throw new Error(error.message);
+    return { ok: true, id: row.id };
+  });
+
+export const adminDeleteProductDownloadFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { error } = await (context.supabase as any).from("product_downloads").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ---------- Product Variations ----------
+export const adminListVariationsFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ product_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: rows, error } = await (context.supabase as any)
+      .from("product_variations")
+      .select("id, product_id, name, sku, price, sale_price, compare_price, stock, status, sort_order")
+      .eq("product_id", data.product_id)
+      .order("sort_order", { ascending: true });
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+const variationSchema = z.object({
+  id: z.string().uuid().optional(),
+  product_id: z.string().uuid(),
+  name: z.string().min(1),
+  sku: z.string().nullable().optional(),
+  price: z.number().nonnegative(),
+  compare_price: z.number().nonnegative().nullable().optional(),
+  stock: z.number().int().nullable().optional(),
+  status: z.enum(["active", "inactive"]).optional(),
+  sort_order: z.number().int().optional(),
+});
+
+export const adminUpsertVariationFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => variationSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const sb = context.supabase as any;
+    if (data.id) {
+      const { error } = await sb.from("product_variations").update(data).eq("id", data.id);
+      if (error) throw new Error(error.message);
+      return { ok: true, id: data.id };
+    }
+    const { data: row, error } = await sb.from("product_variations").insert(data).select("id").single();
+    if (error) throw new Error(error.message);
+    return { ok: true, id: row.id };
+  });
+
+export const adminDeleteVariationFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { error } = await (context.supabase as any).from("product_variations").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ---------- Product Images (gallery) ----------
+export const adminListProductImagesFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ product_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: rows, error } = await (context.supabase as any)
+      .from("product_images")
+      .select("id, product_id, url, alt, sort_order, is_primary")
+      .eq("product_id", data.product_id)
+      .order("sort_order", { ascending: true });
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+const imageSchema = z.object({
+  id: z.string().uuid().optional(),
+  product_id: z.string().uuid(),
+  url: z.string().min(1),
+  alt: z.string().nullable().optional(),
+  sort_order: z.number().int().optional(),
+  is_primary: z.boolean().optional(),
+});
+
+export const adminUpsertProductImageFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => imageSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const sb = context.supabase as any;
+    if (data.is_primary) {
+      await sb.from("product_images").update({ is_primary: false }).eq("product_id", data.product_id);
+    }
+    if (data.id) {
+      const { error } = await sb.from("product_images").update(data).eq("id", data.id);
+      if (error) throw new Error(error.message);
+      return { ok: true, id: data.id };
+    }
+    const { data: row, error } = await sb.from("product_images").insert(data).select("id").single();
+    if (error) throw new Error(error.message);
+    return { ok: true, id: row.id };
+  });
+
+export const adminReorderProductImagesFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ items: z.array(z.object({ id: z.string().uuid(), sort_order: z.number().int() })) }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const sb = context.supabase as any;
+    for (const it of data.items) {
+      const { error } = await sb.from("product_images").update({ sort_order: it.sort_order }).eq("id", it.id);
+      if (error) throw new Error(error.message);
+    }
+    return { ok: true };
+  });
+
+export const adminDeleteProductImageFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { error } = await (context.supabase as any).from("product_images").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
