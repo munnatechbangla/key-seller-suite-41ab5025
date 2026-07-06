@@ -19,6 +19,18 @@ import { MyReviewsTab } from "@/components/site/MyReviewsTab";
 import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
 import { DeliveryPanel } from "@/components/delivery/DeliveryPanel";
 import { getMyDeliveriesFn } from "@/lib/delivery.functions";
+import { SubscriptionDeliveryPanel, type SubscriptionDeliveryItem } from "@/components/subscriptions/SubscriptionDeliveryPanel";
+import { getOrderSubscriptionDeliveryAuthedFn } from "@/lib/subscriptions.functions";
+
+function OrderSubscriptionSection({ orderId }: { orderId: string }) {
+  const fn = useServerFn(getOrderSubscriptionDeliveryAuthedFn);
+  const { data } = useQuery({
+    queryKey: ["sub-delivery", orderId],
+    queryFn: () => fn({ data: { orderId } }) as Promise<SubscriptionDeliveryItem[]>,
+  });
+  if (!data || data.length === 0) return null;
+  return <SubscriptionDeliveryPanel items={data} />;
+}
 
 export const Route = createFileRoute("/account")({
   head: () => ({ meta: [{ title: `My Account — ${siteName()}` }] }),
