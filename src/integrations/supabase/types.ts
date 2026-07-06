@@ -994,6 +994,149 @@ export type Database = {
           },
         ]
       }
+      landing_page_sections: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          json_content: Json
+          page_id: string
+          section_key: string
+          section_type: string
+          sort_order: number
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          json_content?: Json
+          page_id: string
+          section_key: string
+          section_type: string
+          sort_order?: number
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          json_content?: Json
+          page_id?: string
+          section_key?: string
+          section_type?: string
+          sort_order?: number
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_page_sections_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "landing_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      landing_page_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          json_content: Json
+          name: string
+          page_type: string
+          preview_image: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          json_content?: Json
+          name: string
+          page_type?: string
+          preview_image?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          json_content?: Json
+          name?: string
+          page_type?: string
+          preview_image?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      landing_pages: {
+        Row: {
+          canonical_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          meta_description: string | null
+          meta_title: string | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          page_type: string
+          published_at: string | null
+          robots: string | null
+          slug: string
+          status: string
+          theme: Json
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          canonical_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          page_type?: string
+          published_at?: string | null
+          robots?: string | null
+          slug: string
+          status?: string
+          theme?: Json
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          canonical_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          page_type?: string
+          published_at?: string | null
+          robots?: string | null
+          slug?: string
+          status?: string
+          theme?: Json
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       legal_pages: {
         Row: {
           canonical_url: string | null
