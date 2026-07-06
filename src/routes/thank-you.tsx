@@ -40,6 +40,13 @@ function ThankYou() {
     },
   });
 
+  const fetchDelivery = user ? useServerFn(getOrderDeliveryAuthFn) : useServerFn(getOrderDeliveryGuestFn);
+  const deliveryQ = useQuery({
+    queryKey: ["delivery", order, email, user?.id ?? "guest"],
+    queryFn: () => fetchDelivery({ data: { orderNumber: order!, email } }),
+    enabled: !!order && q.data?.paymentStatus === "paid",
+  });
+
   const paymentStatus = q.data?.paymentStatus ?? "pending";
   const isPaid = paymentStatus === "paid";
   const isFailed = paymentStatus === "failed";
