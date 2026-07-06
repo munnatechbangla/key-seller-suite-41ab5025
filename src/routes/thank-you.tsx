@@ -14,6 +14,7 @@ import { track } from "@/lib/analytics/track";
 import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
 import { DeliveryPanel } from "@/components/delivery/DeliveryPanel";
 import { getOrderDeliveryAuthFn, getOrderDeliveryGuestFn } from "@/lib/delivery.functions";
+import { FulfillmentPanel } from "@/components/fulfillment/FulfillmentPanel";
 
 export const Route = createFileRoute("/thank-you")({
   validateSearch: z.object({ order: z.string().optional(), email: z.string().optional() }),
@@ -173,6 +174,17 @@ function ThankYou() {
 
               {isPaid && deliveryQ.data && deliveryQ.data.length > 0 && (
                 <DeliveryPanel items={deliveryQ.data} />
+              )}
+
+              {isPaid && q.data.order?.id && (
+                <div className="rounded-2xl border border-border bg-card p-4">
+                  <h3 className="font-bold mb-3 text-sm">Order status</h3>
+                  <FulfillmentPanel
+                    orderId={q.data.order.id}
+                    email={email}
+                    authed={!!user}
+                  />
+                </div>
               )}
 
               {!isPaid && (
