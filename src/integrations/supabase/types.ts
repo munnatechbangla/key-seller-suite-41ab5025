@@ -82,9 +82,11 @@ export type Database = {
       communication_settings: {
         Row: {
           created_at: string
+          email_api_key: string | null
           email_from_address: string | null
           email_from_name: string | null
           email_provider: string
+          email_provider_enabled: boolean
           email_reply_to: string | null
           id: string
           max_retries: number
@@ -98,14 +100,17 @@ export type Database = {
           whatsapp_business_account_id: string | null
           whatsapp_phone_number_id: string | null
           whatsapp_provider: string
+          whatsapp_provider_enabled: boolean
           whatsapp_test_number: string | null
           whatsapp_verify_token: string | null
         }
         Insert: {
           created_at?: string
+          email_api_key?: string | null
           email_from_address?: string | null
           email_from_name?: string | null
           email_provider?: string
+          email_provider_enabled?: boolean
           email_reply_to?: string | null
           id?: string
           max_retries?: number
@@ -119,14 +124,17 @@ export type Database = {
           whatsapp_business_account_id?: string | null
           whatsapp_phone_number_id?: string | null
           whatsapp_provider?: string
+          whatsapp_provider_enabled?: boolean
           whatsapp_test_number?: string | null
           whatsapp_verify_token?: string | null
         }
         Update: {
           created_at?: string
+          email_api_key?: string | null
           email_from_address?: string | null
           email_from_name?: string | null
           email_provider?: string
+          email_provider_enabled?: boolean
           email_reply_to?: string | null
           id?: string
           max_retries?: number
@@ -140,6 +148,7 @@ export type Database = {
           whatsapp_business_account_id?: string | null
           whatsapp_phone_number_id?: string | null
           whatsapp_provider?: string
+          whatsapp_provider_enabled?: boolean
           whatsapp_test_number?: string | null
           whatsapp_verify_token?: string | null
         }
