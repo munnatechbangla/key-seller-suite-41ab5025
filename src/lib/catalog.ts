@@ -34,6 +34,26 @@ export type Product = {
   faqs?: { q: string; a: string }[];
   stock?: number;
   thumbnailUrl?: string | null;
+  seo?: ProductSeo | null;
+};
+
+export type ProductSeo = {
+  meta_title: string | null;
+  meta_description: string | null;
+  focus_keyword: string | null;
+  secondary_keywords: string[];
+  canonical_url: string | null;
+  robots: string | null;
+  og_title: string | null;
+  og_description: string | null;
+  og_image: string | null;
+  twitter_title: string | null;
+  twitter_description: string | null;
+  twitter_image: string | null;
+  schema_enabled: boolean;
+  faq_schema_enabled: boolean;
+  breadcrumb_schema_enabled: boolean;
+  product_schema_enabled: boolean;
 };
 
 // ---------------- Row -> UI mapping ----------------
@@ -56,12 +76,31 @@ type ProductRow = {
   specs: Record<string, string>;
   stock_status: "in_stock" | "out_of_stock" | "on_backorder";
   product_categories?: { slug: string; name: string } | null;
+  meta_title?: string | null;
+  meta_description?: string | null;
+  focus_keyword?: string | null;
+  secondary_keywords?: unknown;
+  canonical_url?: string | null;
+  robots?: string | null;
+  og_title?: string | null;
+  og_description?: string | null;
+  og_image?: string | null;
+  twitter_title?: string | null;
+  twitter_description?: string | null;
+  twitter_image?: string | null;
+  schema_enabled?: boolean | null;
+  faq_schema_enabled?: boolean | null;
+  breadcrumb_schema_enabled?: boolean | null;
+  product_schema_enabled?: boolean | null;
 };
 
 const SELECT_PRODUCT = `
   id, slug, title, short_description, description,
   regular_price, sale_price, thumbnail_url, emoji, delivery_time, badge,
   rating, reviews_count, features, included, specs, stock_status,
+  meta_title, meta_description, focus_keyword, secondary_keywords, canonical_url, robots,
+  og_title, og_description, og_image, twitter_title, twitter_description, twitter_image,
+  schema_enabled, faq_schema_enabled, breadcrumb_schema_enabled, product_schema_enabled,
   product_categories ( slug, name )
 ` as const;
 
@@ -88,6 +127,24 @@ export function mapProduct(row: ProductRow): Product {
     specs: row.specs ?? {},
     stock: row.stock_status === "in_stock" ? 50 : 0,
     thumbnailUrl: row.thumbnail_url,
+    seo: {
+      meta_title: row.meta_title ?? null,
+      meta_description: row.meta_description ?? null,
+      focus_keyword: row.focus_keyword ?? null,
+      secondary_keywords: Array.isArray(row.secondary_keywords) ? (row.secondary_keywords as string[]) : [],
+      canonical_url: row.canonical_url ?? null,
+      robots: row.robots ?? null,
+      og_title: row.og_title ?? null,
+      og_description: row.og_description ?? null,
+      og_image: row.og_image ?? null,
+      twitter_title: row.twitter_title ?? null,
+      twitter_description: row.twitter_description ?? null,
+      twitter_image: row.twitter_image ?? null,
+      schema_enabled: row.schema_enabled ?? true,
+      faq_schema_enabled: row.faq_schema_enabled ?? true,
+      breadcrumb_schema_enabled: row.breadcrumb_schema_enabled ?? true,
+      product_schema_enabled: row.product_schema_enabled ?? true,
+    },
   };
 }
 
