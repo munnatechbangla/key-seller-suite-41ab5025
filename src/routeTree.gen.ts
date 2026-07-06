@@ -46,6 +46,7 @@ import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminPaymentLogsRouteImport } from './routes/admin.payment-logs'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
+import { Route as AdminNotificationsRouteImport } from './routes/admin.notifications'
 import { Route as AdminMediaRouteImport } from './routes/admin.media'
 import { Route as AdminMarketplaceRouteImport } from './routes/admin.marketplace'
 import { Route as AdminLicensesRouteImport } from './routes/admin.licenses'
@@ -254,6 +255,11 @@ const AdminOrdersRoute = AdminOrdersRouteImport.update({
   path: '/orders',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminMediaRoute = AdminMediaRouteImport.update({
   id: '/media',
   path: '/media',
@@ -408,6 +414,7 @@ export interface FileRoutesByFullPath {
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/marketplace': typeof AdminMarketplaceRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
@@ -468,6 +475,7 @@ export interface FileRoutesByTo {
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/marketplace': typeof AdminMarketplaceRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
@@ -530,6 +538,7 @@ export interface FileRoutesById {
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/marketplace': typeof AdminMarketplaceRoute
   '/admin/media': typeof AdminMediaRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
@@ -593,6 +602,7 @@ export interface FileRouteTypes {
     | '/admin/licenses'
     | '/admin/marketplace'
     | '/admin/media'
+    | '/admin/notifications'
     | '/admin/orders'
     | '/admin/payment-logs'
     | '/admin/products'
@@ -653,6 +663,7 @@ export interface FileRouteTypes {
     | '/admin/licenses'
     | '/admin/marketplace'
     | '/admin/media'
+    | '/admin/notifications'
     | '/admin/orders'
     | '/admin/payment-logs'
     | '/admin/products'
@@ -714,6 +725,7 @@ export interface FileRouteTypes {
     | '/admin/licenses'
     | '/admin/marketplace'
     | '/admin/media'
+    | '/admin/notifications'
     | '/admin/orders'
     | '/admin/payment-logs'
     | '/admin/products'
@@ -1033,6 +1045,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOrdersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/notifications': {
+      id: '/admin/notifications'
+      path: '/notifications'
+      fullPath: '/admin/notifications'
+      preLoaderRoute: typeof AdminNotificationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/media': {
       id: '/admin/media'
       path: '/media'
@@ -1220,6 +1239,7 @@ interface AdminRouteChildren {
   AdminLicensesRoute: typeof AdminLicensesRoute
   AdminMarketplaceRoute: typeof AdminMarketplaceRoute
   AdminMediaRoute: typeof AdminMediaRoute
+  AdminNotificationsRoute: typeof AdminNotificationsRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminPaymentLogsRoute: typeof AdminPaymentLogsRoute
   AdminProductsRoute: typeof AdminProductsRouteWithChildren
@@ -1248,6 +1268,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminLicensesRoute: AdminLicensesRoute,
   AdminMarketplaceRoute: AdminMarketplaceRoute,
   AdminMediaRoute: AdminMediaRoute,
+  AdminNotificationsRoute: AdminNotificationsRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminPaymentLogsRoute: AdminPaymentLogsRoute,
   AdminProductsRoute: AdminProductsRouteWithChildren,
