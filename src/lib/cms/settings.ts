@@ -160,15 +160,6 @@ export type AllSettings = {
   support: SupportConfig;
   seo_center: SeoCenterConfig;
 };
-  contact: SiteContact;
-  seo: SeoDefaults;
-  email: EmailSenders;
-  social: SocialLinksMap;
-  payment: PaymentConfig;
-  analytics: AnalyticsConfig;
-  theme: ThemeConfig;
-  support: SupportConfig;
-};
 
 export const defaultSettings: AllSettings = {
   branding: {
