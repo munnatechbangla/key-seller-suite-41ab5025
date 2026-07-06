@@ -34,6 +34,26 @@ export type Product = {
   faqs?: { q: string; a: string }[];
   stock?: number;
   thumbnailUrl?: string | null;
+  seo?: ProductSeo | null;
+};
+
+export type ProductSeo = {
+  meta_title: string | null;
+  meta_description: string | null;
+  focus_keyword: string | null;
+  secondary_keywords: string[];
+  canonical_url: string | null;
+  robots: string | null;
+  og_title: string | null;
+  og_description: string | null;
+  og_image: string | null;
+  twitter_title: string | null;
+  twitter_description: string | null;
+  twitter_image: string | null;
+  schema_enabled: boolean;
+  faq_schema_enabled: boolean;
+  breadcrumb_schema_enabled: boolean;
+  product_schema_enabled: boolean;
 };
 
 // ---------------- Row -> UI mapping ----------------
