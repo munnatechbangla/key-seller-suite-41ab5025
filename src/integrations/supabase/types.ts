@@ -1122,6 +1122,107 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_queue: {
+        Row: {
+          channel: string
+          created_at: string
+          event_key: string
+          id: string
+          last_error: string | null
+          payload_json: Json
+          recipient: string
+          rendered_body: string | null
+          rendered_subject: string | null
+          retry_count: number
+          scheduled_at: string
+          sent_at: string | null
+          status: string
+          template_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          event_key: string
+          id?: string
+          last_error?: string | null
+          payload_json?: Json
+          recipient: string
+          rendered_body?: string | null
+          rendered_subject?: string | null
+          retry_count?: number
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+          template_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          event_key?: string
+          id?: string
+          last_error?: string | null
+          payload_json?: Json
+          recipient?: string
+          rendered_body?: string | null
+          rendered_subject?: string | null
+          retry_count?: number
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+          template_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_queue_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "notification_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_templates: {
+        Row: {
+          body: string
+          channel: string
+          created_at: string
+          event_key: string
+          id: string
+          is_enabled: boolean
+          name: string
+          subject: string | null
+          updated_at: string
+          variables_json: Json
+        }
+        Insert: {
+          body: string
+          channel: string
+          created_at?: string
+          event_key: string
+          id?: string
+          is_enabled?: boolean
+          name: string
+          subject?: string | null
+          updated_at?: string
+          variables_json?: Json
+        }
+        Update: {
+          body?: string
+          channel?: string
+          created_at?: string
+          event_key?: string
+          id?: string
+          is_enabled?: boolean
+          name?: string
+          subject?: string | null
+          updated_at?: string
+          variables_json?: Json
+        }
+        Relationships: []
+      }
       order_custom_field_values: {
         Row: {
           created_at: string
