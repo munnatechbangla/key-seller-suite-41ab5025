@@ -173,6 +173,15 @@ function CheckoutPage() {
             </div>
           </Section>
 
+          <CheckoutCustomFields
+            fields={customFields}
+            values={fieldValues}
+            errors={fieldErrors}
+            onChange={setFieldValue}
+          />
+
+
+
           <Section title="Order notes (optional)">
             <textarea name="notes" rows={3} placeholder="Anything we should know?" className="w-full px-3 py-2.5 rounded-xl bg-card border border-border outline-none focus:border-primary text-sm" />
           </Section>
