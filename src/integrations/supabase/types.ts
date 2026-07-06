@@ -2888,6 +2888,39 @@ export type Database = {
         }
         Relationships: []
       }
+      redirects: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          note: string | null
+          source_path: string
+          status_code: number
+          target_path: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          note?: string | null
+          source_path: string
+          status_code?: number
+          target_path: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          note?: string | null
+          source_path?: string
+          status_code?: number
+          target_path?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       setup_state: {
         Row: {
           completed_at: string | null
