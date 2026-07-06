@@ -1209,6 +1209,50 @@ export type Database = {
           },
         ]
       }
+      product_downloads: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number | null
+          file_url: string
+          id: string
+          product_id: string
+          sort_order: number
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          product_id: string
+          sort_order?: number
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          product_id?: string
+          sort_order?: number
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_downloads_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_faqs: {
         Row: {
           answer: string
@@ -1252,6 +1296,7 @@ export type Database = {
           alt: string | null
           created_at: string
           id: string
+          is_primary: boolean
           product_id: string
           sort_order: number
           url: string
@@ -1260,6 +1305,7 @@ export type Database = {
           alt?: string | null
           created_at?: string
           id?: string
+          is_primary?: boolean
           product_id: string
           sort_order?: number
           url: string
@@ -1268,6 +1314,7 @@ export type Database = {
           alt?: string | null
           created_at?: string
           id?: string
+          is_primary?: boolean
           product_id?: string
           sort_order?: number
           url?: string
@@ -1408,6 +1455,7 @@ export type Database = {
       product_variations: {
         Row: {
           attributes: Json
+          compare_price: number | null
           created_at: string
           id: string
           name: string
@@ -1416,11 +1464,14 @@ export type Database = {
           sale_price: number | null
           sku: string | null
           sort_order: number
+          status: Database["public"]["Enums"]["variation_status"]
+          stock: number | null
           stock_status: Database["public"]["Enums"]["stock_state"]
           updated_at: string
         }
         Insert: {
           attributes?: Json
+          compare_price?: number | null
           created_at?: string
           id?: string
           name: string
@@ -1429,11 +1480,14 @@ export type Database = {
           sale_price?: number | null
           sku?: string | null
           sort_order?: number
+          status?: Database["public"]["Enums"]["variation_status"]
+          stock?: number | null
           stock_status?: Database["public"]["Enums"]["stock_state"]
           updated_at?: string
         }
         Update: {
           attributes?: Json
+          compare_price?: number | null
           created_at?: string
           id?: string
           name?: string
@@ -1442,6 +1496,8 @@ export type Database = {
           sale_price?: number | null
           sku?: string | null
           sort_order?: number
+          status?: Database["public"]["Enums"]["variation_status"]
+          stock?: number | null
           stock_status?: Database["public"]["Enums"]["stock_state"]
           updated_at?: string
         }
@@ -1462,6 +1518,7 @@ export type Database = {
           category_id: string | null
           created_at: string
           delivery_time: string | null
+          delivery_type: Database["public"]["Enums"]["delivery_type"] | null
           description: string | null
           emoji: string | null
           external_url: string | null
@@ -1475,6 +1532,7 @@ export type Database = {
           is_license_key: boolean
           is_subscription: boolean
           is_trending: boolean
+          product_type: Database["public"]["Enums"]["product_type"] | null
           rating: number
           regular_price: number
           reviews_count: number
@@ -1492,6 +1550,7 @@ export type Database = {
           title: string
           updated_at: string
           views_count: number
+          visibility: Database["public"]["Enums"]["product_visibility"]
         }
         Insert: {
           badge?: string | null
@@ -1499,6 +1558,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           delivery_time?: string | null
+          delivery_type?: Database["public"]["Enums"]["delivery_type"] | null
           description?: string | null
           emoji?: string | null
           external_url?: string | null
@@ -1512,6 +1572,7 @@ export type Database = {
           is_license_key?: boolean
           is_subscription?: boolean
           is_trending?: boolean
+          product_type?: Database["public"]["Enums"]["product_type"] | null
           rating?: number
           regular_price?: number
           reviews_count?: number
@@ -1529,6 +1590,7 @@ export type Database = {
           title: string
           updated_at?: string
           views_count?: number
+          visibility?: Database["public"]["Enums"]["product_visibility"]
         }
         Update: {
           badge?: string | null
@@ -1536,6 +1598,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           delivery_time?: string | null
+          delivery_type?: Database["public"]["Enums"]["delivery_type"] | null
           description?: string | null
           emoji?: string | null
           external_url?: string | null
@@ -1549,6 +1612,7 @@ export type Database = {
           is_license_key?: boolean
           is_subscription?: boolean
           is_trending?: boolean
+          product_type?: Database["public"]["Enums"]["product_type"] | null
           rating?: number
           regular_price?: number
           reviews_count?: number
@@ -1566,6 +1630,7 @@ export type Database = {
           title?: string
           updated_at?: string
           views_count?: number
+          visibility?: Database["public"]["Enums"]["product_visibility"]
         }
         Relationships: [
           {
@@ -1919,6 +1984,12 @@ export type Database = {
     Enums: {
       app_role: "admin" | "manager" | "customer" | "affiliate" | "support"
       coupon_type: "percent" | "fixed" | "free_product" | "free_download"
+      delivery_type:
+        | "download"
+        | "license_key"
+        | "account"
+        | "manual"
+        | "external_url"
       license_key_status: "available" | "assigned" | "revoked"
       order_status:
         | "pending"
@@ -1929,9 +2000,18 @@ export type Database = {
         | "refunded"
         | "failed"
       payment_status: "pending" | "paid" | "failed" | "refunded"
-      product_status: "draft" | "published" | "archived"
+      product_status: "draft" | "published" | "archived" | "private"
+      product_type:
+        | "downloadable"
+        | "license_key"
+        | "subscription"
+        | "account"
+        | "external"
+        | "manual"
+      product_visibility: "public" | "members_only" | "hidden"
       review_status: "pending" | "approved" | "rejected"
       stock_state: "in_stock" | "out_of_stock" | "on_backorder"
+      variation_status: "active" | "inactive"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2061,6 +2141,13 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "manager", "customer", "affiliate", "support"],
       coupon_type: ["percent", "fixed", "free_product", "free_download"],
+      delivery_type: [
+        "download",
+        "license_key",
+        "account",
+        "manual",
+        "external_url",
+      ],
       license_key_status: ["available", "assigned", "revoked"],
       order_status: [
         "pending",
@@ -2072,9 +2159,19 @@ export const Constants = {
         "failed",
       ],
       payment_status: ["pending", "paid", "failed", "refunded"],
-      product_status: ["draft", "published", "archived"],
+      product_status: ["draft", "published", "archived", "private"],
+      product_type: [
+        "downloadable",
+        "license_key",
+        "subscription",
+        "account",
+        "external",
+        "manual",
+      ],
+      product_visibility: ["public", "members_only", "hidden"],
       review_status: ["pending", "approved", "rejected"],
       stock_state: ["in_stock", "out_of_stock", "on_backorder"],
+      variation_status: ["active", "inactive"],
     },
   },
 } as const
