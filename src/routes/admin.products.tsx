@@ -119,7 +119,36 @@ function AdminProducts() {
                   <select className="w-full h-10 rounded-md border bg-background px-3 text-sm" value={editing.status ?? "published"} onChange={(e) => setEditing({ ...editing, status: e.target.value })}>
                     <option value="published">published</option>
                     <option value="draft">draft</option>
+                    <option value="private">private</option>
                     <option value="archived">archived</option>
+                  </select>
+                </div>
+                <div><Label>Visibility</Label>
+                  <select className="w-full h-10 rounded-md border bg-background px-3 text-sm" value={(editing as any).visibility ?? "public"} onChange={(e) => setEditing({ ...editing, visibility: e.target.value } as any)}>
+                    <option value="public">public</option>
+                    <option value="members_only">members only</option>
+                    <option value="hidden">hidden</option>
+                  </select>
+                </div>
+                <div><Label>Product type</Label>
+                  <select className="w-full h-10 rounded-md border bg-background px-3 text-sm" value={(editing as any).product_type ?? ""} onChange={(e) => setEditing({ ...editing, product_type: e.target.value || null } as any)}>
+                    <option value="">— select —</option>
+                    <option value="downloadable">Downloadable</option>
+                    <option value="license_key">License key</option>
+                    <option value="subscription">Subscription</option>
+                    <option value="account">Account</option>
+                    <option value="external">External</option>
+                    <option value="manual">Manual delivery</option>
+                  </select>
+                </div>
+                <div><Label>Delivery type</Label>
+                  <select className="w-full h-10 rounded-md border bg-background px-3 text-sm" value={(editing as any).delivery_type ?? ""} onChange={(e) => setEditing({ ...editing, delivery_type: e.target.value || null } as any)}>
+                    <option value="">— select —</option>
+                    <option value="download">Download</option>
+                    <option value="license_key">License key</option>
+                    <option value="account">Account</option>
+                    <option value="manual">Manual</option>
+                    <option value="external_url">External URL</option>
                   </select>
                 </div>
                 <div><Label>Thumbnail URL</Label><Input value={(editing as any).thumbnail_url ?? ""} onChange={(e) => setEditing({ ...editing, thumbnail_url: e.target.value } as any)} /></div>
