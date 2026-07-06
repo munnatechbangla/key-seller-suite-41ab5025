@@ -429,6 +429,44 @@ export type Database = {
           },
         ]
       }
+      fulfillment_logs: {
+        Row: {
+          created_at: string
+          event: string
+          fulfillment_id: string
+          id: string
+          message: string | null
+          metadata: Json
+          performed_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          fulfillment_id: string
+          id?: string
+          message?: string | null
+          metadata?: Json
+          performed_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          fulfillment_id?: string
+          id?: string
+          message?: string | null
+          metadata?: Json
+          performed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fulfillment_logs_fulfillment_id_fkey"
+            columns: ["fulfillment_id"]
+            isOneToOne: false
+            referencedRelation: "order_fulfillments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_assignments: {
         Row: {
           assigned_at: string
@@ -1141,6 +1179,92 @@ export type Database = {
           },
           {
             foreignKeyName: "order_custom_field_values_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_fulfillments: {
+        Row: {
+          attempt_count: number
+          completed_at: string | null
+          created_at: string
+          delivery_type: string | null
+          failure_reason: string | null
+          fulfillment_status: Database["public"]["Enums"]["fulfillment_status"]
+          id: string
+          inventory_assignment_id: string | null
+          last_retry_at: string | null
+          metadata: Json
+          order_id: string
+          order_item_id: string | null
+          product_id: string | null
+          started_at: string | null
+          updated_at: string
+          variation_id: string | null
+        }
+        Insert: {
+          attempt_count?: number
+          completed_at?: string | null
+          created_at?: string
+          delivery_type?: string | null
+          failure_reason?: string | null
+          fulfillment_status?: Database["public"]["Enums"]["fulfillment_status"]
+          id?: string
+          inventory_assignment_id?: string | null
+          last_retry_at?: string | null
+          metadata?: Json
+          order_id: string
+          order_item_id?: string | null
+          product_id?: string | null
+          started_at?: string | null
+          updated_at?: string
+          variation_id?: string | null
+        }
+        Update: {
+          attempt_count?: number
+          completed_at?: string | null
+          created_at?: string
+          delivery_type?: string | null
+          failure_reason?: string | null
+          fulfillment_status?: Database["public"]["Enums"]["fulfillment_status"]
+          id?: string
+          inventory_assignment_id?: string | null
+          last_retry_at?: string | null
+          metadata?: Json
+          order_id?: string
+          order_item_id?: string | null
+          product_id?: string | null
+          started_at?: string | null
+          updated_at?: string
+          variation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_fulfillments_inventory_assignment_id_fkey"
+            columns: ["inventory_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_fulfillments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_fulfillments_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_fulfillments_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
@@ -2342,6 +2466,10 @@ export type Database = {
         Args: { _items: Json; _pool_id: string }
         Returns: Json
       }
+      admin_cancel_fulfillment: {
+        Args: { _fulfillment_id: string; _reason?: string }
+        Returns: Json
+      }
       admin_get_asset_usage: { Args: { _asset_id: string }; Returns: Json }
       admin_inventory_pool_stats: {
         Args: never
@@ -2410,6 +2538,14 @@ export type Database = {
         Args: { _assignment_id: string }
         Returns: Json
       }
+      admin_restart_fulfillment: {
+        Args: { _fulfillment_id: string }
+        Returns: Json
+      }
+      admin_retry_fulfillment: {
+        Args: { _fulfillment_id: string }
+        Returns: Json
+      }
       admin_update_order_custom_field_value: {
         Args: { _id: string; _value: string }
         Returns: Json
@@ -2439,7 +2575,15 @@ export type Database = {
         Returns: boolean
       }
       enqueue_email_log: { Args: { _row: Json }; Returns: string }
+      evaluate_fulfillment: {
+        Args: { _fulfillment_id: string }
+        Returns: Database["public"]["Enums"]["fulfillment_status"]
+      }
       generate_order_number: { Args: never; Returns: string }
+      get_fulfillment_timeline: {
+        Args: { _email?: string; _fulfillment_id: string }
+        Returns: Json
+      }
       get_latest_payment_intent: {
         Args: { _gateway: string; _order_id: string }
         Returns: Json
@@ -2449,6 +2593,10 @@ export type Database = {
         Returns: Json
       }
       get_order_custom_field_values: {
+        Args: { _email?: string; _order_id: string }
+        Returns: Json
+      }
+      get_order_fulfillments: {
         Args: { _email?: string; _order_id: string }
         Returns: Json
       }
@@ -2489,6 +2637,16 @@ export type Database = {
           product_thumbnail: string
           purchased_at: string
         }[]
+      }
+      log_fulfillment_event: {
+        Args: {
+          _event: string
+          _fulfillment_id: string
+          _message?: string
+          _metadata?: Json
+          _performed_by?: string
+        }
+        Returns: undefined
       }
       log_payment_event: { Args: { _entry: Json }; Returns: undefined }
       mark_order_failed: {
@@ -2533,6 +2691,10 @@ export type Database = {
       save_order_custom_field_values: {
         Args: { _email?: string; _order_id: string; _values: Json }
         Returns: Json
+      }
+      start_fulfillment_for_order: {
+        Args: { _order_id: string }
+        Returns: number
       }
       submit_manual_payment_proof: {
         Args: {
@@ -2598,6 +2760,14 @@ export type Database = {
         | "account"
         | "manual"
         | "external_url"
+      fulfillment_status:
+        | "pending"
+        | "processing"
+        | "waiting_inventory"
+        | "manual_review"
+        | "delivered"
+        | "failed"
+        | "cancelled"
       inventory_item_status:
         | "available"
         | "reserved"
@@ -2783,6 +2953,15 @@ export const Constants = {
         "account",
         "manual",
         "external_url",
+      ],
+      fulfillment_status: [
+        "pending",
+        "processing",
+        "waiting_inventory",
+        "manual_review",
+        "delivered",
+        "failed",
+        "cancelled",
       ],
       inventory_item_status: [
         "available",
