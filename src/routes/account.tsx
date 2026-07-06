@@ -17,6 +17,8 @@ import { getMyOrdersFn, getMyDownloadsFn, getMyLicensesFn } from "@/lib/orders.f
 import { getMySubmissionsFn } from "@/lib/payments/gateways.functions";
 import { MyReviewsTab } from "@/components/site/MyReviewsTab";
 import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
+import { DeliveryPanel } from "@/components/delivery/DeliveryPanel";
+import { getMyDeliveriesFn } from "@/lib/delivery.functions";
 
 export const Route = createFileRoute("/account")({
   head: () => ({ meta: [{ title: `My Account — ${siteName()}` }] }),
