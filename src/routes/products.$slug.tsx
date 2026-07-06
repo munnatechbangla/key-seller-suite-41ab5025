@@ -40,40 +40,57 @@ export const Route = createFileRoute("/products/$slug")({
     const reviews = loaderData?.reviews ?? [];
     const path = `/products/${params.slug}`;
     if (!p) return { meta: seoMeta({ path }) };
-    const scripts = [
-      jsonLdScript(productJsonLd({
-        name: p.name,
-        slug: p.slug,
-        description: p.short ?? p.description ?? null,
-        image: p.thumbnailUrl ?? null,
-        price: p.price,
-        oldPrice: p.oldPrice,
-        rating: p.rating,
-        reviews: p.reviews,
-        category: p.categoryName ?? p.category,
-        inStock: (p.stock ?? 1) > 0,
-        reviewSamples: reviews.slice(0, 5).map((r) => ({
-          author: r.display_name || "Verified Customer",
-          rating: r.rating,
-          title: r.title,
-          body: r.body,
-          createdAt: r.created_at,
-        })),
-      })),
-      jsonLdScript(breadcrumbJsonLd([
-        { name: "Home", path: "/" },
-        { name: "Products", path: "/products" },
-        { name: p.name, path },
-      ])),
-    ];
-    if (p.faqs && p.faqs.length) scripts.push(jsonLdScript(faqJsonLd(p.faqs)));
+    const seo = p.seo ?? null;
+    const scripts: Array<{ type: string; children: string }> = [];
+    if (seo?.schema_enabled !== false) {
+      if (seo?.product_schema_enabled !== false) {
+        scripts.push(jsonLdScript(productJsonLd({
+          name: p.name,
+          slug: p.slug,
+          description: seo?.meta_description || p.short || p.description || null,
+          image: seo?.og_image || p.thumbnailUrl || null,
+          price: p.price,
+          oldPrice: p.oldPrice,
+          rating: p.rating,
+          reviews: p.reviews,
+          category: p.categoryName ?? p.category,
+          inStock: (p.stock ?? 1) > 0,
+          reviewSamples: reviews.slice(0, 5).map((r) => ({
+            author: r.display_name || "Verified Customer",
+            rating: r.rating,
+            title: r.title,
+            body: r.body,
+            createdAt: r.created_at,
+          })),
+        })));
+      }
+      if (seo?.breadcrumb_schema_enabled !== false) {
+        scripts.push(jsonLdScript(breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Products", path: "/products" },
+          { name: p.name, path },
+        ])));
+      }
+      if (seo?.faq_schema_enabled !== false && p.faqs && p.faqs.length) {
+        scripts.push(jsonLdScript(faqJsonLd(p.faqs)));
+      }
+    }
     const meta = seoMeta({
-      title: p.name,
-      description: p.short ?? undefined,
+      title: seo?.meta_title || p.name,
+      description: seo?.meta_description || p.short || undefined,
+      ogTitle: seo?.og_title || undefined,
       ogType: "product",
-      image: p.thumbnailUrl ?? undefined,
+      image: seo?.og_image || p.thumbnailUrl || undefined,
       path,
+      noindex: seo?.robots ? /noindex/i.test(seo.robots) : false,
     });
+    if (seo?.og_description) {
+      const idx = meta.findIndex((m) => (m as any).property === "og:description");
+      if (idx >= 0) meta[idx] = { property: "og:description", content: seo.og_description };
+    }
+    if (seo?.twitter_title) meta.push({ name: "twitter:title", content: seo.twitter_title });
+    if (seo?.twitter_description) meta.push({ name: "twitter:description", content: seo.twitter_description });
+    if (seo?.twitter_image) meta.push({ name: "twitter:image", content: seo.twitter_image });
     meta.push(
       { property: "product:price:amount", content: p.price.toFixed(2) },
       { property: "product:price:currency", content: "USD" },
@@ -81,9 +98,10 @@ export const Route = createFileRoute("/products/$slug")({
       { property: "og:price:currency", content: "USD" },
       { property: "product:availability", content: (p.stock ?? 1) > 0 ? "in stock" : "out of stock" },
     );
+    const canonicalHref = seo?.canonical_url || undefined;
     return {
       meta,
-      links: [canonicalLink(path)],
+      links: [canonicalHref ? { rel: "canonical" as const, href: canonicalHref } : canonicalLink(path)],
       scripts,
     };
   },
