@@ -264,3 +264,34 @@ export const exportInventoryFn = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return rows ?? [];
   });
+
+// ---------- Dashboard ----------
+export const getInventoryDashboardSummaryFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { data, error } = await (context.supabase as any).rpc("admin_inventory_summary");
+    if (error) throw new Error(error.message);
+    return (data ?? {}) as Record<string, number>;
+  });
+
+export const getInventoryPoolStatsFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { data, error } = await (context.supabase as any).rpc("admin_inventory_pool_stats");
+    if (error) throw new Error(error.message);
+    return (data as any[]) ?? [];
+  });
+
+export const getInventoryRecentActivityFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ limit: z.number().int().min(1).max(200).default(30) }).parse(d ?? {}))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: rows, error } = await (context.supabase as any).rpc("admin_inventory_recent_activity", {
+      _limit: data.limit,
+    });
+    if (error) throw new Error(error.message);
+    return (rows as any[]) ?? [];
+  });
