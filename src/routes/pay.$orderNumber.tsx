@@ -18,7 +18,6 @@ import {
   RefreshCw,
   Download,
   AlertTriangle,
-  Sparkles,
 } from "lucide-react";
 import { getOrderByNumberFn, getMyOrderByNumberFn, simulateGatewayPaymentFn } from "@/lib/orders.functions";
 import { useAuth } from "@/lib/stores";
@@ -218,19 +217,22 @@ function PayPage() {
   return (
     <div className="min-h-screen">
       <Header />
-      <div className="container mx-auto px-4 py-12 md:py-16 max-w-2xl">
-        <div className="rounded-2xl bg-card border border-border p-6 md:p-8 space-y-6 shadow-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <ShieldCheck className="h-4 w-4 text-emerald-500" /> Secure checkout
+      <div className="mx-auto w-full max-w-[760px] px-4 py-6 md:py-10">
+        <div className="rounded-2xl bg-card border border-border p-5 sm:p-6 md:p-8 space-y-6 shadow-lg overflow-hidden">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+              <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" /> <span className="truncate">Secure checkout</span>
             </div>
-            <span className={cn(
-              "text-[10px] uppercase tracking-wider px-2 py-1 rounded-full font-semibold",
-              approved ? "bg-emerald-500/15 text-emerald-600"
-              : rejected ? "bg-destructive/15 text-destructive"
-              : underReview ? "bg-amber-500/15 text-amber-600"
-              : "bg-muted text-muted-foreground",
-            )}>
+            <span
+              className={cn(
+                "text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full font-semibold shrink-0 whitespace-nowrap",
+                approved ? ""
+                : rejected ? "bg-destructive/15 text-destructive"
+                : underReview ? "bg-amber-500/15 text-amber-600"
+                : "bg-muted text-muted-foreground",
+              )}
+              style={approved ? { backgroundColor: "#0F3D2E", color: "#2EE59D" } : undefined}
+            >
               {approved ? "Approved" : rejected ? "Rejected" : underReview ? "Under verification" : orderStatus}
             </span>
           </div>
@@ -339,7 +341,7 @@ function PayPage() {
 
 function Timeline({ steps }: { steps: TimelineStep[] }) {
   return (
-    <ol className="relative space-y-1">
+    <ol className="relative">
       {steps.map((s, i) => {
         const isLast = i === steps.length - 1;
         const dot =
@@ -357,14 +359,14 @@ function Timeline({ steps }: { steps: TimelineStep[] }) {
           : s.state === "current" ? Clock
           : Clock;
         return (
-          <li key={s.key} className="relative flex items-start gap-3 pb-3">
-            <div className="flex flex-col items-center">
-              <div className={cn("h-7 w-7 rounded-full grid place-items-center shadow-sm transition-all", dot)}>
-                <Icon className="h-3.5 w-3.5" />
+          <li key={s.key} className="relative flex items-start gap-3 pb-5 last:pb-0">
+            <div className="flex flex-col items-center self-stretch">
+              <div className={cn("h-8 w-8 rounded-full grid place-items-center shadow-sm transition-all shrink-0", dot)}>
+                <Icon className="h-4 w-4" />
               </div>
-              {!isLast && <div className={cn("w-px flex-1 mt-1 min-h-6", line)} />}
+              {!isLast && <div className={cn("w-px flex-1 mt-1.5 min-h-8", line)} />}
             </div>
-            <div className="pt-0.5 pb-1">
+            <div className="pt-1 min-w-0">
               <div className={cn(
                 "text-sm font-semibold",
                 s.state === "todo" && "text-muted-foreground font-medium",
@@ -488,22 +490,24 @@ function RejectedPanel({
 
 function ApprovedPanel({ orderNumber }: { orderNumber: string }) {
   return (
-    <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent p-5 space-y-4 animate-in fade-in zoom-in-95 duration-500">
-      <div className="flex items-start gap-3">
-        <div className="h-10 w-10 rounded-full bg-emerald-500 text-white grid place-items-center shrink-0 shadow-glow">
-          <Sparkles className="h-5 w-5" />
+    <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent p-5 sm:p-6 space-y-6 animate-in fade-in zoom-in-95 duration-500">
+      <div className="flex flex-col items-center text-center gap-3">
+        <div className="h-14 w-14 rounded-full bg-emerald-500 text-white grid place-items-center shrink-0 shadow-glow">
+          <CheckCircle2 className="h-7 w-7" strokeWidth={2.5} />
         </div>
-        <div>
-          <div className="font-bold text-lg">Payment Approved</div>
-          <p className="text-sm text-muted-foreground">Your order is complete. Your product is ready to download.</p>
+        <div className="space-y-1">
+          <div className="font-bold text-xl">Payment Approved</div>
+          <div className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Order Verified Successfully</div>
+          <p className="text-xs text-muted-foreground">License delivery completed.</p>
         </div>
       </div>
       <Link
         to="/thank-you"
         search={{ order: orderNumber }}
-        className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow"
+        className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 active:scale-[.98] whitespace-nowrap"
+        style={{ minHeight: 54 }}
       >
-        <Download className="h-4 w-4" /> Download Product
+        <Download className="h-5 w-5 shrink-0" /> Download Product
       </Link>
     </div>
   );
@@ -512,31 +516,50 @@ function ApprovedPanel({ orderNumber }: { orderNumber: string }) {
 function ActionButtons({
   onRefresh,
   whatsappHref,
-  whatsappLabel,
+  whatsappLabel: _whatsappLabel,
 }: {
   onRefresh: () => void;
   whatsappHref: string | null;
   whatsappLabel: string;
 }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+    <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 w-full">
+        {whatsappHref ? (
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-[52px] items-center justify-center gap-2 px-3 rounded-xl bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-600 active:scale-[.98] transition-all whitespace-nowrap"
+          >
+            <MessageCircle className="h-4 w-4 shrink-0" />
+            <span className="hidden min-[380px]:inline">WhatsApp</span>
+            <span className="min-[380px]:hidden">WhatsApp</span>
+          </a>
+        ) : (
+          <button
+            type="button"
+            onClick={onRefresh}
+            className="inline-flex min-h-[52px] items-center justify-center gap-2 px-3 rounded-xl bg-card border border-border font-semibold text-sm hover:bg-muted transition-all whitespace-nowrap"
+          >
+            <RefreshCw className="h-4 w-4 shrink-0" /> Refresh
+          </button>
+        )}
+        <Link
+          to="/account"
+          className="inline-flex min-h-[52px] items-center justify-center gap-2 px-3 rounded-xl bg-card border border-border font-semibold text-sm hover:bg-muted active:scale-[.98] transition-all whitespace-nowrap"
+        >
+          <span className="hidden min-[380px]:inline">My Orders</span>
+          <span className="min-[380px]:hidden">Orders</span>
+        </Link>
+      </div>
       <button
         type="button"
         onClick={onRefresh}
-        className="inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-card border border-border font-semibold text-sm hover:bg-muted transition-colors"
+        className="w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground"
       >
-        <RefreshCw className="h-4 w-4" /> Check Status
+        <RefreshCw className="h-3 w-3" /> Check Status
       </button>
-      {whatsappHref && (
-        <a
-          href={whatsappHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-600 transition-colors"
-        >
-          <MessageCircle className="h-4 w-4" /> {whatsappLabel}
-        </a>
-      )}
     </div>
   );
 }
