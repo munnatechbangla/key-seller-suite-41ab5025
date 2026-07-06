@@ -420,3 +420,21 @@ function Field({ label, type = "text", defaultValue, placeholder }: { label: str
     </div>
   );
 }
+
+function SubscriptionsTab() {
+  const fn = useServerFn(getMySubscriptionsFn);
+  const { data = [], isLoading } = useQuery({
+    queryKey: ["my-subscriptions"],
+    queryFn: () => fn() as Promise<LifecycleSubscription[]>,
+  });
+  if (isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
+  if (data.length === 0)
+    return <div className="text-sm text-muted-foreground">No subscriptions yet.</div>;
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      {data.map((s) => (
+        <SubscriptionLifecycleCard key={s.assignment_id} item={s} />
+      ))}
+    </div>
+  );
+}
