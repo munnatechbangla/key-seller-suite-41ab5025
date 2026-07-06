@@ -68,6 +68,7 @@ import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminProductsIdRouteImport } from './routes/admin.products.$id'
 import { Route as AdminCmsProductLayoutsRouteImport } from './routes/admin.cms.product-layouts'
+import { Route as AdminCmsLandingPagesRouteImport } from './routes/admin.cms.landing-pages'
 import { Route as AdminCmsHomepageRouteImport } from './routes/admin.cms.homepage'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments.webhook'
 import { Route as ApiPublicNotificationsProcessRouteImport } from './routes/api/public/notifications.process'
@@ -370,6 +371,11 @@ const AdminCmsProductLayoutsRoute = AdminCmsProductLayoutsRouteImport.update({
   path: '/product-layouts',
   getParentRoute: () => AdminCmsRoute,
 } as any)
+const AdminCmsLandingPagesRoute = AdminCmsLandingPagesRouteImport.update({
+  id: '/landing-pages',
+  path: '/landing-pages',
+  getParentRoute: () => AdminCmsRoute,
+} as any)
 const AdminCmsHomepageRoute = AdminCmsHomepageRouteImport.update({
   id: '/homepage',
   path: '/homepage',
@@ -465,6 +471,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
+  '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRoute
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
@@ -531,6 +538,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/products': typeof ProductsIndexRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
+  '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRoute
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
@@ -599,6 +607,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
+  '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRoute
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
@@ -668,6 +677,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/products/'
     | '/admin/cms/homepage'
+    | '/admin/cms/landing-pages'
     | '/admin/cms/product-layouts'
     | '/admin/products/$id'
     | '/api/public/notifications/process'
@@ -734,6 +744,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/products'
     | '/admin/cms/homepage'
+    | '/admin/cms/landing-pages'
     | '/admin/cms/product-layouts'
     | '/admin/products/$id'
     | '/api/public/notifications/process'
@@ -801,6 +812,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/products/'
     | '/admin/cms/homepage'
+    | '/admin/cms/landing-pages'
     | '/admin/cms/product-layouts'
     | '/admin/products/$id'
     | '/api/public/notifications/process'
@@ -1261,6 +1273,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCmsProductLayoutsRouteImport
       parentRoute: typeof AdminCmsRoute
     }
+    '/admin/cms/landing-pages': {
+      id: '/admin/cms/landing-pages'
+      path: '/landing-pages'
+      fullPath: '/admin/cms/landing-pages'
+      preLoaderRoute: typeof AdminCmsLandingPagesRouteImport
+      parentRoute: typeof AdminCmsRoute
+    }
     '/admin/cms/homepage': {
       id: '/admin/cms/homepage'
       path: '/homepage'
@@ -1308,11 +1327,13 @@ declare module '@tanstack/react-router' {
 
 interface AdminCmsRouteChildren {
   AdminCmsHomepageRoute: typeof AdminCmsHomepageRoute
+  AdminCmsLandingPagesRoute: typeof AdminCmsLandingPagesRoute
   AdminCmsProductLayoutsRoute: typeof AdminCmsProductLayoutsRoute
 }
 
 const AdminCmsRouteChildren: AdminCmsRouteChildren = {
   AdminCmsHomepageRoute: AdminCmsHomepageRoute,
+  AdminCmsLandingPagesRoute: AdminCmsLandingPagesRoute,
   AdminCmsProductLayoutsRoute: AdminCmsProductLayoutsRoute,
 }
 
