@@ -2343,6 +2343,42 @@ export type Database = {
         Returns: Json
       }
       admin_get_asset_usage: { Args: { _asset_id: string }; Returns: Json }
+      admin_inventory_pool_stats: {
+        Args: never
+        Returns: {
+          assigned: number
+          available: number
+          disabled: number
+          expired: number
+          inventory_type: string
+          is_active: boolean
+          last_assignment_at: string
+          last_updated_at: string
+          low_stock_threshold: number
+          pool_id: string
+          pool_name: string
+          product_id: string
+          product_name: string
+          reserved: number
+          status: string
+          total: number
+        }[]
+      }
+      admin_inventory_recent_activity: {
+        Args: { _limit?: number }
+        Returns: {
+          action: string
+          actor_email: string
+          actor_id: string
+          created_at: string
+          id: string
+          item_id: string
+          meta: Json
+          pool_id: string
+          pool_name: string
+        }[]
+      }
+      admin_inventory_summary: { Args: never; Returns: Json }
       admin_list_inventory_pools: { Args: never; Returns: Json }
       admin_list_media_assets: {
         Args: {
