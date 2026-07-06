@@ -342,7 +342,7 @@ function PayPage() {
 
 function Timeline({ steps }: { steps: TimelineStep[] }) {
   return (
-    <ol className="relative space-y-1">
+    <ol className="relative">
       {steps.map((s, i) => {
         const isLast = i === steps.length - 1;
         const dot =
@@ -360,14 +360,14 @@ function Timeline({ steps }: { steps: TimelineStep[] }) {
           : s.state === "current" ? Clock
           : Clock;
         return (
-          <li key={s.key} className="relative flex items-start gap-3 pb-3">
-            <div className="flex flex-col items-center">
-              <div className={cn("h-7 w-7 rounded-full grid place-items-center shadow-sm transition-all", dot)}>
-                <Icon className="h-3.5 w-3.5" />
+          <li key={s.key} className="relative flex items-start gap-3 pb-5 last:pb-0">
+            <div className="flex flex-col items-center self-stretch">
+              <div className={cn("h-8 w-8 rounded-full grid place-items-center shadow-sm transition-all shrink-0", dot)}>
+                <Icon className="h-4 w-4" />
               </div>
-              {!isLast && <div className={cn("w-px flex-1 mt-1 min-h-6", line)} />}
+              {!isLast && <div className={cn("w-px flex-1 mt-1.5 min-h-8", line)} />}
             </div>
-            <div className="pt-0.5 pb-1">
+            <div className="pt-1 min-w-0">
               <div className={cn(
                 "text-sm font-semibold",
                 s.state === "todo" && "text-muted-foreground font-medium",
