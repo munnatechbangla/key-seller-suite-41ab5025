@@ -79,6 +79,72 @@ export type Database = {
           },
         ]
       }
+      communication_settings: {
+        Row: {
+          created_at: string
+          email_from_address: string | null
+          email_from_name: string | null
+          email_provider: string
+          email_reply_to: string | null
+          id: string
+          max_retries: number
+          smtp_host: string | null
+          smtp_password: string | null
+          smtp_port: number | null
+          smtp_secure: boolean
+          smtp_username: string | null
+          updated_at: string
+          whatsapp_access_token: string | null
+          whatsapp_business_account_id: string | null
+          whatsapp_phone_number_id: string | null
+          whatsapp_provider: string
+          whatsapp_test_number: string | null
+          whatsapp_verify_token: string | null
+        }
+        Insert: {
+          created_at?: string
+          email_from_address?: string | null
+          email_from_name?: string | null
+          email_provider?: string
+          email_reply_to?: string | null
+          id?: string
+          max_retries?: number
+          smtp_host?: string | null
+          smtp_password?: string | null
+          smtp_port?: number | null
+          smtp_secure?: boolean
+          smtp_username?: string | null
+          updated_at?: string
+          whatsapp_access_token?: string | null
+          whatsapp_business_account_id?: string | null
+          whatsapp_phone_number_id?: string | null
+          whatsapp_provider?: string
+          whatsapp_test_number?: string | null
+          whatsapp_verify_token?: string | null
+        }
+        Update: {
+          created_at?: string
+          email_from_address?: string | null
+          email_from_name?: string | null
+          email_provider?: string
+          email_reply_to?: string | null
+          id?: string
+          max_retries?: number
+          smtp_host?: string | null
+          smtp_password?: string | null
+          smtp_port?: number | null
+          smtp_secure?: boolean
+          smtp_username?: string | null
+          updated_at?: string
+          whatsapp_access_token?: string | null
+          whatsapp_business_account_id?: string | null
+          whatsapp_phone_number_id?: string | null
+          whatsapp_provider?: string
+          whatsapp_test_number?: string | null
+          whatsapp_verify_token?: string | null
+        }
+        Relationships: []
+      }
       coupon_usage: {
         Row: {
           coupon_id: string
@@ -3054,6 +3120,19 @@ export type Database = {
         Returns: boolean
       }
       enqueue_email_log: { Args: { _row: Json }; Returns: string }
+      enqueue_event: {
+        Args: { _event_key: string; _payload: Json; _recipient: string }
+        Returns: number
+      }
+      enqueue_notification: {
+        Args: {
+          _channel: string
+          _event_key: string
+          _payload: Json
+          _recipient: string
+        }
+        Returns: string
+      }
       evaluate_all_subscriptions: { Args: never; Returns: number }
       evaluate_fulfillment: {
         Args: { _fulfillment_id: string }
