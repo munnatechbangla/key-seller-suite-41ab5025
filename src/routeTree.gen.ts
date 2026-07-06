@@ -66,6 +66,7 @@ import { Route as AdminCmsRouteImport } from './routes/admin.cms'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminProductsIdRouteImport } from './routes/admin.products.$id'
+import { Route as AdminCmsHomepageRouteImport } from './routes/admin.cms.homepage'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments.webhook'
 import { Route as ApiPublicNotificationsProcessRouteImport } from './routes/api/public/notifications.process'
 import { Route as ApiPublicPaymentsSslcommerzReturnRouteImport } from './routes/api/public/payments.sslcommerz.return'
@@ -357,6 +358,11 @@ const AdminProductsIdRoute = AdminProductsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AdminProductsRoute,
 } as any)
+const AdminCmsHomepageRoute = AdminCmsHomepageRouteImport.update({
+  id: '/homepage',
+  path: '/homepage',
+  getParentRoute: () => AdminCmsRoute,
+} as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -412,7 +418,7 @@ export interface FileRoutesByFullPath {
   '/wishlist': typeof WishlistRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
-  '/admin/cms': typeof AdminCmsRoute
+  '/admin/cms': typeof AdminCmsRouteWithChildren
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/demo': typeof AdminDemoRoute
@@ -445,6 +451,7 @@ export interface FileRoutesByFullPath {
   '/products/$slug': typeof ProductsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/admin/cms/homepage': typeof AdminCmsHomepageRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -475,7 +482,7 @@ export interface FileRoutesByTo {
   '/wishlist': typeof WishlistRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
-  '/admin/cms': typeof AdminCmsRoute
+  '/admin/cms': typeof AdminCmsRouteWithChildren
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/demo': typeof AdminDemoRoute
@@ -508,6 +515,7 @@ export interface FileRoutesByTo {
   '/products/$slug': typeof ProductsSlugRoute
   '/admin': typeof AdminIndexRoute
   '/products': typeof ProductsIndexRoute
+  '/admin/cms/homepage': typeof AdminCmsHomepageRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -540,7 +548,7 @@ export interface FileRoutesById {
   '/wishlist': typeof WishlistRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
-  '/admin/cms': typeof AdminCmsRoute
+  '/admin/cms': typeof AdminCmsRouteWithChildren
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/demo': typeof AdminDemoRoute
@@ -573,6 +581,7 @@ export interface FileRoutesById {
   '/products/$slug': typeof ProductsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/admin/cms/homepage': typeof AdminCmsHomepageRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -639,6 +648,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/admin/'
     | '/products/'
+    | '/admin/cms/homepage'
     | '/admin/products/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
@@ -702,6 +712,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/admin'
     | '/products'
+    | '/admin/cms/homepage'
     | '/admin/products/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
@@ -766,6 +777,7 @@ export interface FileRouteTypes {
     | '/products/$slug'
     | '/admin/'
     | '/products/'
+    | '/admin/cms/homepage'
     | '/admin/products/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
@@ -1211,6 +1223,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsIdRouteImport
       parentRoute: typeof AdminProductsRoute
     }
+    '/admin/cms/homepage': {
+      id: '/admin/cms/homepage'
+      path: '/homepage'
+      fullPath: '/admin/cms/homepage'
+      preLoaderRoute: typeof AdminCmsHomepageRouteImport
+      parentRoute: typeof AdminCmsRoute
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -1249,6 +1268,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminCmsRouteChildren {
+  AdminCmsHomepageRoute: typeof AdminCmsHomepageRoute
+}
+
+const AdminCmsRouteChildren: AdminCmsRouteChildren = {
+  AdminCmsHomepageRoute: AdminCmsHomepageRoute,
+}
+
+const AdminCmsRouteWithChildren = AdminCmsRoute._addFileChildren(
+  AdminCmsRouteChildren,
+)
+
 interface AdminProductsRouteChildren {
   AdminProductsIdRoute: typeof AdminProductsIdRoute
 }
@@ -1264,7 +1295,7 @@ const AdminProductsRouteWithChildren = AdminProductsRoute._addFileChildren(
 interface AdminRouteChildren {
   AdminAuditRoute: typeof AdminAuditRoute
   AdminAuditLogsRoute: typeof AdminAuditLogsRoute
-  AdminCmsRoute: typeof AdminCmsRoute
+  AdminCmsRoute: typeof AdminCmsRouteWithChildren
   AdminCouponsRoute: typeof AdminCouponsRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
   AdminDemoRoute: typeof AdminDemoRoute
@@ -1294,7 +1325,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAuditRoute: AdminAuditRoute,
   AdminAuditLogsRoute: AdminAuditLogsRoute,
-  AdminCmsRoute: AdminCmsRoute,
+  AdminCmsRoute: AdminCmsRouteWithChildren,
   AdminCouponsRoute: AdminCouponsRoute,
   AdminCustomersRoute: AdminCustomersRoute,
   AdminDemoRoute: AdminDemoRoute,
