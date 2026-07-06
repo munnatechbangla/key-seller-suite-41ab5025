@@ -54,6 +54,9 @@ function ThankYou() {
     queryFn: () =>
       fetchSub({ data: { orderNumber: order!, email } }) as Promise<SubscriptionDeliveryItem[]>,
     enabled: !!order && q.data?.paymentStatus === "paid",
+  });
+
+
 
   const fetchDeliveryAuth = useServerFn(getOrderDeliveryAuthFn);
   const fetchDeliveryGuest = useServerFn(getOrderDeliveryGuestFn);
