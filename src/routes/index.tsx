@@ -24,6 +24,8 @@ import { subscribeNewsletterFn } from "@/lib/newsletter.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { categoriesQuery } from "@/lib/catalog";
 import { flashDealCountdown } from "@/lib/cms/home";
+import { cmsPublicGetPageBySlugFn } from "@/lib/cms.functions";
+import { HomepageRenderer } from "@/components/cms/SectionRenderer";
 
 export const Route = createFileRoute("/")({
   head: () => ({
