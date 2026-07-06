@@ -694,6 +694,89 @@ export type Database = {
           },
         ]
       }
+      media_asset_usage: {
+        Row: {
+          asset_id: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          field: string | null
+          id: string
+        }
+        Insert: {
+          asset_id: string
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          field?: string | null
+          id?: string
+        }
+        Update: {
+          asset_id?: string
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          field?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_asset_usage_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "media_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media_assets: {
+        Row: {
+          created_at: string
+          file_size: number
+          filename: string
+          folder: string
+          height: number | null
+          id: string
+          mime_type: string
+          original_filename: string | null
+          public_url: string | null
+          storage_path: string
+          updated_at: string
+          uploader_id: string | null
+          width: number | null
+        }
+        Insert: {
+          created_at?: string
+          file_size?: number
+          filename: string
+          folder?: string
+          height?: number | null
+          id?: string
+          mime_type: string
+          original_filename?: string | null
+          public_url?: string | null
+          storage_path: string
+          updated_at?: string
+          uploader_id?: string | null
+          width?: number | null
+        }
+        Update: {
+          created_at?: string
+          file_size?: number
+          filename?: string
+          folder?: string
+          height?: number | null
+          id?: string
+          mime_type?: string
+          original_filename?: string | null
+          public_url?: string | null
+          storage_path?: string
+          updated_at?: string
+          uploader_id?: string | null
+          width?: number | null
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           confirmed_at: string | null
@@ -1990,6 +2073,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_get_asset_usage: { Args: { _asset_id: string }; Returns: Json }
+      admin_list_media_assets: {
+        Args: {
+          _folder?: string
+          _limit?: number
+          _mime_prefix?: string
+          _offset?: number
+          _search?: string
+        }
+        Returns: Json
+      }
       admin_mark_order_failed: {
         Args: { _gateway_response?: Json; _order_id: string; _reason?: string }
         Returns: Json
