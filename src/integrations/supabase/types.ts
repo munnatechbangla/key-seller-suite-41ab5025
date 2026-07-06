@@ -1202,6 +1202,7 @@ export type Database = {
           order_item_id: string | null
           product_id: string | null
           started_at: string | null
+          subscription_assignment_id: string | null
           updated_at: string
           variation_id: string | null
         }
@@ -1220,6 +1221,7 @@ export type Database = {
           order_item_id?: string | null
           product_id?: string | null
           started_at?: string | null
+          subscription_assignment_id?: string | null
           updated_at?: string
           variation_id?: string | null
         }
@@ -1238,6 +1240,7 @@ export type Database = {
           order_item_id?: string | null
           product_id?: string | null
           started_at?: string | null
+          subscription_assignment_id?: string | null
           updated_at?: string
           variation_id?: string | null
         }
@@ -1268,6 +1271,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_fulfillments_subscription_assignment_id_fkey"
+            columns: ["subscription_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_assignments"
             referencedColumns: ["id"]
           },
         ]
@@ -2721,6 +2731,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_add_subscription_note: {
+        Args: { _assignment_id: string; _note: string }
+        Returns: Json
+      }
       admin_bulk_import_inventory: {
         Args: { _items: Json; _pool_id: string }
         Returns: Json
@@ -2789,11 +2803,23 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_mark_subscription_expired: {
+        Args: { _assignment_id: string }
+        Returns: Json
+      }
       admin_release_inventory_assignment: {
         Args: { _assignment_id: string }
         Returns: Json
       }
+      admin_release_subscription_assignment: {
+        Args: { _assignment_id: string; _reason?: string }
+        Returns: Json
+      }
       admin_replace_inventory_assignment: {
+        Args: { _assignment_id: string }
+        Returns: Json
+      }
+      admin_replace_subscription_assignment: {
         Args: { _assignment_id: string }
         Returns: Json
       }
@@ -2829,6 +2855,10 @@ export type Database = {
         Args: { _order_id: string }
         Returns: number
       }
+      assign_subscription: {
+        Args: { _order_id: string; _order_item_id: string; _product_id: string }
+        Returns: string
+      }
       claim_first_admin: { Args: never; Returns: Json }
       claim_webhook_event: {
         Args: { _event_id: string; _gateway: string; _order_id?: string }
@@ -2857,6 +2887,10 @@ export type Database = {
         Returns: Json
       }
       get_order_fulfillments: {
+        Args: { _email?: string; _order_id: string }
+        Returns: Json
+      }
+      get_order_subscription_delivery: {
         Args: { _email?: string; _order_id: string }
         Returns: Json
       }
