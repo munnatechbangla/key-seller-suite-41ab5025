@@ -2118,6 +2118,47 @@ export type Database = {
           },
         ]
       }
+      product_content_blocks: {
+        Row: {
+          block_type: string
+          created_at: string
+          enabled: boolean
+          id: string
+          json_content: Json
+          product_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          block_type: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          json_content?: Json
+          product_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          block_type?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          json_content?: Json
+          product_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_content_blocks_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_custom_field_options: {
         Row: {
           created_at: string
