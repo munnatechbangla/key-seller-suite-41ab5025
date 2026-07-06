@@ -7,7 +7,7 @@ const dec = new TextDecoder();
 async function getKey(): Promise<CryptoKey> {
   const raw = process.env.SUBSCRIPTION_ENCRYPTION_KEY;
   if (!raw) throw new Error("SUBSCRIPTION_ENCRYPTION_KEY not configured");
-  const hash = await crypto.subtle.digest("SHA-256", enc.encode(raw));
+  const hash = await crypto.subtle.digest("SHA-256", enc.encode(raw) as BufferSource);
   return crypto.subtle.importKey("raw", hash, { name: "AES-GCM" }, false, [
     "encrypt",
     "decrypt",
@@ -31,7 +31,11 @@ export async function encryptSecret(plain: string | null | undefined): Promise<s
   const key = await getKey();
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const cipher = new Uint8Array(
-    await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, enc.encode(plain)),
+    await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv: iv as BufferSource },
+      key,
+      enc.encode(plain) as BufferSource,
+    ),
   );
   return `v1:${b64(iv)}:${b64(cipher)}`;
 }
