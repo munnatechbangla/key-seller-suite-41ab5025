@@ -6,7 +6,8 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { CheckCircle2, Download, Mail, MessageCircle, KeyRound, Loader2, Clock, XCircle } from "lucide-react";
 import { z } from "zod";
-import { getOrderByNumberFn } from "@/lib/orders.functions";
+import { getOrderByNumberFn, getMyOrderByNumberFn } from "@/lib/orders.functions";
+import { useAuth } from "@/lib/stores";
 import { toast } from "sonner";
 import { useEffect, useRef } from "react";
 import { track } from "@/lib/analytics/track";
@@ -21,9 +22,12 @@ export const Route = createFileRoute("/thank-you")({
 
 function ThankYou() {
   const { order, email } = Route.useSearch();
-  const fetchOrder = useServerFn(getOrderByNumberFn);
+  const user = useAuth((s) => s.user);
+  const fetchOrderPublic = useServerFn(getOrderByNumberFn);
+  const fetchOrderAuthed = useServerFn(getMyOrderByNumberFn);
+  const fetchOrder = user ? fetchOrderAuthed : fetchOrderPublic;
   const q = useQuery({
-    queryKey: ["order", order, email],
+    queryKey: ["order", order, email, user?.id ?? "guest"],
     queryFn: () => fetchOrder({ data: { orderNumber: order!, email } }),
     enabled: !!order,
     // Poll while waiting for webhook to mark payment paid.
