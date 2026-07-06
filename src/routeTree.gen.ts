@@ -49,6 +49,7 @@ import { Route as AdminMediaRouteImport } from './routes/admin.media'
 import { Route as AdminMarketplaceRouteImport } from './routes/admin.marketplace'
 import { Route as AdminLicensesRouteImport } from './routes/admin.licenses'
 import { Route as AdminLegalRouteImport } from './routes/admin.legal'
+import { Route as AdminInventoryRouteImport } from './routes/admin.inventory'
 import { Route as AdminHomepageRouteImport } from './routes/admin.homepage'
 import { Route as AdminHealthRouteImport } from './routes/admin.health'
 import { Route as AdminGatewaysRouteImport } from './routes/admin.gateways'
@@ -266,6 +267,11 @@ const AdminLegalRoute = AdminLegalRouteImport.update({
   path: '/legal',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminInventoryRoute = AdminInventoryRouteImport.update({
+  id: '/inventory',
+  path: '/inventory',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminHomepageRoute = AdminHomepageRouteImport.update({
   id: '/homepage',
   path: '/homepage',
@@ -384,6 +390,7 @@ export interface FileRoutesByFullPath {
   '/admin/gateways': typeof AdminGatewaysRoute
   '/admin/health': typeof AdminHealthRoute
   '/admin/homepage': typeof AdminHomepageRoute
+  '/admin/inventory': typeof AdminInventoryRoute
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/marketplace': typeof AdminMarketplaceRoute
@@ -441,6 +448,7 @@ export interface FileRoutesByTo {
   '/admin/gateways': typeof AdminGatewaysRoute
   '/admin/health': typeof AdminHealthRoute
   '/admin/homepage': typeof AdminHomepageRoute
+  '/admin/inventory': typeof AdminInventoryRoute
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/marketplace': typeof AdminMarketplaceRoute
@@ -500,6 +508,7 @@ export interface FileRoutesById {
   '/admin/gateways': typeof AdminGatewaysRoute
   '/admin/health': typeof AdminHealthRoute
   '/admin/homepage': typeof AdminHomepageRoute
+  '/admin/inventory': typeof AdminInventoryRoute
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/marketplace': typeof AdminMarketplaceRoute
@@ -560,6 +569,7 @@ export interface FileRouteTypes {
     | '/admin/gateways'
     | '/admin/health'
     | '/admin/homepage'
+    | '/admin/inventory'
     | '/admin/legal'
     | '/admin/licenses'
     | '/admin/marketplace'
@@ -617,6 +627,7 @@ export interface FileRouteTypes {
     | '/admin/gateways'
     | '/admin/health'
     | '/admin/homepage'
+    | '/admin/inventory'
     | '/admin/legal'
     | '/admin/licenses'
     | '/admin/marketplace'
@@ -675,6 +686,7 @@ export interface FileRouteTypes {
     | '/admin/gateways'
     | '/admin/health'
     | '/admin/homepage'
+    | '/admin/inventory'
     | '/admin/legal'
     | '/admin/licenses'
     | '/admin/marketplace'
@@ -1018,6 +1030,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLegalRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/inventory': {
+      id: '/admin/inventory'
+      path: '/inventory'
+      fullPath: '/admin/inventory'
+      preLoaderRoute: typeof AdminInventoryRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/homepage': {
       id: '/admin/homepage'
       path: '/homepage'
@@ -1157,6 +1176,7 @@ interface AdminRouteChildren {
   AdminGatewaysRoute: typeof AdminGatewaysRoute
   AdminHealthRoute: typeof AdminHealthRoute
   AdminHomepageRoute: typeof AdminHomepageRoute
+  AdminInventoryRoute: typeof AdminInventoryRoute
   AdminLegalRoute: typeof AdminLegalRoute
   AdminLicensesRoute: typeof AdminLicensesRoute
   AdminMarketplaceRoute: typeof AdminMarketplaceRoute
@@ -1182,6 +1202,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminGatewaysRoute: AdminGatewaysRoute,
   AdminHealthRoute: AdminHealthRoute,
   AdminHomepageRoute: AdminHomepageRoute,
+  AdminInventoryRoute: AdminInventoryRoute,
   AdminLegalRoute: AdminLegalRoute,
   AdminLicensesRoute: AdminLicensesRoute,
   AdminMarketplaceRoute: AdminMarketplaceRoute,
