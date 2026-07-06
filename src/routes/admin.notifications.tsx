@@ -531,21 +531,216 @@ function QueueTab({ statusFilter }: { statusFilter: string[] }) {
 
 // ---------------- Settings ----------------
 
+import {
+  getCommunicationSettingsFn,
+  runNotificationQueueOnceFn,
+  sendTestEmailFn,
+  sendTestWhatsAppFn,
+  updateCommunicationSettingsFn,
+} from "@/lib/communications.functions";
+
 function SettingsTab() {
+  const qc = useQueryClient();
+  const getFn = useServerFn(getCommunicationSettingsFn);
+  const saveFn = useServerFn(updateCommunicationSettingsFn);
+  const testEmailFn = useServerFn(sendTestEmailFn);
+  const testWaFn = useServerFn(sendTestWhatsAppFn);
+  const runOnceFn = useServerFn(runNotificationQueueOnceFn);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["comms-settings"],
+    queryFn: () => getFn() as Promise<any>,
+  });
+
+  const [form, setForm] = useState<any>({});
+  const [testEmail, setTestEmail] = useState("");
+  const [testPhone, setTestPhone] = useState("");
+
+  const s = { ...(data ?? {}), ...form };
+
+  const save = useMutation({
+    mutationFn: (patch: Record<string, unknown>) => saveFn({ data: patch }),
+    onSuccess: () => {
+      toast.success("Settings saved");
+      setForm({});
+      qc.invalidateQueries({ queryKey: ["comms-settings"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Save failed"),
+  });
+
+  const sendTestEmail = useMutation({
+    mutationFn: () => testEmailFn({ data: { to: testEmail, subject: "Test", body: "Hello from your store" } }),
+    onSuccess: (r: any) => (r?.ok ? toast.success("Test email sent") : toast.error(r?.error ?? "Failed")),
+  });
+  const sendTestWa = useMutation({
+    mutationFn: () => testWaFn({ data: { to: testPhone, body: "Test message" } }),
+    onSuccess: (r: any) => (r?.ok ? toast.success("Test WhatsApp sent") : toast.error(r?.error ?? "Failed")),
+  });
+  const runOnce = useMutation({
+    mutationFn: () => runOnceFn(),
+    onSuccess: (r: any) => toast.success(`Processed ${r?.processed ?? 0} (sent ${r?.sent ?? 0}, deferred ${r?.deferred ?? 0}, failed ${r?.failed ?? 0})`),
+  });
+
+  if (isLoading) return <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />;
+
+  const set = (patch: Record<string, unknown>) => setForm((f: any) => ({ ...f, ...patch }));
+
   return (
-    <div className="rounded-xl border border-border p-6 space-y-4 text-sm">
-      <h3 className="font-semibold text-base">Channel providers</h3>
-      <p className="text-muted-foreground">
-        Provider integrations are architectural placeholders. Real delivery is wired in a future
-        phase — the engine, queue, and template system are already in place.
-      </p>
-      <div className="grid gap-2">
-        {NOTIFICATION_CHANNELS.map((c) => (
-          <div key={c} className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
-            <span className="capitalize font-medium">{c}</span>
-            <Badge variant="outline">Not configured</Badge>
+    <div className="space-y-6">
+      {/* EMAIL */}
+      <div className="rounded-xl border border-border p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-base">Email</h3>
+            <p className="text-xs text-muted-foreground">
+              Providers are disabled until you configure them. No environment secret required.
+            </p>
           </div>
-        ))}
+          <div className="flex items-center gap-2">
+            <span className="text-sm">Enabled</span>
+            <Switch
+              checked={!!s.email_provider_enabled}
+              onCheckedChange={(v) => set({ email_provider_enabled: v })}
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium">Provider</label>
+            <Select value={s.email_provider ?? "none"} onValueChange={(v) => set({ email_provider: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None (disabled)</SelectItem>
+                <SelectItem value="resend">Resend</SelectItem>
+                <SelectItem value="mailgun">Mailgun</SelectItem>
+                <SelectItem value="postmark">Postmark</SelectItem>
+                <SelectItem value="ses">Amazon SES (soon)</SelectItem>
+                <SelectItem value="smtp">SMTP (soon)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-xs font-medium">
+              API Key {data?.has_email_api_key && <Badge variant="outline" className="ml-1">saved</Badge>}
+            </label>
+            <Input
+              type="password"
+              placeholder={data?.has_email_api_key ? "•••••• (leave blank to keep)" : "re_..."}
+              value={s.email_api_key ?? ""}
+              onChange={(e) => set({ email_api_key: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium">Sender Name</label>
+            <Input value={s.email_from_name ?? ""} onChange={(e) => set({ email_from_name: e.target.value })} />
+          </div>
+          <div>
+            <label className="text-xs font-medium">Sender Email</label>
+            <Input value={s.email_from_address ?? ""} onChange={(e) => set({ email_from_address: e.target.value })} placeholder="hello@yourdomain.com" />
+          </div>
+          <div className="col-span-2">
+            <label className="text-xs font-medium">Reply-To</label>
+            <Input value={s.email_reply_to ?? ""} onChange={(e) => set({ email_reply_to: e.target.value })} placeholder="support@yourdomain.com" />
+          </div>
+        </div>
+        <div className="flex items-end gap-2 pt-2 border-t border-border">
+          <div className="flex-1">
+            <label className="text-xs font-medium">Test email recipient</label>
+            <Input type="email" value={testEmail} onChange={(e) => setTestEmail(e.target.value)} placeholder="you@example.com" />
+          </div>
+          <Button variant="outline" disabled={!testEmail || sendTestEmail.isPending} onClick={() => sendTestEmail.mutate()}>
+            {sendTestEmail.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+            Send test email
+          </Button>
+        </div>
+      </div>
+
+      {/* WHATSAPP */}
+      <div className="rounded-xl border border-border p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-base">WhatsApp (Meta Cloud API)</h3>
+            <p className="text-xs text-muted-foreground">Configure once and messages flow automatically from the queue.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm">Enabled</span>
+            <Switch
+              checked={!!s.whatsapp_provider_enabled}
+              onCheckedChange={(v) => set({ whatsapp_provider_enabled: v })}
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium">Phone Number ID</label>
+            <Input value={s.whatsapp_phone_number_id ?? ""} onChange={(e) => set({ whatsapp_phone_number_id: e.target.value })} />
+          </div>
+          <div>
+            <label className="text-xs font-medium">Business Account ID</label>
+            <Input value={s.whatsapp_business_account_id ?? ""} onChange={(e) => set({ whatsapp_business_account_id: e.target.value })} />
+          </div>
+          <div className="col-span-2">
+            <label className="text-xs font-medium">
+              Access Token {data?.has_whatsapp_access_token && <Badge variant="outline" className="ml-1">saved</Badge>}
+            </label>
+            <Input
+              type="password"
+              placeholder={data?.has_whatsapp_access_token ? "•••••• (leave blank to keep)" : "EAA..."}
+              value={s.whatsapp_access_token ?? ""}
+              onChange={(e) => set({ whatsapp_access_token: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium">Verify Token</label>
+            <Input value={s.whatsapp_verify_token ?? ""} onChange={(e) => set({ whatsapp_verify_token: e.target.value })} />
+          </div>
+          <div>
+            <label className="text-xs font-medium">Test Number</label>
+            <Input value={s.whatsapp_test_number ?? ""} onChange={(e) => set({ whatsapp_test_number: e.target.value })} />
+          </div>
+        </div>
+        <div className="flex items-end gap-2 pt-2 border-t border-border">
+          <div className="flex-1">
+            <label className="text-xs font-medium">Test WhatsApp recipient (E.164)</label>
+            <Input value={testPhone} onChange={(e) => setTestPhone(e.target.value)} placeholder="+15551234567" />
+          </div>
+          <Button variant="outline" disabled={!testPhone || sendTestWa.isPending} onClick={() => sendTestWa.mutate()}>
+            {sendTestWa.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+            Send test message
+          </Button>
+        </div>
+      </div>
+
+      {/* WORKER */}
+      <div className="rounded-xl border border-border p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-base">Queue worker</h3>
+            <p className="text-xs text-muted-foreground">
+              A background job runs every minute. Use the button to run a batch immediately.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs">Max retries</label>
+            <Input type="number" className="w-20" min={1} max={10}
+              value={s.max_retries ?? 3}
+              onChange={(e) => set({ max_retries: Number(e.target.value) })} />
+          </div>
+        </div>
+        <Button variant="outline" onClick={() => runOnce.mutate()} disabled={runOnce.isPending}>
+          {runOnce.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+          Run queue now
+        </Button>
+      </div>
+
+      <div className="flex justify-end gap-2 sticky bottom-0 bg-background/80 backdrop-blur py-3">
+        <Button variant="ghost" onClick={() => setForm({})} disabled={!Object.keys(form).length}>
+          Reset
+        </Button>
+        <Button onClick={() => save.mutate(form)} disabled={!Object.keys(form).length || save.isPending}>
+          {save.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+          Save settings
+        </Button>
       </div>
     </div>
   );
