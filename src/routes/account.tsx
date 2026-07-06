@@ -17,6 +17,8 @@ import { getMyOrdersFn, getMyDownloadsFn, getMyLicensesFn } from "@/lib/orders.f
 import { getMySubmissionsFn } from "@/lib/payments/gateways.functions";
 import { MyReviewsTab } from "@/components/site/MyReviewsTab";
 import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
+import { DeliveryPanel } from "@/components/delivery/DeliveryPanel";
+import { getMyDeliveriesFn } from "@/lib/delivery.functions";
 
 export const Route = createFileRoute("/account")({
   head: () => ({ meta: [{ title: `My Account — ${siteName()}` }] }),
@@ -197,30 +199,17 @@ function OrdersTab() {
 }
 
 function DownloadsTab() {
-  const dl = useMyDownloads();
-  const items = dl.data ?? [];
+  const fn = useServerFn(getMyDeliveriesFn);
+  const q = useQuery({ queryKey: ["my-deliveries"], queryFn: () => fn({}) });
+  const items = q.data ?? [];
   return (
     <Card>
-      <h3 className="font-bold mb-4">Your downloads</h3>
-      {dl.isLoading ? <Loader /> : items.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No downloads yet.</p>
+      <h3 className="font-bold mb-1">Download Center</h3>
+      <p className="text-xs text-muted-foreground mb-4">All your delivered products — downloads, licenses, accounts and more.</p>
+      {q.isLoading ? <Loader /> : items.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No delivered items yet. Purchases will appear here once payment is confirmed.</p>
       ) : (
-        <div className="space-y-2">
-          {items.map((d) => {
-            const name = (d as { order_items: { product_name: string } | null }).order_items?.product_name ?? "Product";
-            const expires = d.expires_at ? new Date(d.expires_at).toLocaleDateString() : "never";
-            const used = d.download_count >= d.max_downloads;
-            return (
-              <div key={d.id} className="flex items-center gap-3 p-3 rounded-xl border border-border">
-                <Download className="h-5 w-5 text-primary" />
-                <div className="flex-1"><div className="font-semibold text-sm">{name}</div><div className="text-xs text-muted-foreground">{d.download_count}/{d.max_downloads} · expires {expires}</div></div>
-                <button disabled={used} className="px-3 py-2 rounded-lg bg-gradient-primary text-primary-foreground text-xs font-semibold inline-flex items-center gap-1 disabled:opacity-50">
-                  <Download className="h-3.5 w-3.5" /> {used ? "Used" : "Download"}
-                </button>
-              </div>
-            );
-          })}
-        </div>
+        <DeliveryPanel items={items} showHeader={false} />
       )}
     </Card>
   );
