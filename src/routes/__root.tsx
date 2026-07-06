@@ -18,6 +18,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/lib/stores";
 import { useSettings } from "@/lib/cms/settings";
 import { AnalyticsScripts } from "@/components/site/AnalyticsScripts";
+import { SeoCenterInjector } from "@/components/site/SeoCenterInjector";
 import { seoMeta, organizationJsonLd, websiteJsonLd, jsonLdScript } from "@/lib/cms/seo";
 import { SetupGate } from "@/components/setup/SetupGate";
 import { RecentlyPurchasedPopup } from "@/components/site/RecentlyPurchasedPopup";
