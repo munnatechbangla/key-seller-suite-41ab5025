@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { useEffect, useRef } from "react";
 import { track } from "@/lib/analytics/track";
 import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
+import { DeliveryPanel } from "@/components/delivery/DeliveryPanel";
+import { getOrderDeliveryAuthFn, getOrderDeliveryGuestFn } from "@/lib/delivery.functions";
 
 export const Route = createFileRoute("/thank-you")({
   validateSearch: z.object({ order: z.string().optional(), email: z.string().optional() }),
