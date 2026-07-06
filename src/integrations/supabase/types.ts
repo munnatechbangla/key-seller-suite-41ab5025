@@ -2344,6 +2344,89 @@ export type Database = {
           },
         ]
       }
+      product_layout_sections: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          json_content: Json
+          layout_id: string
+          section_key: string
+          section_type: string
+          sort_order: number
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          json_content?: Json
+          layout_id: string
+          section_key: string
+          section_type: string
+          sort_order?: number
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          json_content?: Json
+          layout_id?: string
+          section_key?: string
+          section_type?: string
+          sort_order?: number
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_layout_sections_layout_id_fkey"
+            columns: ["layout_id"]
+            isOneToOne: false
+            referencedRelation: "product_layouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_layouts: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          is_default: boolean
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          is_default?: boolean
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          is_default?: boolean
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_reviews: {
         Row: {
           admin_reply: string | null
@@ -2547,6 +2630,7 @@ export type Database = {
           is_license_key: boolean
           is_subscription: boolean
           is_trending: boolean
+          layout_id: string | null
           product_type: Database["public"]["Enums"]["product_type"] | null
           rating: number
           regular_price: number
@@ -2590,6 +2674,7 @@ export type Database = {
           is_license_key?: boolean
           is_subscription?: boolean
           is_trending?: boolean
+          layout_id?: string | null
           product_type?: Database["public"]["Enums"]["product_type"] | null
           rating?: number
           regular_price?: number
@@ -2633,6 +2718,7 @@ export type Database = {
           is_license_key?: boolean
           is_subscription?: boolean
           is_trending?: boolean
+          layout_id?: string | null
           product_type?: Database["public"]["Enums"]["product_type"] | null
           rating?: number
           regular_price?: number
@@ -2669,6 +2755,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_layout_id_fkey"
+            columns: ["layout_id"]
+            isOneToOne: false
+            referencedRelation: "product_layouts"
             referencedColumns: ["id"]
           },
         ]

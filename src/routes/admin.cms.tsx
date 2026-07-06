@@ -35,12 +35,14 @@ function AdminCMSPage() {
         <TabsList>
           <TabsTrigger value="pages">Pages</TabsTrigger>
           <TabsTrigger value="homepage">Homepage</TabsTrigger>
+          <TabsTrigger value="product-layouts">Product Layouts</TabsTrigger>
           <TabsTrigger value="menus">Menus</TabsTrigger>
           <TabsTrigger value="footer">Footer</TabsTrigger>
           <TabsTrigger value="settings">Site Settings</TabsTrigger>
         </TabsList>
         <TabsContent value="pages"><PagesTab /></TabsContent>
         <TabsContent value="homepage"><HomepagePointer /></TabsContent>
+        <TabsContent value="product-layouts"><ProductLayoutsPointer /></TabsContent>
         <TabsContent value="menus"><MenusTab /></TabsContent>
         <TabsContent value="footer"><FooterTab /></TabsContent>
         <TabsContent value="settings"><SettingsPointer /></TabsContent>
