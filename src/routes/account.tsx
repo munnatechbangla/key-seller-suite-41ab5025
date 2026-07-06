@@ -95,6 +95,7 @@ function AccountPage() {
         <section className="min-w-0">
           {active === "dashboard" && <DashboardTab />}
           {active === "orders" && <OrdersTab />}
+          {active === "subscriptions" && <SubscriptionsTab />}
           {active === "downloads" && <DownloadsTab />}
           {active === "licenses" && <LicensesTab />}
           {active === "submissions" && <SubmissionsTab />}
