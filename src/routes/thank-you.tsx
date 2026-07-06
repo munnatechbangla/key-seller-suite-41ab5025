@@ -176,6 +176,17 @@ function ThankYou() {
                 <DeliveryPanel items={deliveryQ.data} />
               )}
 
+              {isPaid && q.data.order?.id && (
+                <div className="rounded-2xl border border-border bg-card p-4">
+                  <h3 className="font-bold mb-3 text-sm">Order status</h3>
+                  <FulfillmentPanel
+                    orderId={q.data.order.id}
+                    email={email}
+                    authed={!!user}
+                  />
+                </div>
+              )}
+
               {!isPaid && (
                 <OrderCustomFieldValues
                   orderId={q.data.order?.id}
