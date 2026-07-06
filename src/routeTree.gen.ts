@@ -34,6 +34,7 @@ import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as PayOrderNumberRouteImport } from './routes/pay.$orderNumber'
+import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AuthResetRouteImport } from './routes/auth.reset'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
@@ -68,9 +69,11 @@ import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminProductsIdRouteImport } from './routes/admin.products.$id'
 import { Route as AdminCmsProductLayoutsRouteImport } from './routes/admin.cms.product-layouts'
+import { Route as AdminCmsLandingPagesRouteImport } from './routes/admin.cms.landing-pages'
 import { Route as AdminCmsHomepageRouteImport } from './routes/admin.cms.homepage'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments.webhook'
 import { Route as ApiPublicNotificationsProcessRouteImport } from './routes/api/public/notifications.process'
+import { Route as AdminCmsLandingPagesIdRouteImport } from './routes/admin.cms.landing-pages.$id'
 import { Route as ApiPublicPaymentsSslcommerzReturnRouteImport } from './routes/api/public/payments.sslcommerz.return'
 import { Route as ApiPublicPaymentsSslcommerzIpnRouteImport } from './routes/api/public/payments.sslcommerz.ipn'
 import { Route as ApiPublicPaymentsCustomWebhookSlugRouteImport } from './routes/api/public/payments.custom-webhook.$slug'
@@ -198,6 +201,11 @@ const ProductsSlugRoute = ProductsSlugRouteImport.update({
 const PayOrderNumberRoute = PayOrderNumberRouteImport.update({
   id: '/pay/$orderNumber',
   path: '/pay/$orderNumber',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LSlugRoute = LSlugRouteImport.update({
+  id: '/l/$slug',
+  path: '/l/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
@@ -370,6 +378,11 @@ const AdminCmsProductLayoutsRoute = AdminCmsProductLayoutsRouteImport.update({
   path: '/product-layouts',
   getParentRoute: () => AdminCmsRoute,
 } as any)
+const AdminCmsLandingPagesRoute = AdminCmsLandingPagesRouteImport.update({
+  id: '/landing-pages',
+  path: '/landing-pages',
+  getParentRoute: () => AdminCmsRoute,
+} as any)
 const AdminCmsHomepageRoute = AdminCmsHomepageRouteImport.update({
   id: '/homepage',
   path: '/homepage',
@@ -387,6 +400,11 @@ const ApiPublicNotificationsProcessRoute =
     path: '/api/public/notifications/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminCmsLandingPagesIdRoute = AdminCmsLandingPagesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminCmsLandingPagesRoute,
+} as any)
 const ApiPublicPaymentsSslcommerzReturnRoute =
   ApiPublicPaymentsSslcommerzReturnRouteImport.update({
     id: '/api/public/payments/sslcommerz/return',
@@ -460,13 +478,16 @@ export interface FileRoutesByFullPath {
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset': typeof AuthResetRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/l/$slug': typeof LSlugRoute
   '/pay/$orderNumber': typeof PayOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
+  '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRouteWithChildren
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
+  '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
@@ -526,13 +547,16 @@ export interface FileRoutesByTo {
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset': typeof AuthResetRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/l/$slug': typeof LSlugRoute
   '/pay/$orderNumber': typeof PayOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/admin': typeof AdminIndexRoute
   '/products': typeof ProductsIndexRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
+  '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRouteWithChildren
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
+  '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
@@ -594,13 +618,16 @@ export interface FileRoutesById {
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset': typeof AuthResetRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/l/$slug': typeof LSlugRoute
   '/pay/$orderNumber': typeof PayOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
+  '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRouteWithChildren
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
+  '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
@@ -663,13 +690,16 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/auth/reset'
     | '/blog/$slug'
+    | '/l/$slug'
     | '/pay/$orderNumber'
     | '/products/$slug'
     | '/admin/'
     | '/products/'
     | '/admin/cms/homepage'
+    | '/admin/cms/landing-pages'
     | '/admin/cms/product-layouts'
     | '/admin/products/$id'
+    | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
     | '/api/public/payments/custom-webhook/$slug'
@@ -729,13 +759,16 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/auth/reset'
     | '/blog/$slug'
+    | '/l/$slug'
     | '/pay/$orderNumber'
     | '/products/$slug'
     | '/admin'
     | '/products'
     | '/admin/cms/homepage'
+    | '/admin/cms/landing-pages'
     | '/admin/cms/product-layouts'
     | '/admin/products/$id'
+    | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
     | '/api/public/payments/custom-webhook/$slug'
@@ -796,13 +829,16 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/auth/reset'
     | '/blog/$slug'
+    | '/l/$slug'
     | '/pay/$orderNumber'
     | '/products/$slug'
     | '/admin/'
     | '/products/'
     | '/admin/cms/homepage'
+    | '/admin/cms/landing-pages'
     | '/admin/cms/product-layouts'
     | '/admin/products/$id'
+    | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
     | '/api/public/payments/custom-webhook/$slug'
@@ -836,6 +872,7 @@ export interface RootRouteChildren {
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
   AuthResetRoute: typeof AuthResetRoute
+  LSlugRoute: typeof LSlugRoute
   PayOrderNumberRoute: typeof PayOrderNumberRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
@@ -1021,6 +1058,13 @@ declare module '@tanstack/react-router' {
       path: '/pay/$orderNumber'
       fullPath: '/pay/$orderNumber'
       preLoaderRoute: typeof PayOrderNumberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/l/$slug': {
+      id: '/l/$slug'
+      path: '/l/$slug'
+      fullPath: '/l/$slug'
+      preLoaderRoute: typeof LSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog/$slug': {
@@ -1261,6 +1305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCmsProductLayoutsRouteImport
       parentRoute: typeof AdminCmsRoute
     }
+    '/admin/cms/landing-pages': {
+      id: '/admin/cms/landing-pages'
+      path: '/landing-pages'
+      fullPath: '/admin/cms/landing-pages'
+      preLoaderRoute: typeof AdminCmsLandingPagesRouteImport
+      parentRoute: typeof AdminCmsRoute
+    }
     '/admin/cms/homepage': {
       id: '/admin/cms/homepage'
       path: '/homepage'
@@ -1281,6 +1332,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/notifications/process'
       preLoaderRoute: typeof ApiPublicNotificationsProcessRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/cms/landing-pages/$id': {
+      id: '/admin/cms/landing-pages/$id'
+      path: '/$id'
+      fullPath: '/admin/cms/landing-pages/$id'
+      preLoaderRoute: typeof AdminCmsLandingPagesIdRouteImport
+      parentRoute: typeof AdminCmsLandingPagesRoute
     }
     '/api/public/payments/sslcommerz/return': {
       id: '/api/public/payments/sslcommerz/return'
@@ -1306,13 +1364,26 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminCmsLandingPagesRouteChildren {
+  AdminCmsLandingPagesIdRoute: typeof AdminCmsLandingPagesIdRoute
+}
+
+const AdminCmsLandingPagesRouteChildren: AdminCmsLandingPagesRouteChildren = {
+  AdminCmsLandingPagesIdRoute: AdminCmsLandingPagesIdRoute,
+}
+
+const AdminCmsLandingPagesRouteWithChildren =
+  AdminCmsLandingPagesRoute._addFileChildren(AdminCmsLandingPagesRouteChildren)
+
 interface AdminCmsRouteChildren {
   AdminCmsHomepageRoute: typeof AdminCmsHomepageRoute
+  AdminCmsLandingPagesRoute: typeof AdminCmsLandingPagesRouteWithChildren
   AdminCmsProductLayoutsRoute: typeof AdminCmsProductLayoutsRoute
 }
 
 const AdminCmsRouteChildren: AdminCmsRouteChildren = {
   AdminCmsHomepageRoute: AdminCmsHomepageRoute,
+  AdminCmsLandingPagesRoute: AdminCmsLandingPagesRouteWithChildren,
   AdminCmsProductLayoutsRoute: AdminCmsProductLayoutsRoute,
 }
 
@@ -1432,6 +1503,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
   AuthResetRoute: AuthResetRoute,
+  LSlugRoute: LSlugRoute,
   PayOrderNumberRoute: PayOrderNumberRoute,
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,

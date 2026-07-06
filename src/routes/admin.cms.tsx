@@ -35,6 +35,7 @@ function AdminCMSPage() {
         <TabsList>
           <TabsTrigger value="pages">Pages</TabsTrigger>
           <TabsTrigger value="homepage">Homepage</TabsTrigger>
+          <TabsTrigger value="landing">Landing Pages</TabsTrigger>
           <TabsTrigger value="product-layouts">Product Layouts</TabsTrigger>
           <TabsTrigger value="menus">Menus</TabsTrigger>
           <TabsTrigger value="footer">Footer</TabsTrigger>
@@ -43,6 +44,7 @@ function AdminCMSPage() {
         </TabsList>
         <TabsContent value="pages"><PagesTab /></TabsContent>
         <TabsContent value="homepage"><HomepagePointer /></TabsContent>
+        <TabsContent value="landing"><LandingPointer /></TabsContent>
         <TabsContent value="product-layouts"><ProductLayoutsPointer /></TabsContent>
         <TabsContent value="menus"><MenusTab /></TabsContent>
         <TabsContent value="footer"><FooterTab /></TabsContent>
@@ -335,6 +337,19 @@ function SeoCenterPointer() {
       </p>
       <div className="flex gap-2">
         <Button asChild><a href="/admin/seo">Open SEO &amp; Analytics Center</a></Button>
+      </div>
+    </CardContent></Card>
+  );
+}
+
+function LandingPointer() {
+  return (
+    <Card><CardContent className="p-6 space-y-2">
+      <p className="text-sm text-muted-foreground">
+        Build unlimited standalone landing pages (sales, campaigns, launches, thank-you, coupon, lead gen, webinars, Black Friday, custom). Published pages live at <code>/l/&lt;slug&gt;</code> and render independently.
+      </p>
+      <div className="flex gap-2">
+        <Button asChild><a href="/admin/cms/landing-pages">Open Landing Pages</a></Button>
       </div>
     </CardContent></Card>
   );
