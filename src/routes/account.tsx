@@ -16,6 +16,7 @@ import { useProductsBySlugs, featuredQuery } from "@/lib/catalog";
 import { getMyOrdersFn, getMyDownloadsFn, getMyLicensesFn } from "@/lib/orders.functions";
 import { getMySubmissionsFn } from "@/lib/payments/gateways.functions";
 import { MyReviewsTab } from "@/components/site/MyReviewsTab";
+import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
 
 export const Route = createFileRoute("/account")({
   head: () => ({ meta: [{ title: `My Account — ${siteName()}` }] }),
