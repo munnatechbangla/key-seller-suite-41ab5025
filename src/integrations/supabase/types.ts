@@ -3113,6 +3113,9 @@ export type Database = {
         | "expired"
         | "replaced"
         | "cancelled"
+        | "expiring_soon"
+        | "renewed"
+        | "suspended"
       subscription_mode:
         | "shared_account"
         | "individual_account"
@@ -3339,6 +3342,9 @@ export const Constants = {
         "expired",
         "replaced",
         "cancelled",
+        "expiring_soon",
+        "renewed",
+        "suspended",
       ],
       subscription_mode: [
         "shared_account",
