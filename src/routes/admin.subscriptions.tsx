@@ -691,6 +691,19 @@ function AssignmentsTab() {
   const replaceFn = useServerFn(replaceSubscriptionAssignmentFn);
   const expireFn = useServerFn(markSubscriptionExpiredFn);
   const noteFn = useServerFn(addSubscriptionNoteFn);
+  const extendFn = useServerFn(extendSubscriptionFn);
+  const renewFn = useServerFn(renewSubscriptionFn);
+  const suspendFn = useServerFn(suspendSubscriptionFn);
+  const resumeFn = useServerFn(resumeSubscriptionFn);
+  const cancelFn = useServerFn(cancelSubscriptionFn);
+  const evalFn = useServerFn(evaluateSubscriptionStatusFn);
+  const historyFn = useServerFn(getSubscriptionRenewalHistoryFn);
+  const [historyId, setHistoryId] = useState<string | null>(null);
+  const { data: historyRows = [] } = useQuery({
+    queryKey: ["sub-history", historyId],
+    queryFn: () => historyFn({ data: { id: historyId! } }) as Promise<any[]>,
+    enabled: !!historyId,
+  });
   const { data = [] } = useQuery({
     queryKey: ["sub-assignments"],
     queryFn: () => fn() as Promise<any[]>,
