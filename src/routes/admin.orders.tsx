@@ -69,3 +69,41 @@ function AdminOrders() {
     </div>
   );
 }
+
+function OrderRow({ order: o, onStatusChange }: { order: any; onStatusChange: (s: string) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <TableRow>
+        <TableCell className="font-mono text-xs">
+          <button type="button" onClick={() => setOpen((v) => !v)} className="hover:underline">
+            {open ? "▾" : "▸"} {o.order_number}
+          </button>
+        </TableCell>
+        <TableCell>
+          <div className="font-medium">{o.customer_name ?? "—"}</div>
+          <div className="text-xs text-muted-foreground">{o.email}</div>
+        </TableCell>
+        <TableCell>${Number(o.total).toFixed(2)} {o.currency}</TableCell>
+        <TableCell className="text-sm">{o.payment_method ?? "—"}</TableCell>
+        <TableCell>
+          <select
+            className="h-8 rounded border bg-background px-2 text-xs"
+            value={o.status}
+            onChange={(e) => onStatusChange(e.target.value)}
+          >
+            {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </TableCell>
+        <TableCell className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</TableCell>
+      </TableRow>
+      {open && (
+        <TableRow>
+          <TableCell colSpan={6} className="bg-muted/30">
+            <OrderCustomFieldValues orderId={o.id} authed compact />
+          </TableCell>
+        </TableRow>
+      )}
+    </>
+  );
+}
