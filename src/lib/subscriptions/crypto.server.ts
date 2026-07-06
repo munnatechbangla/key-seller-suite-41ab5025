@@ -44,7 +44,11 @@ export async function decryptSecret(payload: string | null | undefined): Promise
     const key = await getKey();
     const iv = unb64(parts[1]);
     const cipher = unb64(parts[2]);
-    const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, cipher);
+    const plain = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: iv as BufferSource },
+      key,
+      cipher as BufferSource,
+    );
     return dec.decode(plain);
   } catch {
     return null;
