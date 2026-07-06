@@ -491,22 +491,24 @@ function RejectedPanel({
 
 function ApprovedPanel({ orderNumber }: { orderNumber: string }) {
   return (
-    <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent p-5 space-y-4 animate-in fade-in zoom-in-95 duration-500">
-      <div className="flex items-start gap-3">
-        <div className="h-10 w-10 rounded-full bg-emerald-500 text-white grid place-items-center shrink-0 shadow-glow">
-          <Sparkles className="h-5 w-5" />
+    <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent p-5 sm:p-6 space-y-6 animate-in fade-in zoom-in-95 duration-500">
+      <div className="flex flex-col items-center text-center gap-3">
+        <div className="h-14 w-14 rounded-full bg-emerald-500 text-white grid place-items-center shrink-0 shadow-glow">
+          <CheckCircle2 className="h-7 w-7" strokeWidth={2.5} />
         </div>
-        <div>
-          <div className="font-bold text-lg">Payment Approved</div>
-          <p className="text-sm text-muted-foreground">Your order is complete. Your product is ready to download.</p>
+        <div className="space-y-1">
+          <div className="font-bold text-xl">Payment Approved</div>
+          <div className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Order Verified Successfully</div>
+          <p className="text-xs text-muted-foreground">License delivery completed.</p>
         </div>
       </div>
       <Link
         to="/thank-you"
         search={{ order: orderNumber }}
-        className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow"
+        className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 active:scale-[.98] whitespace-nowrap"
+        style={{ minHeight: 54 }}
       >
-        <Download className="h-4 w-4" /> Download Product
+        <Download className="h-5 w-5 shrink-0" /> Download Product
       </Link>
     </div>
   );
@@ -515,31 +517,50 @@ function ApprovedPanel({ orderNumber }: { orderNumber: string }) {
 function ActionButtons({
   onRefresh,
   whatsappHref,
-  whatsappLabel,
+  whatsappLabel: _whatsappLabel,
 }: {
   onRefresh: () => void;
   whatsappHref: string | null;
   whatsappLabel: string;
 }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+    <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 w-full">
+        {whatsappHref ? (
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-[52px] items-center justify-center gap-2 px-3 rounded-xl bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-600 active:scale-[.98] transition-all whitespace-nowrap"
+          >
+            <MessageCircle className="h-4 w-4 shrink-0" />
+            <span className="hidden min-[380px]:inline">WhatsApp</span>
+            <span className="min-[380px]:hidden">WhatsApp</span>
+          </a>
+        ) : (
+          <button
+            type="button"
+            onClick={onRefresh}
+            className="inline-flex min-h-[52px] items-center justify-center gap-2 px-3 rounded-xl bg-card border border-border font-semibold text-sm hover:bg-muted transition-all whitespace-nowrap"
+          >
+            <RefreshCw className="h-4 w-4 shrink-0" /> Refresh
+          </button>
+        )}
+        <Link
+          to="/account"
+          className="inline-flex min-h-[52px] items-center justify-center gap-2 px-3 rounded-xl bg-card border border-border font-semibold text-sm hover:bg-muted active:scale-[.98] transition-all whitespace-nowrap"
+        >
+          <span className="hidden min-[380px]:inline">My Orders</span>
+          <span className="min-[380px]:hidden">Orders</span>
+        </Link>
+      </div>
       <button
         type="button"
         onClick={onRefresh}
-        className="inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-card border border-border font-semibold text-sm hover:bg-muted transition-colors"
+        className="w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground"
       >
-        <RefreshCw className="h-4 w-4" /> Check Status
+        <RefreshCw className="h-3 w-3" /> Check Status
       </button>
-      {whatsappHref && (
-        <a
-          href={whatsappHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500 text-white font-semibold text-sm hover:bg-emerald-600 transition-colors"
-        >
-          <MessageCircle className="h-4 w-4" /> {whatsappLabel}
-        </a>
-      )}
     </div>
   );
 }
