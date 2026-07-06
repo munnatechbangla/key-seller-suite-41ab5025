@@ -76,12 +76,31 @@ type ProductRow = {
   specs: Record<string, string>;
   stock_status: "in_stock" | "out_of_stock" | "on_backorder";
   product_categories?: { slug: string; name: string } | null;
+  meta_title?: string | null;
+  meta_description?: string | null;
+  focus_keyword?: string | null;
+  secondary_keywords?: unknown;
+  canonical_url?: string | null;
+  robots?: string | null;
+  og_title?: string | null;
+  og_description?: string | null;
+  og_image?: string | null;
+  twitter_title?: string | null;
+  twitter_description?: string | null;
+  twitter_image?: string | null;
+  schema_enabled?: boolean | null;
+  faq_schema_enabled?: boolean | null;
+  breadcrumb_schema_enabled?: boolean | null;
+  product_schema_enabled?: boolean | null;
 };
 
 const SELECT_PRODUCT = `
   id, slug, title, short_description, description,
   regular_price, sale_price, thumbnail_url, emoji, delivery_time, badge,
   rating, reviews_count, features, included, specs, stock_status,
+  meta_title, meta_description, focus_keyword, secondary_keywords, canonical_url, robots,
+  og_title, og_description, og_image, twitter_title, twitter_description, twitter_image,
+  schema_enabled, faq_schema_enabled, breadcrumb_schema_enabled, product_schema_enabled,
   product_categories ( slug, name )
 ` as const;
 
