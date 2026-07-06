@@ -18,7 +18,6 @@ import {
   RefreshCw,
   Download,
   AlertTriangle,
-  Sparkles,
 } from "lucide-react";
 import { getOrderByNumberFn, getMyOrderByNumberFn, simulateGatewayPaymentFn } from "@/lib/orders.functions";
 import { useAuth } from "@/lib/stores";
