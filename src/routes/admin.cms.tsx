@@ -341,3 +341,16 @@ function SeoCenterPointer() {
     </CardContent></Card>
   );
 }
+
+function LandingPointer() {
+  return (
+    <Card><CardContent className="p-6 space-y-2">
+      <p className="text-sm text-muted-foreground">
+        Build unlimited standalone landing pages (sales, campaigns, launches, thank-you, coupon, lead gen, webinars, Black Friday, custom). Published pages live at <code>/l/&lt;slug&gt;</code> and render independently.
+      </p>
+      <div className="flex gap-2">
+        <Button asChild><a href="/admin/cms/landing-pages">Open Landing Pages</a></Button>
+      </div>
+    </CardContent></Card>
+  );
+}
