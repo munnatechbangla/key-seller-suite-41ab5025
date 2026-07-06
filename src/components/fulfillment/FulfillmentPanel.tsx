@@ -1,0 +1,212 @@
+import { useMemo } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import {
+  Loader2, RefreshCw, RotateCcw, XCircle, CheckCircle2, Clock, AlertTriangle,
+  PackageSearch, PackageCheck, ShieldAlert,
+} from "lucide-react";
+import { toast } from "sonner";
+import {
+  getOrderFulfillmentsAuthFn,
+  getOrderFulfillmentsGuestFn,
+  getFulfillmentTimelineAuthFn,
+  getFulfillmentTimelineGuestFn,
+  adminRetryFulfillmentFn,
+  adminRestartFulfillmentFn,
+  adminCancelFulfillmentFn,
+  adminStartFulfillmentForOrderFn,
+  type FulfillmentRow,
+  type FulfillmentStatus,
+} from "@/lib/fulfillment.functions";
+
+const STATUS_META: Record<FulfillmentStatus, { label: string; color: string; icon: any }> = {
+  pending:           { label: "Pending",           color: "bg-muted text-muted-foreground",                icon: Clock },
+  processing:        { label: "Processing",        color: "bg-blue-500/15 text-blue-700 dark:text-blue-300", icon: Loader2 },
+  waiting_inventory: { label: "Waiting Inventory", color: "bg-amber-500/15 text-amber-700 dark:text-amber-300", icon: PackageSearch },
+  manual_review:     { label: "Manual Review",     color: "bg-purple-500/15 text-purple-700 dark:text-purple-300", icon: ShieldAlert },
+  delivered:         { label: "Delivered",         color: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300", icon: PackageCheck },
+  failed:            { label: "Failed",            color: "bg-red-500/15 text-red-700 dark:text-red-300",   icon: AlertTriangle },
+  cancelled:         { label: "Cancelled",         color: "bg-muted text-muted-foreground",                icon: XCircle },
+};
+
+function StatusBadge({ status }: { status: FulfillmentStatus }) {
+  const m = STATUS_META[status];
+  const Icon = m.icon;
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${m.color}`}>
+      <Icon className={`h-3.5 w-3.5 ${status === "processing" ? "animate-spin" : ""}`} />
+      {m.label}
+    </span>
+  );
+}
+
+function Timeline({ fulfillmentId, email, authed }: { fulfillmentId: string; email?: string; authed: boolean }) {
+  const fetchAuth = useServerFn(getFulfillmentTimelineAuthFn);
+  const fetchGuest = useServerFn(getFulfillmentTimelineGuestFn);
+  const fetcher = authed ? fetchAuth : fetchGuest;
+  const q = useQuery({
+    queryKey: ["fulfillment-timeline", fulfillmentId],
+    queryFn: () => fetcher({ data: { fulfillmentId, email } }),
+  });
+
+  if (q.isLoading) {
+    return <div className="text-xs text-muted-foreground flex items-center gap-2"><Loader2 className="h-3 w-3 animate-spin" /> Loading timeline…</div>;
+  }
+  const logs = q.data ?? [];
+  if (!logs.length) return <div className="text-xs text-muted-foreground">No events yet.</div>;
+
+  return (
+    <ol className="relative border-s border-border ps-4 space-y-3">
+      {logs.map((l) => (
+        <li key={l.id} className="text-xs">
+          <span className="absolute -start-1.5 mt-1 h-3 w-3 rounded-full bg-primary" />
+          <div className="font-semibold text-foreground capitalize">{l.event.replace(/_/g, " ")}</div>
+          {l.message && <div className="text-muted-foreground">{l.message}</div>}
+          <div className="text-[10px] text-muted-foreground/70">{new Date(l.created_at).toLocaleString()}</div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+type Props = {
+  orderId: string;
+  email?: string;
+  authed: boolean;
+  isAdmin?: boolean;
+  compact?: boolean;
+};
+
+export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, compact = false }: Props) {
+  const qc = useQueryClient();
+  const fetchAuth = useServerFn(getOrderFulfillmentsAuthFn);
+  const fetchGuest = useServerFn(getOrderFulfillmentsGuestFn);
+  const fetcher = authed ? fetchAuth : fetchGuest;
+
+  const q = useQuery({
+    queryKey: ["order-fulfillments", orderId, authed],
+    queryFn: () => fetcher({ data: { orderId, email } }),
+    refetchInterval: (query) => {
+      const rows = query.state.data as FulfillmentRow[] | undefined;
+      if (!rows?.length) return 6000;
+      const pending = rows.some((r) => ["pending", "processing", "waiting_inventory"].includes(r.fulfillment_status));
+      return pending ? 5000 : false;
+    },
+  });
+
+  const retry = useServerFn(adminRetryFulfillmentFn);
+  const restart = useServerFn(adminRestartFulfillmentFn);
+  const cancel = useServerFn(adminCancelFulfillmentFn);
+  const startForOrder = useServerFn(adminStartFulfillmentForOrderFn);
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["order-fulfillments", orderId] });
+
+  const retryMut = useMutation({
+    mutationFn: (fulfillmentId: string) => retry({ data: { fulfillmentId } }),
+    onSuccess: () => { toast.success("Fulfillment retried"); invalidate(); qc.invalidateQueries({ queryKey: ["fulfillment-timeline"] }); },
+    onError: (e: any) => toast.error(e?.message ?? "Retry failed"),
+  });
+  const restartMut = useMutation({
+    mutationFn: (fulfillmentId: string) => restart({ data: { fulfillmentId } }),
+    onSuccess: () => { toast.success("Fulfillment restarted"); invalidate(); qc.invalidateQueries({ queryKey: ["fulfillment-timeline"] }); },
+    onError: (e: any) => toast.error(e?.message ?? "Restart failed"),
+  });
+  const cancelMut = useMutation({
+    mutationFn: (fulfillmentId: string) => cancel({ data: { fulfillmentId, reason: "Cancelled by admin" } }),
+    onSuccess: () => { toast.success("Fulfillment cancelled"); invalidate(); qc.invalidateQueries({ queryKey: ["fulfillment-timeline"] }); },
+    onError: (e: any) => toast.error(e?.message ?? "Cancel failed"),
+  });
+  const startMut = useMutation({
+    mutationFn: () => startForOrder({ data: { orderId } }),
+    onSuccess: () => { toast.success("Fulfillment started"); invalidate(); },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to start"),
+  });
+
+  const rows = useMemo(() => q.data ?? [], [q.data]);
+
+  if (q.isLoading) {
+    return <div className="text-sm text-muted-foreground flex items-center gap-2 py-2"><Loader2 className="h-4 w-4 animate-spin" /> Loading fulfillment…</div>;
+  }
+
+  if (!rows.length) {
+    return (
+      <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground flex items-center justify-between gap-3">
+        <span>No fulfillment lifecycle yet for this order.</span>
+        {isAdmin && (
+          <button
+            onClick={() => startMut.mutate()}
+            disabled={startMut.isPending}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
+          >
+            {startMut.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+            Start fulfillment
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {!compact && (
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4 text-primary" />
+          <h4 className="font-semibold text-sm">Fulfillment</h4>
+        </div>
+      )}
+      {rows.map((f) => (
+        <div key={f.id} className="rounded-xl border border-border p-3 space-y-2 bg-card">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <div className="text-sm font-semibold">{f.product_title ?? "Item"}</div>
+              <div className="text-[11px] text-muted-foreground">
+                {f.delivery_type ? `Delivery: ${f.delivery_type}` : "Delivery pending"}
+                {f.attempt_count > 0 ? ` • Attempts: ${f.attempt_count}` : ""}
+              </div>
+            </div>
+            <StatusBadge status={f.fulfillment_status} />
+          </div>
+
+          {f.failure_reason && (
+            <div className="text-xs text-red-600 dark:text-red-400">{f.failure_reason}</div>
+          )}
+
+          {isAdmin && (
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => retryMut.mutate(f.id)}
+                disabled={retryMut.isPending || f.fulfillment_status === "delivered" || f.fulfillment_status === "cancelled"}
+                className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] font-medium hover:bg-muted disabled:opacity-50"
+              >
+                <RefreshCw className="h-3 w-3" /> Retry
+              </button>
+              <button
+                onClick={() => restartMut.mutate(f.id)}
+                disabled={restartMut.isPending}
+                className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] font-medium hover:bg-muted disabled:opacity-50"
+              >
+                <RotateCcw className="h-3 w-3" /> Restart
+              </button>
+              <button
+                onClick={() => cancelMut.mutate(f.id)}
+                disabled={cancelMut.isPending || f.fulfillment_status === "cancelled"}
+                className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-500/10 disabled:opacity-50"
+              >
+                <XCircle className="h-3 w-3" /> Cancel
+              </button>
+            </div>
+          )}
+
+          {!compact && (
+            <details className="pt-1">
+              <summary className="cursor-pointer text-[11px] font-medium text-muted-foreground hover:text-foreground">View timeline</summary>
+              <div className="pt-2">
+                <Timeline fulfillmentId={f.id} email={email} authed={authed} />
+              </div>
+            </details>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
