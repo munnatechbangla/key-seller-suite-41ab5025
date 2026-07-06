@@ -19,6 +19,13 @@ import {
   replaceSubscriptionAssignmentFn,
   markSubscriptionExpiredFn,
   addSubscriptionNoteFn,
+  extendSubscriptionFn,
+  renewSubscriptionFn,
+  suspendSubscriptionFn,
+  resumeSubscriptionFn,
+  cancelSubscriptionFn,
+  evaluateSubscriptionStatusFn,
+  getSubscriptionRenewalHistoryFn,
 } from "@/lib/subscriptions.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
