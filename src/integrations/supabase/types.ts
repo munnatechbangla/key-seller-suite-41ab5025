@@ -1209,6 +1209,112 @@ export type Database = {
           },
         ]
       }
+      product_custom_field_options: {
+        Row: {
+          created_at: string
+          field_id: string
+          id: string
+          label: string
+          sort_order: number
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          field_id: string
+          id?: string
+          label: string
+          sort_order?: number
+          value: string
+        }
+        Update: {
+          created_at?: string
+          field_id?: string
+          id?: string
+          label?: string
+          sort_order?: number
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_custom_field_options_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "product_custom_fields"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_custom_fields: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          default_value: string | null
+          field_type: Database["public"]["Enums"]["custom_field_type"]
+          help_text: string | null
+          id: string
+          is_enabled: boolean
+          is_required: boolean
+          is_visible: boolean
+          label: string
+          max_length: number | null
+          min_length: number | null
+          name: string
+          placeholder: string | null
+          product_id: string
+          regex_pattern: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          default_value?: string | null
+          field_type?: Database["public"]["Enums"]["custom_field_type"]
+          help_text?: string | null
+          id?: string
+          is_enabled?: boolean
+          is_required?: boolean
+          is_visible?: boolean
+          label: string
+          max_length?: number | null
+          min_length?: number | null
+          name: string
+          placeholder?: string | null
+          product_id: string
+          regex_pattern?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          default_value?: string | null
+          field_type?: Database["public"]["Enums"]["custom_field_type"]
+          help_text?: string | null
+          id?: string
+          is_enabled?: boolean
+          is_required?: boolean
+          is_visible?: boolean
+          label?: string
+          max_length?: number | null
+          min_length?: number | null
+          name?: string
+          placeholder?: string | null
+          product_id?: string
+          regex_pattern?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_custom_fields_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_downloads: {
         Row: {
           created_at: string
@@ -1984,6 +2090,20 @@ export type Database = {
     Enums: {
       app_role: "admin" | "manager" | "customer" | "affiliate" | "support"
       coupon_type: "percent" | "fixed" | "free_product" | "free_download"
+      custom_field_type:
+        | "text"
+        | "email"
+        | "number"
+        | "url"
+        | "password"
+        | "textarea"
+        | "select"
+        | "radio"
+        | "checkbox"
+        | "date"
+        | "phone"
+        | "country"
+        | "hidden"
       delivery_type:
         | "download"
         | "license_key"
@@ -2141,6 +2261,21 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "manager", "customer", "affiliate", "support"],
       coupon_type: ["percent", "fixed", "free_product", "free_download"],
+      custom_field_type: [
+        "text",
+        "email",
+        "number",
+        "url",
+        "password",
+        "textarea",
+        "select",
+        "radio",
+        "checkbox",
+        "date",
+        "phone",
+        "country",
+        "hidden",
+      ],
       delivery_type: [
         "download",
         "license_key",
