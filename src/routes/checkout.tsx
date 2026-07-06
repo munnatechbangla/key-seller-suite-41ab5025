@@ -83,6 +83,15 @@ function CheckoutPage() {
     if (!agree || !privacy) { toast.error("Please accept the terms"); return; }
     if (!gateway) { toast.error("Select a payment method"); return; }
     if (submitting) return;
+
+    // Validate custom fields client-side
+    const errs = validateCheckoutFields(customFields, fieldValues);
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
+      toast.error("Please complete the product details");
+      return;
+    }
+
     setSubmitting(true);
     track("begin_checkout", {
       currency: "USD",
@@ -110,6 +119,23 @@ function CheckoutPage() {
     };
     try {
       const result = user ? await placeAuth(payload) : await placeGuest(payload);
+
+      // Persist custom field values (best-effort; server re-validates)
+      if (customFields.length > 0) {
+        const values = customFields
+          .map((f) => ({ field_id: f.id, value: fieldValues[f.id] ?? "" }));
+        try {
+          const saveArgs = { data: { orderId: result.orderId, email: customer.email, values } };
+          if (user) await saveFieldsAuth(saveArgs);
+          else await saveFieldsGuest(saveArgs);
+        } catch (err) {
+          console.error("[custom-fields] save failed", err);
+          toast.error(err instanceof Error ? err.message : "Could not save product details");
+          setSubmitting(false);
+          return;
+        }
+      }
+
       cart.clear();
       navigate({ to: "/pay/$orderNumber", params: { orderNumber: result.orderNumber } });
     } catch (err) {
