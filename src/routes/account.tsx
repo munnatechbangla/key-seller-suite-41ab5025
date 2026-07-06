@@ -20,7 +20,8 @@ import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValu
 import { DeliveryPanel } from "@/components/delivery/DeliveryPanel";
 import { getMyDeliveriesFn } from "@/lib/delivery.functions";
 import { SubscriptionDeliveryPanel, type SubscriptionDeliveryItem } from "@/components/subscriptions/SubscriptionDeliveryPanel";
-import { getOrderSubscriptionDeliveryAuthedFn } from "@/lib/subscriptions.functions";
+import { SubscriptionLifecycleCard, type LifecycleSubscription } from "@/components/subscriptions/SubscriptionLifecycleCard";
+import { getOrderSubscriptionDeliveryAuthedFn, getMySubscriptionsFn } from "@/lib/subscriptions.functions";
 
 function OrderSubscriptionSection({ orderId }: { orderId: string }) {
   const fn = useServerFn(getOrderSubscriptionDeliveryAuthedFn);
