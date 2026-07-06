@@ -49,6 +49,7 @@ import { Route as AdminMediaRouteImport } from './routes/admin.media'
 import { Route as AdminMarketplaceRouteImport } from './routes/admin.marketplace'
 import { Route as AdminLicensesRouteImport } from './routes/admin.licenses'
 import { Route as AdminLegalRouteImport } from './routes/admin.legal'
+import { Route as AdminInventoryDashboardRouteImport } from './routes/admin.inventory-dashboard'
 import { Route as AdminInventoryRouteImport } from './routes/admin.inventory'
 import { Route as AdminHomepageRouteImport } from './routes/admin.homepage'
 import { Route as AdminHealthRouteImport } from './routes/admin.health'
@@ -267,6 +268,11 @@ const AdminLegalRoute = AdminLegalRouteImport.update({
   path: '/legal',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminInventoryDashboardRoute = AdminInventoryDashboardRouteImport.update({
+  id: '/inventory-dashboard',
+  path: '/inventory-dashboard',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminInventoryRoute = AdminInventoryRouteImport.update({
   id: '/inventory',
   path: '/inventory',
@@ -391,6 +397,7 @@ export interface FileRoutesByFullPath {
   '/admin/health': typeof AdminHealthRoute
   '/admin/homepage': typeof AdminHomepageRoute
   '/admin/inventory': typeof AdminInventoryRoute
+  '/admin/inventory-dashboard': typeof AdminInventoryDashboardRoute
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/marketplace': typeof AdminMarketplaceRoute
@@ -449,6 +456,7 @@ export interface FileRoutesByTo {
   '/admin/health': typeof AdminHealthRoute
   '/admin/homepage': typeof AdminHomepageRoute
   '/admin/inventory': typeof AdminInventoryRoute
+  '/admin/inventory-dashboard': typeof AdminInventoryDashboardRoute
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/marketplace': typeof AdminMarketplaceRoute
@@ -509,6 +517,7 @@ export interface FileRoutesById {
   '/admin/health': typeof AdminHealthRoute
   '/admin/homepage': typeof AdminHomepageRoute
   '/admin/inventory': typeof AdminInventoryRoute
+  '/admin/inventory-dashboard': typeof AdminInventoryDashboardRoute
   '/admin/legal': typeof AdminLegalRoute
   '/admin/licenses': typeof AdminLicensesRoute
   '/admin/marketplace': typeof AdminMarketplaceRoute
@@ -570,6 +579,7 @@ export interface FileRouteTypes {
     | '/admin/health'
     | '/admin/homepage'
     | '/admin/inventory'
+    | '/admin/inventory-dashboard'
     | '/admin/legal'
     | '/admin/licenses'
     | '/admin/marketplace'
@@ -628,6 +638,7 @@ export interface FileRouteTypes {
     | '/admin/health'
     | '/admin/homepage'
     | '/admin/inventory'
+    | '/admin/inventory-dashboard'
     | '/admin/legal'
     | '/admin/licenses'
     | '/admin/marketplace'
@@ -687,6 +698,7 @@ export interface FileRouteTypes {
     | '/admin/health'
     | '/admin/homepage'
     | '/admin/inventory'
+    | '/admin/inventory-dashboard'
     | '/admin/legal'
     | '/admin/licenses'
     | '/admin/marketplace'
@@ -1030,6 +1042,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLegalRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/inventory-dashboard': {
+      id: '/admin/inventory-dashboard'
+      path: '/inventory-dashboard'
+      fullPath: '/admin/inventory-dashboard'
+      preLoaderRoute: typeof AdminInventoryDashboardRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/inventory': {
       id: '/admin/inventory'
       path: '/inventory'
@@ -1177,6 +1196,7 @@ interface AdminRouteChildren {
   AdminHealthRoute: typeof AdminHealthRoute
   AdminHomepageRoute: typeof AdminHomepageRoute
   AdminInventoryRoute: typeof AdminInventoryRoute
+  AdminInventoryDashboardRoute: typeof AdminInventoryDashboardRoute
   AdminLegalRoute: typeof AdminLegalRoute
   AdminLicensesRoute: typeof AdminLicensesRoute
   AdminMarketplaceRoute: typeof AdminMarketplaceRoute
@@ -1203,6 +1223,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminHealthRoute: AdminHealthRoute,
   AdminHomepageRoute: AdminHomepageRoute,
   AdminInventoryRoute: AdminInventoryRoute,
+  AdminInventoryDashboardRoute: AdminInventoryDashboardRoute,
   AdminLegalRoute: AdminLegalRoute,
   AdminLicensesRoute: AdminLicensesRoute,
   AdminMarketplaceRoute: AdminMarketplaceRoute,
