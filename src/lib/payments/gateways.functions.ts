@@ -242,13 +242,23 @@ export const reviewSubmissionFn = createServerFn({ method: "POST" })
     if (uErr) throw new Error(uErr.message);
 
     if (data.action === "approve") {
+      // Use the service-role client so mark_order_paid runs regardless of
+      // how PostgREST forwards the caller's JWT — admin_mark_order_paid's
+      // auth.uid()/has_role check was returning Forbidden intermittently
+      // when invoked through the JWT-scoped context client, leaving the
+      // submission approved but the order stuck on `pending`.
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const txn = sub.transaction_id || `manual-${sub.id.slice(0, 8)}`;
-      const { data: paid, error: pErr } = await context.supabase.rpc("admin_mark_order_paid", {
+      const { data: paid, error: pErr } = await supabaseAdmin.rpc("mark_order_paid", {
         _order_id: sub.order_id,
         _transaction_id: txn,
         _gateway_response: { gateway: sub.gateway_slug, manual_submission_id: sub.id, admin_note: data.admin_note ?? null },
       });
       if (pErr) throw new Error(pErr.message);
+      const paidResult = paid as { ok?: boolean; reason?: string } | null;
+      if (!paidResult?.ok) {
+        throw new Error(`Failed to mark order paid: ${paidResult?.reason ?? "unknown"}`);
+      }
       try {
         const { sendPostPaymentEmails } = await import("@/lib/emails/triggers.server");
         await sendPostPaymentEmails(sub.order_id);
