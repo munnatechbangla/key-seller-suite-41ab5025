@@ -19,6 +19,7 @@ const items = [
   { to: "/admin/homepage", label: "Homepage Builder", icon: LayoutTemplate },
   { to: "/admin/marketplace", label: "Marketplace", icon: Sparkles },
   { to: "/admin/products", label: "Products", icon: Package },
+  { to: "/admin/media", label: "Media Library", icon: ImageIcon },
   { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { to: "/admin/customers", label: "Customers", icon: Users },
   { to: "/admin/licenses", label: "Licenses", icon: KeyRound },
