@@ -429,6 +429,271 @@ export type Database = {
           },
         ]
       }
+      inventory_assignments: {
+        Row: {
+          assigned_at: string
+          created_at: string
+          email: string | null
+          id: string
+          item_id: string | null
+          order_id: string
+          order_item_id: string | null
+          pool_id: string | null
+          product_id: string | null
+          released_at: string | null
+          replaced_by_assignment_id: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          assigned_at?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          item_id?: string | null
+          order_id: string
+          order_item_id?: string | null
+          pool_id?: string | null
+          product_id?: string | null
+          released_at?: string | null
+          replaced_by_assignment_id?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          assigned_at?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          item_id?: string | null
+          order_id?: string
+          order_item_id?: string | null
+          pool_id?: string | null
+          product_id?: string | null
+          released_at?: string | null
+          replaced_by_assignment_id?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_assignments_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_assignments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_assignments_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_assignments_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_pools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_assignments_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_items: {
+        Row: {
+          assigned_at: string | null
+          assigned_order_id: string | null
+          assigned_user_id: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          inventory_type: Database["public"]["Enums"]["inventory_type"]
+          notes: string | null
+          password: string | null
+          pool_id: string
+          status: Database["public"]["Enums"]["inventory_item_status"]
+          updated_at: string
+          username: string | null
+          value: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_order_id?: string | null
+          assigned_user_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          inventory_type?: Database["public"]["Enums"]["inventory_type"]
+          notes?: string | null
+          password?: string | null
+          pool_id: string
+          status?: Database["public"]["Enums"]["inventory_item_status"]
+          updated_at?: string
+          username?: string | null
+          value: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_order_id?: string | null
+          assigned_user_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          inventory_type?: Database["public"]["Enums"]["inventory_type"]
+          notes?: string | null
+          password?: string | null
+          pool_id?: string
+          status?: Database["public"]["Enums"]["inventory_item_status"]
+          updated_at?: string
+          username?: string | null
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_assigned_order_id_fkey"
+            columns: ["assigned_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_pools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          assignment_id: string | null
+          created_at: string
+          id: string
+          item_id: string | null
+          metadata: Json
+          pool_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          assignment_id?: string | null
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          metadata?: Json
+          pool_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          assignment_id?: string | null
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          metadata?: Json
+          pool_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_logs_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_logs_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_logs_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_pools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_pools: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          inventory_type: Database["public"]["Enums"]["inventory_type"]
+          is_active: boolean
+          low_stock_threshold: number
+          name: string
+          product_id: string | null
+          updated_at: string
+          variation_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          inventory_type?: Database["public"]["Enums"]["inventory_type"]
+          is_active?: boolean
+          low_stock_threshold?: number
+          name: string
+          product_id?: string | null
+          updated_at?: string
+          variation_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          inventory_type?: Database["public"]["Enums"]["inventory_type"]
+          is_active?: boolean
+          low_stock_threshold?: number
+          name?: string
+          product_id?: string | null
+          updated_at?: string
+          variation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_pools_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_pools_variation_id_fkey"
+            columns: ["variation_id"]
+            isOneToOne: false
+            referencedRelation: "product_variations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       legal_pages: {
         Row: {
           canonical_url: string | null
@@ -2073,7 +2338,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_bulk_import_inventory: {
+        Args: { _items: Json; _pool_id: string }
+        Returns: Json
+      }
       admin_get_asset_usage: { Args: { _asset_id: string }; Returns: Json }
+      admin_list_inventory_pools: { Args: never; Returns: Json }
       admin_list_media_assets: {
         Args: {
           _folder?: string
@@ -2096,6 +2366,14 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_release_inventory_assignment: {
+        Args: { _assignment_id: string }
+        Returns: Json
+      }
+      admin_replace_inventory_assignment: {
+        Args: { _assignment_id: string }
+        Returns: Json
+      }
       admin_update_order_custom_field_value: {
         Args: { _id: string; _value: string }
         Returns: Json
@@ -2110,6 +2388,10 @@ export type Database = {
           _user_id: string
         }
         Returns: undefined
+      }
+      assign_inventory_for_order: {
+        Args: { _order_id: string }
+        Returns: number
       }
       assign_licenses_for_order: {
         Args: { _order_id: string }
@@ -2280,6 +2562,19 @@ export type Database = {
         | "account"
         | "manual"
         | "external_url"
+      inventory_item_status:
+        | "available"
+        | "reserved"
+        | "assigned"
+        | "expired"
+        | "disabled"
+      inventory_type:
+        | "license_key"
+        | "account"
+        | "download_token"
+        | "api_key"
+        | "gift_code"
+        | "other"
       license_key_status: "available" | "assigned" | "revoked"
       order_status:
         | "pending"
@@ -2452,6 +2747,21 @@ export const Constants = {
         "account",
         "manual",
         "external_url",
+      ],
+      inventory_item_status: [
+        "available",
+        "reserved",
+        "assigned",
+        "expired",
+        "disabled",
+      ],
+      inventory_type: [
+        "license_key",
+        "account",
+        "download_token",
+        "api_key",
+        "gift_code",
+        "other",
       ],
       license_key_status: ["available", "assigned", "revoked"],
       order_status: [
