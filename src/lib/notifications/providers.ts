@@ -1,5 +1,5 @@
 // Provider abstraction for the Notification Engine.
-// Architecture only — no real delivery yet. Future providers plug in here.
+// Real delivery uses adapters loaded on-demand server-side (client bundle-safe).
 import type { NotificationChannel } from "./events";
 
 export type OutboundNotification = {
@@ -11,8 +11,8 @@ export type OutboundNotification = {
 };
 
 export type ProviderResult =
-  | { ok: true; providerMessageId?: string }
-  | { ok: false; error: string };
+  | { ok: true; providerMessageId?: string; httpStatus?: number }
+  | { ok: false; error: string; httpStatus?: number };
 
 export interface NotificationProvider {
   channel: NotificationChannel;
@@ -26,7 +26,6 @@ const noop = (channel: NotificationChannel): NotificationProvider => ({
   },
 });
 
-// Registry — swap in real providers later without touching callers.
 const registry: Record<NotificationChannel, NotificationProvider> = {
   email: noop("email"),
   whatsapp: noop("whatsapp"),
