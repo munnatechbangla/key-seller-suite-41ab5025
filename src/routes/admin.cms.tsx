@@ -39,6 +39,7 @@ function AdminCMSPage() {
           <TabsTrigger value="menus">Menus</TabsTrigger>
           <TabsTrigger value="footer">Footer</TabsTrigger>
           <TabsTrigger value="settings">Site Settings</TabsTrigger>
+          <TabsTrigger value="seo">SEO &amp; Analytics</TabsTrigger>
         </TabsList>
         <TabsContent value="pages"><PagesTab /></TabsContent>
         <TabsContent value="homepage"><HomepagePointer /></TabsContent>
@@ -46,6 +47,7 @@ function AdminCMSPage() {
         <TabsContent value="menus"><MenusTab /></TabsContent>
         <TabsContent value="footer"><FooterTab /></TabsContent>
         <TabsContent value="settings"><SettingsPointer /></TabsContent>
+        <TabsContent value="seo"><SeoCenterPointer /></TabsContent>
       </Tabs>
     </div>
   );
@@ -321,6 +323,19 @@ function SettingsPointer() {
     <Card><CardContent className="p-6 text-sm text-muted-foreground">
       Logos, favicon, company info, social links, theme colors, and payment/analytics config live in{" "}
       <a className="underline" href="/admin/settings">Admin → Settings</a>. The existing settings store is the source of truth; CMS Pages/Menus/Footer above are additive layers.
+    </CardContent></Card>
+  );
+}
+
+function SeoCenterPointer() {
+  return (
+    <Card><CardContent className="p-6 space-y-2">
+      <p className="text-sm text-muted-foreground">
+        Configure site-wide SEO, search engine verification, analytics pixels, custom scripts, cookie consent, performance hints, and URL redirects.
+      </p>
+      <div className="flex gap-2">
+        <Button asChild><a href="/admin/seo">Open SEO &amp; Analytics Center</a></Button>
+      </div>
     </CardContent></Card>
   );
 }

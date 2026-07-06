@@ -42,6 +42,7 @@ import { Route as AuthForgotRouteImport } from './routes/auth.forgot'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminSetupRouteImport } from './routes/admin.setup'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminSeoRouteImport } from './routes/admin.seo'
 import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminPaymentLogsRouteImport } from './routes/admin.payment-logs'
@@ -237,6 +238,11 @@ const AdminSetupRoute = AdminSetupRouteImport.update({
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSeoRoute = AdminSeoRouteImport.update({
+  id: '/seo',
+  path: '/seo',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminReviewsRoute = AdminReviewsRouteImport.update({
@@ -445,6 +451,7 @@ export interface FileRoutesByFullPath {
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/seo': typeof AdminSeoRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/setup': typeof AdminSetupRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -510,6 +517,7 @@ export interface FileRoutesByTo {
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/seo': typeof AdminSeoRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/setup': typeof AdminSetupRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -577,6 +585,7 @@ export interface FileRoutesById {
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/seo': typeof AdminSeoRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/setup': typeof AdminSetupRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
@@ -645,6 +654,7 @@ export interface FileRouteTypes {
     | '/admin/payment-logs'
     | '/admin/products'
     | '/admin/reviews'
+    | '/admin/seo'
     | '/admin/settings'
     | '/admin/setup'
     | '/admin/subscriptions'
@@ -710,6 +720,7 @@ export interface FileRouteTypes {
     | '/admin/payment-logs'
     | '/admin/products'
     | '/admin/reviews'
+    | '/admin/seo'
     | '/admin/settings'
     | '/admin/setup'
     | '/admin/subscriptions'
@@ -776,6 +787,7 @@ export interface FileRouteTypes {
     | '/admin/payment-logs'
     | '/admin/products'
     | '/admin/reviews'
+    | '/admin/seo'
     | '/admin/settings'
     | '/admin/setup'
     | '/admin/subscriptions'
@@ -1067,6 +1079,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/seo': {
+      id: '/admin/seo'
+      path: '/seo'
+      fullPath: '/admin/seo'
+      preLoaderRoute: typeof AdminSeoRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/reviews': {
       id: '/admin/reviews'
       path: '/reviews'
@@ -1337,6 +1356,7 @@ interface AdminRouteChildren {
   AdminPaymentLogsRoute: typeof AdminPaymentLogsRoute
   AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminReviewsRoute: typeof AdminReviewsRoute
+  AdminSeoRoute: typeof AdminSeoRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSetupRoute: typeof AdminSetupRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
@@ -1367,6 +1387,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminPaymentLogsRoute: AdminPaymentLogsRoute,
   AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminReviewsRoute: AdminReviewsRoute,
+  AdminSeoRoute: AdminSeoRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSetupRoute: AdminSetupRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,

@@ -106,6 +106,48 @@ export type SupportConfig = {
   enable_live_chat: boolean;
 };
 
+export type SeoCenterConfig = {
+  // Global SEO
+  organization_type: string;
+  company_name: string;
+  canonical_domain: string;
+  default_robots: string;
+  default_og_image: string;
+  default_twitter_image: string;
+  // Verification
+  google_site_verification: string;
+  bing_site_verification: string;
+  yandex_verification: string;
+  pinterest_verification: string;
+  facebook_domain_verification: string;
+  // Extra Analytics
+  tiktok_pixel_id: string;
+  clarity_id: string;
+  linkedin_partner_id: string;
+  snap_pixel_id: string;
+  custom_analytics: string;
+  // Custom scripts
+  head_scripts: string;
+  body_start_scripts: string;
+  body_end_scripts: string;
+  footer_scripts: string;
+  // Cookie consent
+  cookie_enabled: boolean;
+  cookie_banner_text: string;
+  cookie_accept_label: string;
+  cookie_reject_label: string;
+  cookie_preferences_label: string;
+  cookie_privacy_url: string;
+  // Performance
+  preconnect_urls: string;
+  dns_prefetch_urls: string;
+  lazy_loading: boolean;
+  image_optimization: boolean;
+  font_optimization: boolean;
+  // Extra social
+  extra_social: { label: string; href: string }[];
+};
+
 export type AllSettings = {
   branding: SiteBranding;
   contact: SiteContact;
@@ -116,6 +158,7 @@ export type AllSettings = {
   analytics: AnalyticsConfig;
   theme: ThemeConfig;
   support: SupportConfig;
+  seo_center: SeoCenterConfig;
 };
 
 export const defaultSettings: AllSettings = {
@@ -211,6 +254,40 @@ export const defaultSettings: AllSettings = {
     enable_email: true,
     enable_live_chat: false,
   },
+  seo_center: {
+    organization_type: "Organization",
+    company_name: "",
+    canonical_domain: "",
+    default_robots: "index,follow",
+    default_og_image: "",
+    default_twitter_image: "",
+    google_site_verification: "",
+    bing_site_verification: "",
+    yandex_verification: "",
+    pinterest_verification: "",
+    facebook_domain_verification: "",
+    tiktok_pixel_id: "",
+    clarity_id: "",
+    linkedin_partner_id: "",
+    snap_pixel_id: "",
+    custom_analytics: "",
+    head_scripts: "",
+    body_start_scripts: "",
+    body_end_scripts: "",
+    footer_scripts: "",
+    cookie_enabled: false,
+    cookie_banner_text: "We use cookies to improve your experience. By using our site, you agree to our cookie policy.",
+    cookie_accept_label: "Accept all",
+    cookie_reject_label: "Reject",
+    cookie_preferences_label: "Preferences",
+    cookie_privacy_url: "/privacy",
+    preconnect_urls: "",
+    dns_prefetch_urls: "",
+    lazy_loading: true,
+    image_optimization: true,
+    font_optimization: true,
+    extra_social: [],
+  },
 };
 
 type SettingsState = {
@@ -259,6 +336,8 @@ export const useSettings = create<SettingsState>((set) => ({
           next.theme = merge(next.theme, v as Partial<ThemeConfig>);
         } else if (row.group_key === "site" && row.setting_key === "support") {
           next.support = merge(next.support, v as Partial<SupportConfig>);
+        } else if (row.group_key === "seo_center" && row.setting_key === "config") {
+          next.seo_center = merge(next.seo_center, v as Partial<SeoCenterConfig>);
         }
       }
       set({ settings: next, loaded: true });
