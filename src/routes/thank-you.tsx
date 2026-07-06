@@ -46,6 +46,15 @@ function ThankYou() {
     },
   });
 
+  const fetchSubAuth = useServerFn(getOrderSubscriptionDeliveryAuthedFn);
+  const fetchSubGuest = useServerFn(getOrderSubscriptionDeliveryGuestFn);
+  const fetchSub = user ? fetchSubAuth : fetchSubGuest;
+  const subQ = useQuery({
+    queryKey: ["sub-delivery", order, email, user?.id ?? "guest"],
+    queryFn: () =>
+      fetchSub({ data: { orderNumber: order!, email } }) as Promise<SubscriptionDeliveryItem[]>,
+    enabled: !!order && q.data?.paymentStatus === "paid",
+
   const fetchDeliveryAuth = useServerFn(getOrderDeliveryAuthFn);
   const fetchDeliveryGuest = useServerFn(getOrderDeliveryGuestFn);
   const fetchDelivery = user ? fetchDeliveryAuth : fetchDeliveryGuest;
