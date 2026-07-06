@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
+import { FulfillmentPanel } from "@/components/fulfillment/FulfillmentPanel";
 
 export const Route = createFileRoute("/admin/orders")({ component: AdminOrders });
 
