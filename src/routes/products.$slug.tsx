@@ -20,6 +20,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { track } from "@/lib/analytics/track";
+import { productLayoutPublicResolveFn } from "@/lib/product-layouts.functions";
+import { ProductLayoutRenderer, type ProductLayoutSection } from "@/components/cms/ProductLayoutRenderer";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/products/$slug")({
   loader: async ({ params, context }) => {
@@ -96,15 +100,17 @@ export const Route = createFileRoute("/products/$slug")({
 function ProductPage() {
   const { slug } = Route.useParams();
   const product = useProduct(slug)!;
-  const related = useRelated(slug, 4);
-  const [qty, setQty] = useState(1);
-  const [tab, setTab] = useState<"desc" | "specs" | "reviews" | "faq">("desc");
-  const cart = useCart();
-  const wish = useWishlist();
-  const cmp = useCompare();
-  const push = useRecent((s) => s.push);
-  const recent = useRecent((s) => s.slugs);
 
+  // Phase 4.3A: if this product resolves to a dynamic Product Layout, render it.
+  const resolveLayout = useServerFn(productLayoutPublicResolveFn);
+  const layoutQuery = useQuery({
+    queryKey: ["product-layout-resolve", product.id],
+    queryFn: () => resolveLayout({ data: { product_id: product.id } }),
+    staleTime: 60_000,
+  });
+  const dynamicLayout = layoutQuery.data as { layout: any; sections: ProductLayoutSection[] } | null | undefined;
+
+  const push = useRecent((s) => s.push);
   useEffect(() => { push(product.slug); }, [product.slug, push]);
   useEffect(() => {
     track("view_item", {
@@ -113,6 +119,31 @@ function ProductPage() {
       items: [{ item_id: product.slug, item_name: product.name, price: product.price, item_category: product.category }],
     });
   }, [product.slug, product.price, product.name, product.category]);
+
+  if (dynamicLayout && dynamicLayout.sections?.length) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <ProductLayoutRenderer product={product} sections={dynamicLayout.sections} />
+        <Footer />
+      </div>
+    );
+  }
+
+  return <LegacyProductPage />;
+}
+
+function LegacyProductPage() {
+  const { slug } = Route.useParams();
+  const product = useProduct(slug)!;
+  const related = useRelated(slug, 4);
+  const [qty, setQty] = useState(1);
+  const [tab, setTab] = useState<"desc" | "specs" | "reviews" | "faq">("desc");
+  const cart = useCart();
+  const wish = useWishlist();
+  const cmp = useCompare();
+  const recent = useRecent((s) => s.slugs);
+
 
   const off = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
   const recentSlugs = recent.filter((s) => s !== product.slug).slice(0, 4);

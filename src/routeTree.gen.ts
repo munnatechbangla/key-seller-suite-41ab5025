@@ -66,6 +66,7 @@ import { Route as AdminCmsRouteImport } from './routes/admin.cms'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminProductsIdRouteImport } from './routes/admin.products.$id'
+import { Route as AdminCmsProductLayoutsRouteImport } from './routes/admin.cms.product-layouts'
 import { Route as AdminCmsHomepageRouteImport } from './routes/admin.cms.homepage'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments.webhook'
 import { Route as ApiPublicNotificationsProcessRouteImport } from './routes/api/public/notifications.process'
@@ -358,6 +359,11 @@ const AdminProductsIdRoute = AdminProductsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AdminProductsRoute,
 } as any)
+const AdminCmsProductLayoutsRoute = AdminCmsProductLayoutsRouteImport.update({
+  id: '/product-layouts',
+  path: '/product-layouts',
+  getParentRoute: () => AdminCmsRoute,
+} as any)
 const AdminCmsHomepageRoute = AdminCmsHomepageRouteImport.update({
   id: '/homepage',
   path: '/homepage',
@@ -452,6 +458,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
+  '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -516,6 +523,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/products': typeof ProductsIndexRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
+  '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -582,6 +590,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
+  '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -649,6 +658,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/products/'
     | '/admin/cms/homepage'
+    | '/admin/cms/product-layouts'
     | '/admin/products/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
@@ -713,6 +723,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/products'
     | '/admin/cms/homepage'
+    | '/admin/cms/product-layouts'
     | '/admin/products/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
@@ -778,6 +789,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/products/'
     | '/admin/cms/homepage'
+    | '/admin/cms/product-layouts'
     | '/admin/products/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
@@ -1223,6 +1235,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsIdRouteImport
       parentRoute: typeof AdminProductsRoute
     }
+    '/admin/cms/product-layouts': {
+      id: '/admin/cms/product-layouts'
+      path: '/product-layouts'
+      fullPath: '/admin/cms/product-layouts'
+      preLoaderRoute: typeof AdminCmsProductLayoutsRouteImport
+      parentRoute: typeof AdminCmsRoute
+    }
     '/admin/cms/homepage': {
       id: '/admin/cms/homepage'
       path: '/homepage'
@@ -1270,10 +1289,12 @@ declare module '@tanstack/react-router' {
 
 interface AdminCmsRouteChildren {
   AdminCmsHomepageRoute: typeof AdminCmsHomepageRoute
+  AdminCmsProductLayoutsRoute: typeof AdminCmsProductLayoutsRoute
 }
 
 const AdminCmsRouteChildren: AdminCmsRouteChildren = {
   AdminCmsHomepageRoute: AdminCmsHomepageRoute,
+  AdminCmsProductLayoutsRoute: AdminCmsProductLayoutsRoute,
 }
 
 const AdminCmsRouteWithChildren = AdminCmsRoute._addFileChildren(

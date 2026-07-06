@@ -35,12 +35,14 @@ function AdminCMSPage() {
         <TabsList>
           <TabsTrigger value="pages">Pages</TabsTrigger>
           <TabsTrigger value="homepage">Homepage</TabsTrigger>
+          <TabsTrigger value="product-layouts">Product Layouts</TabsTrigger>
           <TabsTrigger value="menus">Menus</TabsTrigger>
           <TabsTrigger value="footer">Footer</TabsTrigger>
           <TabsTrigger value="settings">Site Settings</TabsTrigger>
         </TabsList>
         <TabsContent value="pages"><PagesTab /></TabsContent>
         <TabsContent value="homepage"><HomepagePointer /></TabsContent>
+        <TabsContent value="product-layouts"><ProductLayoutsPointer /></TabsContent>
         <TabsContent value="menus"><MenusTab /></TabsContent>
         <TabsContent value="footer"><FooterTab /></TabsContent>
         <TabsContent value="settings"><SettingsPointer /></TabsContent>
@@ -296,6 +298,19 @@ function HomepagePointer() {
       <div className="flex gap-2">
         <Button asChild><a href="/admin/cms/homepage">Open Homepage Builder</a></Button>
         <Button variant="outline" asChild><a href="/admin/homepage">Legacy static homepage config</a></Button>
+      </div>
+    </CardContent></Card>
+  );
+}
+
+function ProductLayoutsPointer() {
+  return (
+    <Card><CardContent className="p-6 space-y-2">
+      <p className="text-sm text-muted-foreground">
+        Build dynamic product page layouts with drag-and-drop sections. Assign a layout to any product — products without a layout keep their current page.
+      </p>
+      <div className="flex gap-2">
+        <Button asChild><a href="/admin/cms/product-layouts">Open Product Layouts</a></Button>
       </div>
     </CardContent></Card>
   );
