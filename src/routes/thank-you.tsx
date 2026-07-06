@@ -40,7 +40,9 @@ function ThankYou() {
     },
   });
 
-  const fetchDelivery = user ? useServerFn(getOrderDeliveryAuthFn) : useServerFn(getOrderDeliveryGuestFn);
+  const fetchDeliveryAuth = useServerFn(getOrderDeliveryAuthFn);
+  const fetchDeliveryGuest = useServerFn(getOrderDeliveryGuestFn);
+  const fetchDelivery = user ? fetchDeliveryAuth : fetchDeliveryGuest;
   const deliveryQ = useQuery({
     queryKey: ["delivery", order, email, user?.id ?? "guest"],
     queryFn: () => fetchDelivery({ data: { orderNumber: order!, email } }),
