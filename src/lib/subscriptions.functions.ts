@@ -406,3 +406,145 @@ export const addSubscriptionNoteFn = createServerFn({ method: "POST" })
     return r;
   });
 
+
+// ============================================================
+// Phase 3.3 — Lifecycle management
+// ============================================================
+export const extendSubscriptionFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      id: z.string().uuid(),
+      days: z.number().int().min(1).max(3650),
+      notes: z.string().optional(),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: r, error } = await context.supabase.rpc("admin_extend_subscription", {
+      _assignment_id: data.id,
+      _days: data.days,
+      _notes: data.notes ?? null,
+    });
+    if (error) throw new Error(error.message);
+    return r;
+  });
+
+export const renewSubscriptionFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      id: z.string().uuid(),
+      days: z.number().int().min(1).max(3650).default(30),
+      notes: z.string().optional(),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: r, error } = await context.supabase.rpc("admin_renew_subscription", {
+      _assignment_id: data.id,
+      _days: data.days,
+      _notes: data.notes ?? null,
+    });
+    if (error) throw new Error(error.message);
+    return r;
+  });
+
+export const suspendSubscriptionFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ id: z.string().uuid(), reason: z.string().optional() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: r, error } = await context.supabase.rpc("admin_suspend_subscription", {
+      _assignment_id: data.id,
+      _reason: data.reason ?? null,
+    });
+    if (error) throw new Error(error.message);
+    return r;
+  });
+
+export const resumeSubscriptionFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: r, error } = await context.supabase.rpc("admin_resume_subscription", {
+      _assignment_id: data.id,
+    });
+    if (error) throw new Error(error.message);
+    return r;
+  });
+
+export const cancelSubscriptionFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ id: z.string().uuid(), reason: z.string().optional() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: r, error } = await context.supabase.rpc("admin_cancel_subscription", {
+      _assignment_id: data.id,
+      _reason: data.reason ?? null,
+    });
+    if (error) throw new Error(error.message);
+    return r;
+  });
+
+export const evaluateSubscriptionStatusFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ id: z.string().uuid().optional() }).parse(d ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    if (data.id) {
+      const { error } = await context.supabase.rpc("evaluate_subscription_status", {
+        _assignment_id: data.id,
+      });
+      if (error) throw new Error(error.message);
+      return { ok: true };
+    }
+    const { data: r, error } = await context.supabase.rpc("evaluate_all_subscriptions");
+    if (error) throw new Error(error.message);
+    return { ok: true, evaluated: r };
+  });
+
+export const getSubscriptionRenewalHistoryFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: r, error } = await context.supabase.rpc(
+      "get_subscription_renewal_history",
+      { _assignment_id: data.id },
+    );
+    if (error) throw new Error(error.message);
+    return r ?? [];
+  });
+
+export const getMySubscriptionsFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.rpc("get_customer_subscriptions", {
+      _email: null,
+    });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+export const getGuestSubscriptionsFn = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ email: z.string().email() }).parse(d))
+  .handler(async ({ data }) => {
+    const { createClient } = await import("@supabase/supabase-js");
+    const sb = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_PUBLISHABLE_KEY!,
+      { auth: { persistSession: false, autoRefreshToken: false } },
+    );
+    const { data: rows, error } = await sb.rpc("get_customer_subscriptions", {
+      _email: data.email,
+    });
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
