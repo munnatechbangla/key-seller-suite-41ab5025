@@ -29,7 +29,7 @@ export type FulfillmentRow = {
   completed_at: string | null;
   last_retry_at: string | null;
   failure_reason: string | null;
-  metadata: Record<string, unknown>;
+  metadata: Record<string, any>;
   created_at: string;
   updated_at: string;
   product_title?: string | null;
@@ -42,7 +42,7 @@ export type FulfillmentLog = {
   event: string;
   message: string | null;
   performed_by: string | null;
-  metadata: Record<string, unknown>;
+  metadata: Record<string, any>;
   created_at: string;
 };
 
@@ -68,7 +68,7 @@ export const getOrderFulfillmentsAuthFn = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase.rpc("get_order_fulfillments", {
       _order_id: data.orderId,
-      _email: data.email ?? null,
+      _email: data.email,
     });
     if (error) throw new Error(error.message);
     return (rows as FulfillmentRow[]) ?? [];
@@ -81,7 +81,7 @@ export const getOrderFulfillmentsGuestFn = createServerFn({ method: "GET" })
     const sb = createServerSupabaseClient();
     const { data: rows, error } = await sb.rpc("get_order_fulfillments", {
       _order_id: data.orderId,
-      _email: data.email ?? null,
+      _email: data.email,
     });
     if (error) throw new Error(error.message);
     return (rows as FulfillmentRow[]) ?? [];
@@ -98,7 +98,7 @@ export const getFulfillmentTimelineAuthFn = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase.rpc("get_fulfillment_timeline", {
       _fulfillment_id: data.fulfillmentId,
-      _email: data.email ?? null,
+      _email: data.email,
     });
     if (error) throw new Error(error.message);
     return (rows as FulfillmentLog[]) ?? [];
@@ -110,7 +110,7 @@ export const getFulfillmentTimelineGuestFn = createServerFn({ method: "GET" })
     const sb = createServerSupabaseClient();
     const { data: rows, error } = await sb.rpc("get_fulfillment_timeline", {
       _fulfillment_id: data.fulfillmentId,
-      _email: data.email ?? null,
+      _email: data.email,
     });
     if (error) throw new Error(error.message);
     return (rows as FulfillmentLog[]) ?? [];
@@ -156,7 +156,7 @@ export const adminCancelFulfillmentFn = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { data: res, error } = await context.supabase.rpc("admin_cancel_fulfillment", {
       _fulfillment_id: data.fulfillmentId,
-      _reason: data.reason ?? null,
+      _reason: data.reason,
     });
     if (error) throw new Error(error.message);
     return res as { ok: boolean };
