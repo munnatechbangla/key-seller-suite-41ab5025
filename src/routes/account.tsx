@@ -165,20 +165,25 @@ function OrdersList({ orders }: { orders: OrderRow[] }) {
         const date = new Date(o.created_at).toLocaleDateString();
         const payStatus = (o as { payments?: { status: string }[] }).payments?.[0]?.status ?? "pending";
         return (
-          <div key={o.id} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-muted/40 transition-smooth">
-            <Package className="h-5 w-5 text-primary" />
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-sm">#{o.order_number}</div>
-              <div className="text-xs text-muted-foreground">{date} · {itemCount} item{itemCount !== 1 ? "s" : ""}</div>
-            </div>
-            <div className="text-right space-y-1">
-              <div className="font-bold">${Number(o.total).toFixed(2)}</div>
-              <div className="flex gap-1 justify-end">
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[o.status] ?? palette.pending}`}>{o.status}</span>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[payStatus] ?? palette.pending}`}>{payStatus}</span>
+          <details key={o.id} className="rounded-xl border border-border hover:bg-muted/40 transition-smooth group">
+            <summary className="flex items-center gap-3 p-3 cursor-pointer list-none">
+              <Package className="h-5 w-5 text-primary" />
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-sm">#{o.order_number}</div>
+                <div className="text-xs text-muted-foreground">{date} · {itemCount} item{itemCount !== 1 ? "s" : ""}</div>
               </div>
+              <div className="text-right space-y-1">
+                <div className="font-bold">${Number(o.total).toFixed(2)}</div>
+                <div className="flex gap-1 justify-end">
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[o.status] ?? palette.pending}`}>{o.status}</span>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[payStatus] ?? palette.pending}`}>{payStatus}</span>
+                </div>
+              </div>
+            </summary>
+            <div className="border-t border-border p-3">
+              <OrderCustomFieldValues orderId={o.id} authed={true} compact />
             </div>
-          </div>
+          </details>
         );
       })}
     </div>
