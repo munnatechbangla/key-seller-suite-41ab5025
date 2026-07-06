@@ -46,7 +46,7 @@ function LandingPage() {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1">
-        {sections.map((s) => <SectionRenderer key={s.id} section={s} />)}
+        {sections.map((s: CmsSection) => <SectionRenderer key={s.id} section={s} />)}
         {sections.length === 0 && <div className="p-10 text-center text-muted-foreground">This page is empty.</div>}
       </main>
       <Footer />

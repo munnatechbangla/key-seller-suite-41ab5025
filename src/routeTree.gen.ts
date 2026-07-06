@@ -34,6 +34,7 @@ import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as PayOrderNumberRouteImport } from './routes/pay.$orderNumber'
+import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AuthResetRouteImport } from './routes/auth.reset'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
@@ -200,6 +201,11 @@ const ProductsSlugRoute = ProductsSlugRouteImport.update({
 const PayOrderNumberRoute = PayOrderNumberRouteImport.update({
   id: '/pay/$orderNumber',
   path: '/pay/$orderNumber',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LSlugRoute = LSlugRouteImport.update({
+  id: '/l/$slug',
+  path: '/l/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
@@ -472,6 +478,7 @@ export interface FileRoutesByFullPath {
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset': typeof AuthResetRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/l/$slug': typeof LSlugRoute
   '/pay/$orderNumber': typeof PayOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -540,6 +547,7 @@ export interface FileRoutesByTo {
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset': typeof AuthResetRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/l/$slug': typeof LSlugRoute
   '/pay/$orderNumber': typeof PayOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/admin': typeof AdminIndexRoute
@@ -610,6 +618,7 @@ export interface FileRoutesById {
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset': typeof AuthResetRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/l/$slug': typeof LSlugRoute
   '/pay/$orderNumber': typeof PayOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -681,6 +690,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/auth/reset'
     | '/blog/$slug'
+    | '/l/$slug'
     | '/pay/$orderNumber'
     | '/products/$slug'
     | '/admin/'
@@ -749,6 +759,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/auth/reset'
     | '/blog/$slug'
+    | '/l/$slug'
     | '/pay/$orderNumber'
     | '/products/$slug'
     | '/admin'
@@ -818,6 +829,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/auth/reset'
     | '/blog/$slug'
+    | '/l/$slug'
     | '/pay/$orderNumber'
     | '/products/$slug'
     | '/admin/'
@@ -860,6 +872,7 @@ export interface RootRouteChildren {
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
   AuthResetRoute: typeof AuthResetRoute
+  LSlugRoute: typeof LSlugRoute
   PayOrderNumberRoute: typeof PayOrderNumberRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
@@ -1045,6 +1058,13 @@ declare module '@tanstack/react-router' {
       path: '/pay/$orderNumber'
       fullPath: '/pay/$orderNumber'
       preLoaderRoute: typeof PayOrderNumberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/l/$slug': {
+      id: '/l/$slug'
+      path: '/l/$slug'
+      fullPath: '/l/$slug'
+      preLoaderRoute: typeof LSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog/$slug': {
@@ -1483,6 +1503,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
   AuthResetRoute: AuthResetRoute,
+  LSlugRoute: LSlugRoute,
   PayOrderNumberRoute: PayOrderNumberRoute,
   ProductsSlugRoute: ProductsSlugRoute,
   ProductsIndexRoute: ProductsIndexRoute,
