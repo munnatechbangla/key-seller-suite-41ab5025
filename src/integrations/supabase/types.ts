@@ -79,6 +79,193 @@ export type Database = {
           },
         ]
       }
+      cms_footer: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          json_content: Json
+          section_name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          json_content?: Json
+          section_name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          json_content?: Json
+          section_name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_navigation: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          icon: string | null
+          id: string
+          label: string
+          menu_name: string
+          parent_id: string | null
+          sort_order: number
+          target: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          label: string
+          menu_name: string
+          parent_id?: string | null
+          sort_order?: number
+          target?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          label?: string
+          menu_name?: string
+          parent_id?: string | null
+          sort_order?: number
+          target?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_navigation_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "cms_navigation"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_pages: {
+        Row: {
+          canonical_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          meta_description: string | null
+          meta_title: string | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          page_type: string
+          published_at: string | null
+          robots: string | null
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          canonical_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          page_type?: string
+          published_at?: string | null
+          robots?: string | null
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          canonical_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          page_type?: string
+          published_at?: string | null
+          robots?: string | null
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_sections: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          json_content: Json
+          page_id: string
+          section_key: string
+          section_type: string
+          sort_order: number
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          json_content?: Json
+          page_id: string
+          section_key: string
+          section_type: string
+          sort_order?: number
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          json_content?: Json
+          page_id?: string
+          section_key?: string
+          section_type?: string
+          sort_order?: number
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_sections_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "cms_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       communication_settings: {
         Row: {
           created_at: string
