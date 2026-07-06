@@ -106,8 +106,60 @@ export type SupportConfig = {
   enable_live_chat: boolean;
 };
 
+export type SeoCenterConfig = {
+  // Global SEO
+  organization_type: string;
+  company_name: string;
+  canonical_domain: string;
+  default_robots: string;
+  default_og_image: string;
+  default_twitter_image: string;
+  // Verification
+  google_site_verification: string;
+  bing_site_verification: string;
+  yandex_verification: string;
+  pinterest_verification: string;
+  facebook_domain_verification: string;
+  // Extra Analytics
+  tiktok_pixel_id: string;
+  clarity_id: string;
+  linkedin_partner_id: string;
+  snap_pixel_id: string;
+  custom_analytics: string;
+  // Custom scripts
+  head_scripts: string;
+  body_start_scripts: string;
+  body_end_scripts: string;
+  footer_scripts: string;
+  // Cookie consent
+  cookie_enabled: boolean;
+  cookie_banner_text: string;
+  cookie_accept_label: string;
+  cookie_reject_label: string;
+  cookie_preferences_label: string;
+  cookie_privacy_url: string;
+  // Performance
+  preconnect_urls: string;
+  dns_prefetch_urls: string;
+  lazy_loading: boolean;
+  image_optimization: boolean;
+  font_optimization: boolean;
+  // Extra social
+  extra_social: { label: string; href: string }[];
+};
+
 export type AllSettings = {
   branding: SiteBranding;
+  contact: SiteContact;
+  seo: SeoDefaults;
+  email: EmailSenders;
+  social: SocialLinksMap;
+  payment: PaymentConfig;
+  analytics: AnalyticsConfig;
+  theme: ThemeConfig;
+  support: SupportConfig;
+  seo_center: SeoCenterConfig;
+};
   contact: SiteContact;
   seo: SeoDefaults;
   email: EmailSenders;
