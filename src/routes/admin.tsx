@@ -23,6 +23,7 @@ const items = [
   { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { to: "/admin/customers", label: "Customers", icon: Users },
   { to: "/admin/licenses", label: "Licenses", icon: KeyRound },
+  { to: "/admin/inventory", label: "Inventory", icon: Boxes },
   { to: "/admin/health", label: "Health Check", icon: HeartPulse },
   { to: "/admin/demo", label: "Demo Data", icon: Database },
   { to: "/admin/docs", label: "Documentation", icon: BookOpen },
