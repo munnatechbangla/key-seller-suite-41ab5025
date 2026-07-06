@@ -146,6 +146,15 @@ function LegacyProductPage() {
   const cmp = useCompare();
   const recent = useRecent((s) => s.slugs);
 
+  // Phase 4.3B: dynamic Rich Content blocks — falls back to static description when none.
+  const fetchBlocks = useServerFn(productBlocksPublicFn);
+  const blocksQuery = useQuery({
+    queryKey: ["product-content-blocks", product.id],
+    queryFn: () => fetchBlocks({ data: { product_id: product.id } }),
+    staleTime: 60_000,
+  });
+  const richBlocks = (blocksQuery.data ?? []) as ProductBlock[];
+
 
   const off = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
   const recentSlugs = recent.filter((s) => s !== product.slug).slice(0, 4);
