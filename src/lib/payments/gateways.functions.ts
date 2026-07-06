@@ -242,14 +242,28 @@ export const reviewSubmissionFn = createServerFn({ method: "POST" })
     if (uErr) throw new Error(uErr.message);
 
     if (data.action === "approve") {
-      // Use the service-role client so mark_order_paid runs regardless of
-      // how PostgREST forwards the caller's JWT — admin_mark_order_paid's
-      // auth.uid()/has_role check was returning Forbidden intermittently
-      // when invoked through the JWT-scoped context client, leaving the
-      // submission approved but the order stuck on `pending`.
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      // Call admin_mark_order_paid via a JWT-forwarded server client so
+      // auth.uid() / has_role('admin') resolve inside the SECURITY DEFINER
+      // function. On Lovable Cloud / Cloudflare Workers the managed
+      // SUPABASE_SERVICE_ROLE_KEY is not readable at runtime, so
+      // supabaseAdmin falls back to the publishable key which lacks
+      // EXECUTE on mark_order_paid ("permission denied for function
+      // mark_order_paid"). admin_mark_order_paid IS granted to the
+      // authenticated role and enforces the admin check internally.
+      const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
+      const { getRequest } = await import("@tanstack/react-start/server");
+      let accessToken: string | null = null;
+      try {
+        const authHeader = getRequest()?.headers.get("authorization") ?? null;
+        if (authHeader?.startsWith("Bearer ")) {
+          const token = authHeader.slice("Bearer ".length).trim();
+          if (token && token.split(".").length === 3) accessToken = token;
+        }
+      } catch { /* no request context */ }
+      if (!accessToken) throw new Error("Missing admin auth token");
+      const sb = createServerSupabaseClient(accessToken);
       const txn = sub.transaction_id || `manual-${sub.id.slice(0, 8)}`;
-      const { data: paid, error: pErr } = await supabaseAdmin.rpc("mark_order_paid", {
+      const { data: paid, error: pErr } = await sb.rpc("admin_mark_order_paid", {
         _order_id: sub.order_id,
         _transaction_id: txn,
         _gateway_response: { gateway: sub.gateway_slug, manual_submission_id: sub.id, admin_note: data.admin_note ?? null },
