@@ -43,7 +43,7 @@ export const adminListProductsFn = createServerFn({ method: "GET" })
     await assertAdmin(context);
     const { data, error } = await context.supabase
       .from("products")
-      .select("id, title, slug, regular_price, sale_price, status, stock_status, is_featured, sales_count, created_at")
+      .select("id, title, slug, regular_price, sale_price, status, stock_status, is_featured, sales_count, created_at, product_type, delivery_type, visibility")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
