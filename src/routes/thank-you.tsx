@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/stores";
 import { toast } from "sonner";
 import { useEffect, useRef } from "react";
 import { track } from "@/lib/analytics/track";
+import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
 
 export const Route = createFileRoute("/thank-you")({
   validateSearch: z.object({ order: z.string().optional(), email: z.string().optional() }),
@@ -184,6 +185,12 @@ function ThankYou() {
                   </div>
                 </div>
               )}
+
+              <OrderCustomFieldValues
+                orderId={q.data.order?.id}
+                email={email}
+                authed={!!user}
+              />
             </>
           )}
 

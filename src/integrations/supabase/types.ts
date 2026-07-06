@@ -736,6 +736,70 @@ export type Database = {
         }
         Relationships: []
       }
+      order_custom_field_values: {
+        Row: {
+          created_at: string
+          field_id: string | null
+          field_label: string
+          field_name: string
+          field_type: string
+          id: string
+          order_id: string
+          product_id: string | null
+          product_slug: string | null
+          updated_at: string
+          value: string | null
+        }
+        Insert: {
+          created_at?: string
+          field_id?: string | null
+          field_label: string
+          field_name: string
+          field_type: string
+          id?: string
+          order_id: string
+          product_id?: string | null
+          product_slug?: string | null
+          updated_at?: string
+          value?: string | null
+        }
+        Update: {
+          created_at?: string
+          field_id?: string | null
+          field_label?: string
+          field_name?: string
+          field_type?: string
+          id?: string
+          order_id?: string
+          product_id?: string | null
+          product_slug?: string | null
+          updated_at?: string
+          value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_custom_field_values_field_id_fkey"
+            columns: ["field_id"]
+            isOneToOne: false
+            referencedRelation: "product_custom_fields"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_custom_field_values_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_custom_field_values_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -1938,6 +2002,10 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_update_order_custom_field_value: {
+        Args: { _id: string; _value: string }
+        Returns: Json
+      }
       apply_coupon_usage: {
         Args: {
           _coupon_id: string
@@ -1966,6 +2034,10 @@ export type Database = {
       }
       get_order_basic_by_number: {
         Args: { _order_number: string }
+        Returns: Json
+      }
+      get_order_custom_field_values: {
+        Args: { _email?: string; _order_id: string }
         Returns: Json
       }
       get_order_summary_by_number: {
@@ -2044,6 +2116,10 @@ export type Database = {
       }
       record_coupon_usage_for_order: {
         Args: { _coupon_id: string; _email?: string; _order_id: string }
+        Returns: Json
+      }
+      save_order_custom_field_values: {
+        Args: { _email?: string; _order_id: string; _values: Json }
         Returns: Json
       }
       submit_manual_payment_proof: {

@@ -14,6 +14,8 @@ import { couponReason } from "@/routes/cart";
 import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
 import { seoMeta } from "@/lib/cms/seo";
 import { track } from "@/lib/analytics/track";
+import { CheckoutCustomFields, useCheckoutFields, validateCheckoutFields, type CheckoutFieldValues } from "@/components/checkout/CheckoutCustomFields";
+import { saveOrderCustomFieldsAuthFn, saveOrderCustomFieldsGuestFn } from "@/lib/order-custom-fields.functions";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: seoMeta({ title: "Checkout" }) }),
@@ -38,6 +40,18 @@ function CheckoutPage() {
   const placeGuest = useServerFn(placeOrderGuestFn);
   const placeAuth = useServerFn(placeOrderAuthFn);
   const validate = useServerFn(validateCouponFn);
+  const saveFieldsAuth = useServerFn(saveOrderCustomFieldsAuthFn);
+  const saveFieldsGuest = useServerFn(saveOrderCustomFieldsGuestFn);
+
+  const cartSlugs = cart.items.map((i) => i.slug);
+  const fieldsQuery = useCheckoutFields(cartSlugs);
+  const customFields = fieldsQuery.data ?? [];
+  const [fieldValues, setFieldValues] = useState<CheckoutFieldValues>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const setFieldValue = (id: string, v: string) => {
+    setFieldValues((s) => ({ ...s, [id]: v }));
+    if (fieldErrors[id]) setFieldErrors((e) => { const n = { ...e }; delete n[id]; return n; });
+  };
 
   const applyCoupon = async () => {
     if (!code.trim()) return;
@@ -69,6 +83,15 @@ function CheckoutPage() {
     if (!agree || !privacy) { toast.error("Please accept the terms"); return; }
     if (!gateway) { toast.error("Select a payment method"); return; }
     if (submitting) return;
+
+    // Validate custom fields client-side
+    const errs = validateCheckoutFields(customFields, fieldValues);
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
+      toast.error("Please complete the product details");
+      return;
+    }
+
     setSubmitting(true);
     track("begin_checkout", {
       currency: "USD",
@@ -96,6 +119,23 @@ function CheckoutPage() {
     };
     try {
       const result = user ? await placeAuth(payload) : await placeGuest(payload);
+
+      // Persist custom field values (best-effort; server re-validates)
+      if (customFields.length > 0) {
+        const values = customFields
+          .map((f) => ({ field_id: f.id, value: fieldValues[f.id] ?? "" }));
+        try {
+          const saveArgs = { data: { orderId: result.orderId, email: customer.email, values } };
+          if (user) await saveFieldsAuth(saveArgs);
+          else await saveFieldsGuest(saveArgs);
+        } catch (err) {
+          console.error("[custom-fields] save failed", err);
+          toast.error(err instanceof Error ? err.message : "Could not save product details");
+          setSubmitting(false);
+          return;
+        }
+      }
+
       cart.clear();
       navigate({ to: "/pay/$orderNumber", params: { orderNumber: result.orderNumber } });
     } catch (err) {
@@ -132,6 +172,15 @@ function CheckoutPage() {
               <Field name="address" label="Address (optional)" className="sm:col-span-2" />
             </div>
           </Section>
+
+          <CheckoutCustomFields
+            fields={customFields}
+            values={fieldValues}
+            errors={fieldErrors}
+            onChange={setFieldValue}
+          />
+
+
 
           <Section title="Order notes (optional)">
             <textarea name="notes" rows={3} placeholder="Anything we should know?" className="w-full px-3 py-2.5 rounded-xl bg-card border border-border outline-none focus:border-primary text-sm" />

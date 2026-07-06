@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
+import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
 
 export const Route = createFileRoute("/admin/orders")({ component: AdminOrders });
 
@@ -60,29 +61,49 @@ function AdminOrders() {
           <TableBody>
             {isLoading && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>}
             {(data ?? []).map((o: any) => (
-              <TableRow key={o.id}>
-                <TableCell className="font-mono text-xs">{o.order_number}</TableCell>
-                <TableCell>
-                  <div className="font-medium">{o.customer_name ?? "—"}</div>
-                  <div className="text-xs text-muted-foreground">{o.email}</div>
-                </TableCell>
-                <TableCell>${Number(o.total).toFixed(2)} {o.currency}</TableCell>
-                <TableCell className="text-sm">{o.payment_method ?? "—"}</TableCell>
-                <TableCell>
-                  <select
-                    className="h-8 rounded border bg-background px-2 text-xs"
-                    value={o.status}
-                    onChange={(e) => update.mutate({ orderId: o.id, status: e.target.value })}
-                  >
-                    {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </TableCell>
-                <TableCell className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</TableCell>
-              </TableRow>
+              <OrderRow key={o.id} order={o} onStatusChange={(s: string) => update.mutate({ orderId: o.id, status: s })} />
             ))}
           </TableBody>
         </Table>
       </div>
     </div>
+  );
+}
+
+function OrderRow({ order: o, onStatusChange }: { order: any; onStatusChange: (s: string) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <TableRow>
+        <TableCell className="font-mono text-xs">
+          <button type="button" onClick={() => setOpen((v) => !v)} className="hover:underline">
+            {open ? "▾" : "▸"} {o.order_number}
+          </button>
+        </TableCell>
+        <TableCell>
+          <div className="font-medium">{o.customer_name ?? "—"}</div>
+          <div className="text-xs text-muted-foreground">{o.email}</div>
+        </TableCell>
+        <TableCell>${Number(o.total).toFixed(2)} {o.currency}</TableCell>
+        <TableCell className="text-sm">{o.payment_method ?? "—"}</TableCell>
+        <TableCell>
+          <select
+            className="h-8 rounded border bg-background px-2 text-xs"
+            value={o.status}
+            onChange={(e) => onStatusChange(e.target.value)}
+          >
+            {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </TableCell>
+        <TableCell className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</TableCell>
+      </TableRow>
+      {open && (
+        <TableRow>
+          <TableCell colSpan={6} className="bg-muted/30">
+            <OrderCustomFieldValues orderId={o.id} authed compact />
+          </TableCell>
+        </TableRow>
+      )}
+    </>
   );
 }
