@@ -25,8 +25,10 @@ function pickCF(item: DeliveryItem, ...names: string[]): string | null {
 }
 
 function WhatsAppButton() {
-  const s = useSettings((x) => x.settings);
-  const num = s.whatsapp?.replace(/\D+/g, "");
+  const s = useSettings((x) => x.settings) as any;
+  const raw: string = s?.support?.whatsapp_number || s?.contact?.whatsapp || "";
+  const num = raw.replace(/\D+/g, "");
+  const label: string = s?.support?.whatsapp_button_text || "WhatsApp Support";
   if (!num) return null;
   return (
     <a
@@ -35,7 +37,7 @@ function WhatsAppButton() {
       rel="noreferrer"
       className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-semibold hover:bg-emerald-600"
     >
-      <MessageCircle className="h-3.5 w-3.5" /> WhatsApp Support
+      <MessageCircle className="h-3.5 w-3.5" /> {label}
     </a>
   );
 }
