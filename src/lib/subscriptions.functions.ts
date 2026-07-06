@@ -360,7 +360,7 @@ export const releaseSubscriptionAssignmentFn = createServerFn({ method: "POST" }
     await assertAdmin(context);
     const { data: r, error } = await context.supabase.rpc(
       "admin_release_subscription_assignment",
-      { _assignment_id: data.id, _reason: data.reason ?? null },
+      { _assignment_id: data.id, _reason: data.reason ?? undefined },
     );
     if (error) throw new Error(error.message);
     return r;
