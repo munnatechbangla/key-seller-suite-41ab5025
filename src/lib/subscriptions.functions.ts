@@ -283,3 +283,126 @@ export const listSubscriptionLogsFn = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return data ?? [];
   });
+
+// ============================================================
+// Customer-facing delivery (authed + guest via email)
+// ============================================================
+const deliveryInput = z.object({
+  orderId: z.string().uuid().optional(),
+  orderNumber: z.string().optional(),
+  email: z.string().email().optional(),
+});
+
+async function resolveOrderId(sb: any, orderId?: string, orderNumber?: string) {
+  if (orderId) return orderId;
+  if (!orderNumber) return null;
+  const { data, error } = await sb
+    .from("orders")
+    .select("id")
+    .eq("order_number", orderNumber)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data?.id ?? null;
+}
+
+async function fetchAndDecryptDelivery(sb: any, orderId: string, email?: string) {
+  const { data, error } = await sb.rpc("get_order_subscription_delivery", {
+    _order_id: orderId,
+    _email: email ?? null,
+  });
+  if (error) throw new Error(error.message);
+  const rows = (data as any[]) ?? [];
+  if (rows.length === 0) return [];
+  const { decryptSecret } = await import("@/lib/subscriptions/crypto.server");
+  return Promise.all(
+    rows.map(async (r) => {
+      const password = await decryptSecret(r.account_password_encrypted);
+      const { account_password_encrypted: _drop, ...rest } = r;
+      return { ...rest, account_password: password };
+    }),
+  );
+}
+
+export const getOrderSubscriptionDeliveryAuthedFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => deliveryInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    const id = await resolveOrderId(sb, data.orderId, data.orderNumber);
+    if (!id) return [];
+    return fetchAndDecryptDelivery(sb, id, data.email);
+  });
+
+export const getOrderSubscriptionDeliveryGuestFn = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => deliveryInput.parse(d))
+  .handler(async ({ data }) => {
+    if (!data.email) return [];
+    const { createClient } = await import("@supabase/supabase-js");
+    const sb = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_PUBLISHABLE_KEY!,
+      { auth: { persistSession: false, autoRefreshToken: false } },
+    );
+    const id = await resolveOrderId(sb, data.orderId, data.orderNumber);
+    if (!id) return [];
+    return fetchAndDecryptDelivery(sb, id, data.email);
+  });
+
+// ============================================================
+// Admin assignment actions
+// ============================================================
+export const releaseSubscriptionAssignmentFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ id: z.string().uuid(), reason: z.string().optional() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: r, error } = await context.supabase.rpc(
+      "admin_release_subscription_assignment",
+      { _assignment_id: data.id, _reason: data.reason ?? null },
+    );
+    if (error) throw new Error(error.message);
+    return r;
+  });
+
+export const replaceSubscriptionAssignmentFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: r, error } = await context.supabase.rpc(
+      "admin_replace_subscription_assignment",
+      { _assignment_id: data.id },
+    );
+    if (error) throw new Error(error.message);
+    return r;
+  });
+
+export const markSubscriptionExpiredFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: r, error } = await context.supabase.rpc("admin_mark_subscription_expired", {
+      _assignment_id: data.id,
+    });
+    if (error) throw new Error(error.message);
+    return r;
+  });
+
+export const addSubscriptionNoteFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ id: z.string().uuid(), note: z.string().min(1) }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: r, error } = await context.supabase.rpc("admin_add_subscription_note", {
+      _assignment_id: data.id,
+      _note: data.note,
+    });
+    if (error) throw new Error(error.message);
+    return r;
+  });
+
