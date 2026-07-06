@@ -88,6 +88,9 @@ function AdminProducts() {
                 <TableCell>{p.sales_count ?? 0}</TableCell>
                 <TableCell>
                   <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" asChild>
+                      <a href={`/admin/products/${p.id}`}>Manage</a>
+                    </Button>
                     <Button variant="ghost" size="icon" onClick={() => setEditing(p)}><Pencil className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="icon" onClick={() => {
                       if (confirm(`Delete ${p.title}?`)) remove.mutate(p.id);
