@@ -348,11 +348,28 @@ function SubmissionsList() {
                     {s.status === "pending" && (
                       <div className="flex gap-1">
                         <Button size="sm" variant="ghost" className="text-emerald-600"
-                          onClick={async () => { await review({ data: { id: s.id, action: "approve" } }); toast.success("Approved — order marked paid"); qc.invalidateQueries({ queryKey: ["admin", "manual-submissions"] }); }}>
+                          onClick={async () => {
+                            try {
+                              await review({ data: { id: s.id, action: "approve" } });
+                              toast.success("Approved — order marked paid");
+                            } catch (e) {
+                              toast.error(e instanceof Error ? e.message : "Approve failed");
+                            }
+                            qc.invalidateQueries({ queryKey: ["admin", "manual-submissions"] });
+                            qc.invalidateQueries({ queryKey: ["admin", "orders"] });
+                          }}>
                           <CheckCircle2 className="h-4 w-4" />
                         </Button>
                         <Button size="sm" variant="ghost" className="text-destructive"
-                          onClick={async () => { await review({ data: { id: s.id, action: "reject" } }); toast("Rejected"); qc.invalidateQueries({ queryKey: ["admin", "manual-submissions"] }); }}>
+                          onClick={async () => {
+                            try {
+                              await review({ data: { id: s.id, action: "reject" } });
+                              toast("Rejected");
+                            } catch (e) {
+                              toast.error(e instanceof Error ? e.message : "Reject failed");
+                            }
+                            qc.invalidateQueries({ queryKey: ["admin", "manual-submissions"] });
+                          }}>
                           <XCircle className="h-4 w-4" />
                         </Button>
                         {s.screenshot_url && <ProofLink value={s.screenshot_url} />}
