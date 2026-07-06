@@ -348,3 +348,54 @@ export const cmsPublicGetFooterFn = createServerFn({ method: "GET" })
       .order("sort_order", { ascending: true });
     return data ?? [];
   });
+
+// ============ HOMEPAGE HELPERS ============
+export const cmsGetOrCreateHomePageFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const sb = context.supabase;
+    const { data: existing } = await sb.from("cms_pages").select("*").eq("slug", "home").maybeSingle();
+    if (existing) return existing;
+    const { data: created, error } = await sb
+      .from("cms_pages")
+      .insert({ slug: "home", title: "Homepage", page_type: "homepage", status: "draft" })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return created;
+  });
+
+export const cmsReorderSectionsFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { items: Array<{ id: string; sort_order: number }> }) => d)
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    for (const it of data.items) {
+      const { error } = await context.supabase
+        .from("cms_sections")
+        .update({ sort_order: it.sort_order })
+        .eq("id", it.id);
+      if (error) throw new Error(error.message);
+    }
+    return { ok: true };
+  });
+
+export const cmsDuplicateSectionFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string }) => d)
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const sb = context.supabase;
+    const { data: src, error } = await sb.from("cms_sections").select("*").eq("id", data.id).single();
+    if (error) throw new Error(error.message);
+    const { id, created_at, updated_at, ...rest } = src as any;
+    const { data: row, error: insErr } = await sb
+      .from("cms_sections")
+      .insert({ ...rest, section_key: `${rest.section_key}-copy-${Date.now().toString(36)}`, sort_order: (rest.sort_order ?? 0) + 1 })
+      .select()
+      .single();
+    if (insErr) throw new Error(insErr.message);
+    return row;
+  });
+

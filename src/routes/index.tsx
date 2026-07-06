@@ -24,6 +24,8 @@ import { subscribeNewsletterFn } from "@/lib/newsletter.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { categoriesQuery } from "@/lib/catalog";
 import { flashDealCountdown } from "@/lib/cms/home";
+import { cmsPublicGetPageBySlugFn } from "@/lib/cms.functions";
+import { HomepageRenderer } from "@/components/cms/SectionRenderer";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -43,6 +45,23 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  // Additive: if an admin has published a CMS homepage, render that instead.
+  const cmsHome = useTQuery({
+    queryKey: ["cms-home"],
+    queryFn: () => cmsPublicGetPageBySlugFn({ data: { slug: "home" } }),
+    staleTime: 60_000,
+  });
+  if (cmsHome.data) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <main>
+          <HomepageRenderer sections={cmsHome.data.sections as any} />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
   const config = useHomepage((s) => s.config);
   const renderers: Record<SectionId, () => ReactElement | null> = {
     hero: () => (config.hero.enabled ? <Hero /> : null),

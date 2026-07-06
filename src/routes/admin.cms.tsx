@@ -289,10 +289,14 @@ function FooterTab() {
 
 function HomepagePointer() {
   return (
-    <Card><CardContent className="p-6 text-sm text-muted-foreground">
-      The current homepage builder remains at{" "}
-      <a className="underline" href="/admin/homepage">Admin → Homepage Builder</a>. It continues to render the live homepage unchanged.
-      New dynamic-page sections created here are additive and available via the Pages tab.
+    <Card><CardContent className="p-6 space-y-2">
+      <p className="text-sm text-muted-foreground">
+        Build a fully dynamic homepage with drag-and-drop sections. Until you publish, the current homepage keeps rendering unchanged.
+      </p>
+      <div className="flex gap-2">
+        <Button asChild><a href="/admin/cms/homepage">Open Homepage Builder</a></Button>
+        <Button variant="outline" asChild><a href="/admin/homepage">Legacy static homepage config</a></Button>
+      </div>
     </CardContent></Card>
   );
 }
