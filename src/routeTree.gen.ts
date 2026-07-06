@@ -62,6 +62,7 @@ import { Route as AdminDocsRouteImport } from './routes/admin.docs'
 import { Route as AdminDemoRouteImport } from './routes/admin.demo'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
+import { Route as AdminCmsRouteImport } from './routes/admin.cms'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminProductsIdRouteImport } from './routes/admin.products.$id'
@@ -336,6 +337,11 @@ const AdminCouponsRoute = AdminCouponsRouteImport.update({
   path: '/coupons',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCmsRoute = AdminCmsRouteImport.update({
+  id: '/cms',
+  path: '/cms',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAuditLogsRoute = AdminAuditLogsRouteImport.update({
   id: '/audit-logs',
   path: '/audit-logs',
@@ -406,6 +412,7 @@ export interface FileRoutesByFullPath {
   '/wishlist': typeof WishlistRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
+  '/admin/cms': typeof AdminCmsRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/demo': typeof AdminDemoRoute
@@ -468,6 +475,7 @@ export interface FileRoutesByTo {
   '/wishlist': typeof WishlistRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
+  '/admin/cms': typeof AdminCmsRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/demo': typeof AdminDemoRoute
@@ -532,6 +540,7 @@ export interface FileRoutesById {
   '/wishlist': typeof WishlistRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
+  '/admin/cms': typeof AdminCmsRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/demo': typeof AdminDemoRoute
@@ -597,6 +606,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/audit'
     | '/admin/audit-logs'
+    | '/admin/cms'
     | '/admin/coupons'
     | '/admin/customers'
     | '/admin/demo'
@@ -659,6 +669,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/audit'
     | '/admin/audit-logs'
+    | '/admin/cms'
     | '/admin/coupons'
     | '/admin/customers'
     | '/admin/demo'
@@ -722,6 +733,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/audit'
     | '/admin/audit-logs'
+    | '/admin/cms'
     | '/admin/coupons'
     | '/admin/customers'
     | '/admin/demo'
@@ -1171,6 +1183,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCouponsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/cms': {
+      id: '/admin/cms'
+      path: '/cms'
+      fullPath: '/admin/cms'
+      preLoaderRoute: typeof AdminCmsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/audit-logs': {
       id: '/admin/audit-logs'
       path: '/audit-logs'
@@ -1245,6 +1264,7 @@ const AdminProductsRouteWithChildren = AdminProductsRoute._addFileChildren(
 interface AdminRouteChildren {
   AdminAuditRoute: typeof AdminAuditRoute
   AdminAuditLogsRoute: typeof AdminAuditLogsRoute
+  AdminCmsRoute: typeof AdminCmsRoute
   AdminCouponsRoute: typeof AdminCouponsRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
   AdminDemoRoute: typeof AdminDemoRoute
@@ -1274,6 +1294,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAuditRoute: AdminAuditRoute,
   AdminAuditLogsRoute: AdminAuditLogsRoute,
+  AdminCmsRoute: AdminCmsRoute,
   AdminCouponsRoute: AdminCouponsRoute,
   AdminCustomersRoute: AdminCustomersRoute,
   AdminDemoRoute: AdminDemoRoute,
