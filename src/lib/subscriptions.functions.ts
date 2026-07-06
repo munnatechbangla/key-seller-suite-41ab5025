@@ -83,7 +83,7 @@ export const upsertSubscriptionAccountFn = createServerFn({ method: "POST" })
       account_email: data.account_email,
       recovery_email: data.recovery_email || null,
       two_factor_enabled: data.two_factor_enabled ?? false,
-      notes: data.notes ?? null,
+      notes: data.notes ?? undefined,
       status: data.status ?? "available",
       maximum_profiles: data.maximum_profiles ?? 1,
       renewal_date: data.renewal_date || null,
@@ -424,7 +424,7 @@ export const extendSubscriptionFn = createServerFn({ method: "POST" })
     const { data: r, error } = await context.supabase.rpc("admin_extend_subscription", {
       _assignment_id: data.id,
       _days: data.days,
-      _notes: data.notes ?? null,
+      _notes: data.notes ?? undefined,
     });
     if (error) throw new Error(error.message);
     return r;
@@ -444,7 +444,7 @@ export const renewSubscriptionFn = createServerFn({ method: "POST" })
     const { data: r, error } = await context.supabase.rpc("admin_renew_subscription", {
       _assignment_id: data.id,
       _days: data.days,
-      _notes: data.notes ?? null,
+      _notes: data.notes ?? undefined,
     });
     if (error) throw new Error(error.message);
     return r;
@@ -459,7 +459,7 @@ export const suspendSubscriptionFn = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { data: r, error } = await context.supabase.rpc("admin_suspend_subscription", {
       _assignment_id: data.id,
-      _reason: data.reason ?? null,
+      _reason: data.reason ?? undefined,
     });
     if (error) throw new Error(error.message);
     return r;
@@ -486,7 +486,7 @@ export const cancelSubscriptionFn = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const { data: r, error } = await context.supabase.rpc("admin_cancel_subscription", {
       _assignment_id: data.id,
-      _reason: data.reason ?? null,
+      _reason: data.reason ?? undefined,
     });
     if (error) throw new Error(error.message);
     return r;
@@ -527,7 +527,7 @@ export const getMySubscriptionsFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase.rpc("get_customer_subscriptions", {
-      _email: null,
+      _email: undefined,
     });
     if (error) throw new Error(error.message);
     return data ?? [];
