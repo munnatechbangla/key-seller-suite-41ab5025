@@ -13,16 +13,17 @@ async function assertAdmin(ctx: any) {
 
 export const listAssetsFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { folder?: string | null; search?: string | null; mime_prefix?: string | null; limit?: number; offset?: number }) => d)
+  .inputValidator((d: { folder?: string; search?: string; mime_prefix?: string; limit?: number; offset?: number }) => d)
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { data: res, error } = await context.supabase.rpc("admin_list_media_assets", {
-      _folder: data.folder ?? null,
-      _search: data.search ?? null,
-      _mime_prefix: data.mime_prefix ?? null,
+      _folder: data.folder ?? undefined,
+      _search: data.search ?? undefined,
+      _mime_prefix: data.mime_prefix ?? undefined,
       _limit: data.limit ?? 60,
       _offset: data.offset ?? 0,
     });
+
     if (error) throw new Error(error.message);
     return res as { items: any[]; total: number };
   });
