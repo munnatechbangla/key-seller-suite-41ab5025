@@ -218,19 +218,22 @@ function PayPage() {
   return (
     <div className="min-h-screen">
       <Header />
-      <div className="container mx-auto px-4 py-12 md:py-16 max-w-2xl">
-        <div className="rounded-2xl bg-card border border-border p-6 md:p-8 space-y-6 shadow-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <ShieldCheck className="h-4 w-4 text-emerald-500" /> Secure checkout
+      <div className="mx-auto w-full max-w-[760px] px-4 py-6 md:py-10">
+        <div className="rounded-2xl bg-card border border-border p-5 sm:p-6 md:p-8 space-y-6 shadow-lg overflow-hidden">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+              <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" /> <span className="truncate">Secure checkout</span>
             </div>
-            <span className={cn(
-              "text-[10px] uppercase tracking-wider px-2 py-1 rounded-full font-semibold",
-              approved ? "bg-emerald-500/15 text-emerald-600"
-              : rejected ? "bg-destructive/15 text-destructive"
-              : underReview ? "bg-amber-500/15 text-amber-600"
-              : "bg-muted text-muted-foreground",
-            )}>
+            <span
+              className={cn(
+                "text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full font-semibold shrink-0 whitespace-nowrap",
+                approved ? ""
+                : rejected ? "bg-destructive/15 text-destructive"
+                : underReview ? "bg-amber-500/15 text-amber-600"
+                : "bg-muted text-muted-foreground",
+              )}
+              style={approved ? { backgroundColor: "#0F3D2E", color: "#2EE59D" } : undefined}
+            >
               {approved ? "Approved" : rejected ? "Rejected" : underReview ? "Under verification" : orderStatus}
             </span>
           </div>
