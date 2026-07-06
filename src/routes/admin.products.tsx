@@ -173,6 +173,9 @@ function AdminProducts() {
                   short_description: (editing as any).short_description ?? null,
                   description: (editing as any).description ?? null,
                   thumbnail_url: (editing as any).thumbnail_url ?? null,
+                  visibility: (editing as any).visibility ?? "public",
+                  product_type: (editing as any).product_type || null,
+                  delivery_type: (editing as any).delivery_type || null,
                 });
               }}
             >
