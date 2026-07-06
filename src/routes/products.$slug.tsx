@@ -20,6 +20,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { track } from "@/lib/analytics/track";
+import { productLayoutPublicResolveFn } from "@/lib/product-layouts.functions";
+import { ProductLayoutRenderer, type ProductLayoutSection } from "@/components/cms/ProductLayoutRenderer";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/products/$slug")({
   loader: async ({ params, context }) => {
