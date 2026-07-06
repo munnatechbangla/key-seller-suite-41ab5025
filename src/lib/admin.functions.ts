@@ -49,6 +49,15 @@ export const adminListProductsFn = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+const productTypeEnum = z.enum([
+  "downloadable", "license_key", "subscription", "account", "external", "manual",
+]);
+const deliveryTypeEnum = z.enum([
+  "download", "license_key", "account", "manual", "external_url",
+]);
+const productVisibilityEnum = z.enum(["public", "members_only", "hidden"]);
+const productStatusEnum = z.enum(["draft", "published", "private", "archived"]);
+
 const productSchema = z.object({
   id: z.string().uuid().optional(),
   title: z.string().min(1),
@@ -58,10 +67,14 @@ const productSchema = z.object({
   regular_price: z.number().nonnegative(),
   sale_price: z.number().nonnegative().nullable().optional(),
   thumbnail_url: z.string().nullable().optional(),
-  status: z.enum(["draft", "published", "archived"]).default("published"),
+  status: productStatusEnum.default("published"),
   is_featured: z.boolean().optional(),
   is_digital: z.boolean().optional(),
   is_license_key: z.boolean().optional(),
+  product_type: productTypeEnum.nullable().optional(),
+  delivery_type: deliveryTypeEnum.nullable().optional(),
+  visibility: productVisibilityEnum.nullable().optional(),
+  external_url: z.string().nullable().optional(),
 });
 
 export const adminUpsertProductFn = createServerFn({ method: "POST" })
