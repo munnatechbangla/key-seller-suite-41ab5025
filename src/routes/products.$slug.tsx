@@ -24,6 +24,8 @@ import { productLayoutPublicResolveFn } from "@/lib/product-layouts.functions";
 import { ProductLayoutRenderer, type ProductLayoutSection } from "@/components/cms/ProductLayoutRenderer";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
+import { productBlocksPublicFn } from "@/lib/product-blocks.functions";
+import { ProductContentBlocks, type ProductBlock } from "@/components/cms/ProductContentBlocks";
 
 export const Route = createFileRoute("/products/$slug")({
   loader: async ({ params, context }) => {
