@@ -72,6 +72,7 @@ import { Route as AdminCmsLandingPagesRouteImport } from './routes/admin.cms.lan
 import { Route as AdminCmsHomepageRouteImport } from './routes/admin.cms.homepage'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments.webhook'
 import { Route as ApiPublicNotificationsProcessRouteImport } from './routes/api/public/notifications.process'
+import { Route as AdminCmsLandingPagesIdRouteImport } from './routes/admin.cms.landing-pages.$id'
 import { Route as ApiPublicPaymentsSslcommerzReturnRouteImport } from './routes/api/public/payments.sslcommerz.return'
 import { Route as ApiPublicPaymentsSslcommerzIpnRouteImport } from './routes/api/public/payments.sslcommerz.ipn'
 import { Route as ApiPublicPaymentsCustomWebhookSlugRouteImport } from './routes/api/public/payments.custom-webhook.$slug'
@@ -393,6 +394,11 @@ const ApiPublicNotificationsProcessRoute =
     path: '/api/public/notifications/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminCmsLandingPagesIdRoute = AdminCmsLandingPagesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminCmsLandingPagesRoute,
+} as any)
 const ApiPublicPaymentsSslcommerzReturnRoute =
   ApiPublicPaymentsSslcommerzReturnRouteImport.update({
     id: '/api/public/payments/sslcommerz/return',
@@ -471,9 +477,10 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
-  '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRoute
+  '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRouteWithChildren
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
+  '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
@@ -538,9 +545,10 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/products': typeof ProductsIndexRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
-  '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRoute
+  '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRouteWithChildren
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
+  '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
@@ -607,9 +615,10 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
-  '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRoute
+  '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRouteWithChildren
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
+  '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
@@ -680,6 +689,7 @@ export interface FileRouteTypes {
     | '/admin/cms/landing-pages'
     | '/admin/cms/product-layouts'
     | '/admin/products/$id'
+    | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
     | '/api/public/payments/custom-webhook/$slug'
@@ -747,6 +757,7 @@ export interface FileRouteTypes {
     | '/admin/cms/landing-pages'
     | '/admin/cms/product-layouts'
     | '/admin/products/$id'
+    | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
     | '/api/public/payments/custom-webhook/$slug'
@@ -815,6 +826,7 @@ export interface FileRouteTypes {
     | '/admin/cms/landing-pages'
     | '/admin/cms/product-layouts'
     | '/admin/products/$id'
+    | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
     | '/api/public/payments/custom-webhook/$slug'
@@ -1301,6 +1313,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicNotificationsProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/cms/landing-pages/$id': {
+      id: '/admin/cms/landing-pages/$id'
+      path: '/$id'
+      fullPath: '/admin/cms/landing-pages/$id'
+      preLoaderRoute: typeof AdminCmsLandingPagesIdRouteImport
+      parentRoute: typeof AdminCmsLandingPagesRoute
+    }
     '/api/public/payments/sslcommerz/return': {
       id: '/api/public/payments/sslcommerz/return'
       path: '/api/public/payments/sslcommerz/return'
@@ -1325,15 +1344,26 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminCmsLandingPagesRouteChildren {
+  AdminCmsLandingPagesIdRoute: typeof AdminCmsLandingPagesIdRoute
+}
+
+const AdminCmsLandingPagesRouteChildren: AdminCmsLandingPagesRouteChildren = {
+  AdminCmsLandingPagesIdRoute: AdminCmsLandingPagesIdRoute,
+}
+
+const AdminCmsLandingPagesRouteWithChildren =
+  AdminCmsLandingPagesRoute._addFileChildren(AdminCmsLandingPagesRouteChildren)
+
 interface AdminCmsRouteChildren {
   AdminCmsHomepageRoute: typeof AdminCmsHomepageRoute
-  AdminCmsLandingPagesRoute: typeof AdminCmsLandingPagesRoute
+  AdminCmsLandingPagesRoute: typeof AdminCmsLandingPagesRouteWithChildren
   AdminCmsProductLayoutsRoute: typeof AdminCmsProductLayoutsRoute
 }
 
 const AdminCmsRouteChildren: AdminCmsRouteChildren = {
   AdminCmsHomepageRoute: AdminCmsHomepageRoute,
-  AdminCmsLandingPagesRoute: AdminCmsLandingPagesRoute,
+  AdminCmsLandingPagesRoute: AdminCmsLandingPagesRouteWithChildren,
   AdminCmsProductLayoutsRoute: AdminCmsProductLayoutsRoute,
 }
 
