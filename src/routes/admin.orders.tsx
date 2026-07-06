@@ -61,7 +61,7 @@ function AdminOrders() {
           <TableBody>
             {isLoading && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>}
             {(data ?? []).map((o: any) => (
-              <OrderRow key={o.id} order={o} onStatusChange={(s) => update.mutate({ orderId: o.id, status: s })} />
+              <OrderRow key={o.id} order={o} onStatusChange={(s: string) => update.mutate({ orderId: o.id, status: s })} />
             ))}
           </TableBody>
         </Table>
