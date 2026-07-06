@@ -127,6 +127,24 @@ export function mapProduct(row: ProductRow): Product {
     specs: row.specs ?? {},
     stock: row.stock_status === "in_stock" ? 50 : 0,
     thumbnailUrl: row.thumbnail_url,
+    seo: {
+      meta_title: row.meta_title ?? null,
+      meta_description: row.meta_description ?? null,
+      focus_keyword: row.focus_keyword ?? null,
+      secondary_keywords: Array.isArray(row.secondary_keywords) ? (row.secondary_keywords as string[]) : [],
+      canonical_url: row.canonical_url ?? null,
+      robots: row.robots ?? null,
+      og_title: row.og_title ?? null,
+      og_description: row.og_description ?? null,
+      og_image: row.og_image ?? null,
+      twitter_title: row.twitter_title ?? null,
+      twitter_description: row.twitter_description ?? null,
+      twitter_image: row.twitter_image ?? null,
+      schema_enabled: row.schema_enabled ?? true,
+      faq_schema_enabled: row.faq_schema_enabled ?? true,
+      breadcrumb_schema_enabled: row.breadcrumb_schema_enabled ?? true,
+      product_schema_enabled: row.product_schema_enabled ?? true,
+    },
   };
 }
 
