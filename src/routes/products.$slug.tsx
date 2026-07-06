@@ -24,6 +24,8 @@ import { productLayoutPublicResolveFn } from "@/lib/product-layouts.functions";
 import { ProductLayoutRenderer, type ProductLayoutSection } from "@/components/cms/ProductLayoutRenderer";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
+import { productBlocksPublicFn } from "@/lib/product-blocks.functions";
+import { ProductContentBlocks, type ProductBlock } from "@/components/cms/ProductContentBlocks";
 
 export const Route = createFileRoute("/products/$slug")({
   loader: async ({ params, context }) => {
@@ -143,6 +145,15 @@ function LegacyProductPage() {
   const wish = useWishlist();
   const cmp = useCompare();
   const recent = useRecent((s) => s.slugs);
+
+  // Phase 4.3B: dynamic Rich Content blocks — falls back to static description when none.
+  const fetchBlocks = useServerFn(productBlocksPublicFn);
+  const blocksQuery = useQuery({
+    queryKey: ["product-content-blocks", product.id],
+    queryFn: () => fetchBlocks({ data: { product_id: product.id } }),
+    staleTime: 60_000,
+  });
+  const richBlocks = (blocksQuery.data ?? []) as ProductBlock[];
 
 
   const off = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
@@ -283,27 +294,31 @@ function LegacyProductPage() {
 
         <div className="py-8">
           {tab === "desc" && (
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <p className="text-muted-foreground leading-relaxed">{product.description}</p>
-                <h3 className="font-semibold mt-6">Key features</h3>
-                <ul className="space-y-2">
-                  {product.features?.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm"><Check className="h-4 w-4 text-emerald-600 mt-0.5" /> {f}</li>
-                  ))}
-                </ul>
+            richBlocks.length > 0 ? (
+              <ProductContentBlocks blocks={richBlocks} product={product} />
+            ) : (
+              <div className="grid md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+                  <h3 className="font-semibold mt-6">Key features</h3>
+                  <ul className="space-y-2">
+                    {product.features?.map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-sm"><Check className="h-4 w-4 text-emerald-600 mt-0.5" /> {f}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="rounded-2xl bg-card border border-border p-6 space-y-3">
+                  <h3 className="font-semibold flex items-center gap-2"><Package className="h-4 w-4 text-primary" /> What's included</h3>
+                  <ul className="space-y-2">
+                    {product.included?.map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-sm"><Check className="h-4 w-4 text-primary mt-0.5" /> {f}</li>
+                    ))}
+                  </ul>
+                  <h3 className="font-semibold flex items-center gap-2 pt-3 border-t border-border"><Truck className="h-4 w-4 text-primary" /> Delivery info</h3>
+                  <p className="text-sm text-muted-foreground">Delivered in {product.delivery} after payment confirmation, sent directly to your email.</p>
+                </div>
               </div>
-              <div className="rounded-2xl bg-card border border-border p-6 space-y-3">
-                <h3 className="font-semibold flex items-center gap-2"><Package className="h-4 w-4 text-primary" /> What's included</h3>
-                <ul className="space-y-2">
-                  {product.included?.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm"><Check className="h-4 w-4 text-primary mt-0.5" /> {f}</li>
-                  ))}
-                </ul>
-                <h3 className="font-semibold flex items-center gap-2 pt-3 border-t border-border"><Truck className="h-4 w-4 text-primary" /> Delivery info</h3>
-                <p className="text-sm text-muted-foreground">Delivered in {product.delivery} after payment confirmation, sent directly to your email.</p>
-              </div>
-            </div>
+            )
           )}
           {tab === "specs" && (
             <div className="rounded-2xl bg-card border border-border overflow-hidden max-w-2xl">
