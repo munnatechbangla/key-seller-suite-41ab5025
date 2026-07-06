@@ -1,0 +1,18 @@
+
+ALTER TABLE public.products
+  ADD COLUMN IF NOT EXISTS meta_title TEXT,
+  ADD COLUMN IF NOT EXISTS meta_description TEXT,
+  ADD COLUMN IF NOT EXISTS focus_keyword TEXT,
+  ADD COLUMN IF NOT EXISTS secondary_keywords JSONB DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS canonical_url TEXT,
+  ADD COLUMN IF NOT EXISTS robots TEXT DEFAULT 'index,follow',
+  ADD COLUMN IF NOT EXISTS og_title TEXT,
+  ADD COLUMN IF NOT EXISTS og_description TEXT,
+  ADD COLUMN IF NOT EXISTS og_image TEXT,
+  ADD COLUMN IF NOT EXISTS twitter_title TEXT,
+  ADD COLUMN IF NOT EXISTS twitter_description TEXT,
+  ADD COLUMN IF NOT EXISTS twitter_image TEXT,
+  ADD COLUMN IF NOT EXISTS schema_enabled BOOLEAN DEFAULT TRUE,
+  ADD COLUMN IF NOT EXISTS faq_schema_enabled BOOLEAN DEFAULT TRUE,
+  ADD COLUMN IF NOT EXISTS breadcrumb_schema_enabled BOOLEAN DEFAULT TRUE,
+  ADD COLUMN IF NOT EXISTS product_schema_enabled BOOLEAN DEFAULT TRUE;

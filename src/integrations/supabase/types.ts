@@ -2654,6 +2654,8 @@ export type Database = {
         Row: {
           badge: string | null
           brand_id: string | null
+          breadcrumb_schema_enabled: boolean | null
+          canonical_url: string | null
           category_id: string | null
           created_at: string
           delivery_time: string | null
@@ -2661,7 +2663,9 @@ export type Database = {
           description: string | null
           emoji: string | null
           external_url: string | null
+          faq_schema_enabled: boolean | null
           features: string[]
+          focus_keyword: string | null
           id: string
           included: string[]
           is_best_seller: boolean
@@ -2672,12 +2676,21 @@ export type Database = {
           is_subscription: boolean
           is_trending: boolean
           layout_id: string | null
+          meta_description: string | null
+          meta_title: string | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          product_schema_enabled: boolean | null
           product_type: Database["public"]["Enums"]["product_type"] | null
           rating: number
           regular_price: number
           reviews_count: number
+          robots: string | null
           sale_price: number | null
           sales_count: number
+          schema_enabled: boolean | null
+          secondary_keywords: Json | null
           seo_description: string | null
           seo_title: string | null
           short_description: string | null
@@ -2691,6 +2704,9 @@ export type Database = {
             | null
           thumbnail_url: string | null
           title: string
+          twitter_description: string | null
+          twitter_image: string | null
+          twitter_title: string | null
           updated_at: string
           views_count: number
           visibility: Database["public"]["Enums"]["product_visibility"]
@@ -2698,6 +2714,8 @@ export type Database = {
         Insert: {
           badge?: string | null
           brand_id?: string | null
+          breadcrumb_schema_enabled?: boolean | null
+          canonical_url?: string | null
           category_id?: string | null
           created_at?: string
           delivery_time?: string | null
@@ -2705,7 +2723,9 @@ export type Database = {
           description?: string | null
           emoji?: string | null
           external_url?: string | null
+          faq_schema_enabled?: boolean | null
           features?: string[]
+          focus_keyword?: string | null
           id?: string
           included?: string[]
           is_best_seller?: boolean
@@ -2716,12 +2736,21 @@ export type Database = {
           is_subscription?: boolean
           is_trending?: boolean
           layout_id?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          product_schema_enabled?: boolean | null
           product_type?: Database["public"]["Enums"]["product_type"] | null
           rating?: number
           regular_price?: number
           reviews_count?: number
+          robots?: string | null
           sale_price?: number | null
           sales_count?: number
+          schema_enabled?: boolean | null
+          secondary_keywords?: Json | null
           seo_description?: string | null
           seo_title?: string | null
           short_description?: string | null
@@ -2735,6 +2764,9 @@ export type Database = {
             | null
           thumbnail_url?: string | null
           title: string
+          twitter_description?: string | null
+          twitter_image?: string | null
+          twitter_title?: string | null
           updated_at?: string
           views_count?: number
           visibility?: Database["public"]["Enums"]["product_visibility"]
@@ -2742,6 +2774,8 @@ export type Database = {
         Update: {
           badge?: string | null
           brand_id?: string | null
+          breadcrumb_schema_enabled?: boolean | null
+          canonical_url?: string | null
           category_id?: string | null
           created_at?: string
           delivery_time?: string | null
@@ -2749,7 +2783,9 @@ export type Database = {
           description?: string | null
           emoji?: string | null
           external_url?: string | null
+          faq_schema_enabled?: boolean | null
           features?: string[]
+          focus_keyword?: string | null
           id?: string
           included?: string[]
           is_best_seller?: boolean
@@ -2760,12 +2796,21 @@ export type Database = {
           is_subscription?: boolean
           is_trending?: boolean
           layout_id?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          product_schema_enabled?: boolean | null
           product_type?: Database["public"]["Enums"]["product_type"] | null
           rating?: number
           regular_price?: number
           reviews_count?: number
+          robots?: string | null
           sale_price?: number | null
           sales_count?: number
+          schema_enabled?: boolean | null
+          secondary_keywords?: Json | null
           seo_description?: string | null
           seo_title?: string | null
           short_description?: string | null
@@ -2779,6 +2824,9 @@ export type Database = {
             | null
           thumbnail_url?: string | null
           title?: string
+          twitter_description?: string | null
+          twitter_image?: string | null
+          twitter_title?: string | null
           updated_at?: string
           views_count?: number
           visibility?: Database["public"]["Enums"]["product_visibility"]
