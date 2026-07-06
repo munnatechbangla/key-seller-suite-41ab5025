@@ -303,6 +303,19 @@ function HomepagePointer() {
   );
 }
 
+function ProductLayoutsPointer() {
+  return (
+    <Card><CardContent className="p-6 space-y-2">
+      <p className="text-sm text-muted-foreground">
+        Build dynamic product page layouts with drag-and-drop sections. Assign a layout to any product — products without a layout keep their current page.
+      </p>
+      <div className="flex gap-2">
+        <Button asChild><a href="/admin/cms/product-layouts">Open Product Layouts</a></Button>
+      </div>
+    </CardContent></Card>
+  );
+}
+
 function SettingsPointer() {
   return (
     <Card><CardContent className="p-6 text-sm text-muted-foreground">
