@@ -21,6 +21,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, Star, Copy, GripVertical, ChevronDown, ChevronRight, Eye } from "lucide-react";
 import { CustomFieldsTab } from "@/components/admin/CustomFieldsTab";
+import { MediaPicker } from "@/components/admin/MediaLibrary";
 
 export const Route = createFileRoute("/admin/products/$id")({
   component: ManageProduct,
