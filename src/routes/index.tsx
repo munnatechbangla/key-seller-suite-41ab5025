@@ -43,6 +43,23 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  // Additive: if an admin has published a CMS homepage, render that instead.
+  const cmsHome = useTQuery({
+    queryKey: ["cms-home"],
+    queryFn: () => cmsPublicGetPageBySlugFn({ data: { slug: "home" } }),
+    staleTime: 60_000,
+  });
+  if (cmsHome.data) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <main>
+          <HomepageRenderer sections={cmsHome.data.sections as any} />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
   const config = useHomepage((s) => s.config);
   const renderers: Record<SectionId, () => ReactElement | null> = {
     hero: () => (config.hero.enabled ? <Hero /> : null),
