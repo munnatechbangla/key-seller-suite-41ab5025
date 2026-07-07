@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -31,15 +31,23 @@ function AdminProducts() {
   const upsert = useServerFn(adminUpsertProductFn);
   const del = useServerFn(adminDeleteProductFn);
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const { data, isLoading } = useQuery({ queryKey: ["admin-products"], queryFn: () => list() });
   const [editing, setEditing] = useState<Partial<Row> | null>(null);
+  const [productMode, setProductMode] = useState<"simple" | "variable">("simple");
 
   const save = useMutation({
     mutationFn: (payload: any) => upsert({ data: payload }),
-    onSuccess: () => {
+    onSuccess: (res: any) => {
       toast.success("Saved");
       qc.invalidateQueries({ queryKey: ["admin-products"] });
+      const wasVariable = productMode === "variable";
+      const id = res?.id ?? editing?.id;
       setEditing(null);
+      setProductMode("simple");
+      if (wasVariable && id) {
+        navigate({ to: "/admin/products/$id", params: { id }, search: { tab: "attributes" } as any });
+      }
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -59,7 +67,7 @@ function AdminProducts() {
           <h1 className="text-2xl font-bold">Products</h1>
           <p className="text-sm text-muted-foreground">{data?.length ?? 0} products</p>
         </div>
-        <Button onClick={() => setEditing({ status: "published", regular_price: 0 })}>
+        <Button onClick={() => { setProductMode("simple"); setEditing({ status: "published", regular_price: 0 }); }}>
           <Plus className="h-4 w-4 mr-1" /> New product
         </Button>
       </div>
@@ -111,11 +119,34 @@ function AdminProducts() {
           </DialogHeader>
           {editing && (
             <div className="space-y-3 overflow-y-auto px-6 py-4 flex-1 min-h-0">
+              {!editing.id && (
+                <div className="rounded-md border p-3">
+                  <Label className="mb-2 block">Product Mode</Label>
+                  <div className="flex gap-4 text-sm">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="product_mode" checked={productMode === "simple"} onChange={() => setProductMode("simple")} />
+                      Simple Product
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="product_mode" checked={productMode === "variable"} onChange={() => setProductMode("variable")} />
+                      Variable Product
+                    </label>
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <div><Label>Title</Label><Input value={editing.title ?? ""} onChange={(e) => setEditing({ ...editing, title: e.target.value })} /></div>
                 <div><Label>Slug</Label><Input value={editing.slug ?? ""} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} /></div>
-                <div><Label>Regular price</Label><Input type="number" step="0.01" value={String(editing.regular_price ?? 0)} onChange={(e) => setEditing({ ...editing, regular_price: parseFloat(e.target.value) })} /></div>
-                <div><Label>Sale price</Label><Input type="number" step="0.01" value={editing.sale_price == null ? "" : String(editing.sale_price)} onChange={(e) => setEditing({ ...editing, sale_price: e.target.value === "" ? null : parseFloat(e.target.value) })} /></div>
+                {productMode === "simple" ? (
+                  <>
+                    <div><Label>Regular price</Label><Input type="number" step="0.01" value={String(editing.regular_price ?? 0)} onChange={(e) => setEditing({ ...editing, regular_price: parseFloat(e.target.value) })} /></div>
+                    <div><Label>Sale price</Label><Input type="number" step="0.01" value={editing.sale_price == null ? "" : String(editing.sale_price)} onChange={(e) => setEditing({ ...editing, sale_price: e.target.value === "" ? null : parseFloat(e.target.value) })} /></div>
+                  </>
+                ) : (
+                  <div className="col-span-2 rounded-md border border-dashed bg-muted/30 p-3 text-sm text-muted-foreground">
+                    This product uses Variant Pricing. Prices and inventory will be configured after creating variants.
+                  </div>
+                )}
                 <div><Label>Status</Label>
                   <select className="w-full h-10 rounded-md border bg-background px-3 text-sm" value={editing.status ?? "published"} onChange={(e) => setEditing({ ...editing, status: e.target.value })}>
                     <option value="published">published</option>
