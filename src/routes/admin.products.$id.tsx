@@ -209,6 +209,90 @@ function ManageProduct() {
     removeProduct.mutate();
   };
 
+  /* ---------- Phase 4.9A-2: persistence & safety ---------- */
+  const saveState = useSaveStatus();
+  const history = useHistoryState();
+  const conflict = useConflict();
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [recovery, setRecovery] = useState<{ at: number } | null>(null);
+
+  // Detect a locally-cached draft on mount (offline recovery).
+  useEffect(() => {
+    const cached = readLocalDraft(id);
+    if (cached) setRecovery({ at: cached.at });
+  }, [id]);
+
+  // Autosave: whenever product basic fields change, debounce + save.
+  const autosaveData = useMemo(() => {
+    if (!product) return null;
+    const p = product as any;
+    return {
+      title: p.title,
+      slug: p.slug,
+      short_description: p.short_description,
+      description: p.description,
+      thumbnail_url: p.thumbnail_url,
+    };
+  }, [product]);
+  const baseline = useRef<string>("");
+  useEffect(() => {
+    if (autosaveData && !baseline.current) baseline.current = JSON.stringify(autosaveData);
+  }, [autosaveData]);
+  const productDirty =
+    !!autosaveData && baseline.current !== "" && JSON.stringify(autosaveData) !== baseline.current;
+  useMarkDirty(`product:${id}`, productDirty);
+
+  useAutosave({
+    id,
+    data: autosaveData,
+    enabled: !!autosaveData && productDirty,
+    save: async (snap) => {
+      if (!snap) return;
+      const payload = buildProductPayload(snap as Record<string, unknown>);
+      if (!payload) return;
+      const res = await upsertProduct({ data: payload });
+      baseline.current = JSON.stringify(snap);
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      return res as any;
+    },
+  });
+
+  // Conflict detection based on updated_at drift while dirty.
+  useConflictWatcher((product as any)?.updated_at ?? null, isDirty);
+
+  // Retry autosave when connectivity returns.
+  const retry = useCallback(() => {
+    if (!autosaveData) return;
+    retrySave(async () => {
+      const payload = buildProductPayload(autosaveData as Record<string, unknown>);
+      if (!payload) return;
+      const res = await upsertProduct({ data: payload });
+      baseline.current = JSON.stringify(autosaveData);
+      clearLocalDraft(id);
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      return res as any;
+    });
+  }, [autosaveData, buildProductPayload, id, qc, upsertProduct]);
+  useOnlineRecovery(retry);
+
+  // Reset history when navigating between products.
+  useEffect(() => {
+    clearHistory();
+    clearConflict();
+  }, [id]);
+
+  // Keyboard shortcuts.
+  useEditorShortcuts({
+    onSave: handleSaveDraft,
+    onPreview: handlePreview,
+    onDuplicate: handleDuplicate,
+    onPublish: handlePublish,
+    onUndo: undo,
+    onRedo: redo,
+    onHelp: () => setHelpOpen(true),
+  });
+
+
   return (
     <div className="p-4 md:p-6 space-y-4">
       <ProductToolbar
