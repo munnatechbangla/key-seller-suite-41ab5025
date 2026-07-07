@@ -302,7 +302,7 @@ function AdminProducts() {
                     <Button variant="ghost" size="sm" asChild>
                       <a href={`/admin/products/${p.id}`}>Manage</a>
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => setEditing(p)}><Pencil className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => navigate({ to: "/admin/products/$id", params: { id: p.id } })}><Pencil className="h-4 w-4" /></Button>
                     <Button variant="ghost" size="icon" onClick={() => {
                       if (confirm(`Delete ${p.title}?`)) remove.mutate(p.id);
                     }}><Trash2 className="h-4 w-4" /></Button>
