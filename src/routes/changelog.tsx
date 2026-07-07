@@ -30,7 +30,7 @@ function ChangelogPage() {
               {r.version && <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">v{r.version}</span>}
               {r.release_date && <span className="text-xs text-muted-foreground">{r.release_date}</span>}
             </div>
-            <Link to="/blog/$slug" params={{ slug: r.slug }} className="text-xl font-bold hover:text-primary">{r.title}</Link>
+            <Link to="/articles/$slug" params={{ slug: r.slug }} className="text-xl font-bold hover:text-primary">{r.title}</Link>
             {r.excerpt && <p className="text-sm text-muted-foreground mt-2">{r.excerpt}</p>}
           </div>
         ))}

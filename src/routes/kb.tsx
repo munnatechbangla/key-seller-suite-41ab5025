@@ -34,7 +34,7 @@ function KBPage() {
         </div>
         <div className="grid md:grid-cols-2 gap-4">
           {filtered.map((r) => (
-            <Link key={r.id} to="/blog/$slug" params={{ slug: r.slug }} className="rounded-2xl bg-card border border-border p-5 hover:border-primary transition-smooth">
+            <Link key={r.id} to="/articles/$slug" params={{ slug: r.slug }} className="rounded-2xl bg-card border border-border p-5 hover:border-primary transition-smooth">
               <h3 className="font-bold text-lg">{r.title}</h3>
               {r.excerpt && <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{r.excerpt}</p>}
             </Link>
