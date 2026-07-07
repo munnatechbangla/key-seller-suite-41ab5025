@@ -21,7 +21,7 @@ import { BatchActionsBar } from "@/components/admin/BatchActionsBar";
 import { exportProducts, parseImport, diffImport } from "@/lib/admin/product-io";
 import { logActivity } from "@/lib/admin/activity-log";
 
-export const Route = createFileRoute("/admin/products")({ component: AdminProducts });
+export const Route = createFileRoute("/admin/products/")({ component: AdminProducts });
 
 type Row = {
   id: string; title: string; slug: string;
