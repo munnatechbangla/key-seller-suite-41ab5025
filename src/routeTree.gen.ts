@@ -72,6 +72,7 @@ import { Route as AdminCmsRouteImport } from './routes/admin.cms'
 import { Route as AdminBlogRouteImport } from './routes/admin.blog'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
+import { Route as AdminProductsIndexRouteImport } from './routes/admin.products.index'
 import { Route as AdminProductsIdRouteImport } from './routes/admin.products.$id'
 import { Route as AdminCmsProductLayoutsRouteImport } from './routes/admin.cms.product-layouts'
 import { Route as AdminCmsLandingPagesRouteImport } from './routes/admin.cms.landing-pages'
@@ -398,6 +399,11 @@ const AdminAuditRoute = AdminAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminProductsIndexRoute = AdminProductsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminProductsRoute,
+} as any)
 const AdminProductsIdRoute = AdminProductsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -522,6 +528,7 @@ export interface FileRoutesByFullPath {
   '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRouteWithChildren
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
+  '/admin/products/': typeof AdminProductsIndexRoute
   '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -575,7 +582,6 @@ export interface FileRoutesByTo {
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
-  '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/seo': typeof AdminSeoRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -596,6 +602,7 @@ export interface FileRoutesByTo {
   '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRouteWithChildren
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
+  '/admin/products': typeof AdminProductsIndexRoute
   '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -672,6 +679,7 @@ export interface FileRoutesById {
   '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRouteWithChildren
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
+  '/admin/products/': typeof AdminProductsIndexRoute
   '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -749,6 +757,7 @@ export interface FileRouteTypes {
     | '/admin/cms/landing-pages'
     | '/admin/cms/product-layouts'
     | '/admin/products/$id'
+    | '/admin/products/'
     | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
@@ -802,7 +811,6 @@ export interface FileRouteTypes {
     | '/admin/notifications'
     | '/admin/orders'
     | '/admin/payment-logs'
-    | '/admin/products'
     | '/admin/reviews'
     | '/admin/seo'
     | '/admin/settings'
@@ -823,6 +831,7 @@ export interface FileRouteTypes {
     | '/admin/cms/landing-pages'
     | '/admin/cms/product-layouts'
     | '/admin/products/$id'
+    | '/admin/products'
     | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
@@ -898,6 +907,7 @@ export interface FileRouteTypes {
     | '/admin/cms/landing-pages'
     | '/admin/cms/product-layouts'
     | '/admin/products/$id'
+    | '/admin/products/'
     | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
@@ -1390,6 +1400,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuditRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/products/': {
+      id: '/admin/products/'
+      path: '/'
+      fullPath: '/admin/products/'
+      preLoaderRoute: typeof AdminProductsIndexRouteImport
+      parentRoute: typeof AdminProductsRoute
+    }
     '/admin/products/$id': {
       id: '/admin/products/$id'
       path: '/$id'
@@ -1492,10 +1509,12 @@ const AdminCmsRouteWithChildren = AdminCmsRoute._addFileChildren(
 
 interface AdminProductsRouteChildren {
   AdminProductsIdRoute: typeof AdminProductsIdRoute
+  AdminProductsIndexRoute: typeof AdminProductsIndexRoute
 }
 
 const AdminProductsRouteChildren: AdminProductsRouteChildren = {
   AdminProductsIdRoute: AdminProductsIdRoute,
+  AdminProductsIndexRoute: AdminProductsIndexRoute,
 }
 
 const AdminProductsRouteWithChildren = AdminProductsRoute._addFileChildren(
@@ -1623,13 +1642,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
