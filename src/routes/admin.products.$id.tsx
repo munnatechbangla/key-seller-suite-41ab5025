@@ -175,6 +175,7 @@ function ManageProduct() {
     },
     onSuccess: (_r, status) => {
       toast.success(status === "published" ? "Product published" : "Draft saved");
+      logActivity(id, status === "published" ? "published" : "saved", status === "published" ? "Product published" : "Draft saved");
       qc.invalidateQueries({ queryKey: ["admin-products"] });
     },
     onError: (e: any) => toast.error(e.message),
