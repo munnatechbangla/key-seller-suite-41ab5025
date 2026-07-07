@@ -45,7 +45,7 @@ export type ProductVariant = {
   stock_status: string;
   status: string;
   visibility: string;
-  attributes: Record<string, unknown>;
+  attributes: Record<string, string>;
   attribute_option_ids: string[];
   thumbnail_url: string | null;
   delivery_type: string | null;
@@ -53,7 +53,7 @@ export type ProductVariant = {
   subscription_pool_id: string | null;
   license_pool_id: string | null;
   weight: number | null;
-  dimensions: Record<string, unknown>;
+  dimensions: Record<string, string | number | null>;
   sort_order: number;
 };
 
