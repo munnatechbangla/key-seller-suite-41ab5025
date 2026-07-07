@@ -733,3 +733,217 @@ function GalleryTab({ productId }: { productId: string }) {
     </div>
   );
 }
+
+/* -------- Basic Info -------- */
+function BasicInfoTab({
+  product,
+  productMode,
+  onSaved,
+}: {
+  product: any;
+  productMode: "simple" | "variable";
+  onSaved: () => void;
+}) {
+  const upsert = useServerFn(adminUpsertProductFn);
+  const [form, setForm] = useState<any>(() => ({
+    title: "",
+    slug: "",
+    short_description: "",
+    description: "",
+    regular_price: 0,
+    sale_price: "",
+    thumbnail_url: "",
+    status: "draft",
+    visibility: "public",
+    product_type: "",
+    delivery_type: "",
+  }));
+  const loadedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!product) return;
+    if (loadedFor.current === product.id) return;
+    loadedFor.current = product.id;
+    setForm({
+      title: product.title ?? "",
+      slug: product.slug ?? "",
+      short_description: product.short_description ?? "",
+      description: product.description ?? "",
+      regular_price: Number(product.regular_price ?? 0),
+      sale_price: product.sale_price == null ? "" : Number(product.sale_price),
+      thumbnail_url: product.thumbnail_url ?? "",
+      status: product.status ?? "draft",
+      visibility: product.visibility ?? "public",
+      product_type: product.product_type ?? "",
+      delivery_type: product.delivery_type ?? "",
+    });
+  }, [product]);
+
+  const set = (patch: Record<string, unknown>) => setForm((f: any) => ({ ...f, ...patch }));
+
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!product) throw new Error("Product not loaded");
+      if (!form.title.trim()) throw new Error("Title is required");
+      if (!form.slug.trim()) throw new Error("Slug is required");
+      const payload: any = {
+        id: product.id,
+        title: form.title.trim(),
+        slug: form.slug.trim(),
+        short_description: form.short_description || null,
+        description: form.description || null,
+        regular_price: productMode === "variable" ? Number(product.regular_price ?? 0) : Number(form.regular_price || 0),
+        sale_price:
+          productMode === "variable"
+            ? product.sale_price == null ? null : Number(product.sale_price)
+            : form.sale_price === "" ? null : Number(form.sale_price),
+        thumbnail_url: form.thumbnail_url || null,
+        status: form.status,
+        visibility: form.visibility || null,
+        product_type: form.product_type || null,
+        delivery_type: form.delivery_type || null,
+      };
+      return upsert({ data: payload });
+    },
+    onSuccess: () => {
+      toast.success("Basic info saved");
+      onSaved();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  if (!product) return <div className="text-sm text-muted-foreground p-4">Loading…</div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label>Title</Label>
+          <Input value={form.title} onChange={(e) => set({ title: e.target.value })} />
+        </div>
+        <div>
+          <Label>Slug</Label>
+          <Input value={form.slug} onChange={(e) => set({ slug: e.target.value })} />
+        </div>
+      </div>
+
+      <div>
+        <Label>Short description</Label>
+        <textarea
+          className="w-full min-h-[70px] rounded-md border bg-background px-3 py-2 text-sm"
+          value={form.short_description}
+          onChange={(e) => set({ short_description: e.target.value })}
+        />
+      </div>
+
+      <div>
+        <Label>Full description</Label>
+        <textarea
+          className="w-full min-h-[180px] rounded-md border bg-background px-3 py-2 text-sm"
+          value={form.description}
+          onChange={(e) => set({ description: e.target.value })}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <Label>Status</Label>
+          <select
+            className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+            value={form.status}
+            onChange={(e) => set({ status: e.target.value })}
+          >
+            <option value="draft">draft</option>
+            <option value="published">published</option>
+            <option value="private">private</option>
+            <option value="archived">archived</option>
+          </select>
+        </div>
+        <div>
+          <Label>Visibility</Label>
+          <select
+            className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+            value={form.visibility}
+            onChange={(e) => set({ visibility: e.target.value })}
+          >
+            <option value="public">public</option>
+            <option value="members_only">members_only</option>
+            <option value="hidden">hidden</option>
+          </select>
+        </div>
+        <div>
+          <Label>Product type</Label>
+          <select
+            className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+            value={form.product_type}
+            onChange={(e) => set({ product_type: e.target.value })}
+          >
+            <option value="">—</option>
+            <option value="downloadable">downloadable</option>
+            <option value="license_key">license_key</option>
+            <option value="subscription">subscription</option>
+            <option value="account">account</option>
+            <option value="external">external</option>
+            <option value="manual">manual</option>
+          </select>
+        </div>
+        <div>
+          <Label>Delivery type</Label>
+          <select
+            className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+            value={form.delivery_type}
+            onChange={(e) => set({ delivery_type: e.target.value })}
+          >
+            <option value="">—</option>
+            <option value="download">download</option>
+            <option value="license_key">license_key</option>
+            <option value="account">account</option>
+            <option value="manual">manual</option>
+            <option value="external_url">external_url</option>
+          </select>
+        </div>
+      </div>
+
+      {productMode === "simple" ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label>Regular price</Label>
+            <Input
+              type="number"
+              step="0.01"
+              value={form.regular_price}
+              onChange={(e) => set({ regular_price: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label>Sale price</Label>
+            <Input
+              type="number"
+              step="0.01"
+              value={form.sale_price}
+              onChange={(e) => set({ sale_price: e.target.value })}
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+          This is a Variable product. Pricing is set per variant in the Variants tab.
+        </div>
+      )}
+
+      <div>
+        <MediaPicker
+          label="Featured image"
+          value={form.thumbnail_url}
+          onChange={(v) => set({ thumbnail_url: v })}
+        />
+      </div>
+
+      <div className="flex justify-end">
+        <Button onClick={() => save.mutate()} disabled={save.isPending}>
+          {save.isPending ? "Saving…" : "Save basic info"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
