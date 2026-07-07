@@ -33,7 +33,7 @@ export const Route = createFileRoute("/articles/$slug")({
     }
     return {
       meta: seoMeta({ title, description: desc, ogType: "article", image: p?.og_image || p?.cover_url || undefined }),
-      links: [canonicalLink(p?.canonical_url || `/articles/${params.slug}`)],
+      links: [p?.canonical_url ? { rel: "canonical" as const, href: p.canonical_url } : canonicalLink(`/articles/${params.slug}`)],
       scripts,
     };
   },
