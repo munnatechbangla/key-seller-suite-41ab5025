@@ -28,12 +28,12 @@ function usePools() {
     queryFn: async () => {
       const [inv, sub, lic] = await Promise.all([
         (supabase as any).from("inventory_pools").select("id, name").order("name"),
-        (supabase as any).from("subscription_accounts").select("id, label").order("label"),
+        (supabase as any).from("subscription_accounts").select("id, account_email, provider").order("account_email"),
         (supabase as any).from("license_pools").select("id, name").order("name"),
       ]);
       return {
         inventory: ((inv.data ?? []) as any[]).map((r) => ({ id: r.id, name: r.name })) as Pool[],
-        subscription: ((sub.data ?? []) as any[]).map((r) => ({ id: r.id, name: r.label ?? r.id })) as Pool[],
+        subscription: ((sub.data ?? []) as any[]).map((r) => ({ id: r.id, name: `${r.provider ?? ""} ${r.account_email ?? r.id}`.trim() })) as Pool[],
         license: ((lic.data ?? []) as any[]).map((r) => ({ id: r.id, name: r.name })) as Pool[],
       };
     },
