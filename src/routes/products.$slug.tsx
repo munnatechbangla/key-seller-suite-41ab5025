@@ -193,6 +193,31 @@ function LegacyProductPage() {
   const addToCart = () => { cart.add(product, qty); toast.success(`${product.name} added to cart`); };
   const buyNow = () => { cart.add(product, qty); window.location.href = "/checkout"; };
 
+  // Gallery images (public read on product_images)
+  const galleryQuery = useQuery({
+    queryKey: ["product-gallery", product.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_images")
+        .select("id, url, alt, is_primary, sort_order")
+        .eq("product_id", product.id)
+        .order("is_primary", { ascending: false })
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as { id: string; url: string; alt: string | null; is_primary: boolean; sort_order: number }[];
+    },
+    staleTime: 60_000,
+  });
+  const galleryImages = galleryQuery.data ?? [];
+  const featuredImage =
+    galleryImages.find((g) => g.is_primary)?.url ??
+    galleryImages[0]?.url ??
+    product.thumbnailUrl ??
+    null;
+  const [activeImage, setActiveImage] = useState<string | null>(null);
+  useEffect(() => { setActiveImage(null); }, [product.id]);
+  const heroImage = activeImage ?? activeVariant?.thumbnail_url ?? featuredImage;
+
   return (
     <div className="min-h-screen">
       <Header />
