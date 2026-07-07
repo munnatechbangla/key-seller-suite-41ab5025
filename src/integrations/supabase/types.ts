@@ -2164,35 +2164,65 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          inventory_pool_id_snapshot: string | null
+          license_pool_id_snapshot: string | null
           line_total: number
           order_id: string
+          price_snapshot: number | null
           product_id: string | null
           product_name: string
           product_slug: string
           qty: number
+          selected_attributes: Json
+          sku_snapshot: string | null
+          subscription_pool_id_snapshot: string | null
+          thumbnail_snapshot: string | null
           unit_price: number
+          variant_id: string | null
+          variant_name: string | null
+          variant_snapshot: Json | null
         }
         Insert: {
           created_at?: string
           id?: string
+          inventory_pool_id_snapshot?: string | null
+          license_pool_id_snapshot?: string | null
           line_total: number
           order_id: string
+          price_snapshot?: number | null
           product_id?: string | null
           product_name: string
           product_slug: string
           qty?: number
+          selected_attributes?: Json
+          sku_snapshot?: string | null
+          subscription_pool_id_snapshot?: string | null
+          thumbnail_snapshot?: string | null
           unit_price: number
+          variant_id?: string | null
+          variant_name?: string | null
+          variant_snapshot?: Json | null
         }
         Update: {
           created_at?: string
           id?: string
+          inventory_pool_id_snapshot?: string | null
+          license_pool_id_snapshot?: string | null
           line_total?: number
           order_id?: string
+          price_snapshot?: number | null
           product_id?: string | null
           product_name?: string
           product_slug?: string
           qty?: number
+          selected_attributes?: Json
+          sku_snapshot?: string | null
+          subscription_pool_id_snapshot?: string | null
+          thumbnail_snapshot?: string | null
           unit_price?: number
+          variant_id?: string | null
+          variant_name?: string | null
+          variant_snapshot?: Json | null
         }
         Relationships: [
           {
@@ -2207,6 +2237,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variations"
             referencedColumns: ["id"]
           },
         ]

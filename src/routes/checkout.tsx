@@ -111,7 +111,12 @@ function CheckoutPage() {
     };
     const payload = {
       data: {
-        items: cart.items.map((i) => ({ slug: i.slug, qty: i.qty })),
+        items: cart.items.map((i) => ({
+          slug: i.productSlug ?? i.slug,
+          qty: i.qty,
+          variant_id: i.variant?.variant_id ?? null,
+          selected_attributes: i.variant?.selected_attributes ?? undefined,
+        })),
         customer,
         paymentMethod: gateway,
         couponCode: cart.coupon,
@@ -233,12 +238,23 @@ function CheckoutPage() {
             <div className="space-y-2 max-h-64 overflow-auto pr-1">
               {cart.items.map((it) => (
                 <div key={it.slug} className="flex items-center gap-3 text-sm">
-                  <span className="text-2xl">{it.product.emoji}</span>
+                  {it.variant?.thumbnail_url ? (
+                    <img src={it.variant.thumbnail_url} alt="" className="h-8 w-8 rounded object-cover" />
+                  ) : (
+                    <span className="text-2xl">{it.product.emoji}</span>
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">{it.product.name}</div>
+                    {it.variant && (
+                      <div className="text-xs text-muted-foreground truncate">
+                        {it.variant.variant_name}{it.variant.sku ? ` · ${it.variant.sku}` : ""}
+                      </div>
+                    )}
                     <div className="text-xs text-muted-foreground">Qty {it.qty}</div>
                   </div>
-                  <span className="font-semibold">${(it.product.price * it.qty).toFixed(2)}</span>
+                  <span className="font-semibold">
+                    ${(((it.variant ? (it.variant.sale_price != null && it.variant.sale_price > 0 ? it.variant.sale_price : it.variant.price) : it.product.price)) * it.qty).toFixed(2)}
+                  </span>
                 </div>
               ))}
             </div>

@@ -3,7 +3,12 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { csrfGuard } from "@/lib/security/csrf.server";
 
-const itemSchema = z.object({ slug: z.string(), qty: z.number().int().positive() });
+const itemSchema = z.object({
+  slug: z.string(),
+  qty: z.number().int().positive(),
+  variant_id: z.string().uuid().nullable().optional(),
+  selected_attributes: z.record(z.string(), z.any()).optional(),
+});
 
 const customerSchema = z.object({
   email: z.string().email(),
@@ -127,7 +132,7 @@ export const getMyOrdersFn = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("orders")
-      .select("id, order_number, status, total, currency, created_at, order_items(id, product_name, qty, unit_price, line_total), payments(status)")
+      .select("id, order_number, status, total, currency, created_at, order_items(id, product_name, product_slug, qty, unit_price, line_total, variant_id, variant_name, selected_attributes, sku_snapshot, thumbnail_snapshot), payments(status)")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -138,7 +143,7 @@ export const getMyDownloadsFn = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("downloads")
-      .select("id, file_url, download_count, max_downloads, expires_at, created_at, order_id, order_items(product_name, product_slug)")
+      .select("id, file_url, download_count, max_downloads, expires_at, created_at, order_id, order_items(product_name, product_slug, variant_name, sku_snapshot, selected_attributes)")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -149,7 +154,7 @@ export const getMyLicensesFn = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("license_assignments")
-      .select("id, assigned_at, order_id, order_items(product_name, product_slug), license_keys(key_value, status)")
+      .select("id, assigned_at, order_id, order_items(product_name, product_slug, variant_name, sku_snapshot, selected_attributes), license_keys(key_value, status)")
       .order("assigned_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];

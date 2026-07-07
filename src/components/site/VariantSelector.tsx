@@ -140,17 +140,23 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
 
   const handleAdd = (buy = false) => {
     if (!canBuy || !activeVariant) return;
-    const adjusted: Product = {
-      ...product,
-      price,
-      oldPrice: compareAt ?? undefined,
-      thumbnailUrl: activeVariant.thumbnail_url ?? product.thumbnailUrl ?? null,
-      name: activeVariant.name ? `${product.name} — ${activeVariant.name}` : product.name,
-    };
-    cart.add(adjusted, qty);
+    cart.add(product, qty, {
+      variant_id: activeVariant.id,
+      variant_name: activeVariant.name,
+      sku: activeVariant.sku,
+      price: activeVariant.price,
+      sale_price: activeVariant.sale_price,
+      thumbnail_url: activeVariant.thumbnail_url,
+      selected_attributes: activeVariant.attributes ?? {},
+      delivery_type: activeVariant.delivery_type,
+      inventory_pool_id: activeVariant.inventory_pool_id,
+      subscription_pool_id: activeVariant.subscription_pool_id,
+      license_pool_id: activeVariant.license_pool_id,
+    });
     if (buy) window.location.href = "/checkout";
-    else toast.success(`${adjusted.name} added to cart`);
+    else toast.success(`${product.name} — ${activeVariant.name} added to cart`);
   };
+
 
   return (
     <div className="space-y-5" aria-label="Variant selector">
