@@ -14,6 +14,8 @@ import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelate
 import { reviewsQuery } from "@/lib/reviews";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
 import { useEffect, useState } from "react";
+import { VariantSelector } from "@/components/site/VariantSelector";
+import type { ProductVariant } from "@/lib/product-variants.functions";
 import {
   Star, Zap, Shield, Heart, GitCompare, ShoppingCart, Check,
   Truck, Lock, Package,
