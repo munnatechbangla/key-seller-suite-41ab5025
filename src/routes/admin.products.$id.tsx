@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import {
   adminListProductsFn,
   adminListProductDownloadsFn,
@@ -33,7 +34,26 @@ import { AttributesTab } from "@/components/admin/AttributesTab";
 import { VariantsTab } from "@/components/admin/VariantsTab";
 import { WizardSteps, type WizardStep } from "@/components/admin/WizardSteps";
 import { ProductToolbar } from "@/components/admin/ProductToolbar";
-import { useIsDirty, useBeforeUnloadGuard } from "@/lib/admin/unsaved-changes";
+import { EditorHelpDialog } from "@/components/admin/EditorHelpDialog";
+import { RecoveryBanner, ConflictBanner } from "@/components/admin/RecoveryBanner";
+import { useIsDirty, useBeforeUnloadGuard, useMarkDirty } from "@/lib/admin/unsaved-changes";
+import {
+  useSaveStatus,
+  useHistoryState,
+  useConflict,
+  useConflictWatcher,
+  useEditorShortcuts,
+  useOnlineRecovery,
+  useAutosave,
+  enqueueSave,
+  retrySave,
+  undo,
+  redo,
+  clearHistory,
+  clearConflict,
+  clearLocalDraft,
+  readLocalDraft,
+} from "@/lib/admin/editor-store";
 
 type TabId = "downloads" | "attributes" | "variants" | "variations" | "gallery" | "custom-fields" | "rich-content" | "seo";
 const VALID_TABS: TabId[] = ["downloads", "attributes", "variants", "variations", "gallery", "custom-fields", "rich-content", "seo"];
@@ -189,6 +209,90 @@ function ManageProduct() {
     removeProduct.mutate();
   };
 
+  /* ---------- Phase 4.9A-2: persistence & safety ---------- */
+  const saveState = useSaveStatus();
+  const history = useHistoryState();
+  const conflict = useConflict();
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [recovery, setRecovery] = useState<{ at: number } | null>(null);
+
+  // Detect a locally-cached draft on mount (offline recovery).
+  useEffect(() => {
+    const cached = readLocalDraft(id);
+    if (cached) setRecovery({ at: cached.at });
+  }, [id]);
+
+  // Autosave: whenever product basic fields change, debounce + save.
+  const autosaveData = useMemo(() => {
+    if (!product) return null;
+    const p = product as any;
+    return {
+      title: p.title,
+      slug: p.slug,
+      short_description: p.short_description,
+      description: p.description,
+      thumbnail_url: p.thumbnail_url,
+    };
+  }, [product]);
+  const baseline = useRef<string>("");
+  useEffect(() => {
+    if (autosaveData && !baseline.current) baseline.current = JSON.stringify(autosaveData);
+  }, [autosaveData]);
+  const productDirty =
+    !!autosaveData && baseline.current !== "" && JSON.stringify(autosaveData) !== baseline.current;
+  useMarkDirty(`product:${id}`, productDirty);
+
+  useAutosave({
+    id,
+    data: autosaveData,
+    enabled: !!autosaveData && productDirty,
+    save: async (snap) => {
+      if (!snap) return;
+      const payload = buildProductPayload(snap as Record<string, unknown>);
+      if (!payload) return;
+      const res = await upsertProduct({ data: payload });
+      baseline.current = JSON.stringify(snap);
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      return res as any;
+    },
+  });
+
+  // Conflict detection based on updated_at drift while dirty.
+  useConflictWatcher((product as any)?.updated_at ?? null, isDirty);
+
+  // Retry autosave when connectivity returns.
+  const retry = useCallback(() => {
+    if (!autosaveData) return;
+    retrySave(async () => {
+      const payload = buildProductPayload(autosaveData as Record<string, unknown>);
+      if (!payload) return;
+      const res = await upsertProduct({ data: payload });
+      baseline.current = JSON.stringify(autosaveData);
+      clearLocalDraft(id);
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      return res as any;
+    });
+  }, [autosaveData, buildProductPayload, id, qc, upsertProduct]);
+  useOnlineRecovery(retry);
+
+  // Reset history when navigating between products.
+  useEffect(() => {
+    clearHistory();
+    clearConflict();
+  }, [id]);
+
+  // Keyboard shortcuts.
+  useEditorShortcuts({
+    onSave: handleSaveDraft,
+    onPreview: handlePreview,
+    onDuplicate: handleDuplicate,
+    onPublish: handlePublish,
+    onUndo: undo,
+    onRedo: redo,
+    onHelp: () => setHelpOpen(true),
+  });
+
+
   return (
     <div className="p-4 md:p-6 space-y-4">
       <ProductToolbar
@@ -200,11 +304,44 @@ function ManageProduct() {
         saving={setStatus.isPending && setStatus.variables === "draft"}
         publishing={setStatus.isPending && setStatus.variables === "published"}
         deleting={removeProduct.isPending}
+        saveStatus={saveState.status}
+        lastSavedAt={saveState.lastSavedAt}
+        saveError={saveState.error}
+        canUndo={history.canUndo}
+        canRedo={history.canRedo}
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
         onPreview={handlePreview}
         onDuplicate={handleDuplicate}
         onDelete={handleDelete}
+        onUndo={undo}
+        onRedo={redo}
+        onRetry={retry}
+        onHelp={() => setHelpOpen(true)}
+      />
+
+      <EditorHelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
+
+      <ConflictBanner
+        visible={!!conflict.conflictedAt}
+        onReload={() => {
+          clearConflict();
+          qc.invalidateQueries({ queryKey: ["admin-products"] });
+        }}
+        onKeepMine={() => clearConflict()}
+      />
+
+      <RecoveryBanner
+        visible={!!recovery}
+        savedAt={recovery?.at ?? null}
+        onRestore={() => {
+          retry();
+          setRecovery(null);
+        }}
+        onDiscard={() => {
+          clearLocalDraft(id);
+          setRecovery(null);
+        }}
       />
 
       {/* Breadcrumb */}
@@ -233,6 +370,7 @@ function ManageProduct() {
           </div>
         </div>
       )}
+
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4">
         <div className="min-w-0">
