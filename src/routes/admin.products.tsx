@@ -63,22 +63,213 @@ function AdminProducts() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const rows = (data ?? []) as Row[];
+  const allSelected = useMemo(
+    () => rows.length > 0 && rows.every((r) => selected.has(r.id)),
+    [rows, selected],
+  );
+  const toggle = (id: string) => {
+    const n = new Set(selected);
+    if (n.has(id)) n.delete(id);
+    else n.add(id);
+    setSelected(n);
+  };
+  const toggleAll = () => {
+    if (allSelected) setSelected(new Set());
+    else setSelected(new Set(rows.map((r) => r.id)));
+  };
+  const selectedRows = rows.filter((r) => selected.has(r.id));
+
+  const bulkStatus = useMutation({
+    mutationFn: async (status: "published" | "draft" | "private") => {
+      for (const p of selectedRows) {
+        await upsert({
+          data: {
+            id: p.id,
+            title: p.title,
+            slug: p.slug,
+            regular_price: Number(p.regular_price ?? 0),
+            sale_price: p.sale_price == null ? null : Number(p.sale_price),
+            status,
+          },
+        });
+        logActivity(p.id, status === "published" ? "published" : "edited", `Bulk set status → ${status}`);
+      }
+    },
+    onSuccess: (_r, status) => {
+      toast.success(`Updated ${selectedRows.length} products → ${status}`);
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      setSelected(new Set());
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const bulkDelete = useMutation({
+    mutationFn: async () => {
+      for (const p of selectedRows) await del({ data: { id: p.id } });
+    },
+    onSuccess: () => {
+      toast.success(`Deleted ${selectedRows.length} products`);
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      setSelected(new Set());
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const bulkDuplicate = useMutation({
+    mutationFn: async () => {
+      for (const p of selectedRows) {
+        const res: any = await upsert({
+          data: {
+            title: `${p.title} (Copy)`,
+            slug: `${p.slug}-copy-${Math.random().toString(36).slice(2, 6)}`,
+            regular_price: Number(p.regular_price ?? 0),
+            sale_price: p.sale_price == null ? null : Number(p.sale_price),
+            status: "draft",
+          },
+        });
+        if (res?.id) logActivity(res.id, "duplicated", `Duplicated from ${p.title}`);
+      }
+    },
+    onSuccess: () => {
+      toast.success(`Duplicated ${selectedRows.length} products as drafts`);
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      setSelected(new Set());
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const handleExport = (format: "csv" | "json", scope: "selection" | "all") => {
+    const source = scope === "selection" && selectedRows.length ? selectedRows : rows;
+    const res = exportProducts(source, format, scope);
+    for (const r of source) logActivity(r.id, "exported", `Exported as ${format.toUpperCase()}`);
+    toast.success(`Exported ${res.count} products → ${res.filename}`);
+  };
+
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const [importPreview, setImportPreview] = useState<null | {
+    rows: any[];
+    toCreate: any[];
+    toUpdate: any[];
+    duplicates: any[];
+    errors: string[];
+  }>(null);
+
+  const handleImportFile = async (file: File) => {
+    const text = await file.text();
+    const parsed = parseImport(text, file.name.endsWith(".json") ? "json" : "csv");
+    const diff = diffImport(rows, parsed.rows);
+    setImportPreview({
+      rows: parsed.rows,
+      toCreate: diff.toCreate,
+      toUpdate: diff.toUpdate.map((d) => d.incoming),
+      duplicates: diff.duplicates,
+      errors: parsed.errors,
+    });
+  };
+
+  const importCommit = useMutation({
+    mutationFn: async () => {
+      if (!importPreview) return;
+      const snapshot = [...rows]; // in-memory rollback source
+      try {
+        for (const r of importPreview.toCreate) {
+          if (!r.title || !r.slug) continue;
+          const res: any = await upsert({
+            data: {
+              title: String(r.title),
+              slug: String(r.slug),
+              regular_price: Number(r.regular_price ?? 0),
+              sale_price: r.sale_price == null || r.sale_price === "" ? null : Number(r.sale_price),
+              status: (r.status as any) ?? "draft",
+            },
+          });
+          if (res?.id) logActivity(res.id, "imported", "Created via import");
+        }
+        for (const r of importPreview.toUpdate) {
+          if (!r.id) continue;
+          await upsert({
+            data: {
+              id: String(r.id),
+              title: String(r.title ?? ""),
+              slug: String(r.slug ?? ""),
+              regular_price: Number(r.regular_price ?? 0),
+              sale_price: r.sale_price == null || r.sale_price === "" ? null : Number(r.sale_price),
+              status: (r.status as any) ?? "draft",
+            },
+          });
+          logActivity(String(r.id), "imported", "Updated via import");
+        }
+      } catch (e) {
+        // Best-effort surface; a true transactional rollback needs backend support.
+        void snapshot;
+        throw e;
+      }
+    },
+    onSuccess: () => {
+      toast.success("Import complete");
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      setImportPreview(null);
+    },
+    onError: (e: any) => toast.error(`Import failed: ${e.message}. No further rows applied.`),
+  });
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-6 space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h1 className="text-2xl font-bold">Products</h1>
           <p className="text-sm text-muted-foreground">{data?.length ?? 0} products</p>
         </div>
-        <Button onClick={() => { setProductMode("simple"); setEditing({ status: "published", regular_price: 0 }); }}>
-          <Plus className="h-4 w-4 mr-1" /> New product
-        </Button>
+        <div className="flex flex-wrap gap-1.5">
+          <Button size="sm" variant="outline" onClick={() => handleExport("csv", "all")}>
+            <Download className="h-4 w-4 mr-1" /> Export CSV
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => handleExport("json", "all")}>
+            <Download className="h-4 w-4 mr-1" /> Export JSON
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => importInputRef.current?.click()}>
+            <Upload className="h-4 w-4 mr-1" /> Import
+          </Button>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".csv,.json,text/csv,application/json"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleImportFile(f);
+              e.target.value = "";
+            }}
+          />
+          <Button onClick={() => { setProductMode("simple"); setEditing({ status: "published", regular_price: 0 }); }}>
+            <Plus className="h-4 w-4 mr-1" /> New product
+          </Button>
+        </div>
       </div>
+
+      <BatchActionsBar
+        count={selected.size}
+        onClear={() => setSelected(new Set())}
+        onPublish={() => bulkStatus.mutate("published")}
+        onDraft={() => bulkStatus.mutate("draft")}
+        onPrivate={() => bulkStatus.mutate("private")}
+        onDuplicate={() => bulkDuplicate.mutate()}
+        onExport={() => handleExport("csv", "selection")}
+        onDelete={() => {
+          if (confirm(`Delete ${selected.size} products? This cannot be undone.`)) bulkDelete.mutate();
+        }}
+        busy={bulkStatus.isPending || bulkDelete.isPending || bulkDuplicate.isPending}
+      />
 
       <div className="bg-background rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Select all" />
+              </TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Slug</TableHead>
               <TableHead>Price</TableHead>
@@ -89,10 +280,18 @@ function AdminProducts() {
           </TableHeader>
           <TableBody>
             {isLoading && (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
             )}
-            {(data ?? []).map((p: Row) => (
-              <TableRow key={p.id}>
+            {rows.map((p: Row) => (
+              <TableRow key={p.id} data-state={selected.has(p.id) ? "selected" : undefined}>
+                <TableCell>
+                  <input
+                    type="checkbox"
+                    checked={selected.has(p.id)}
+                    onChange={() => toggle(p.id)}
+                    aria-label={`Select ${p.title}`}
+                  />
+                </TableCell>
                 <TableCell className="font-medium">{p.title}</TableCell>
                 <TableCell className="text-muted-foreground text-sm">{p.slug}</TableCell>
                 <TableCell>${Number(p.sale_price ?? p.regular_price).toFixed(2)}</TableCell>
@@ -114,6 +313,34 @@ function AdminProducts() {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={!!importPreview} onOpenChange={(v) => !v && setImportPreview(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Import preview</DialogTitle>
+          </DialogHeader>
+          {importPreview && (
+            <div className="space-y-2 text-sm">
+              <div>Parsed rows: <strong>{importPreview.rows.length}</strong></div>
+              <div>To create: <strong>{importPreview.toCreate.length}</strong></div>
+              <div>To update: <strong>{importPreview.toUpdate.length}</strong></div>
+              <div>Duplicates skipped: <strong>{importPreview.duplicates.length}</strong></div>
+              {importPreview.errors.length > 0 && (
+                <div className="rounded border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
+                  {importPreview.errors.slice(0, 5).map((er) => <div key={er}>{er}</div>)}
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImportPreview(null)}>Cancel</Button>
+            <Button onClick={() => importCommit.mutate()} disabled={importCommit.isPending}>
+              {importCommit.isPending ? "Importing…" : "Apply import"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] p-0 gap-0 flex flex-col">
