@@ -156,7 +156,8 @@ export function diffImport(existing: ExportRow[], incoming: ExportRow[]): Import
       continue;
     }
     if (slug) seenSlugs.add(slug);
-    const match = (r.id && byId.get(String(r.id))) || (slug && bySlug.get(slug));
+    const match: ExportRow | undefined =
+      (r.id ? byId.get(String(r.id)) : undefined) ?? (slug ? bySlug.get(slug) : undefined);
     if (match) toUpdate.push({ existing: match, incoming: r });
     else toCreate.push(r);
   }
