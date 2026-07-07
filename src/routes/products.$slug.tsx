@@ -14,6 +14,9 @@ import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelate
 import { reviewsQuery } from "@/lib/reviews";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
 import { useEffect, useState } from "react";
+import { VariantSelector } from "@/components/site/VariantSelector";
+import type { ProductVariant } from "@/lib/product-variants.functions";
+import { listProductAttributesFn } from "@/lib/product-variants.functions";
 import {
   Star, Zap, Shield, Heart, GitCompare, ShoppingCart, Check,
   Truck, Lock, Package,
@@ -159,6 +162,14 @@ function LegacyProductPage() {
   const related = useRelated(slug, 4);
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<"desc" | "specs" | "reviews" | "faq">("desc");
+  const [activeVariant, setActiveVariant] = useState<ProductVariant | null>(null);
+  const fetchAttrs = useServerFn(listProductAttributesFn);
+  const attrsProbe = useQuery({
+    queryKey: ["variant-attrs", product.id],
+    queryFn: () => fetchAttrs({ data: { productId: product.id } }),
+    staleTime: 60_000,
+  });
+  const hasAttrs = (attrsProbe.data?.length ?? 0) > 0;
   const cart = useCart();
   const wish = useWishlist();
   const cmp = useCompare();
@@ -193,7 +204,11 @@ function LegacyProductPage() {
       <div className="container mx-auto px-4 py-10 grid grid-cols-[minmax(0,1fr)] lg:grid-cols-2 gap-10">
         <div className="min-w-0 space-y-4">
           <div className="relative aspect-square rounded-3xl bg-gradient-to-br from-primary/15 via-secondary/15 to-accent/15 grid place-items-center overflow-hidden shadow-elegant">
-            <span className="text-[12rem]">{product.emoji}</span>
+            {activeVariant?.thumbnail_url ? (
+              <img src={activeVariant.thumbnail_url} alt={activeVariant.name || product.name} className="h-full w-full object-cover animate-fade-in" />
+            ) : (
+              <span className="text-[12rem]">{product.emoji}</span>
+            )}
             {product.badge && (
               <span className="absolute top-4 left-4 px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-primary text-primary-foreground shadow-elegant">
                 {product.badge}
@@ -233,42 +248,53 @@ function LegacyProductPage() {
 
           <p className="text-muted-foreground leading-relaxed">{product.short}</p>
 
-          <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 p-5 flex items-end gap-4 flex-wrap">
-            <div>
-              <div className="text-4xl font-bold text-primary">${product.price}</div>
-              {product.oldPrice && (
-                <div className="flex gap-2 items-center mt-1">
-                  <span className="text-sm text-muted-foreground line-through">${product.oldPrice}</span>
-                  <span className="text-xs font-bold text-accent">Save ${(product.oldPrice - product.price).toFixed(2)}</span>
+          {hasAttrs ? (
+            <VariantSelector
+              product={product}
+              onVariantChange={setActiveVariant}
+            />
+          ) : (
+            <>
+              <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 p-5 flex items-end gap-4 flex-wrap">
+                <div>
+                  <div className="text-4xl font-bold text-primary">${product.price}</div>
+                  {product.oldPrice && (
+                    <div className="flex gap-2 items-center mt-1">
+                      <span className="text-sm text-muted-foreground line-through">${product.oldPrice}</span>
+                      <span className="text-xs font-bold text-accent">Save ${(product.oldPrice - product.price).toFixed(2)}</span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            <div className="sm:ml-auto inline-flex min-w-0 items-center gap-2 text-sm font-semibold text-accent">
-              <Zap className="h-4 w-4" /> {product.delivery} delivery
-            </div>
-          </div>
+                <div className="sm:ml-auto inline-flex min-w-0 items-center gap-2 text-sm font-semibold text-accent">
+                  <Zap className="h-4 w-4" /> {product.delivery} delivery
+                </div>
+              </div>
 
-          <ul className="space-y-2">
-            {product.features?.slice(0, 4).map((f) => (
-              <li key={f} className="flex items-start gap-2 text-sm">
-                <Check className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" /> {f}
-              </li>
-            ))}
-          </ul>
+              <ul className="space-y-2">
+                {product.features?.slice(0, 4).map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-sm">
+                    <Check className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" /> {f}
+                  </li>
+                ))}
+              </ul>
 
-          <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 sm:flex sm:flex-wrap sm:items-center">
-            <div className="inline-flex items-center rounded-xl border border-border bg-card">
-              <button onClick={() => setQty(Math.max(1, qty - 1))} className="w-10 h-11 grid place-items-center hover:bg-muted rounded-l-xl">−</button>
-              <span className="w-10 text-center font-semibold">{qty}</span>
-              <button onClick={() => setQty(qty + 1)} className="w-10 h-11 grid place-items-center hover:bg-muted rounded-r-xl">+</button>
-            </div>
-            <button onClick={addToCart} className="min-w-0 flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-card border border-primary text-primary font-semibold hover:bg-primary/5 transition-smooth">
-              <ShoppingCart className="h-4 w-4" /> Add to Cart
-            </button>
-            <button onClick={buyNow} className="col-span-2 sm:col-span-1 min-w-0 flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:opacity-95 transition-smooth">
-              <Zap className="h-4 w-4" /> Buy Now
-            </button>
-          </div>
+              <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 sm:flex sm:flex-wrap sm:items-center">
+                <div className="inline-flex items-center rounded-xl border border-border bg-card">
+                  <button onClick={() => setQty(Math.max(1, qty - 1))} className="w-10 h-11 grid place-items-center hover:bg-muted rounded-l-xl">−</button>
+                  <span className="w-10 text-center font-semibold">{qty}</span>
+                  <button onClick={() => setQty(qty + 1)} className="w-10 h-11 grid place-items-center hover:bg-muted rounded-r-xl">+</button>
+                </div>
+                <button onClick={addToCart} className="min-w-0 flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-card border border-primary text-primary font-semibold hover:bg-primary/5 transition-smooth">
+                  <ShoppingCart className="h-4 w-4" /> Add to Cart
+                </button>
+                <button onClick={buyNow} className="col-span-2 sm:col-span-1 min-w-0 flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:opacity-95 transition-smooth">
+                  <Zap className="h-4 w-4" /> Buy Now
+                </button>
+              </div>
+            </>
+          )}
+
+
 
           <div className="flex min-w-0 gap-2 flex-wrap text-sm">
             <button onClick={() => { wish.toggle(product.slug); toast(wish.has(product.slug) ? "Removed from wishlist" : "Added to wishlist"); }} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border ${wish.has(product.slug) ? "bg-accent/10 border-accent text-accent" : "border-border hover:bg-muted"}`}>
