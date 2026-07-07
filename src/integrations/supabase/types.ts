@@ -2512,27 +2512,83 @@ export type Database = {
           },
         ]
       }
-      product_attributes: {
+      product_attribute_options: {
         Row: {
+          attribute_id: string
+          color: string | null
+          created_at: string
           id: string
-          name: string
-          product_id: string
+          image: string | null
+          label: string
           sort_order: number
+          updated_at: string
           value: string
         }
         Insert: {
+          attribute_id: string
+          color?: string | null
+          created_at?: string
           id?: string
-          name: string
-          product_id: string
+          image?: string | null
+          label: string
           sort_order?: number
+          updated_at?: string
           value: string
         }
         Update: {
+          attribute_id?: string
+          color?: string | null
+          created_at?: string
+          id?: string
+          image?: string | null
+          label?: string
+          sort_order?: number
+          updated_at?: string
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_attribute_options_attribute_id_fkey"
+            columns: ["attribute_id"]
+            isOneToOne: false
+            referencedRelation: "product_attributes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_attributes: {
+        Row: {
+          created_at: string
+          display_type: string
+          id: string
+          name: string
+          product_id: string
+          slug: string | null
+          sort_order: number
+          updated_at: string
+          value: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_type?: string
+          id?: string
+          name: string
+          product_id: string
+          slug?: string | null
+          sort_order?: number
+          updated_at?: string
+          value?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_type?: string
           id?: string
           name?: string
           product_id?: string
+          slug?: string | null
           sort_order?: number
-          value?: string
+          updated_at?: string
+          value?: string | null
         }
         Relationships: [
           {
@@ -3108,10 +3164,15 @@ export type Database = {
       }
       product_variations: {
         Row: {
+          attribute_option_ids: string[]
           attributes: Json
           compare_price: number | null
           created_at: string
+          delivery_type: string | null
+          dimensions: Json
           id: string
+          inventory_pool_id: string | null
+          license_pool_id: string | null
           name: string
           price: number
           product_id: string
@@ -3121,13 +3182,22 @@ export type Database = {
           status: Database["public"]["Enums"]["variation_status"]
           stock: number | null
           stock_status: Database["public"]["Enums"]["stock_state"]
+          subscription_pool_id: string | null
+          thumbnail_url: string | null
           updated_at: string
+          visibility: string
+          weight: number | null
         }
         Insert: {
+          attribute_option_ids?: string[]
           attributes?: Json
           compare_price?: number | null
           created_at?: string
+          delivery_type?: string | null
+          dimensions?: Json
           id?: string
+          inventory_pool_id?: string | null
+          license_pool_id?: string | null
           name: string
           price?: number
           product_id: string
@@ -3137,13 +3207,22 @@ export type Database = {
           status?: Database["public"]["Enums"]["variation_status"]
           stock?: number | null
           stock_status?: Database["public"]["Enums"]["stock_state"]
+          subscription_pool_id?: string | null
+          thumbnail_url?: string | null
           updated_at?: string
+          visibility?: string
+          weight?: number | null
         }
         Update: {
+          attribute_option_ids?: string[]
           attributes?: Json
           compare_price?: number | null
           created_at?: string
+          delivery_type?: string | null
+          dimensions?: Json
           id?: string
+          inventory_pool_id?: string | null
+          license_pool_id?: string | null
           name?: string
           price?: number
           product_id?: string
@@ -3153,14 +3232,39 @@ export type Database = {
           status?: Database["public"]["Enums"]["variation_status"]
           stock?: number | null
           stock_status?: Database["public"]["Enums"]["stock_state"]
+          subscription_pool_id?: string | null
+          thumbnail_url?: string | null
           updated_at?: string
+          visibility?: string
+          weight?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "product_variations_inventory_pool_id_fkey"
+            columns: ["inventory_pool_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_pools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_variations_license_pool_id_fkey"
+            columns: ["license_pool_id"]
+            isOneToOne: false
+            referencedRelation: "license_pools"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "product_variations_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_variations_subscription_pool_id_fkey"
+            columns: ["subscription_pool_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_accounts"
             referencedColumns: ["id"]
           },
         ]
