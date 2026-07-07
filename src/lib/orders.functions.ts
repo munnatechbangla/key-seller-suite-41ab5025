@@ -154,7 +154,7 @@ export const getMyLicensesFn = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("license_assignments")
-      .select("id, assigned_at, order_id, order_items(product_name, product_slug), license_keys(key_value, status)")
+      .select("id, assigned_at, order_id, order_items(product_name, product_slug, variant_name, sku_snapshot, selected_attributes), license_keys(key_value, status)")
       .order("assigned_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
