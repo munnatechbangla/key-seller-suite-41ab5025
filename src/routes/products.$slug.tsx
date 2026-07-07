@@ -161,6 +161,8 @@ function LegacyProductPage() {
   const related = useRelated(slug, 4);
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<"desc" | "specs" | "reviews" | "faq">("desc");
+  const [activeVariant, setActiveVariant] = useState<ProductVariant | null>(null);
+  const [hasAttrs, setHasAttrs] = useState(false);
   const cart = useCart();
   const wish = useWishlist();
   const cmp = useCompare();
