@@ -34,7 +34,26 @@ import { AttributesTab } from "@/components/admin/AttributesTab";
 import { VariantsTab } from "@/components/admin/VariantsTab";
 import { WizardSteps, type WizardStep } from "@/components/admin/WizardSteps";
 import { ProductToolbar } from "@/components/admin/ProductToolbar";
-import { useIsDirty, useBeforeUnloadGuard } from "@/lib/admin/unsaved-changes";
+import { EditorHelpDialog } from "@/components/admin/EditorHelpDialog";
+import { RecoveryBanner, ConflictBanner } from "@/components/admin/RecoveryBanner";
+import { useIsDirty, useBeforeUnloadGuard, useMarkDirty } from "@/lib/admin/unsaved-changes";
+import {
+  useSaveStatus,
+  useHistoryState,
+  useConflict,
+  useConflictWatcher,
+  useEditorShortcuts,
+  useOnlineRecovery,
+  useAutosave,
+  enqueueSave,
+  retrySave,
+  undo,
+  redo,
+  clearHistory,
+  clearConflict,
+  clearLocalDraft,
+  readLocalDraft,
+} from "@/lib/admin/editor-store";
 
 type TabId = "downloads" | "attributes" | "variants" | "variations" | "gallery" | "custom-fields" | "rich-content" | "seo";
 const VALID_TABS: TabId[] = ["downloads", "attributes", "variants", "variations", "gallery", "custom-fields", "rich-content", "seo"];
