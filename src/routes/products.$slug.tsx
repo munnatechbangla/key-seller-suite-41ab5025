@@ -11,6 +11,7 @@ import { SaleBadges } from "@/components/site/SaleBadges";
 import { ShareButtons } from "@/components/site/ShareButtons";
 import { StickyBuyBar } from "@/components/site/StickyBuyBar";
 import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelated, useProductsBySlugs } from "@/lib/catalog";
+import { supabase } from "@/integrations/supabase/client";
 import { reviewsQuery } from "@/lib/reviews";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
 import { useEffect, useState } from "react";
