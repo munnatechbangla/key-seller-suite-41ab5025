@@ -19,10 +19,13 @@ import { Route as SetupRouteImport } from './routes/setup'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as RefundRouteImport } from './routes/refund'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as KbRouteImport } from './routes/kb'
 import { Route as FaqRouteImport } from './routes/faq'
+import { Route as DocsRouteImport } from './routes/docs'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as BlogRouteImport } from './routes/blog'
@@ -40,6 +43,7 @@ import { Route as AuthResetRouteImport } from './routes/auth.reset'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as AuthForgotRouteImport } from './routes/auth.forgot'
+import { Route as ArticlesSlugRouteImport } from './routes/articles.$slug'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminSetupRouteImport } from './routes/admin.setup'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
@@ -65,6 +69,7 @@ import { Route as AdminDemoRouteImport } from './routes/admin.demo'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 import { Route as AdminCmsRouteImport } from './routes/admin.cms'
+import { Route as AdminBlogRouteImport } from './routes/admin.blog'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminProductsIdRouteImport } from './routes/admin.products.$id'
@@ -128,9 +133,19 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KbRoute = KbRouteImport.update({
+  id: '/kb',
+  path: '/kb',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FaqRoute = FaqRouteImport.update({
   id: '/faq',
   path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -146,6 +161,11 @@ const CompareRoute = CompareRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CategoriesRoute = CategoriesRouteImport.update({
@@ -231,6 +251,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
 const AuthForgotRoute = AuthForgotRouteImport.update({
   id: '/auth/forgot',
   path: '/auth/forgot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArticlesSlugRoute = ArticlesSlugRouteImport.update({
+  id: '/articles/$slug',
+  path: '/articles/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
@@ -358,6 +383,11 @@ const AdminCmsRoute = AdminCmsRouteImport.update({
   path: '/cms',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBlogRoute = AdminBlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAuditLogsRoute = AdminAuditLogsRouteImport.update({
   id: '/audit-logs',
   path: '/audit-logs',
@@ -432,10 +462,13 @@ export interface FileRoutesByFullPath {
   '/blog': typeof BlogRouteWithChildren
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
+  '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/docs': typeof DocsRoute
   '/faq': typeof FaqRoute
+  '/kb': typeof KbRoute
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
   '/search': typeof SearchRoute
@@ -448,6 +481,7 @@ export interface FileRoutesByFullPath {
   '/wishlist': typeof WishlistRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
+  '/admin/blog': typeof AdminBlogRoute
   '/admin/cms': typeof AdminCmsRouteWithChildren
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -473,6 +507,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/setup': typeof AdminSetupRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/articles/$slug': typeof ArticlesSlugRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -501,10 +536,13 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogRouteWithChildren
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
+  '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/docs': typeof DocsRoute
   '/faq': typeof FaqRoute
+  '/kb': typeof KbRoute
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
   '/search': typeof SearchRoute
@@ -517,6 +555,7 @@ export interface FileRoutesByTo {
   '/wishlist': typeof WishlistRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
+  '/admin/blog': typeof AdminBlogRoute
   '/admin/cms': typeof AdminCmsRouteWithChildren
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -542,6 +581,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/setup': typeof AdminSetupRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/articles/$slug': typeof ArticlesSlugRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -572,10 +612,13 @@ export interface FileRoutesById {
   '/blog': typeof BlogRouteWithChildren
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
+  '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/docs': typeof DocsRoute
   '/faq': typeof FaqRoute
+  '/kb': typeof KbRoute
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
   '/search': typeof SearchRoute
@@ -588,6 +631,7 @@ export interface FileRoutesById {
   '/wishlist': typeof WishlistRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
+  '/admin/blog': typeof AdminBlogRoute
   '/admin/cms': typeof AdminCmsRouteWithChildren
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -613,6 +657,7 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/setup': typeof AdminSetupRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/articles/$slug': typeof ArticlesSlugRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -644,10 +689,13 @@ export interface FileRouteTypes {
     | '/blog'
     | '/cart'
     | '/categories'
+    | '/changelog'
     | '/checkout'
     | '/compare'
     | '/contact'
+    | '/docs'
     | '/faq'
+    | '/kb'
     | '/privacy'
     | '/refund'
     | '/search'
@@ -660,6 +708,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/audit'
     | '/admin/audit-logs'
+    | '/admin/blog'
     | '/admin/cms'
     | '/admin/coupons'
     | '/admin/customers'
@@ -685,6 +734,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/setup'
     | '/admin/subscriptions'
+    | '/articles/$slug'
     | '/auth/forgot'
     | '/auth/login'
     | '/auth/register'
@@ -713,10 +763,13 @@ export interface FileRouteTypes {
     | '/blog'
     | '/cart'
     | '/categories'
+    | '/changelog'
     | '/checkout'
     | '/compare'
     | '/contact'
+    | '/docs'
     | '/faq'
+    | '/kb'
     | '/privacy'
     | '/refund'
     | '/search'
@@ -729,6 +782,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/audit'
     | '/admin/audit-logs'
+    | '/admin/blog'
     | '/admin/cms'
     | '/admin/coupons'
     | '/admin/customers'
@@ -754,6 +808,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/setup'
     | '/admin/subscriptions'
+    | '/articles/$slug'
     | '/auth/forgot'
     | '/auth/login'
     | '/auth/register'
@@ -783,10 +838,13 @@ export interface FileRouteTypes {
     | '/blog'
     | '/cart'
     | '/categories'
+    | '/changelog'
     | '/checkout'
     | '/compare'
     | '/contact'
+    | '/docs'
     | '/faq'
+    | '/kb'
     | '/privacy'
     | '/refund'
     | '/search'
@@ -799,6 +857,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/audit'
     | '/admin/audit-logs'
+    | '/admin/blog'
     | '/admin/cms'
     | '/admin/coupons'
     | '/admin/customers'
@@ -824,6 +883,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/setup'
     | '/admin/subscriptions'
+    | '/articles/$slug'
     | '/auth/forgot'
     | '/auth/login'
     | '/auth/register'
@@ -854,10 +914,13 @@ export interface RootRouteChildren {
   BlogRoute: typeof BlogRouteWithChildren
   CartRoute: typeof CartRoute
   CategoriesRoute: typeof CategoriesRoute
+  ChangelogRoute: typeof ChangelogRoute
   CheckoutRoute: typeof CheckoutRoute
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
+  DocsRoute: typeof DocsRoute
   FaqRoute: typeof FaqRoute
+  KbRoute: typeof KbRoute
   PrivacyRoute: typeof PrivacyRoute
   RefundRoute: typeof RefundRoute
   SearchRoute: typeof SearchRoute
@@ -868,6 +931,7 @@ export interface RootRouteChildren {
   ThankYouRoute: typeof ThankYouRoute
   TrackOrderRoute: typeof TrackOrderRoute
   WishlistRoute: typeof WishlistRoute
+  ArticlesSlugRoute: typeof ArticlesSlugRoute
   AuthForgotRoute: typeof AuthForgotRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
@@ -955,11 +1019,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kb': {
+      id: '/kb'
+      path: '/kb'
+      fullPath: '/kb'
+      preLoaderRoute: typeof KbRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/faq': {
       id: '/faq'
       path: '/faq'
       fullPath: '/faq'
       preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -981,6 +1059,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/categories': {
@@ -1100,6 +1185,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/forgot'
       fullPath: '/auth/forgot'
       preLoaderRoute: typeof AuthForgotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/articles/$slug': {
+      id: '/articles/$slug'
+      path: '/articles/$slug'
+      fullPath: '/articles/$slug'
+      preLoaderRoute: typeof ArticlesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/subscriptions': {
@@ -1277,6 +1369,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCmsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/blog': {
+      id: '/admin/blog'
+      path: '/blog'
+      fullPath: '/admin/blog'
+      preLoaderRoute: typeof AdminBlogRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/audit-logs': {
       id: '/admin/audit-logs'
       path: '/audit-logs'
@@ -1406,6 +1505,7 @@ const AdminProductsRouteWithChildren = AdminProductsRoute._addFileChildren(
 interface AdminRouteChildren {
   AdminAuditRoute: typeof AdminAuditRoute
   AdminAuditLogsRoute: typeof AdminAuditLogsRoute
+  AdminBlogRoute: typeof AdminBlogRoute
   AdminCmsRoute: typeof AdminCmsRouteWithChildren
   AdminCouponsRoute: typeof AdminCouponsRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
@@ -1437,6 +1537,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAuditRoute: AdminAuditRoute,
   AdminAuditLogsRoute: AdminAuditLogsRoute,
+  AdminBlogRoute: AdminBlogRoute,
   AdminCmsRoute: AdminCmsRouteWithChildren,
   AdminCouponsRoute: AdminCouponsRoute,
   AdminCustomersRoute: AdminCustomersRoute,
@@ -1485,10 +1586,13 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRoute: BlogRouteWithChildren,
   CartRoute: CartRoute,
   CategoriesRoute: CategoriesRoute,
+  ChangelogRoute: ChangelogRoute,
   CheckoutRoute: CheckoutRoute,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
+  DocsRoute: DocsRoute,
   FaqRoute: FaqRoute,
+  KbRoute: KbRoute,
   PrivacyRoute: PrivacyRoute,
   RefundRoute: RefundRoute,
   SearchRoute: SearchRoute,
@@ -1499,6 +1603,7 @@ const rootRouteChildren: RootRouteChildren = {
   ThankYouRoute: ThankYouRoute,
   TrackOrderRoute: TrackOrderRoute,
   WishlistRoute: WishlistRoute,
+  ArticlesSlugRoute: ArticlesSlugRoute,
   AuthForgotRoute: AuthForgotRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,

@@ -41,6 +41,7 @@ function AdminCMSPage() {
           <TabsTrigger value="footer">Footer</TabsTrigger>
           <TabsTrigger value="settings">Site Settings</TabsTrigger>
           <TabsTrigger value="seo">SEO &amp; Analytics</TabsTrigger>
+          <TabsTrigger value="blog">Blog &amp; KB</TabsTrigger>
         </TabsList>
         <TabsContent value="pages"><PagesTab /></TabsContent>
         <TabsContent value="homepage"><HomepagePointer /></TabsContent>
@@ -50,6 +51,7 @@ function AdminCMSPage() {
         <TabsContent value="footer"><FooterTab /></TabsContent>
         <TabsContent value="settings"><SettingsPointer /></TabsContent>
         <TabsContent value="seo"><SeoCenterPointer /></TabsContent>
+        <TabsContent value="blog"><Card><CardContent className="p-6 space-y-2"><p className="text-sm text-muted-foreground">Manage blog articles, knowledge base, documentation, tutorials, changelog, news, guides, reviews and comparisons.</p><div className="flex gap-2"><Button asChild><a href="/admin/blog">Open Content Platform</a></Button></div></CardContent></Card></TabsContent>
       </Tabs>
     </div>
   );
