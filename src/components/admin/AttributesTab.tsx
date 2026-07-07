@@ -79,12 +79,27 @@ export function AttributesTab({ productId }: { productId: string }) {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const RESERVED_OPTION_LIKE = /^(bangladesh|global|foreign|netflix|spotify|prime|disney|red|blue|green|black|white|small|medium|large|xl|xxl|\d+\s*(month|months|year|years|day|days|week|weeks)|\d+m|\d+y)$/i;
+  const looksLikeOption = newName.trim().length > 0 && RESERVED_OPTION_LIKE.test(newName.trim());
+
   return (
     <div className="space-y-4">
+      <div className="rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground">
+        <div className="font-semibold text-foreground mb-1">How attributes work</div>
+        An <b>Attribute</b> is a category (e.g. <i>Region</i>, <i>Package</i>, <i>Color</i>, <i>Size</i>).
+        Each attribute owns many <b>Options</b> — the actual values customers pick
+        (e.g. Region → <i>Bangladesh</i>, <i>Global</i>; Package → <i>1 Month</i>, <i>3 Month</i>, <i>1 Year</i>).
+        The Variant Generator builds every combination across attributes.
+      </div>
       <div className="flex flex-wrap items-end gap-2 rounded-lg border p-4">
         <div className="flex-1 min-w-[200px]">
-          <Label>Attribute name</Label>
+          <Label>Attribute name (category)</Label>
           <Input placeholder="Region, Package, Color…" value={newName} onChange={(e) => setNewName(e.target.value)} />
+          {looksLikeOption && (
+            <div className="mt-1 text-xs text-amber-600">
+              "{newName}" looks like an option value, not a category. Try an attribute like <b>Region</b> or <b>Package</b>, then add "{newName}" as an option inside it.
+            </div>
+          )}
         </div>
         <div>
           <Label>Display type</Label>
@@ -100,9 +115,15 @@ export function AttributesTab({ productId }: { productId: string }) {
         </div>
         <Button
           onClick={() => {
-            if (!newName.trim()) return toast.error("Name required");
+            const n = newName.trim();
+            if (!n) return toast.error("Name required");
+            if (RESERVED_OPTION_LIKE.test(n)) {
+              if (!confirm(`"${n}" looks like an option value (e.g. Bangladesh, 1 Month), not a category.\n\nAttributes should be categories like "Region" or "Package".\n\nAdd it anyway?`)) {
+                return;
+              }
+            }
             create.mutate({
-              name: newName.trim(),
+              name: n,
               display_type: newType,
               sort_order: (data as ProductAttribute[]).length,
             });
@@ -115,7 +136,7 @@ export function AttributesTab({ productId }: { productId: string }) {
       {isLoading && <div className="text-muted-foreground">Loading…</div>}
       {!isLoading && (data as ProductAttribute[]).length === 0 && (
         <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-          No attributes yet. Add one above (e.g. Region, Package).
+          No attributes yet. Add a category (e.g. <b>Region</b>, <b>Package</b>) above, then add its options.
         </div>
       )}
 
