@@ -19,10 +19,13 @@ import { Route as SetupRouteImport } from './routes/setup'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as RefundRouteImport } from './routes/refund'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as KbRouteImport } from './routes/kb'
 import { Route as FaqRouteImport } from './routes/faq'
+import { Route as DocsRouteImport } from './routes/docs'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as BlogRouteImport } from './routes/blog'
@@ -129,9 +132,19 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KbRoute = KbRouteImport.update({
+  id: '/kb',
+  path: '/kb',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FaqRoute = FaqRouteImport.update({
   id: '/faq',
   path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -147,6 +160,11 @@ const CompareRoute = CompareRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CategoriesRoute = CategoriesRouteImport.update({
@@ -438,10 +456,13 @@ export interface FileRoutesByFullPath {
   '/blog': typeof BlogRouteWithChildren
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
+  '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/docs': typeof DocsRoute
   '/faq': typeof FaqRoute
+  '/kb': typeof KbRoute
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
   '/search': typeof SearchRoute
@@ -508,10 +529,13 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogRouteWithChildren
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
+  '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/docs': typeof DocsRoute
   '/faq': typeof FaqRoute
+  '/kb': typeof KbRoute
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
   '/search': typeof SearchRoute
@@ -580,10 +604,13 @@ export interface FileRoutesById {
   '/blog': typeof BlogRouteWithChildren
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
+  '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/docs': typeof DocsRoute
   '/faq': typeof FaqRoute
+  '/kb': typeof KbRoute
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
   '/search': typeof SearchRoute
@@ -653,10 +680,13 @@ export interface FileRouteTypes {
     | '/blog'
     | '/cart'
     | '/categories'
+    | '/changelog'
     | '/checkout'
     | '/compare'
     | '/contact'
+    | '/docs'
     | '/faq'
+    | '/kb'
     | '/privacy'
     | '/refund'
     | '/search'
@@ -723,10 +753,13 @@ export interface FileRouteTypes {
     | '/blog'
     | '/cart'
     | '/categories'
+    | '/changelog'
     | '/checkout'
     | '/compare'
     | '/contact'
+    | '/docs'
     | '/faq'
+    | '/kb'
     | '/privacy'
     | '/refund'
     | '/search'
@@ -794,10 +827,13 @@ export interface FileRouteTypes {
     | '/blog'
     | '/cart'
     | '/categories'
+    | '/changelog'
     | '/checkout'
     | '/compare'
     | '/contact'
+    | '/docs'
     | '/faq'
+    | '/kb'
     | '/privacy'
     | '/refund'
     | '/search'
@@ -866,10 +902,13 @@ export interface RootRouteChildren {
   BlogRoute: typeof BlogRouteWithChildren
   CartRoute: typeof CartRoute
   CategoriesRoute: typeof CategoriesRoute
+  ChangelogRoute: typeof ChangelogRoute
   CheckoutRoute: typeof CheckoutRoute
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
+  DocsRoute: typeof DocsRoute
   FaqRoute: typeof FaqRoute
+  KbRoute: typeof KbRoute
   PrivacyRoute: typeof PrivacyRoute
   RefundRoute: typeof RefundRoute
   SearchRoute: typeof SearchRoute
@@ -967,11 +1006,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kb': {
+      id: '/kb'
+      path: '/kb'
+      fullPath: '/kb'
+      preLoaderRoute: typeof KbRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/faq': {
       id: '/faq'
       path: '/faq'
       fullPath: '/faq'
       preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -993,6 +1046,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/categories': {
@@ -1506,10 +1566,13 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRoute: BlogRouteWithChildren,
   CartRoute: CartRoute,
   CategoriesRoute: CategoriesRoute,
+  ChangelogRoute: ChangelogRoute,
   CheckoutRoute: CheckoutRoute,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
+  DocsRoute: DocsRoute,
   FaqRoute: FaqRoute,
+  KbRoute: KbRoute,
   PrivacyRoute: PrivacyRoute,
   RefundRoute: RefundRoute,
   SearchRoute: SearchRoute,
