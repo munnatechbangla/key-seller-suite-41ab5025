@@ -162,7 +162,13 @@ function LegacyProductPage() {
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<"desc" | "specs" | "reviews" | "faq">("desc");
   const [activeVariant, setActiveVariant] = useState<ProductVariant | null>(null);
-  const [hasAttrs, setHasAttrs] = useState(false);
+  const fetchAttrs = useServerFn(listProductAttributesFn);
+  const attrsProbe = useQuery({
+    queryKey: ["variant-attrs", product.id],
+    queryFn: () => fetchAttrs({ data: { productId: product.id } }),
+    staleTime: 60_000,
+  });
+  const hasAttrs = (attrsProbe.data?.length ?? 0) > 0;
   const cart = useCart();
   const wish = useWishlist();
   const cmp = useCompare();
