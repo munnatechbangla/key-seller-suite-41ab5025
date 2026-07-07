@@ -24,6 +24,8 @@ import { CustomFieldsTab } from "@/components/admin/CustomFieldsTab";
 import { MediaPicker } from "@/components/admin/MediaLibrary";
 import { RichContentTab } from "@/components/admin/RichContentTab";
 import { ProductSeoTab } from "@/components/admin/ProductSeoTab";
+import { AttributesTab } from "@/components/admin/AttributesTab";
+import { VariantsTab } from "@/components/admin/VariantsTab";
 
 export const Route = createFileRoute("/admin/products/$id")({
   component: ManageProduct,
