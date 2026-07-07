@@ -4,13 +4,45 @@ import type { Product } from "./catalog";
 import { track } from "./analytics/track";
 import { storageKey } from "./storage-slug";
 
-type CartItem = { slug: string; qty: number; product: Product };
+/**
+ * P2D — Cart line items may carry a variant snapshot. When a variant is set,
+ * `slug` is a compound line key (`${productSlug}::${variantId}`) so that
+ * different variants of the same product coexist, while `productSlug` is
+ * the actual product slug used for links and downstream lookups. Products
+ * without variants keep `slug === productSlug` — fully backward compatible.
+ */
+export type CartVariantMeta = {
+  variant_id: string;
+  variant_name: string;
+  sku: string | null;
+  price: number;
+  sale_price: number | null;
+  thumbnail_url: string | null;
+  selected_attributes: Record<string, string>;
+  delivery_type: string | null;
+  inventory_pool_id: string | null;
+  subscription_pool_id: string | null;
+  license_pool_id: string | null;
+};
+
+type CartItem = {
+  slug: string;              // line-id (variant-aware); backward-compat: equals productSlug when no variant
+  productSlug: string;
+  qty: number;
+  product: Product;
+  variant?: CartVariantMeta;
+};
+
+function effectiveUnitPrice(i: CartItem): number {
+  if (i.variant) return i.variant.sale_price != null && i.variant.sale_price > 0 ? i.variant.sale_price : i.variant.price;
+  return i.product.price;
+}
 
 type CartState = {
   items: CartItem[];
   coupon: string | null;
   couponDiscount: number;
-  add: (p: Product, qty?: number) => void;
+  add: (p: Product, qty?: number, variant?: CartVariantMeta) => void;
   remove: (slug: string) => void;
   setQty: (slug: string, qty: number) => void;
   clear: () => void;
@@ -28,16 +60,25 @@ export const useCart = create<CartState>()(
       items: [],
       coupon: null,
       couponDiscount: 0,
-      add: (p, qty = 1) =>
+      add: (p, qty = 1, variant) =>
         set((s) => {
+          const lineKey = variant ? `${p.slug}::${variant.variant_id}` : p.slug;
+          const unit = variant
+            ? (variant.sale_price != null && variant.sale_price > 0 ? variant.sale_price : variant.price)
+            : p.price;
           track("add_to_cart", {
             currency: "USD",
-            value: p.price * qty,
-            items: [{ item_id: p.slug, item_name: p.name, price: p.price, quantity: qty, item_category: p.category }],
+            value: unit * qty,
+            items: [{
+              item_id: lineKey, item_name: variant ? `${p.name} — ${variant.variant_name}` : p.name,
+              price: unit, quantity: qty, item_category: p.category,
+            }],
           });
-          const ex = s.items.find((i) => i.slug === p.slug);
-          if (ex) return { items: s.items.map((i) => (i.slug === p.slug ? { ...i, qty: i.qty + qty } : i)) };
-          return { items: [...s.items, { slug: p.slug, qty, product: p }] };
+          const ex = s.items.find((i) => i.slug === lineKey);
+          if (ex) return { items: s.items.map((i) => (i.slug === lineKey ? { ...i, qty: i.qty + qty } : i)) };
+          return {
+            items: [...s.items, { slug: lineKey, productSlug: p.slug, qty, product: p, variant }],
+          };
         }),
       remove: (slug) => set((s) => ({ items: s.items.filter((i) => i.slug !== slug) })),
       setQty: (slug, qty) =>
@@ -48,7 +89,7 @@ export const useCart = create<CartState>()(
         set({ coupon: code.trim().toUpperCase(), couponDiscount: discount });
       },
       clearCoupon: () => set({ coupon: null, couponDiscount: 0 }),
-      subtotal: () => get().items.reduce((s, i) => s + i.product.price * i.qty, 0),
+      subtotal: () => get().items.reduce((s, i) => s + effectiveUnitPrice(i) * i.qty, 0),
       discount: () => {
         const sub = get().subtotal();
         return Math.min(get().couponDiscount, sub);
@@ -56,6 +97,7 @@ export const useCart = create<CartState>()(
       total: () => Math.max(0, get().subtotal() - get().discount()),
       count: () => get().items.reduce((s, i) => s + i.qty, 0),
     }),
+
     { name: storageKey("cart") },
   ),
 );
