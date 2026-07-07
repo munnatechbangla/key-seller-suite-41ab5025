@@ -222,7 +222,7 @@ export type VariantUpsertInput = {
   subscription_pool_id?: string | null;
   license_pool_id?: string | null;
   weight?: number | null;
-  dimensions?: Record<string, unknown>;
+  dimensions?: Record<string, string | number | null>;
   sort_order?: number;
 };
 
