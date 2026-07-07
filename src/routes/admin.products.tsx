@@ -105,12 +105,12 @@ function AdminProducts() {
       </div>
 
       <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] p-0 gap-0 flex flex-col">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
             <DialogTitle>{editing?.id ? "Edit product" : "New product"}</DialogTitle>
           </DialogHeader>
           {editing && (
-            <div className="space-y-3">
+            <div className="space-y-3 overflow-y-auto px-6 py-4 flex-1 min-h-0">
               <div className="grid grid-cols-2 gap-3">
                 <div><Label>Title</Label><Input value={editing.title ?? ""} onChange={(e) => setEditing({ ...editing, title: e.target.value })} /></div>
                 <div><Label>Slug</Label><Input value={editing.slug ?? ""} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} /></div>
