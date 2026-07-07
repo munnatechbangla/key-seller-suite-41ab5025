@@ -24,6 +24,8 @@ import { CustomFieldsTab } from "@/components/admin/CustomFieldsTab";
 import { MediaPicker } from "@/components/admin/MediaLibrary";
 import { RichContentTab } from "@/components/admin/RichContentTab";
 import { ProductSeoTab } from "@/components/admin/ProductSeoTab";
+import { AttributesTab } from "@/components/admin/AttributesTab";
+import { VariantsTab } from "@/components/admin/VariantsTab";
 
 export const Route = createFileRoute("/admin/products/$id")({
   component: ManageProduct,
@@ -40,15 +42,19 @@ function ManageProduct() {
         <h1 className="text-2xl font-bold">Manage product</h1>
       </div>
       <Tabs defaultValue="downloads">
-        <TabsList>
+        <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="downloads">Downloads</TabsTrigger>
-          <TabsTrigger value="variations">Variations</TabsTrigger>
+          <TabsTrigger value="attributes">Attributes</TabsTrigger>
+          <TabsTrigger value="variants">Variants</TabsTrigger>
+          <TabsTrigger value="variations">Legacy Variations</TabsTrigger>
           <TabsTrigger value="gallery">Gallery</TabsTrigger>
           <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
           <TabsTrigger value="rich-content">Rich Content</TabsTrigger>
           <TabsTrigger value="seo">SEO</TabsTrigger>
         </TabsList>
         <TabsContent value="downloads"><DownloadsTab productId={id} /></TabsContent>
+        <TabsContent value="attributes"><AttributesTab productId={id} /></TabsContent>
+        <TabsContent value="variants"><VariantsTab productId={id} /></TabsContent>
         <TabsContent value="variations"><VariationsTab productId={id} /></TabsContent>
         <TabsContent value="gallery"><GalleryTab productId={id} /></TabsContent>
         <TabsContent value="custom-fields"><CustomFieldsTab productId={id} /></TabsContent>
