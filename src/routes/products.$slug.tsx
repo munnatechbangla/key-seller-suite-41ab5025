@@ -252,7 +252,6 @@ function LegacyProductPage() {
             <VariantSelector
               product={product}
               onVariantChange={setActiveVariant}
-              onHasAttributes={setHasAttrs}
             />
           ) : (
             <>
@@ -295,16 +294,6 @@ function LegacyProductPage() {
             </>
           )}
 
-          {/* Mount a hidden VariantSelector probe so the "hasAttrs" branch can flip on first load. */}
-          {!hasAttrs && (
-            <div className="hidden" aria-hidden>
-              <VariantSelector
-                product={product}
-                onHasAttributes={setHasAttrs}
-                onVariantChange={setActiveVariant}
-              />
-            </div>
-          )}
 
 
           <div className="flex min-w-0 gap-2 flex-wrap text-sm">
