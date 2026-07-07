@@ -75,25 +75,138 @@ function ManageProduct() {
     ? (variants as ProductVariant[]).every((v) => Number(v.price) > 0)
     : Number((product as any)?.regular_price ?? 0) > 0;
 
-  const steps = [
-    { label: "Basic Info", done: !!product?.title && !!product?.slug },
-    { label: "Images", done: (images as any[]).length > 0 || !!(product as any)?.thumbnail_url },
-    ...(productMode === "variable"
-      ? [
-          { label: "Attributes", done: attrCount > 0 },
-          { label: "Options", done: optionCount > 0 },
-          { label: "Variants", done: variantCount > 0 },
-        ]
-      : []),
-    { label: "Pricing", done: hasPrices },
-    { label: "Downloads", done: (downloads as any[]).length > 0 },
-    { label: "SEO", done: !!(product as any)?.slug },
-  ];
-  const completion = Math.round((steps.filter((s) => s.done).length / steps.length) * 100);
+  const wizardSteps: WizardStep[] = useMemo(() => {
+    const baseSeo = (product as any)?.seo ?? {};
+    const seoDone = !!(baseSeo.meta_title || baseSeo.meta_description);
+    const arr: WizardStep[] = [
+      { id: "basic", label: "Basic Info", tab: "attributes", done: !!product?.title && !!product?.slug },
+      { id: "images", label: "Images", tab: "gallery", done: (images as any[]).length > 0 || !!(product as any)?.thumbnail_url },
+      { id: "attributes", label: "Attributes", tab: "attributes", done: attrCount > 0 || productMode === "simple" },
+      { id: "variants", label: "Variants", tab: "variants", done: productMode === "simple" || variantCount > 0 },
+      { id: "delivery", label: "Delivery", tab: "downloads", done: !!(product as any)?.delivery_type },
+      { id: "downloads", label: "Downloads / License", tab: "downloads", done: (downloads as any[]).length > 0 || (product as any)?.delivery_type === "external_url" },
+      { id: "seo", label: "SEO", tab: "seo", done: seoDone },
+      { id: "publish", label: "Publish", tab: tab, done: product?.status === "published" },
+    ];
+    return arr;
+  }, [product, images, downloads, attrCount, variantCount, productMode, tab]);
+
+  const completion = Math.round((wizardSteps.filter((s) => s.done).length / wizardSteps.length) * 100);
+
+  // Legacy checklist flags (used inside the Variants tab checklist below)
   const publishBlocked = productMode === "variable" && variantCount === 0;
+
+  // Publish validation
+  const publishBlockers: string[] = [];
+  const publishWarnings: string[] = [];
+  if (!product?.title || !product?.slug) publishBlockers.push("Missing title or slug");
+  if (productMode === "variable" && variantCount === 0) publishBlockers.push("No variants generated");
+  if ((product as any)?.delivery_type === "download" && (downloads as any[]).length === 0)
+    publishBlockers.push("Downloadable product has no files");
+  if (!hasPrices) publishBlockers.push("Missing prices");
+  if ((product as any)?.delivery_type === "license_key") publishWarnings.push("Verify license pool is assigned");
+  if ((product as any)?.product_type === "subscription") publishWarnings.push("Verify subscription pool is assigned");
+  const seoMeta = (product as any)?.seo;
+  if (!seoMeta?.meta_title && !seoMeta?.meta_description) publishWarnings.push("SEO meta is empty");
+
+  // Unsaved-changes guard (each tab flips its own dirty flag)
+  const isDirty = useIsDirty();
+  useBeforeUnloadGuard(isDirty);
+
+  // Toolbar mutations
+  const upsertProduct = useServerFn(adminUpsertProductFn);
+  const deleteProduct = useServerFn(adminDeleteProductFn);
+  const qc = useQueryClient();
+
+  const buildProductPayload = (patch: Record<string, unknown>) => {
+    if (!product) return null;
+    const p = product as any;
+    return {
+      id: p.id,
+      title: p.title,
+      slug: p.slug,
+      short_description: p.short_description ?? null,
+      description: p.description ?? null,
+      regular_price: Number(p.regular_price ?? 0),
+      sale_price: p.sale_price == null ? null : Number(p.sale_price),
+      thumbnail_url: p.thumbnail_url ?? null,
+      status: p.status ?? "draft",
+      is_featured: !!p.is_featured,
+      is_digital: !!p.is_digital,
+      is_license_key: !!p.is_license_key,
+      product_type: p.product_type ?? null,
+      delivery_type: p.delivery_type ?? null,
+      visibility: p.visibility ?? null,
+      external_url: p.external_url ?? null,
+      ...patch,
+    };
+  };
+
+  const setStatus = useMutation({
+    mutationFn: async (status: "draft" | "published") => {
+      const payload = buildProductPayload({ status });
+      if (!payload) throw new Error("Product not loaded");
+      return upsertProduct({ data: payload });
+    },
+    onSuccess: (_r, status) => {
+      toast.success(status === "published" ? "Product published" : "Draft saved");
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const removeProduct = useMutation({
+    mutationFn: () => deleteProduct({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Product deleted");
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      navigate({ to: "/admin/products" });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const handlePublish = () => {
+    if (publishBlockers.length > 0) {
+      toast.error(publishBlockers[0]);
+      return;
+    }
+    setStatus.mutate("published");
+  };
+
+  const handleSaveDraft = () => setStatus.mutate("draft");
+
+  const handlePreview = () => {
+    if (!product?.slug) return;
+    window.open(`/products/${product.slug}`, "_blank", "noopener");
+  };
+
+  const handleDuplicate = () => {
+    toast.info("Duplicate Product is coming in the next polish phase.");
+  };
+
+  const handleDelete = () => {
+    if (!confirm(`Delete "${product?.title ?? "this product"}"? This cannot be undone.`)) return;
+    removeProduct.mutate();
+  };
 
   return (
     <div className="p-4 md:p-6 space-y-4">
+      <ProductToolbar
+        product={product as any}
+        completion={completion}
+        isDirty={isDirty}
+        publishBlockers={publishBlockers}
+        publishWarnings={publishWarnings}
+        saving={setStatus.isPending && setStatus.variables === "draft"}
+        publishing={setStatus.isPending && setStatus.variables === "published"}
+        deleting={removeProduct.isPending}
+        onSaveDraft={handleSaveDraft}
+        onPublish={handlePublish}
+        onPreview={handlePreview}
+        onDuplicate={handleDuplicate}
+        onDelete={handleDelete}
+      />
+
       {/* Breadcrumb */}
       <nav className="text-sm text-muted-foreground flex items-center gap-1 flex-wrap">
         <Link to="/admin/products" className="hover:text-foreground">Products</Link>
@@ -108,16 +221,8 @@ function ManageProduct() {
         <h1 className="text-2xl font-bold flex-1">{product?.title ?? "Manage product"}</h1>
       </div>
 
-      {/* Completion meter */}
-      <div className="rounded-lg border bg-card p-3">
-        <div className="flex items-center justify-between text-sm mb-2">
-          <span className="font-medium">Product Setup</span>
-          <span className="text-muted-foreground">{completion}%</span>
-        </div>
-        <div className="h-2 rounded-full bg-muted overflow-hidden">
-          <div className="h-full bg-primary transition-all" style={{ width: `${completion}%` }} />
-        </div>
-      </div>
+      {/* Wizard steps */}
+      <WizardSteps steps={wizardSteps} currentTab={tab} onJump={setTab} />
 
       {publishBlocked && (
         <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 flex items-start gap-2 text-sm">
