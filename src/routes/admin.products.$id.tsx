@@ -465,23 +465,43 @@ function ManageProduct() {
         </div>
 
         {/* Summary sidebar */}
-        <aside className="lg:sticky lg:top-4 h-fit rounded-lg border bg-card p-4 space-y-3 text-sm">
-          {(product as any)?.thumbnail_url && (
-            <img src={(product as any).thumbnail_url} alt="" className="w-full aspect-square object-cover rounded-md" />
-          )}
-          <div className="space-y-1.5">
-            <Row label="Status"><Badge variant={product?.status === "published" ? "default" : "secondary"}>{product?.status ?? "—"}</Badge></Row>
-            <Row label="Visibility"><span className="text-muted-foreground">{(product as any)?.visibility ?? "—"}</span></Row>
-            <Row label="Product Mode"><Badge variant="outline">{productMode}</Badge></Row>
-            <Row label="Product Type"><span className="text-muted-foreground">{(product as any)?.product_type ?? "—"}</span></Row>
-            <Row label="Delivery"><span className="text-muted-foreground">{(product as any)?.delivery_type ?? "—"}</span></Row>
-            <Row label="Attributes">{attrCount}</Row>
-            <Row label="Options">{optionCount}</Row>
-            <Row label="Variants">{variantCount}</Row>
-            <Row label="Completion">{completion}%</Row>
+        <aside className="lg:sticky lg:top-4 h-fit space-y-3 text-sm">
+          <div className="rounded-lg border bg-card p-4 space-y-3">
+            {(product as any)?.thumbnail_url && (
+              <img src={(product as any).thumbnail_url} alt="" className="w-full aspect-square object-cover rounded-md" />
+            )}
+            <div className="space-y-1.5">
+              <Row label="Status"><Badge variant={product?.status === "published" ? "default" : "secondary"}>{product?.status ?? "—"}</Badge></Row>
+              <Row label="Visibility"><span className="text-muted-foreground">{(product as any)?.visibility ?? "—"}</span></Row>
+              <Row label="Product Mode"><Badge variant="outline">{productMode}</Badge></Row>
+              <Row label="Product Type"><span className="text-muted-foreground">{(product as any)?.product_type ?? "—"}</span></Row>
+              <Row label="Delivery"><span className="text-muted-foreground">{(product as any)?.delivery_type ?? "—"}</span></Row>
+              <Row label="Attributes">{attrCount}</Row>
+              <Row label="Options">{optionCount}</Row>
+              <Row label="Variants">{variantCount}</Row>
+              <Row label="Completion">{completion}%</Row>
+            </div>
           </div>
+          <AuditPanel
+            product={product}
+            variantCount={variantCount}
+            downloadCount={(downloads as any[]).length}
+            imageCount={(images as any[]).length}
+            completion={completion}
+            seoScore={((product as any)?.seo?.meta_title ? 50 : 0) + ((product as any)?.seo?.meta_description ? 50 : 0)}
+          />
+          <ActivityTimeline productId={id} />
         </aside>
       </div>
+
+      <DuplicateProductDialog
+        open={dupOpen}
+        onOpenChange={setDupOpen}
+        sourceTitle={product?.title ?? "Product"}
+        sourceSlug={product?.slug ?? "product"}
+        busy={duplicate.isPending}
+        onConfirm={(payload) => duplicate.mutate(payload)}
+      />
     </div>
   );
 }
