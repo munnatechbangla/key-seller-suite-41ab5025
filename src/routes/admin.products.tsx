@@ -119,11 +119,34 @@ function AdminProducts() {
           </DialogHeader>
           {editing && (
             <div className="space-y-3 overflow-y-auto px-6 py-4 flex-1 min-h-0">
+              {!editing.id && (
+                <div className="rounded-md border p-3">
+                  <Label className="mb-2 block">Product Mode</Label>
+                  <div className="flex gap-4 text-sm">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="product_mode" checked={productMode === "simple"} onChange={() => setProductMode("simple")} />
+                      Simple Product
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="product_mode" checked={productMode === "variable"} onChange={() => setProductMode("variable")} />
+                      Variable Product
+                    </label>
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <div><Label>Title</Label><Input value={editing.title ?? ""} onChange={(e) => setEditing({ ...editing, title: e.target.value })} /></div>
                 <div><Label>Slug</Label><Input value={editing.slug ?? ""} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} /></div>
-                <div><Label>Regular price</Label><Input type="number" step="0.01" value={String(editing.regular_price ?? 0)} onChange={(e) => setEditing({ ...editing, regular_price: parseFloat(e.target.value) })} /></div>
-                <div><Label>Sale price</Label><Input type="number" step="0.01" value={editing.sale_price == null ? "" : String(editing.sale_price)} onChange={(e) => setEditing({ ...editing, sale_price: e.target.value === "" ? null : parseFloat(e.target.value) })} /></div>
+                {productMode === "simple" ? (
+                  <>
+                    <div><Label>Regular price</Label><Input type="number" step="0.01" value={String(editing.regular_price ?? 0)} onChange={(e) => setEditing({ ...editing, regular_price: parseFloat(e.target.value) })} /></div>
+                    <div><Label>Sale price</Label><Input type="number" step="0.01" value={editing.sale_price == null ? "" : String(editing.sale_price)} onChange={(e) => setEditing({ ...editing, sale_price: e.target.value === "" ? null : parseFloat(e.target.value) })} /></div>
+                  </>
+                ) : (
+                  <div className="col-span-2 rounded-md border border-dashed bg-muted/30 p-3 text-sm text-muted-foreground">
+                    This product uses Variant Pricing. Prices and inventory will be configured after creating variants.
+                  </div>
+                )}
                 <div><Label>Status</Label>
                   <select className="w-full h-10 rounded-md border bg-background px-3 text-sm" value={editing.status ?? "published"} onChange={(e) => setEditing({ ...editing, status: e.target.value })}>
                     <option value="published">published</option>
