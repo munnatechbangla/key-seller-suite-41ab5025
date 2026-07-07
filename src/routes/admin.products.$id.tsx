@@ -60,13 +60,13 @@ import { AuditPanel } from "@/components/admin/AuditPanel";
 import { logActivity } from "@/lib/admin/activity-log";
 import { generateSignedPreview } from "@/lib/admin/signed-preview";
 
-type TabId = "downloads" | "attributes" | "variants" | "variations" | "gallery" | "custom-fields" | "rich-content" | "seo";
-const VALID_TABS: TabId[] = ["downloads", "attributes", "variants", "variations", "gallery", "custom-fields", "rich-content", "seo"];
+type TabId = "basic" | "downloads" | "attributes" | "variants" | "variations" | "gallery" | "custom-fields" | "rich-content" | "seo";
+const VALID_TABS: TabId[] = ["basic", "downloads", "attributes", "variants", "variations", "gallery", "custom-fields", "rich-content", "seo"];
 
 export const Route = createFileRoute("/admin/products/$id")({
   component: ManageProduct,
   validateSearch: (s: Record<string, unknown>) => ({
-    tab: VALID_TABS.includes(s.tab as TabId) ? (s.tab as TabId) : ("downloads" as TabId),
+    tab: VALID_TABS.includes(s.tab as TabId) ? (s.tab as TabId) : ("basic" as TabId),
   }),
   errorComponent: ({ error }) => <div className="p-6 text-destructive">{String(error?.message ?? error)}</div>,
   notFoundComponent: () => <div className="p-6">Not found</div>,
