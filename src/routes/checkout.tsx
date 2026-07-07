@@ -111,7 +111,12 @@ function CheckoutPage() {
     };
     const payload = {
       data: {
-        items: cart.items.map((i) => ({ slug: i.slug, qty: i.qty })),
+        items: cart.items.map((i) => ({
+          slug: i.productSlug ?? i.slug,
+          qty: i.qty,
+          variant_id: i.variant?.variant_id ?? null,
+          selected_attributes: i.variant?.selected_attributes ?? undefined,
+        })),
         customer,
         paymentMethod: gateway,
         couponCode: cart.coupon,
