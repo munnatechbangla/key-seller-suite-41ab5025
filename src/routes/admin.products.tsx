@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   adminListProductsFn,
   adminUpsertProductFn,
@@ -15,8 +15,11 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, Download, Upload } from "lucide-react";
 import { MediaPicker } from "@/components/admin/MediaLibrary";
+import { BatchActionsBar } from "@/components/admin/BatchActionsBar";
+import { exportProducts, parseImport, diffImport } from "@/lib/admin/product-io";
+import { logActivity } from "@/lib/admin/activity-log";
 
 export const Route = createFileRoute("/admin/products")({ component: AdminProducts });
 
