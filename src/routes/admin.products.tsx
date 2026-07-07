@@ -158,7 +158,7 @@ function AdminProducts() {
               <div><Label>Description</Label><Textarea rows={4} value={(editing as any).description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value } as any)} /></div>
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="px-6 py-4 border-t shrink-0 bg-background">
             <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
             <Button
               disabled={save.isPending}
