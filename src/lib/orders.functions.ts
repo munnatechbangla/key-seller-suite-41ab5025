@@ -3,7 +3,12 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { csrfGuard } from "@/lib/security/csrf.server";
 
-const itemSchema = z.object({ slug: z.string(), qty: z.number().int().positive() });
+const itemSchema = z.object({
+  slug: z.string(),
+  qty: z.number().int().positive(),
+  variant_id: z.string().uuid().nullable().optional(),
+  selected_attributes: z.record(z.string(), z.any()).optional(),
+});
 
 const customerSchema = z.object({
   email: z.string().email(),
