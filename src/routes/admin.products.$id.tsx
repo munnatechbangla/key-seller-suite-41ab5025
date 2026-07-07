@@ -304,11 +304,44 @@ function ManageProduct() {
         saving={setStatus.isPending && setStatus.variables === "draft"}
         publishing={setStatus.isPending && setStatus.variables === "published"}
         deleting={removeProduct.isPending}
+        saveStatus={saveState.status}
+        lastSavedAt={saveState.lastSavedAt}
+        saveError={saveState.error}
+        canUndo={history.canUndo}
+        canRedo={history.canRedo}
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
         onPreview={handlePreview}
         onDuplicate={handleDuplicate}
         onDelete={handleDelete}
+        onUndo={undo}
+        onRedo={redo}
+        onRetry={retry}
+        onHelp={() => setHelpOpen(true)}
+      />
+
+      <EditorHelpDialog open={helpOpen} onOpenChange={setHelpOpen} />
+
+      <ConflictBanner
+        visible={!!conflict.conflictedAt}
+        onReload={() => {
+          clearConflict();
+          qc.invalidateQueries({ queryKey: ["admin-products"] });
+        }}
+        onKeepMine={() => clearConflict()}
+      />
+
+      <RecoveryBanner
+        visible={!!recovery}
+        savedAt={recovery?.at ?? null}
+        onRestore={() => {
+          retry();
+          setRecovery(null);
+        }}
+        onDiscard={() => {
+          clearLocalDraft(id);
+          setRecovery(null);
+        }}
       />
 
       {/* Breadcrumb */}
@@ -337,6 +370,7 @@ function ManageProduct() {
           </div>
         </div>
       )}
+
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4">
         <div className="min-w-0">
