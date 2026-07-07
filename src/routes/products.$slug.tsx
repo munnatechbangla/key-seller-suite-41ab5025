@@ -11,6 +11,7 @@ import { SaleBadges } from "@/components/site/SaleBadges";
 import { ShareButtons } from "@/components/site/ShareButtons";
 import { StickyBuyBar } from "@/components/site/StickyBuyBar";
 import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelated, useProductsBySlugs } from "@/lib/catalog";
+import { supabase } from "@/integrations/supabase/client";
 import { reviewsQuery } from "@/lib/reviews";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
 import { useEffect, useState } from "react";
@@ -192,6 +193,31 @@ function LegacyProductPage() {
   const addToCart = () => { cart.add(product, qty); toast.success(`${product.name} added to cart`); };
   const buyNow = () => { cart.add(product, qty); window.location.href = "/checkout"; };
 
+  // Gallery images (public read on product_images)
+  const galleryQuery = useQuery({
+    queryKey: ["product-gallery", product.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_images")
+        .select("id, url, alt, is_primary, sort_order")
+        .eq("product_id", product.id)
+        .order("is_primary", { ascending: false })
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as { id: string; url: string; alt: string | null; is_primary: boolean; sort_order: number }[];
+    },
+    staleTime: 60_000,
+  });
+  const galleryImages = galleryQuery.data ?? [];
+  const featuredImage =
+    galleryImages.find((g) => g.is_primary)?.url ??
+    galleryImages[0]?.url ??
+    product.thumbnailUrl ??
+    null;
+  const [activeImage, setActiveImage] = useState<string | null>(null);
+  useEffect(() => { setActiveImage(null); }, [product.id]);
+  const heroImage = activeImage ?? activeVariant?.thumbnail_url ?? featuredImage;
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -204,8 +230,8 @@ function LegacyProductPage() {
       <div className="container mx-auto px-4 py-10 grid grid-cols-[minmax(0,1fr)] lg:grid-cols-2 gap-10">
         <div className="min-w-0 space-y-4">
           <div className="relative aspect-square rounded-3xl bg-gradient-to-br from-primary/15 via-secondary/15 to-accent/15 grid place-items-center overflow-hidden shadow-elegant">
-            {activeVariant?.thumbnail_url ? (
-              <img src={activeVariant.thumbnail_url} alt={activeVariant.name || product.name} className="h-full w-full object-cover animate-fade-in" />
+            {heroImage ? (
+              <img src={heroImage} alt={activeVariant?.name || product.name} className="h-full w-full object-cover animate-fade-in" />
             ) : (
               <span className="text-[12rem]">{product.emoji}</span>
             )}
@@ -220,11 +246,29 @@ function LegacyProductPage() {
               </span>
             )}
           </div>
-          <div className="grid grid-cols-4 gap-3">
-            {[product.emoji, "✨", "🔐", "⚡"].map((e, i) => (
-              <div key={i} className="aspect-square rounded-xl bg-card border border-border grid place-items-center text-4xl hover:border-primary cursor-pointer transition-smooth">{e}</div>
-            ))}
-          </div>
+          {galleryImages.length > 0 ? (
+            <div className="grid grid-cols-4 gap-3">
+              {galleryImages.slice(0, 8).map((img) => {
+                const isActive = (activeImage ?? featuredImage) === img.url;
+                return (
+                  <button
+                    key={img.id}
+                    type="button"
+                    onClick={() => setActiveImage(img.url)}
+                    className={`aspect-square rounded-xl overflow-hidden bg-card border transition-smooth ${isActive ? "border-primary ring-2 ring-primary/40" : "border-border hover:border-primary"}`}
+                  >
+                    <img src={img.url} alt={img.alt ?? product.name} className="w-full h-full object-cover" />
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 gap-3">
+              {[product.emoji, "✨", "🔐", "⚡"].map((e, i) => (
+                <div key={i} className="aspect-square rounded-xl bg-card border border-border grid place-items-center text-4xl">{e}</div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="min-w-0 space-y-5">
