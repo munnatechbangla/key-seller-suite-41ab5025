@@ -32,7 +32,7 @@ function CartPage() {
     setApplying(true);
     try {
       const r = await validate({
-        data: { code: code.trim(), subtotal: cart.subtotal(), productSlugs: cart.items.map((i) => i.slug) },
+        data: { code: code.trim(), subtotal: cart.subtotal(), productSlugs: cart.items.map((i) => i.productSlug ?? i.slug) },
       });
       if (r.ok) {
         cart.setCoupon(r.code, r.discount);
