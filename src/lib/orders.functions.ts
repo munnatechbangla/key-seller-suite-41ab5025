@@ -143,7 +143,7 @@ export const getMyDownloadsFn = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("downloads")
-      .select("id, file_url, download_count, max_downloads, expires_at, created_at, order_id, order_items(product_name, product_slug)")
+      .select("id, file_url, download_count, max_downloads, expires_at, created_at, order_id, order_items(product_name, product_slug, variant_name, sku_snapshot, selected_attributes)")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
