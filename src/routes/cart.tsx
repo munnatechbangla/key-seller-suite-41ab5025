@@ -75,14 +75,29 @@ function CartPage() {
       <PageHero title="Your cart" subtitle={`${cart.count()} items`} crumbs={[{ label: "Home", to: "/" }, { label: "Cart" }]} />
       <div className="container mx-auto px-4 py-10 grid grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_380px] gap-8">
         <div className="min-w-0 space-y-3">
-          {cart.items.map((it) => (
+          {cart.items.map((it) => {
+            const productSlug = it.productSlug ?? it.slug;
+            const unit = it.variant
+              ? (it.variant.sale_price != null && it.variant.sale_price > 0 ? it.variant.sale_price : it.variant.price)
+              : it.product.price;
+            return (
             <div key={it.slug} className="rounded-2xl bg-card border border-border p-3 sm:p-4 grid grid-cols-[auto_minmax(0,1fr)_auto] gap-3 sm:gap-4 items-center">
-              <Link to="/products/$slug" params={{ slug: it.slug }} className="h-20 w-20 shrink-0 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 grid place-items-center text-4xl">
-                {it.product.emoji}
+              <Link to="/products/$slug" params={{ slug: productSlug }} className="h-20 w-20 shrink-0 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 grid place-items-center overflow-hidden">
+                {it.variant?.thumbnail_url ? (
+                  <img src={it.variant.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-4xl">{it.product.emoji}</span>
+                )}
               </Link>
               <div className="flex-1 min-w-0">
-                <Link to="/products/$slug" params={{ slug: it.slug }} className="font-semibold hover:text-primary line-clamp-1">{it.product.name}</Link>
-                <div className="text-xs text-muted-foreground mt-1">{it.product.delivery} delivery</div>
+                <Link to="/products/$slug" params={{ slug: productSlug }} className="font-semibold hover:text-primary line-clamp-1">{it.product.name}</Link>
+                {it.variant && (
+                  <div className="text-xs text-muted-foreground mt-0.5 flex flex-wrap gap-x-2">
+                    <span className="font-medium text-foreground/80">{it.variant.variant_name}</span>
+                    {it.variant.sku && <span>SKU: {it.variant.sku}</span>}
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground mt-1">{it.variant?.delivery_type ?? it.product.delivery} delivery</div>
                 <div className="flex items-center gap-3 mt-2">
                   <div className="inline-flex items-center rounded-lg border border-border">
                     <button onClick={() => cart.setQty(it.slug, it.qty - 1)} className="w-8 h-8 grid place-items-center hover:bg-muted">−</button>
@@ -95,9 +110,10 @@ function CartPage() {
                 </div>
               </div>
               <div className="shrink-0 text-right">
-                <div className="font-bold text-primary">${(it.product.price * it.qty).toFixed(2)}</div>
-                {it.product.oldPrice && <div className="text-xs text-muted-foreground line-through">${(it.product.oldPrice * it.qty).toFixed(2)}</div>}
+                <div className="font-bold text-primary">${(unit * it.qty).toFixed(2)}</div>
+                {!it.variant && it.product.oldPrice && <div className="text-xs text-muted-foreground line-through">${(it.product.oldPrice * it.qty).toFixed(2)}</div>}
               </div>
+
             </div>
           ))}
 
