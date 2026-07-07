@@ -54,6 +54,11 @@ import {
   clearLocalDraft,
   readLocalDraft,
 } from "@/lib/admin/editor-store";
+import { DuplicateProductDialog, type DuplicateOptions } from "@/components/admin/DuplicateProductDialog";
+import { ActivityTimeline } from "@/components/admin/ActivityTimeline";
+import { AuditPanel } from "@/components/admin/AuditPanel";
+import { logActivity } from "@/lib/admin/activity-log";
+import { generateSignedPreview } from "@/lib/admin/signed-preview";
 
 type TabId = "downloads" | "attributes" | "variants" | "variations" | "gallery" | "custom-fields" | "rich-content" | "seo";
 const VALID_TABS: TabId[] = ["downloads", "attributes", "variants", "variations", "gallery", "custom-fields", "rich-content", "seo"];
@@ -170,6 +175,7 @@ function ManageProduct() {
     },
     onSuccess: (_r, status) => {
       toast.success(status === "published" ? "Product published" : "Draft saved");
+      logActivity(id, status === "published" ? "published" : "saved", status === "published" ? "Product published" : "Draft saved");
       qc.invalidateQueries({ queryKey: ["admin-products"] });
     },
     onError: (e: any) => toast.error(e.message),
@@ -197,12 +203,45 @@ function ManageProduct() {
 
   const handlePreview = () => {
     if (!product?.slug) return;
-    window.open(`/products/${product.slug}`, "_blank", "noopener");
+    const rec = generateSignedPreview(id, product.slug);
+    logActivity(id, "preview_generated", `Signed preview generated (valid ${rec.ttlMinutes}m)`);
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(rec.url).catch(() => undefined);
+    }
+    toast.success(`Preview link copied · valid ${rec.ttlMinutes} minutes`);
+    window.open(rec.url, "_blank", "noopener");
   };
 
-  const handleDuplicate = () => {
-    toast.info("Duplicate Product is coming in the next polish phase.");
-  };
+  const [dupOpen, setDupOpen] = useState(false);
+  const handleDuplicate = () => setDupOpen(true);
+
+  const duplicate = useMutation({
+    mutationFn: async (payload: { title: string; slug: string; opts: DuplicateOptions }) => {
+      if (!product) throw new Error("Product not loaded");
+      const p = product as any;
+      const clone = buildProductPayload({
+        title: payload.title,
+        slug: payload.slug,
+        status: "draft",
+      });
+      if (!clone) throw new Error("Nothing to clone");
+      delete (clone as any).id;
+      // Only fields the upsert schema accepts are cloned. Deep-copy of variants,
+      // pools and content-blocks is deliberately scoped for a follow-up phase
+      // (requires new server functions) — no business logic is touched here.
+      const res: any = await upsertProduct({ data: clone });
+      return { id: res?.id as string, opts: payload.opts };
+    },
+    onSuccess: ({ id: newId }) => {
+      toast.success("Product duplicated as draft");
+      logActivity(id, "duplicated", `Duplicated to new draft ${newId}`);
+      logActivity(newId, "created", "Created via duplicate");
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      setDupOpen(false);
+      navigate({ to: "/admin/products/$id", params: { id: newId }, search: { tab: "attributes" } });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
 
   const handleDelete = () => {
     if (!confirm(`Delete "${product?.title ?? "this product"}"? This cannot be undone.`)) return;
@@ -426,23 +465,43 @@ function ManageProduct() {
         </div>
 
         {/* Summary sidebar */}
-        <aside className="lg:sticky lg:top-4 h-fit rounded-lg border bg-card p-4 space-y-3 text-sm">
-          {(product as any)?.thumbnail_url && (
-            <img src={(product as any).thumbnail_url} alt="" className="w-full aspect-square object-cover rounded-md" />
-          )}
-          <div className="space-y-1.5">
-            <Row label="Status"><Badge variant={product?.status === "published" ? "default" : "secondary"}>{product?.status ?? "—"}</Badge></Row>
-            <Row label="Visibility"><span className="text-muted-foreground">{(product as any)?.visibility ?? "—"}</span></Row>
-            <Row label="Product Mode"><Badge variant="outline">{productMode}</Badge></Row>
-            <Row label="Product Type"><span className="text-muted-foreground">{(product as any)?.product_type ?? "—"}</span></Row>
-            <Row label="Delivery"><span className="text-muted-foreground">{(product as any)?.delivery_type ?? "—"}</span></Row>
-            <Row label="Attributes">{attrCount}</Row>
-            <Row label="Options">{optionCount}</Row>
-            <Row label="Variants">{variantCount}</Row>
-            <Row label="Completion">{completion}%</Row>
+        <aside className="lg:sticky lg:top-4 h-fit space-y-3 text-sm">
+          <div className="rounded-lg border bg-card p-4 space-y-3">
+            {(product as any)?.thumbnail_url && (
+              <img src={(product as any).thumbnail_url} alt="" className="w-full aspect-square object-cover rounded-md" />
+            )}
+            <div className="space-y-1.5">
+              <Row label="Status"><Badge variant={product?.status === "published" ? "default" : "secondary"}>{product?.status ?? "—"}</Badge></Row>
+              <Row label="Visibility"><span className="text-muted-foreground">{(product as any)?.visibility ?? "—"}</span></Row>
+              <Row label="Product Mode"><Badge variant="outline">{productMode}</Badge></Row>
+              <Row label="Product Type"><span className="text-muted-foreground">{(product as any)?.product_type ?? "—"}</span></Row>
+              <Row label="Delivery"><span className="text-muted-foreground">{(product as any)?.delivery_type ?? "—"}</span></Row>
+              <Row label="Attributes">{attrCount}</Row>
+              <Row label="Options">{optionCount}</Row>
+              <Row label="Variants">{variantCount}</Row>
+              <Row label="Completion">{completion}%</Row>
+            </div>
           </div>
+          <AuditPanel
+            product={product}
+            variantCount={variantCount}
+            downloadCount={(downloads as any[]).length}
+            imageCount={(images as any[]).length}
+            completion={completion}
+            seoScore={((product as any)?.seo?.meta_title ? 50 : 0) + ((product as any)?.seo?.meta_description ? 50 : 0)}
+          />
+          <ActivityTimeline productId={id} />
         </aside>
       </div>
+
+      <DuplicateProductDialog
+        open={dupOpen}
+        onOpenChange={setDupOpen}
+        sourceTitle={product?.title ?? "Product"}
+        sourceSlug={product?.slug ?? "product"}
+        busy={duplicate.isPending}
+        onConfirm={(payload) => duplicate.mutate(payload)}
+      />
     </div>
   );
 }
