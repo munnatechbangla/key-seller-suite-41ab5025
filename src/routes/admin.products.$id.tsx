@@ -415,6 +415,7 @@ function ManageProduct() {
         <div className="min-w-0">
           <Tabs value={tab} onValueChange={setTab}>
             <TabsList className="flex-wrap h-auto overflow-x-auto max-w-full">
+              <TabsTrigger value="basic">Basic Info</TabsTrigger>
               <TabsTrigger value="attributes">Attributes</TabsTrigger>
               <TabsTrigger value="variants">Variants</TabsTrigger>
               <TabsTrigger value="downloads">Downloads</TabsTrigger>
@@ -424,6 +425,9 @@ function ManageProduct() {
               <TabsTrigger value="seo">SEO</TabsTrigger>
               <TabsTrigger value="variations">Legacy</TabsTrigger>
             </TabsList>
+            <TabsContent value="basic">
+              <BasicInfoTab product={product} productMode={productMode} onSaved={() => qc.invalidateQueries({ queryKey: ["admin-products"] })} />
+            </TabsContent>
             <TabsContent value="attributes">
               {attrCount === 0 && (
                 <div className="rounded-lg border border-dashed p-6 text-center mb-4">
