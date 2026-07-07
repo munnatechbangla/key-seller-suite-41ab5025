@@ -197,7 +197,11 @@ function LegacyProductPage() {
       <div className="container mx-auto px-4 py-10 grid grid-cols-[minmax(0,1fr)] lg:grid-cols-2 gap-10">
         <div className="min-w-0 space-y-4">
           <div className="relative aspect-square rounded-3xl bg-gradient-to-br from-primary/15 via-secondary/15 to-accent/15 grid place-items-center overflow-hidden shadow-elegant">
-            <span className="text-[12rem]">{product.emoji}</span>
+            {activeVariant?.thumbnail_url ? (
+              <img src={activeVariant.thumbnail_url} alt={activeVariant.name || product.name} className="h-full w-full object-cover animate-fade-in" />
+            ) : (
+              <span className="text-[12rem]">{product.emoji}</span>
+            )}
             {product.badge && (
               <span className="absolute top-4 left-4 px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-primary text-primary-foreground shadow-elegant">
                 {product.badge}
