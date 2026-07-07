@@ -54,6 +54,11 @@ import {
   clearLocalDraft,
   readLocalDraft,
 } from "@/lib/admin/editor-store";
+import { DuplicateProductDialog, type DuplicateOptions } from "@/components/admin/DuplicateProductDialog";
+import { ActivityTimeline } from "@/components/admin/ActivityTimeline";
+import { AuditPanel } from "@/components/admin/AuditPanel";
+import { logActivity } from "@/lib/admin/activity-log";
+import { generateSignedPreview } from "@/lib/admin/signed-preview";
 
 type TabId = "downloads" | "attributes" | "variants" | "variations" | "gallery" | "custom-fields" | "rich-content" | "seo";
 const VALID_TABS: TabId[] = ["downloads", "attributes", "variants", "variations", "gallery", "custom-fields", "rich-content", "seo"];
