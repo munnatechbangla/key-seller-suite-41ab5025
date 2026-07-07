@@ -230,8 +230,8 @@ function LegacyProductPage() {
       <div className="container mx-auto px-4 py-10 grid grid-cols-[minmax(0,1fr)] lg:grid-cols-2 gap-10">
         <div className="min-w-0 space-y-4">
           <div className="relative aspect-square rounded-3xl bg-gradient-to-br from-primary/15 via-secondary/15 to-accent/15 grid place-items-center overflow-hidden shadow-elegant">
-            {activeVariant?.thumbnail_url ? (
-              <img src={activeVariant.thumbnail_url} alt={activeVariant.name || product.name} className="h-full w-full object-cover animate-fade-in" />
+            {heroImage ? (
+              <img src={heroImage} alt={activeVariant?.name || product.name} className="h-full w-full object-cover animate-fade-in" />
             ) : (
               <span className="text-[12rem]">{product.emoji}</span>
             )}
@@ -246,11 +246,29 @@ function LegacyProductPage() {
               </span>
             )}
           </div>
-          <div className="grid grid-cols-4 gap-3">
-            {[product.emoji, "✨", "🔐", "⚡"].map((e, i) => (
-              <div key={i} className="aspect-square rounded-xl bg-card border border-border grid place-items-center text-4xl hover:border-primary cursor-pointer transition-smooth">{e}</div>
-            ))}
-          </div>
+          {galleryImages.length > 0 ? (
+            <div className="grid grid-cols-4 gap-3">
+              {galleryImages.slice(0, 8).map((img) => {
+                const isActive = (activeImage ?? featuredImage) === img.url;
+                return (
+                  <button
+                    key={img.id}
+                    type="button"
+                    onClick={() => setActiveImage(img.url)}
+                    className={`aspect-square rounded-xl overflow-hidden bg-card border transition-smooth ${isActive ? "border-primary ring-2 ring-primary/40" : "border-border hover:border-primary"}`}
+                  >
+                    <img src={img.url} alt={img.alt ?? product.name} className="w-full h-full object-cover" />
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 gap-3">
+              {[product.emoji, "✨", "🔐", "⚡"].map((e, i) => (
+                <div key={i} className="aspect-square rounded-xl bg-card border border-border grid place-items-center text-4xl">{e}</div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="min-w-0 space-y-5">
