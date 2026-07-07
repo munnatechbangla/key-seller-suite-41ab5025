@@ -104,7 +104,7 @@ function ManageProduct() {
     const baseSeo = (product as any)?.seo ?? {};
     const seoDone = !!(baseSeo.meta_title || baseSeo.meta_description);
     const arr: WizardStep[] = [
-      { id: "basic", label: "Basic Info", tab: "attributes", done: !!product?.title && !!product?.slug },
+      { id: "basic", label: "Basic Info", tab: "basic", done: !!product?.title && !!product?.slug },
       { id: "images", label: "Images", tab: "gallery", done: (images as any[]).length > 0 || !!(product as any)?.thumbnail_url },
       { id: "attributes", label: "Attributes", tab: "attributes", done: attrCount > 0 || productMode === "simple" },
       { id: "variants", label: "Variants", tab: "variants", done: productMode === "simple" || variantCount > 0 },
