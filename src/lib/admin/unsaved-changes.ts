@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 // Lightweight per-tab "dirty" registry. Tabs call `useMarkDirty(key, isDirty)`
 // while they hold unsaved local state; the product editor reads `useIsDirty()`
-// to drive the beforeunload guard and Save-Draft affordances.
-const dirty = new Map<string, boolean>();
+// to drive the beforeunload guard.
+const dirty = new Set<string>();
 const listeners = new Set<() => void>();
 
 function notify() {
@@ -11,11 +11,22 @@ function notify() {
 }
 
 export function setDirty(key: string, value: boolean) {
-  const prev = dirty.get(key) ?? false;
-  if (prev === value) return;
-  if (value) dirty.set(key, true);
+  const had = dirty.has(key);
+  if (value === had) return;
+  if (value) dirty.add(key);
   else dirty.delete(key);
   notify();
+}
+
+function subscribe(cb: () => void) {
+  listeners.add(cb);
+  return () => {
+    listeners.delete(cb);
+  };
+}
+
+function getSnapshot() {
+  return dirty.size;
 }
 
 export function useMarkDirty(key: string, value: boolean) {
@@ -26,19 +37,8 @@ export function useMarkDirty(key: string, value: boolean) {
 }
 
 export function useIsDirty(): boolean {
-  const [, force] = useForce();
-  useEffect(() => {
-    listeners.add(force);
-    return () => {
-      listeners.delete(force);
-    };
-  }, [force]);
-  return dirty.size > 0;
-}
-
-function useForce() {
-  const [n, setN] = (require("react") as typeof import("react")).useState(0);
-  return [n, () => setN((x: number) => x + 1)] as const;
+  const size = useSyncExternalStore(subscribe, getSnapshot, () => 0);
+  return size > 0;
 }
 
 export function useBeforeUnloadGuard(active: boolean) {
