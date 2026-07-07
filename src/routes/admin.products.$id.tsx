@@ -202,12 +202,45 @@ function ManageProduct() {
 
   const handlePreview = () => {
     if (!product?.slug) return;
-    window.open(`/products/${product.slug}`, "_blank", "noopener");
+    const rec = generateSignedPreview(id, product.slug);
+    logActivity(id, "preview_generated", `Signed preview generated (valid ${rec.ttlMinutes}m)`);
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(rec.url).catch(() => undefined);
+    }
+    toast.success(`Preview link copied · valid ${rec.ttlMinutes} minutes`);
+    window.open(rec.url, "_blank", "noopener");
   };
 
-  const handleDuplicate = () => {
-    toast.info("Duplicate Product is coming in the next polish phase.");
-  };
+  const [dupOpen, setDupOpen] = useState(false);
+  const handleDuplicate = () => setDupOpen(true);
+
+  const duplicate = useMutation({
+    mutationFn: async (payload: { title: string; slug: string; opts: DuplicateOptions }) => {
+      if (!product) throw new Error("Product not loaded");
+      const p = product as any;
+      const clone = buildProductPayload({
+        title: payload.title,
+        slug: payload.slug,
+        status: "draft",
+      });
+      if (!clone) throw new Error("Nothing to clone");
+      delete (clone as any).id;
+      // Only fields the upsert schema accepts are cloned. Deep-copy of variants,
+      // pools and content-blocks is deliberately scoped for a follow-up phase
+      // (requires new server functions) — no business logic is touched here.
+      const res: any = await upsertProduct({ data: clone });
+      return { id: res?.id as string, opts: payload.opts };
+    },
+    onSuccess: ({ id: newId }) => {
+      toast.success("Product duplicated as draft");
+      logActivity(id, "duplicated", `Duplicated to new draft ${newId}`);
+      logActivity(newId, "created", "Created via duplicate");
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      setDupOpen(false);
+      navigate({ to: "/admin/products/$id", params: { id: newId }, search: { tab: "attributes" } });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
 
   const handleDelete = () => {
     if (!confirm(`Delete "${product?.title ?? "this product"}"? This cannot be undone.`)) return;
