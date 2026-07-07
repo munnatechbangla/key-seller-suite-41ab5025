@@ -1,8 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import {
+  adminListProductsFn,
   adminListProductDownloadsFn,
   adminUpsertProductDownloadFn,
   adminDeleteProductDownloadFn,
@@ -14,12 +15,14 @@ import {
   adminReorderProductImagesFn,
   adminDeleteProductImageFn,
 } from "@/lib/admin.functions";
+import { listProductAttributesFn, listProductVariantsFn, type ProductAttribute, type ProductVariant } from "@/lib/product-variants.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, Star, Copy, GripVertical, ChevronDown, ChevronRight, Eye } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, Star, AlertTriangle, CheckCircle2, Circle } from "lucide-react";
 import { CustomFieldsTab } from "@/components/admin/CustomFieldsTab";
 import { MediaPicker } from "@/components/admin/MediaLibrary";
 import { RichContentTab } from "@/components/admin/RichContentTab";
@@ -27,41 +30,190 @@ import { ProductSeoTab } from "@/components/admin/ProductSeoTab";
 import { AttributesTab } from "@/components/admin/AttributesTab";
 import { VariantsTab } from "@/components/admin/VariantsTab";
 
+type TabId = "downloads" | "attributes" | "variants" | "variations" | "gallery" | "custom-fields" | "rich-content" | "seo";
+const VALID_TABS: TabId[] = ["downloads", "attributes", "variants", "variations", "gallery", "custom-fields", "rich-content", "seo"];
+
 export const Route = createFileRoute("/admin/products/$id")({
   component: ManageProduct,
+  validateSearch: (s: Record<string, unknown>) => ({
+    tab: VALID_TABS.includes(s.tab as TabId) ? (s.tab as TabId) : ("downloads" as TabId),
+  }),
   errorComponent: ({ error }) => <div className="p-6 text-destructive">{String(error?.message ?? error)}</div>,
   notFoundComponent: () => <div className="p-6">Not found</div>,
 });
 
 function ManageProduct() {
   const { id } = Route.useParams();
+  const { tab } = Route.useSearch();
+  const navigate = useNavigate();
+  const setTab = (t: string) =>
+    navigate({ to: "/admin/products/$id", params: { id }, search: { tab: t as TabId }, replace: true });
+
+  const listProducts = useServerFn(adminListProductsFn);
+  const listAttrs = useServerFn(listProductAttributesFn);
+  const listVars = useServerFn(listProductVariantsFn);
+  const listImages = useServerFn(adminListProductImagesFn);
+  const listDownloads = useServerFn(adminListProductDownloadsFn);
+
+  const { data: products } = useQuery({ queryKey: ["admin-products"], queryFn: () => listProducts() });
+  const product = (products ?? []).find((p: any) => p.id === id);
+  const { data: attrs = [] } = useQuery({ queryKey: ["admin-attributes", id], queryFn: () => listAttrs({ data: { productId: id } }) });
+  const { data: variants = [] } = useQuery({ queryKey: ["admin-variants", id], queryFn: () => listVars({ data: { productId: id } }) });
+  const { data: images = [] } = useQuery({ queryKey: ["admin-images", id], queryFn: () => listImages({ data: { product_id: id } }) });
+  const { data: downloads = [] } = useQuery({ queryKey: ["admin-downloads", id], queryFn: () => listDownloads({ data: { product_id: id } }) });
+
+  const attrCount = (attrs as ProductAttribute[]).length;
+  const optionCount = (attrs as ProductAttribute[]).reduce((n, a) => n + a.options.length, 0);
+  const variantCount = (variants as ProductVariant[]).length;
+  const productMode: "simple" | "variable" = attrCount > 0 ? "variable" : "simple";
+  const hasPrices = productMode === "variable"
+    ? (variants as ProductVariant[]).every((v) => Number(v.price) > 0)
+    : Number((product as any)?.regular_price ?? 0) > 0;
+
+  const steps = [
+    { label: "Basic Info", done: !!product?.title && !!product?.slug },
+    { label: "Images", done: (images as any[]).length > 0 || !!(product as any)?.thumbnail_url },
+    ...(productMode === "variable"
+      ? [
+          { label: "Attributes", done: attrCount > 0 },
+          { label: "Options", done: optionCount > 0 },
+          { label: "Variants", done: variantCount > 0 },
+        ]
+      : []),
+    { label: "Pricing", done: hasPrices },
+    { label: "Downloads", done: (downloads as any[]).length > 0 },
+    { label: "SEO", done: !!(product as any)?.slug },
+  ];
+  const completion = Math.round((steps.filter((s) => s.done).length / steps.length) * 100);
+  const publishBlocked = productMode === "variable" && variantCount === 0;
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-4">
+      {/* Breadcrumb */}
+      <nav className="text-sm text-muted-foreground flex items-center gap-1 flex-wrap">
+        <Link to="/admin/products" className="hover:text-foreground">Products</Link>
+        <span>›</span>
+        <span className="text-foreground">{product?.title ?? "…"}</span>
+        <span>›</span>
+        <span className="capitalize">{tab.replace("-", " ")}</span>
+      </nav>
+
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild><Link to="/admin/products"><ArrowLeft className="h-4 w-4 mr-1" /> Products</Link></Button>
-        <h1 className="text-2xl font-bold">Manage product</h1>
+        <h1 className="text-2xl font-bold flex-1">{product?.title ?? "Manage product"}</h1>
       </div>
-      <Tabs defaultValue="downloads">
-        <TabsList className="flex-wrap h-auto">
-          <TabsTrigger value="downloads">Downloads</TabsTrigger>
-          <TabsTrigger value="attributes">Attributes</TabsTrigger>
-          <TabsTrigger value="variants">Variants</TabsTrigger>
-          <TabsTrigger value="variations">Legacy Variations</TabsTrigger>
-          <TabsTrigger value="gallery">Gallery</TabsTrigger>
-          <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
-          <TabsTrigger value="rich-content">Rich Content</TabsTrigger>
-          <TabsTrigger value="seo">SEO</TabsTrigger>
-        </TabsList>
-        <TabsContent value="downloads"><DownloadsTab productId={id} /></TabsContent>
-        <TabsContent value="attributes"><AttributesTab productId={id} /></TabsContent>
-        <TabsContent value="variants"><VariantsTab productId={id} /></TabsContent>
-        <TabsContent value="variations"><VariationsTab productId={id} /></TabsContent>
-        <TabsContent value="gallery"><GalleryTab productId={id} /></TabsContent>
-        <TabsContent value="custom-fields"><CustomFieldsTab productId={id} /></TabsContent>
-        <TabsContent value="rich-content"><RichContentTab productId={id} /></TabsContent>
-        <TabsContent value="seo"><ProductSeoTab productId={id} /></TabsContent>
-      </Tabs>
+
+      {/* Completion meter */}
+      <div className="rounded-lg border bg-card p-3">
+        <div className="flex items-center justify-between text-sm mb-2">
+          <span className="font-medium">Product Setup</span>
+          <span className="text-muted-foreground">{completion}%</span>
+        </div>
+        <div className="h-2 rounded-full bg-muted overflow-hidden">
+          <div className="h-full bg-primary transition-all" style={{ width: `${completion}%` }} />
+        </div>
+      </div>
+
+      {publishBlocked && (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 flex items-start gap-2 text-sm">
+          <AlertTriangle className="h-4 w-4 mt-0.5 text-destructive" />
+          <div>
+            <div className="font-medium text-destructive">Publishing disabled</div>
+            <div className="text-muted-foreground">This product has no variants yet. Add attributes and generate variants first.</div>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4">
+        <div className="min-w-0">
+          <Tabs value={tab} onValueChange={setTab}>
+            <TabsList className="flex-wrap h-auto overflow-x-auto max-w-full">
+              <TabsTrigger value="attributes">Attributes</TabsTrigger>
+              <TabsTrigger value="variants">Variants</TabsTrigger>
+              <TabsTrigger value="downloads">Downloads</TabsTrigger>
+              <TabsTrigger value="gallery">Gallery</TabsTrigger>
+              <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
+              <TabsTrigger value="rich-content">Rich Content</TabsTrigger>
+              <TabsTrigger value="seo">SEO</TabsTrigger>
+              <TabsTrigger value="variations">Legacy</TabsTrigger>
+            </TabsList>
+            <TabsContent value="attributes">
+              {attrCount === 0 && (
+                <div className="rounded-lg border border-dashed p-6 text-center mb-4">
+                  <div className="font-medium">No attributes yet</div>
+                  <div className="text-sm text-muted-foreground mb-3">Create your first attribute (e.g. Country, Package, Color) below.</div>
+                </div>
+              )}
+              <AttributesTab productId={id} />
+            </TabsContent>
+            <TabsContent value="variants">
+              {/* Variant checklist */}
+              <div className="rounded-lg border bg-card p-3 mb-4">
+                <div className="text-sm font-medium mb-2">Variant Checklist</div>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  <CheckItem label="Attributes" done={attrCount > 0} />
+                  <CheckItem label="Options" done={optionCount > 0} />
+                  <CheckItem label="Variants Generated" done={variantCount > 0} />
+                  <CheckItem label="Prices" done={variantCount > 0 && (variants as ProductVariant[]).every((v) => Number(v.price) > 0)} />
+                  <CheckItem label="Inventory" done={variantCount > 0 && (variants as ProductVariant[]).some((v) => v.inventory_pool_id || v.subscription_pool_id || v.license_pool_id)} />
+                  <CheckItem label="Publish" done={product?.status === "published" && !publishBlocked} />
+                </div>
+              </div>
+              {variantCount === 0 && attrCount === 0 && (
+                <div className="rounded-lg border border-dashed p-6 text-center mb-4">
+                  <div className="font-medium">No variants generated</div>
+                  <div className="text-sm text-muted-foreground mb-3">Add attributes first, then generate variants.</div>
+                  <Button size="sm" onClick={() => setTab("attributes")}>Go to Attributes</Button>
+                </div>
+              )}
+              <VariantsTab productId={id} />
+            </TabsContent>
+            <TabsContent value="downloads"><DownloadsTab productId={id} /></TabsContent>
+            <TabsContent value="variations"><VariationsTab productId={id} /></TabsContent>
+            <TabsContent value="gallery"><GalleryTab productId={id} /></TabsContent>
+            <TabsContent value="custom-fields"><CustomFieldsTab productId={id} /></TabsContent>
+            <TabsContent value="rich-content"><RichContentTab productId={id} /></TabsContent>
+            <TabsContent value="seo"><ProductSeoTab productId={id} /></TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Summary sidebar */}
+        <aside className="lg:sticky lg:top-4 h-fit rounded-lg border bg-card p-4 space-y-3 text-sm">
+          {(product as any)?.thumbnail_url && (
+            <img src={(product as any).thumbnail_url} alt="" className="w-full aspect-square object-cover rounded-md" />
+          )}
+          <div className="space-y-1.5">
+            <Row label="Status"><Badge variant={product?.status === "published" ? "default" : "secondary"}>{product?.status ?? "—"}</Badge></Row>
+            <Row label="Visibility"><span className="text-muted-foreground">{(product as any)?.visibility ?? "—"}</span></Row>
+            <Row label="Product Mode"><Badge variant="outline">{productMode}</Badge></Row>
+            <Row label="Product Type"><span className="text-muted-foreground">{(product as any)?.product_type ?? "—"}</span></Row>
+            <Row label="Delivery"><span className="text-muted-foreground">{(product as any)?.delivery_type ?? "—"}</span></Row>
+            <Row label="Attributes">{attrCount}</Row>
+            <Row label="Options">{optionCount}</Row>
+            <Row label="Variants">{variantCount}</Row>
+            <Row label="Completion">{completion}%</Row>
+          </div>
+        </aside>
+      </div>
     </div>
+  );
+}
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-medium">{children}</span>
+    </div>
+  );
+}
+
+function CheckItem({ label, done }: { label: string; done: boolean }) {
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 ${done ? "bg-primary/10 border-primary/30 text-primary" : "text-muted-foreground"}`}>
+      {done ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5" />}
+      {label}
+    </span>
   );
 }
 
