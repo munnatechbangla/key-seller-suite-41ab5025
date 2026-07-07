@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -31,15 +31,23 @@ function AdminProducts() {
   const upsert = useServerFn(adminUpsertProductFn);
   const del = useServerFn(adminDeleteProductFn);
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const { data, isLoading } = useQuery({ queryKey: ["admin-products"], queryFn: () => list() });
   const [editing, setEditing] = useState<Partial<Row> | null>(null);
+  const [productMode, setProductMode] = useState<"simple" | "variable">("simple");
 
   const save = useMutation({
     mutationFn: (payload: any) => upsert({ data: payload }),
-    onSuccess: () => {
+    onSuccess: (res: any) => {
       toast.success("Saved");
       qc.invalidateQueries({ queryKey: ["admin-products"] });
+      const wasVariable = productMode === "variable";
+      const id = res?.id ?? editing?.id;
       setEditing(null);
+      setProductMode("simple");
+      if (wasVariable && id) {
+        navigate({ to: "/admin/products/$id", params: { id }, search: { tab: "attributes" } as any });
+      }
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -59,7 +67,7 @@ function AdminProducts() {
           <h1 className="text-2xl font-bold">Products</h1>
           <p className="text-sm text-muted-foreground">{data?.length ?? 0} products</p>
         </div>
-        <Button onClick={() => setEditing({ status: "published", regular_price: 0 })}>
+        <Button onClick={() => { setProductMode("simple"); setEditing({ status: "published", regular_price: 0 }); }}>
           <Plus className="h-4 w-4 mr-1" /> New product
         </Button>
       </div>
