@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   adminListProductsFn,
   adminListProductDownloadsFn,
@@ -14,6 +14,8 @@ import {
   adminUpsertProductImageFn,
   adminReorderProductImagesFn,
   adminDeleteProductImageFn,
+  adminUpsertProductFn,
+  adminDeleteProductFn,
 } from "@/lib/admin.functions";
 import { listProductAttributesFn, listProductVariantsFn, type ProductAttribute, type ProductVariant } from "@/lib/product-variants.functions";
 import { Button } from "@/components/ui/button";
@@ -29,6 +31,9 @@ import { RichContentTab } from "@/components/admin/RichContentTab";
 import { ProductSeoTab } from "@/components/admin/ProductSeoTab";
 import { AttributesTab } from "@/components/admin/AttributesTab";
 import { VariantsTab } from "@/components/admin/VariantsTab";
+import { WizardSteps, type WizardStep } from "@/components/admin/WizardSteps";
+import { ProductToolbar } from "@/components/admin/ProductToolbar";
+import { useIsDirty, useBeforeUnloadGuard } from "@/lib/admin/unsaved-changes";
 
 type TabId = "downloads" | "attributes" | "variants" | "variations" | "gallery" | "custom-fields" | "rich-content" | "seo";
 const VALID_TABS: TabId[] = ["downloads", "attributes", "variants", "variations", "gallery", "custom-fields", "rich-content", "seo"];
