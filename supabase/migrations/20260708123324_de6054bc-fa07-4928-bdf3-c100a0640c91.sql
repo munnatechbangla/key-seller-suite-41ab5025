@@ -1,0 +1,1 @@
+GRANT SELECT ON public.product_images TO anon, authenticated; GRANT INSERT, UPDATE, DELETE ON public.product_images TO authenticated; GRANT ALL ON public.product_images TO service_role;
