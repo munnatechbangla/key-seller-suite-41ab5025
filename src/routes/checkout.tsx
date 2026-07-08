@@ -237,10 +237,12 @@ function CheckoutPage() {
           <div className="rounded-2xl bg-card border border-border p-5 space-y-3">
             <h3 className="font-bold text-lg">Your order</h3>
             <div className="space-y-2 max-h-64 overflow-auto pr-1">
-              {cart.items.map((it) => (
+              {cart.items.map((it) => {
+                const img = resolveLineImage(it.product, it.variant);
+                return (
                 <div key={it.slug} className="flex items-center gap-3 text-sm">
-                  {it.variant?.thumbnail_url ? (
-                    <img src={it.variant.thumbnail_url} alt="" className="h-8 w-8 rounded object-cover" />
+                  {img ? (
+                    <img src={img} alt="" className="h-10 w-10 rounded object-cover border border-border" />
                   ) : (
                     <span className="text-2xl">{it.product.emoji}</span>
                   )}
