@@ -259,7 +259,8 @@ function CheckoutPage() {
                     ${(((it.variant ? (it.variant.sale_price != null && it.variant.sale_price > 0 ? it.variant.sale_price : it.variant.price) : it.product.price)) * it.qty).toFixed(2)}
                   </span>
                 </div>
-              ))}
+                );
+              })}
             </div>
             <div className="pt-3 border-t border-border space-y-1.5 text-sm">
               <Row label="Subtotal" value={`$${cart.subtotal().toFixed(2)}`} />
