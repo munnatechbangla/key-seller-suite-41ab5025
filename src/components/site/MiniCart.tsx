@@ -45,16 +45,22 @@ export function MiniCart({ open, onOpenChange }: { open: boolean; onOpenChange: 
         ) : (
           <>
             <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-              {cart.items.map((it) => (
+              {cart.items.map((it) => {
+                const productSlug = it.productSlug ?? it.slug;
+                const unit = it.variant
+                  ? (it.variant.sale_price != null && it.variant.sale_price > 0 ? it.variant.sale_price : it.variant.price)
+                  : it.product.price;
+                const thumb = it.variant?.thumbnail_url ?? it.product.thumbnailUrl ?? null;
+                return (
                 <div key={it.slug} className="flex min-w-0 gap-3 p-3 rounded-xl border border-border bg-card">
                   <Link
                     to="/products/$slug"
-                    params={{ slug: it.slug }}
+                    params={{ slug: productSlug }}
                     onClick={close}
                     className="h-16 w-16 shrink-0 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 grid place-items-center text-2xl overflow-hidden"
                   >
-                    {it.product.thumbnailUrl ? (
-                      <img src={it.product.thumbnailUrl} alt={it.product.name} className="h-full w-full object-cover" />
+                    {thumb ? (
+                      <img src={thumb} alt={it.product.name} className="h-full w-full object-cover" />
                     ) : (
                       <span>{it.product.emoji}</span>
                     )}
@@ -62,13 +68,16 @@ export function MiniCart({ open, onOpenChange }: { open: boolean; onOpenChange: 
                   <div className="flex-1 min-w-0">
                     <Link
                       to="/products/$slug"
-                      params={{ slug: it.slug }}
+                      params={{ slug: productSlug }}
                       onClick={close}
                       className="font-semibold text-sm line-clamp-1 hover:text-primary"
                     >
                       {it.product.name}
                     </Link>
-                    <div className="text-xs text-muted-foreground mt-0.5">{it.product.delivery}</div>
+                    {it.variant && (
+                      <div className="text-xs text-muted-foreground mt-0.5 truncate">{it.variant.variant_name}</div>
+                    )}
+                    <div className="text-xs text-muted-foreground mt-0.5">{it.variant?.delivery_type ?? it.product.delivery}</div>
                     <div className="flex items-center justify-between mt-2">
                       <div className="inline-flex items-center rounded-lg border border-border">
                         <button
@@ -84,7 +93,7 @@ export function MiniCart({ open, onOpenChange }: { open: boolean; onOpenChange: 
                         >+</button>
                       </div>
                     <div className="shrink-0 text-sm font-bold text-primary">
-                        ${(it.product.price * it.qty).toFixed(2)}
+                        ${(unit * it.qty).toFixed(2)}
                       </div>
                     </div>
                   </div>
@@ -96,7 +105,8 @@ export function MiniCart({ open, onOpenChange }: { open: boolean; onOpenChange: 
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             <SheetFooter className="flex-col gap-3 border-t border-border px-5 py-4 sm:flex-col sm:space-x-0">
