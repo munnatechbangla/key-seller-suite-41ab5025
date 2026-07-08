@@ -1,17 +1,34 @@
 import { useEffect, useState } from "react";
 import { ShoppingCart, Zap } from "lucide-react";
 import type { Product } from "@/lib/catalog";
-import { useCart } from "@/lib/stores";
+import { useCart, type CartVariantMeta } from "@/lib/stores";
 import { useMarketplace } from "@/lib/cms/marketplace";
 import { toast } from "sonner";
+import type { ProductVariant } from "@/lib/product-variants.functions";
 
-export function StickyBuyBar({ product, threshold = 480 }: { product: Product; threshold?: number }) {
+type Props = {
+  product: Product;
+  threshold?: number;
+  variant?: ProductVariant | null;
+  hasAttributes?: boolean;
+};
+
+export function StickyBuyBar({ product, threshold = 480, variant, hasAttributes }: Props) {
   const enabled = useMarketplace((s) => s.config.product_experience.sticky_buy_bar_enabled);
   const speed = useMarketplace((s) => s.config.ui.animation_speed_ms);
   const cart = useCart();
   const [visible, setVisible] = useState(false);
 
-  const inStock = (product.stock ?? 1) > 0;
+  const variantAvailable = variant
+    ? variant.status === "active" &&
+      (!variant.visibility || variant.visibility === "public") &&
+      (variant.stock == null || variant.stock > 0) &&
+      (!variant.stock_status || variant.stock_status !== "out_of_stock")
+    : true;
+
+  const inStock = hasAttributes
+    ? !!variant && variantAvailable
+    : (product.stock ?? 1) > 0;
 
   useEffect(() => {
     if (!enabled || !inStock) { setVisible(false); return; }
@@ -21,12 +38,40 @@ export function StickyBuyBar({ product, threshold = 480 }: { product: Product; t
     return () => window.removeEventListener("scroll", onScroll);
   }, [enabled, inStock, threshold]);
 
-  if (!enabled || !inStock) return null;
+  if (!enabled) return null;
+  if (hasAttributes && !variant) return null;
+  if (!inStock) return null;
 
-  const off = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
+  // Variable products must NEVER fall back to product.price.
+  const unitPrice = variant
+    ? (variant.sale_price != null && variant.sale_price > 0 ? variant.sale_price : variant.price)
+    : product.price;
+  const compareAt = variant
+    ? (variant.sale_price != null && variant.sale_price > 0 ? variant.price : null)
+    : (product.oldPrice ?? null);
+  const off = compareAt && compareAt > unitPrice ? Math.round((1 - unitPrice / compareAt) * 100) : 0;
+  const thumb = variant?.thumbnail_url ?? product.thumbnailUrl ?? null;
+  const label = variant ? `${product.name} — ${variant.name}` : product.name;
 
-  const onAdd = () => { cart.add(product, 1); toast.success(`${product.name} added to cart`); };
-  const onBuy = () => { cart.add(product, 1); window.location.href = "/checkout"; };
+  const variantMeta = (): CartVariantMeta | undefined =>
+    variant
+      ? {
+          variant_id: variant.id,
+          variant_name: variant.name,
+          sku: variant.sku,
+          price: variant.price,
+          sale_price: variant.sale_price,
+          thumbnail_url: variant.thumbnail_url,
+          selected_attributes: variant.attributes ?? {},
+          delivery_type: variant.delivery_type,
+          inventory_pool_id: variant.inventory_pool_id,
+          subscription_pool_id: variant.subscription_pool_id,
+          license_pool_id: variant.license_pool_id,
+        }
+      : undefined;
+
+  const onAdd = () => { cart.add(product, 1, variantMeta()); toast.success(`${label} added to cart`); };
+  const onBuy = () => { cart.add(product, 1, variantMeta()); window.location.href = "/checkout"; };
 
   return (
     <div
@@ -43,19 +88,19 @@ export function StickyBuyBar({ product, threshold = 480 }: { product: Product; t
     >
       <div className="px-3 py-2 flex items-center gap-2">
         <div className="h-11 w-11 shrink-0 rounded-lg bg-gradient-to-br from-primary/15 via-secondary/15 to-accent/15 grid place-items-center overflow-hidden">
-          {product.thumbnailUrl ? (
-            <img src={product.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+          {thumb ? (
+            <img src={thumb} alt="" className="h-full w-full object-cover" />
           ) : (
             <span className="text-2xl">{product.emoji}</span>
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-xs font-semibold truncate">{product.name}</div>
+          <div className="text-xs font-semibold truncate">{label}</div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-sm font-bold text-primary">${product.price}</span>
-            {product.oldPrice && (
+            <span className="text-sm font-bold text-primary">${unitPrice.toFixed(2)}</span>
+            {compareAt && compareAt > unitPrice && (
               <>
-                <span className="text-[11px] text-muted-foreground line-through">${product.oldPrice}</span>
+                <span className="text-[11px] text-muted-foreground line-through">${compareAt.toFixed(2)}</span>
                 {off > 0 && <span className="text-[10px] font-bold text-accent">-{off}%</span>}
               </>
             )}
