@@ -109,6 +109,7 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
         to: ".",
         search: (prev: Record<string, unknown>) => ({ ...prev, variant: activeVariant.id }),
         replace: true,
+        resetScroll: false,
       }).catch(() => {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
