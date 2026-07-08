@@ -158,11 +158,39 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
     else toast.success(`${product.name} — ${activeVariant.name} added to cart`);
   };
 
+  const hasSelection = Object.keys(selection).length > 0;
+  const handleClear = () => {
+    setSelection({});
+    onVariantChange?.(null);
+    navigate({
+      to: ".",
+      search: (prev: Record<string, unknown>) => {
+        const { variant: _v, ...rest } = prev ?? {};
+        return rest;
+      },
+      replace: true,
+      resetScroll: false,
+    }).catch(() => {});
+  };
 
   return (
     <div className="space-y-5" aria-label="Variant selector">
       {/* Attribute pickers */}
       <div className="space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">Options</div>
+          {hasSelection && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="text-xs sm:text-sm font-medium text-muted-foreground hover:text-primary underline-offset-4 hover:underline sm:no-underline sm:px-3 sm:py-1.5 sm:rounded-lg sm:border sm:border-border sm:hover:border-primary sm:hover:bg-primary/5 transition-smooth"
+              aria-label="Clear variant selection"
+            >
+              Clear selection
+            </button>
+          )}
+        </div>
+
         {attributes.map((attr) => {
           const selected = selection[attr.id];
           const dt = attr.display_type ?? "select";
