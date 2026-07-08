@@ -83,11 +83,14 @@ function CartPage() {
             return (
             <div key={it.slug} className="rounded-2xl bg-card border border-border p-3 sm:p-4 grid grid-cols-[auto_minmax(0,1fr)_auto] gap-3 sm:gap-4 items-center">
               <Link to="/products/$slug" params={{ slug: productSlug }} className="h-20 w-20 shrink-0 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 grid place-items-center overflow-hidden">
-                {it.variant?.thumbnail_url ? (
-                  <img src={it.variant.thumbnail_url} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-4xl">{it.product.emoji}</span>
-                )}
+                {(() => {
+                  const img = resolveLineImage(it.product, it.variant);
+                  return img ? (
+                    <img src={img} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-4xl">{it.product.emoji}</span>
+                  );
+                })()}
               </Link>
               <div className="flex-1 min-w-0">
                 <Link to="/products/$slug" params={{ slug: productSlug }} className="font-semibold hover:text-primary line-clamp-1">{it.product.name}</Link>
