@@ -16,6 +16,7 @@ import { seoMeta } from "@/lib/cms/seo";
 import { track } from "@/lib/analytics/track";
 import { CheckoutCustomFields, useCheckoutFields, validateCheckoutFields, type CheckoutFieldValues } from "@/components/checkout/CheckoutCustomFields";
 import { saveOrderCustomFieldsAuthFn, saveOrderCustomFieldsGuestFn } from "@/lib/order-custom-fields.functions";
+import { resolveLineImage } from "@/lib/cart-image";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: seoMeta({ title: "Checkout" }) }),
@@ -236,10 +237,12 @@ function CheckoutPage() {
           <div className="rounded-2xl bg-card border border-border p-5 space-y-3">
             <h3 className="font-bold text-lg">Your order</h3>
             <div className="space-y-2 max-h-64 overflow-auto pr-1">
-              {cart.items.map((it) => (
+              {cart.items.map((it) => {
+                const img = resolveLineImage(it.product, it.variant);
+                return (
                 <div key={it.slug} className="flex items-center gap-3 text-sm">
-                  {it.variant?.thumbnail_url ? (
-                    <img src={it.variant.thumbnail_url} alt="" className="h-8 w-8 rounded object-cover" />
+                  {img ? (
+                    <img src={img} alt="" className="h-10 w-10 rounded object-cover border border-border" />
                   ) : (
                     <span className="text-2xl">{it.product.emoji}</span>
                   )}
@@ -256,7 +259,8 @@ function CheckoutPage() {
                     ${(((it.variant ? (it.variant.sale_price != null && it.variant.sale_price > 0 ? it.variant.sale_price : it.variant.price) : it.product.price)) * it.qty).toFixed(2)}
                   </span>
                 </div>
-              ))}
+                );
+              })}
             </div>
             <div className="pt-3 border-t border-border space-y-1.5 text-sm">
               <Row label="Subtotal" value={`$${cart.subtotal().toFixed(2)}`} />
