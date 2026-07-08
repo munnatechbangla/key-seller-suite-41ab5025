@@ -16,6 +16,7 @@ import { seoMeta } from "@/lib/cms/seo";
 import { track } from "@/lib/analytics/track";
 import { CheckoutCustomFields, useCheckoutFields, validateCheckoutFields, type CheckoutFieldValues } from "@/components/checkout/CheckoutCustomFields";
 import { saveOrderCustomFieldsAuthFn, saveOrderCustomFieldsGuestFn } from "@/lib/order-custom-fields.functions";
+import { resolveLineImage } from "@/lib/cart-image";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: seoMeta({ title: "Checkout" }) }),
