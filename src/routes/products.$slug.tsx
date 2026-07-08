@@ -450,7 +450,7 @@ function LegacyProductPage() {
         )}
       </div>
       <Footer />
-      <StickyBuyBar product={product} />
+      <StickyBuyBar product={product} variant={activeVariant} hasAttributes={hasAttrs} />
     </div>
   );
 }
