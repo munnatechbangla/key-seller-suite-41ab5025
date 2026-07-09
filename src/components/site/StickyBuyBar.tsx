@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ShoppingCart, Zap } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import type { Product } from "@/lib/catalog";
 import { useCart, type CartVariantMeta } from "@/lib/stores";
 import { useMarketplace } from "@/lib/cms/marketplace";
