@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { toast } from "sonner";
 import { Upload, Copy, Trash2, Pencil, Search, Loader2, Check } from "lucide-react";
 import { resolveMediaUrl } from "@/lib/media/resolve";
+import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
 
 export const MEDIA_FOLDERS = [
   "products", "categories", "brands", "hero", "banners",
