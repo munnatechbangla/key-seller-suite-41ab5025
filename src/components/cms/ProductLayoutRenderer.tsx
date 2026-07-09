@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Star, ShieldCheck, Truck, Lock, ShoppingCart, Check } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 export type ProductLayoutSection = {
@@ -273,8 +274,9 @@ function RenderProductSection({ section, product }: { section: ProductLayoutSect
 function PurchaseCard({ product, config }: { product: any; config: any }) {
   const [qty, setQty] = useState(1);
   const cart = useCart();
+  const navigate = useNavigate();
   const addToCart = () => { cart.add(product, qty); toast.success(`${product.name} added to cart`); };
-  const buyNow = () => { cart.add(product, qty); window.location.href = "/checkout"; };
+  const buyNow = () => { cart.add(product, qty); navigate({ to: "/checkout" }); };
   return (
     <div className="border rounded-lg p-4 space-y-3">
       <div className="flex items-center gap-2">

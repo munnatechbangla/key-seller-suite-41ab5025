@@ -1,5 +1,5 @@
 import { seoMeta, canonicalLink, productJsonLd, breadcrumbJsonLd, faqJsonLd, jsonLdScript } from "@/lib/cms/seo";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 
@@ -198,7 +198,8 @@ function LegacyProductPage() {
   const recentProducts = useProductsBySlugs(recentSlugs);
 
   const addToCart = () => { cart.add(product, qty); toast.success(`${product.name} added to cart`); };
-  const buyNow = () => { cart.add(product, qty); window.location.href = "/checkout"; };
+  const navigate = useNavigate();
+  const buyNow = () => { cart.add(product, qty); navigate({ to: "/checkout" }); };
 
   // Gallery images (public read on product_images)
   const galleryQuery = useQuery({

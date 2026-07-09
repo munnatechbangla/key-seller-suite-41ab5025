@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ShoppingCart, Zap } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import type { Product } from "@/lib/catalog";
 import { useCart, type CartVariantMeta } from "@/lib/stores";
 import { useMarketplace } from "@/lib/cms/marketplace";
@@ -17,6 +18,7 @@ export function StickyBuyBar({ product, threshold = 480, variant, hasAttributes 
   const enabled = useMarketplace((s) => s.config.product_experience.sticky_buy_bar_enabled);
   const speed = useMarketplace((s) => s.config.ui.animation_speed_ms);
   const cart = useCart();
+  const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
 
   const variantAvailable = variant
@@ -71,7 +73,7 @@ export function StickyBuyBar({ product, threshold = 480, variant, hasAttributes 
       : undefined;
 
   const onAdd = () => { cart.add(product, 1, variantMeta()); toast.success(`${label} added to cart`); };
-  const onBuy = () => { cart.add(product, 1, variantMeta()); window.location.href = "/checkout"; };
+  const onBuy = () => { cart.add(product, 1, variantMeta()); navigate({ to: "/checkout" }); };
 
   return (
     <div
