@@ -1,5 +1,11 @@
 import { seoMeta, canonicalLink, productJsonLd, breadcrumbJsonLd, faqJsonLd, jsonLdScript } from "@/lib/cms/seo";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
+
+const productSearchSchema = z.object({
+  variant: fallback(z.string().optional(), undefined).optional(),
+});
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
@@ -32,6 +38,7 @@ import { productBlocksPublicFn } from "@/lib/product-blocks.functions";
 import { ProductContentBlocks, type ProductBlock } from "@/components/cms/ProductContentBlocks";
 
 export const Route = createFileRoute("/products/$slug")({
+  validateSearch: zodValidator(productSearchSchema),
   loader: async ({ params, context }) => {
     const product = await context.queryClient.ensureQueryData(productQuery(params.slug));
     if (!product) throw notFound();

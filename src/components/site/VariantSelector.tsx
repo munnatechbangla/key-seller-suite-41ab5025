@@ -7,7 +7,9 @@
  * the existing `useCart().add()` so downstream logic is unchanged.
  */
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
+
+const productRouteApi = getRouteApi("/products/$slug");
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -43,9 +45,8 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
   const listAttrs = useServerFn(listProductAttributesFn);
   const listVars = useServerFn(listProductVariantsFn);
   const cart = useCart();
-  const navigate = useNavigate();
-  // Read ?variant= without forcing a validateSearch on the parent route.
-  const search = useSearch({ strict: false }) as { variant?: string };
+  const navigate = useNavigate({ from: "/products/$slug" });
+  const search = productRouteApi.useSearch();
 
   const attrsQ = useQuery({
     queryKey: ["variant-attrs", product.id],
@@ -104,16 +105,13 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
   useEffect(() => {
     onVariantChange?.(activeVariant);
     setPriceKey((k) => k + 1);
-    if (activeVariant?.id && typeof window !== "undefined") {
-      // Sync ?variant= without triggering a router navigation (preserves scroll,
-      // avoids depending on validateSearch for a param this component owns).
-      const url = new URL(window.location.href);
-      url.searchParams.set("variant", activeVariant.id);
-      window.history.replaceState(
-        window.history.state,
-        "",
-        url.pathname + url.search + url.hash,
-      );
+    if (activeVariant?.id) {
+      navigate({
+        to: ".",
+        search: { variant: activeVariant.id },
+        replace: true,
+        resetScroll: false,
+      }).catch(() => {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeVariant?.id]);
@@ -167,10 +165,7 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
     onVariantChange?.(null);
     navigate({
       to: ".",
-      search: (prev: Record<string, unknown>) => {
-        const { variant: _v, ...rest } = prev ?? {};
-        return rest;
-      },
+      search: { variant: undefined },
       replace: true,
       resetScroll: false,
     }).catch(() => {});
