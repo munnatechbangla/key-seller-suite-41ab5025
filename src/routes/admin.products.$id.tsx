@@ -746,6 +746,8 @@ function BasicInfoTab({
   onSaved: () => void;
 }) {
   const upsert = useServerFn(adminUpsertProductFn);
+  const listCats = useServerFn(adminListCategoriesFn);
+  const { data: categories = [] } = useQuery({ queryKey: ["admin-categories"], queryFn: () => listCats() });
   const [form, setForm] = useState<any>(() => ({
     title: "",
     slug: "",
@@ -758,6 +760,7 @@ function BasicInfoTab({
     visibility: "public",
     product_type: "",
     delivery_type: "",
+    category_id: "",
   }));
   const loadedFor = useRef<string | null>(null);
   useEffect(() => {
