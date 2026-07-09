@@ -541,7 +541,7 @@ function HeroProductPicker({
                   return (
                     <div key={slug} className="flex items-center gap-2 rounded-md border p-2">
                       <span className="w-6 text-xs text-muted-foreground">#{i + 1}</span>
-                      <span className="flex-1 truncate text-sm">{p?.title ?? slug}</span>
+                      <span className="flex-1 truncate text-sm">{p?.name ?? slug}</span>
                       <Button variant="outline" size="icon" disabled={i === 0} onClick={() => move(i, -1)}><ArrowUp className="h-4 w-4" /></Button>
                       <Button variant="outline" size="icon" disabled={i === manualSlugs.length - 1} onClick={() => move(i, 1)}><ArrowDown className="h-4 w-4" /></Button>
                       <Button variant="outline" size="icon" onClick={() => remove(slug)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
