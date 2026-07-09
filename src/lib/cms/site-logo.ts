@@ -1,28 +1,37 @@
 // Single source of truth for the current site logo & favicon URLs.
-// Every surface (Header, Mobile header, Footer, AuthShell, Admin, favicon)
-// must read through these helpers so a Branding save updates them instantly.
+// Storage bucket is PRIVATE — we store `media://<path>` tokens and resolve
+// them into fresh signed URLs on demand at render time.
+import { useEffect, useState } from "react";
 import { useSettings } from "@/lib/cms/settings";
-import { supabase } from "@/integrations/supabase/client";
+import { extractMediaPath, resolveStoredUrlAsync } from "@/lib/media/resolve";
 
-/** Resolve a stored URL — passes through http(s)/data/blob, converts `media://<path>` to a permanent public URL. */
+/** Backwards-compat sync passthrough. Real resolution is async via the hooks below. */
 export function resolveStoredUrl(url: string | null | undefined): string {
   if (!url) return "";
-  if (url.startsWith("media://")) {
-    const path = url.slice("media://".length);
-    const { data } = supabase.storage.from("media").getPublicUrl(path);
-    return data?.publicUrl ?? "";
-  }
+  if (/^(https?:|data:|blob:)/i.test(url) && !extractMediaPath(url)) return url;
+  return "";
+}
+
+/** Reactive hook — resolves any stored value (`media://…`, legacy public URL, or plain http) to a browser URL. */
+export function useResolvedMediaUrl(stored: string | null | undefined): string {
+  const [url, setUrl] = useState<string>("");
+  useEffect(() => {
+    let cancelled = false;
+    if (!stored) { setUrl(""); return; }
+    resolveStoredUrlAsync(stored).then((v) => { if (!cancelled) setUrl(v); });
+    return () => { cancelled = true; };
+  }, [stored]);
   return url;
 }
 
-/** Reactive hook — returns the current logo URL from site_settings (or "" when unset). */
+/** Current logo URL (fresh signed URL when backed by a `media://` token). */
 export function useSiteLogo(): string {
   const logo = useSettings((s) => s.settings.branding.logo_url);
-  return resolveStoredUrl(logo);
+  return useResolvedMediaUrl(logo);
 }
 
-/** Reactive hook — returns the current favicon URL from site_settings (or "" when unset). */
+/** Current favicon URL. */
 export function useSiteFavicon(): string {
   const fav = useSettings((s) => s.settings.branding.favicon_url);
-  return resolveStoredUrl(fav);
+  return useResolvedMediaUrl(fav);
 }

@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { toast } from "sonner";
 import { Upload, Copy, Trash2, Pencil, Search, Loader2, Check } from "lucide-react";
 import { resolveMediaUrl } from "@/lib/media/resolve";
+import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
 
 export const MEDIA_FOLDERS = [
   "products", "categories", "brands", "hero", "banners",
@@ -264,15 +265,16 @@ export function MediaPicker({
   label?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const preview = useResolvedMediaUrl(value);
   return (
     <div className="space-y-2">
       {label && <Label>{label}</Label>}
       <div className="flex gap-2 items-start">
-        {value && accept === "image" && (
-          <img src={value} alt="" className="h-16 w-16 object-cover rounded border" />
+        {value && accept === "image" && preview && (
+          <img src={preview} alt="" className="h-16 w-16 object-cover rounded border" />
         )}
         <div className="flex-1 space-y-1">
-          <Input value={value ?? ""} onChange={(e) => onChange(e.target.value)} placeholder="Paste URL or pick from library" />
+          <Input value={value ?? ""} onChange={(e) => onChange(e.target.value)} placeholder="media://path or paste URL" />
           <div className="flex gap-2">
             <Button type="button" size="sm" variant="outline" onClick={() => setOpen(true)}>Select from Media Library</Button>
             {value && <Button type="button" size="sm" variant="ghost" onClick={() => onChange("")}>Clear</Button>}
