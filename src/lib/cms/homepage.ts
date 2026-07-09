@@ -165,7 +165,9 @@ export const defaultHomepageConfig: HomepageConfig = {
       icon: defaultHero.ctas[1]?.icon,
     },
     trustItems: defaultHero.trustItems.map((t, i) => ({ id: uid("hero-trust", i), ...t })),
-    floatingProductSlugs: defaultHero.floatingProductSlugs.slice(0, 6),
+    floatingProductSlugs: defaultHero.floatingProductSlugs.slice(0, 12),
+    productSource: "manual",
+    manualProductSlugs: defaultHero.floatingProductSlugs.slice(0, 12),
   },
   trust: {
     enabled: true,
