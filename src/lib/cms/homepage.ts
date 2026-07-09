@@ -257,6 +257,21 @@ export const defaultHomepageConfig: HomepageConfig = {
     subtitle: "Pay confidently with your preferred provider — all transactions are encrypted.",
     trustLabel: "100% Secure Checkout",
   },
+  announcementBar: {
+    enabled: true,
+    text: "Up to 70% OFF on Premium Digital Products • Instant Delivery 24/7",
+    highlight: "🔥 Flash Sale",
+    buttonLabel: "Shop deals",
+    buttonUrl: "/products?flash-sale=true",
+    countdownEnabled: false,
+    countdownEndsAt: "",
+    backgroundColor: "",
+    textColor: "",
+    closable: false,
+    sticky: false,
+    showOnDesktop: true,
+    showOnMobile: true,
+  },
 };
 
 // ---------------- Store ----------------
