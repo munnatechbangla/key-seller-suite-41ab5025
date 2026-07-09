@@ -21,11 +21,13 @@ const sizeMap: Record<NonNullable<LogoProps["size"]>, string> = {
   lg: "text-2xl",
 };
 
-const imgHeightMap: Record<NonNullable<LogoProps["size"]>, string> = {
-  sm: "h-6",
-  md: "h-8",
-  lg: "h-10",
+// Responsive height + max-width caps so the <img> never collapses in a flex row.
+const imgSizeMap: Record<NonNullable<LogoProps["size"]>, string> = {
+  sm: "h-7 sm:h-8 max-w-[140px]",
+  md: "h-8 sm:h-9 md:h-10 max-w-[180px]",
+  lg: "h-9 sm:h-10 md:h-11 max-w-[200px]",
 };
+
 
 /**
  * Single source of truth for brand mark. When Admin → Branding sets a
