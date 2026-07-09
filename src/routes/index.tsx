@@ -15,6 +15,8 @@ import {
   trendingQuery,
   bestSellersQuery,
   productsBySlugsQuery,
+  heroFeaturedQuery,
+  heroLatestQuery,
   type Product,
 } from "@/lib/catalog";
 import { useProductSection, useResolvedProducts, resolveIcon } from "@/lib/cms";
