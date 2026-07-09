@@ -109,6 +109,7 @@ function HomepageBuilder() {
       <Tabs defaultValue="layout">
         <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="layout">Layout & Order</TabsTrigger>
+          <TabsTrigger value="announcement">Announcement Bar</TabsTrigger>
           <TabsTrigger value="hero">Hero</TabsTrigger>
           <TabsTrigger value="trust">Trust</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
@@ -121,6 +122,47 @@ function HomepageBuilder() {
           <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
         </TabsList>
+
+        {/* ---------------- Announcement Bar ---------------- */}
+        <TabsContent value="announcement" className="mt-4 space-y-4">
+          <EnableToggle
+            label="Enable Announcement Bar"
+            value={cfg.announcementBar.enabled}
+            onChange={(v) => patch("announcementBar", { ...cfg.announcementBar, enabled: v })}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Announcement text" value={cfg.announcementBar.text} onChange={(v) => patch("announcementBar", { ...cfg.announcementBar, text: v })} />
+            <Field label="Highlight text (badge)" value={cfg.announcementBar.highlight} onChange={(v) => patch("announcementBar", { ...cfg.announcementBar, highlight: v })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Button text" value={cfg.announcementBar.buttonLabel} onChange={(v) => patch("announcementBar", { ...cfg.announcementBar, buttonLabel: v })} />
+            <Field label="Button URL" value={cfg.announcementBar.buttonUrl} onChange={(v) => patch("announcementBar", { ...cfg.announcementBar, buttonUrl: v })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Toggle label="Enable countdown" value={cfg.announcementBar.countdownEnabled} onChange={(v) => patch("announcementBar", { ...cfg.announcementBar, countdownEnabled: v })} />
+            <div className="space-y-1.5">
+              <Label className="text-xs">Countdown end date/time</Label>
+              <Input
+                type="datetime-local"
+                value={cfg.announcementBar.countdownEndsAt ? cfg.announcementBar.countdownEndsAt.slice(0, 16) : ""}
+                onChange={(e) => patch("announcementBar", { ...cfg.announcementBar, countdownEndsAt: e.target.value ? new Date(e.target.value).toISOString() : "" })}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Background color (CSS, blank = theme)" value={cfg.announcementBar.backgroundColor} onChange={(v) => patch("announcementBar", { ...cfg.announcementBar, backgroundColor: v })} />
+            <Field label="Text color (CSS, blank = theme)" value={cfg.announcementBar.textColor} onChange={(v) => patch("announcementBar", { ...cfg.announcementBar, textColor: v })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Toggle label="Show close button" value={cfg.announcementBar.closable} onChange={(v) => patch("announcementBar", { ...cfg.announcementBar, closable: v })} />
+            <Toggle label="Sticky on scroll" value={cfg.announcementBar.sticky} onChange={(v) => patch("announcementBar", { ...cfg.announcementBar, sticky: v })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Toggle label="Show on desktop" value={cfg.announcementBar.showOnDesktop} onChange={(v) => patch("announcementBar", { ...cfg.announcementBar, showOnDesktop: v })} />
+            <Toggle label="Show on mobile" value={cfg.announcementBar.showOnMobile} onChange={(v) => patch("announcementBar", { ...cfg.announcementBar, showOnMobile: v })} />
+          </div>
+        </TabsContent>
+
 
         {/* ---------------- Layout & Order ---------------- */}
         <TabsContent value="layout" className="mt-4 space-y-3">

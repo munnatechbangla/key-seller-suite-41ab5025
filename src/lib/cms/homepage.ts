@@ -95,6 +95,22 @@ export type HomeNewsletter = {
   successMessage: string;
 };
 
+export type HomeAnnouncementBar = {
+  enabled: boolean;
+  text: string;
+  highlight: string;
+  buttonLabel: string;
+  buttonUrl: string;
+  countdownEnabled: boolean;
+  countdownEndsAt: string; // ISO date string
+  backgroundColor: string; // CSS color, empty = default gradient
+  textColor: string; // CSS color, empty = default
+  closable: boolean;
+  sticky: boolean;
+  showOnDesktop: boolean;
+  showOnMobile: boolean;
+};
+
 export type HomePaymentMethods = {
   enabled: boolean;
   title: string;
@@ -129,6 +145,7 @@ export type HomepageConfig = {
   faq: HomeFaq;
   newsletter: HomeNewsletter;
   paymentMethods: HomePaymentMethods;
+  announcementBar: HomeAnnouncementBar;
 };
 
 // ---------------- Defaults ----------------
@@ -240,6 +257,21 @@ export const defaultHomepageConfig: HomepageConfig = {
     subtitle: "Pay confidently with your preferred provider — all transactions are encrypted.",
     trustLabel: "100% Secure Checkout",
   },
+  announcementBar: {
+    enabled: true,
+    text: "Up to 70% OFF on Premium Digital Products • Instant Delivery 24/7",
+    highlight: "🔥 Flash Sale",
+    buttonLabel: "Shop deals",
+    buttonUrl: "/products?flash-sale=true",
+    countdownEnabled: false,
+    countdownEndsAt: "",
+    backgroundColor: "",
+    textColor: "",
+    closable: false,
+    sticky: false,
+    showOnDesktop: true,
+    showOnMobile: true,
+  },
 };
 
 // ---------------- Store ----------------
@@ -266,6 +298,7 @@ export function mergeConfig(base: HomepageConfig, override: Partial<HomepageConf
     faq: { ...base.faq, ...(override.faq ?? {}) },
     newsletter: { ...base.newsletter, ...(override.newsletter ?? {}) },
     paymentMethods: { ...base.paymentMethods, ...(override.paymentMethods ?? {}) },
+    announcementBar: { ...base.announcementBar, ...(override.announcementBar ?? {}) },
     productSections: override.productSections ?? base.productSections,
     sectionOrder: override.sectionOrder ?? base.sectionOrder,
   };
