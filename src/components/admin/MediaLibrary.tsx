@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Upload, Copy, Trash2, Pencil, Search, Loader2, Check } from "lucide-react";
+import { resolveMediaUrl } from "@/lib/media/resolve";
 
 export const MEDIA_FOLDERS = [
   "products", "categories", "brands", "hero", "banners",
@@ -214,9 +215,7 @@ export function MediaLibrary({
                     </Button>
                   )}
                   <Button size="icon" variant="ghost" className="h-7 w-7" title="Copy permanent link" onClick={() => {
-                    const { data: pub } = supabase.storage.from("media").getPublicUrl(a.storage_path);
-                    const permanent = pub?.publicUrl || `media://${a.storage_path}`;
-                    navigator.clipboard.writeText(permanent);
+                    navigator.clipboard.writeText(resolveMediaUrl(a));
                     toast.success("Permanent link copied");
                   }}>
                     <Copy className="h-3 w-3" />
@@ -283,7 +282,7 @@ export function MediaPicker({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Media Library</DialogTitle></DialogHeader>
-          <MediaLibrary mode="picker" accept={accept} onSelect={(a) => { onChange(a.public_url); setOpen(false); }} />
+          <MediaLibrary mode="picker" accept={accept} onSelect={(a) => { onChange(resolveMediaUrl(a)); setOpen(false); }} />
         </DialogContent>
       </Dialog>
     </div>
