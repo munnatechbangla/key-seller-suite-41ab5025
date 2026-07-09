@@ -298,6 +298,7 @@ export function mergeConfig(base: HomepageConfig, override: Partial<HomepageConf
     faq: { ...base.faq, ...(override.faq ?? {}) },
     newsletter: { ...base.newsletter, ...(override.newsletter ?? {}) },
     paymentMethods: { ...base.paymentMethods, ...(override.paymentMethods ?? {}) },
+    announcementBar: { ...base.announcementBar, ...(override.announcementBar ?? {}) },
     productSections: override.productSections ?? base.productSections,
     sectionOrder: override.sectionOrder ?? base.sectionOrder,
   };
