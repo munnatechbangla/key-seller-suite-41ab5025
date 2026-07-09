@@ -43,9 +43,8 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
   const listAttrs = useServerFn(listProductAttributesFn);
   const listVars = useServerFn(listProductVariantsFn);
   const cart = useCart();
-  const navigate = useNavigate();
-  // Read ?variant= without forcing a validateSearch on the parent route.
-  const search = useSearch({ strict: false }) as { variant?: string };
+  const navigate = useNavigate({ from: "/products/$slug" });
+  const search = useSearch({ from: "/products/$slug" });
 
   const attrsQ = useQuery({
     queryKey: ["variant-attrs", product.id],
