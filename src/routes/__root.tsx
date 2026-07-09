@@ -17,6 +17,7 @@ import { ThemeStyleInjector } from "@/components/site/ThemeStyleInjector";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/lib/stores";
 import { useSettings } from "@/lib/cms/settings";
+import { useSiteFavicon } from "@/lib/cms/site-logo";
 import { AnalyticsScripts } from "@/components/site/AnalyticsScripts";
 import { SeoCenterInjector } from "@/components/site/SeoCenterInjector";
 import { seoMeta, organizationJsonLd, websiteJsonLd, jsonLdScript } from "@/lib/cms/seo";
