@@ -282,7 +282,7 @@ export function MediaPicker({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Media Library</DialogTitle></DialogHeader>
-          <MediaLibrary mode="picker" accept={accept} onSelect={(a) => { onChange(a.public_url); setOpen(false); }} />
+          <MediaLibrary mode="picker" accept={accept} onSelect={(a) => { onChange(resolveMediaUrl(a)); setOpen(false); }} />
         </DialogContent>
       </Dialog>
     </div>
