@@ -104,13 +104,16 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
   useEffect(() => {
     onVariantChange?.(activeVariant);
     setPriceKey((k) => k + 1);
-    if (activeVariant?.id) {
-      navigate({
-        to: ".",
-        search: (prev: Record<string, unknown>) => ({ ...prev, variant: activeVariant.id }),
-        replace: true,
-        resetScroll: false,
-      }).catch(() => {});
+    if (activeVariant?.id && typeof window !== "undefined") {
+      // Sync ?variant= without triggering a router navigation (preserves scroll,
+      // avoids depending on validateSearch for a param this component owns).
+      const url = new URL(window.location.href);
+      url.searchParams.set("variant", activeVariant.id);
+      window.history.replaceState(
+        window.history.state,
+        "",
+        url.pathname + url.search + url.hash,
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeVariant?.id]);
