@@ -18,6 +18,7 @@ import {
   adminUpsertProductFn,
   adminDeleteProductFn,
 } from "@/lib/admin.functions";
+import { adminListCategoriesFn } from "@/lib/categories.functions";
 import { listProductAttributesFn, listProductVariantsFn, type ProductAttribute, type ProductVariant } from "@/lib/product-variants.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
