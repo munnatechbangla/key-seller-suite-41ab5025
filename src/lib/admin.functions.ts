@@ -43,7 +43,7 @@ export const adminListProductsFn = createServerFn({ method: "GET" })
     await assertAdmin(context);
     const { data, error } = await context.supabase
       .from("products")
-      .select("id, title, slug, short_description, description, thumbnail_url, regular_price, sale_price, status, stock_status, is_featured, sales_count, created_at, product_type, delivery_type, visibility, external_url, is_digital, is_license_key")
+      .select("id, title, slug, short_description, description, thumbnail_url, regular_price, sale_price, status, stock_status, is_featured, sales_count, created_at, product_type, delivery_type, visibility, external_url, is_digital, is_license_key, category_id")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -75,6 +75,7 @@ const productSchema = z.object({
   delivery_type: deliveryTypeEnum.nullable().optional(),
   visibility: productVisibilityEnum.nullable().optional(),
   external_url: z.string().nullable().optional(),
+  category_id: z.string().uuid().nullable().optional(),
 });
 
 export const adminUpsertProductFn = createServerFn({ method: "POST" })
@@ -86,6 +87,7 @@ export const adminUpsertProductFn = createServerFn({ method: "POST" })
     if (payload.visibility == null) delete payload.visibility;
     if (payload.product_type == null) delete payload.product_type;
     if (payload.delivery_type == null) delete payload.delivery_type;
+    if (payload.category_id === undefined) delete payload.category_id;
     if (payload.id) {
       const { error } = await context.supabase.from("products").update(payload).eq("id", payload.id);
       if (error) throw new Error(error.message);

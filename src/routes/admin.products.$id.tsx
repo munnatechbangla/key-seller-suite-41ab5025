@@ -18,6 +18,7 @@ import {
   adminUpsertProductFn,
   adminDeleteProductFn,
 } from "@/lib/admin.functions";
+import { adminListCategoriesFn } from "@/lib/categories.functions";
 import { listProductAttributesFn, listProductVariantsFn, type ProductAttribute, type ProductVariant } from "@/lib/product-variants.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -745,6 +746,8 @@ function BasicInfoTab({
   onSaved: () => void;
 }) {
   const upsert = useServerFn(adminUpsertProductFn);
+  const listCats = useServerFn(adminListCategoriesFn);
+  const { data: categories = [] } = useQuery({ queryKey: ["admin-categories"], queryFn: () => listCats() });
   const [form, setForm] = useState<any>(() => ({
     title: "",
     slug: "",
@@ -757,6 +760,7 @@ function BasicInfoTab({
     visibility: "public",
     product_type: "",
     delivery_type: "",
+    category_id: "",
   }));
   const loadedFor = useRef<string | null>(null);
   useEffect(() => {
@@ -775,6 +779,7 @@ function BasicInfoTab({
       visibility: product.visibility ?? "public",
       product_type: product.product_type ?? "",
       delivery_type: product.delivery_type ?? "",
+      category_id: product.category_id ?? "",
     });
   }, [product]);
 
@@ -801,6 +806,7 @@ function BasicInfoTab({
         visibility: form.visibility || null,
         product_type: form.product_type || null,
         delivery_type: form.delivery_type || null,
+        category_id: form.category_id ? form.category_id : null,
       };
       return upsert({ data: payload });
     },
@@ -931,12 +937,32 @@ function BasicInfoTab({
       )}
 
       <div>
+        <Label>Category</Label>
+        <div className="flex items-center gap-2">
+          <select
+            className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+            value={form.category_id || ""}
+            onChange={(e) => set({ category_id: e.target.value })}
+          >
+            <option value="">— Uncategorized —</option>
+            {(categories as any[]).map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+          <Link to="/admin/categories" className="text-xs text-primary whitespace-nowrap hover:underline">
+            Manage
+          </Link>
+        </div>
+      </div>
+
+      <div>
         <MediaPicker
           label="Featured image"
           value={form.thumbnail_url}
           onChange={(v) => set({ thumbnail_url: v })}
         />
       </div>
+
 
       <div className="flex justify-end">
         <Button onClick={() => save.mutate()} disabled={save.isPending}>
