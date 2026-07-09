@@ -520,7 +520,7 @@ function HeroProductPicker({
                     disabled={manualSlugs.includes(p.slug)}
                     className="flex w-full items-center justify-between gap-2 border-b p-2 text-left text-sm hover:bg-muted/40 disabled:opacity-50"
                   >
-                    <span className="truncate">{p.title}</span>
+                    <span className="truncate">{p.name}</span>
                     <span className="text-xs text-muted-foreground">{manualSlugs.includes(p.slug) ? "Added" : "Add"}</span>
                   </button>
                 ))}
