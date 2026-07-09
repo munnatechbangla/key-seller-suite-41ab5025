@@ -779,6 +779,7 @@ function BasicInfoTab({
       visibility: product.visibility ?? "public",
       product_type: product.product_type ?? "",
       delivery_type: product.delivery_type ?? "",
+      category_id: product.category_id ?? "",
     });
   }, [product]);
 
