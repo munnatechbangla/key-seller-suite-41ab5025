@@ -2,7 +2,8 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Heart, ShoppingCart, User, Search, Menu, X, GitCompare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCart, useWishlist, useCompare, useAuth } from "@/lib/stores";
-import { primaryNav, announcementBar } from "@/lib/cms";
+import { primaryNav } from "@/lib/cms";
+import { AnnouncementBar } from "@/components/site/AnnouncementBar";
 
 import { ThemeToggle } from "@/components/site/ThemeToggle";
 import { Logo } from "@/components/site/Logo";
