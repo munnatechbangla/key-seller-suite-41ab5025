@@ -313,9 +313,45 @@ function merge<T extends object>(base: T, override: Partial<T> | undefined | nul
 let lastResolvedLogoSrc: string | null = null;
 let lastResolvedFaviconSrc: string | null = null;
 
+// ---- Persistent branding cache (localStorage) ----
+const BRANDING_CACHE_KEY = "dn.branding.cache.v1";
+type BrandingCache = {
+  logoSrc: string;
+  faviconSrc: string;
+  resolvedLogoUrl: string;
+  resolvedFaviconUrl: string;
+};
+
+function readBrandingCache(): BrandingCache | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(BRANDING_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as BrandingCache;
+    if (typeof parsed?.resolvedLogoUrl !== "string") return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeBrandingCache(c: BrandingCache) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(BRANDING_CACHE_KEY, JSON.stringify(c));
+  } catch { /* ignore quota */ }
+}
+
+const hydrated = readBrandingCache();
+if (hydrated) {
+  lastResolvedLogoSrc = hydrated.logoSrc;
+  lastResolvedFaviconSrc = hydrated.faviconSrc;
+}
+
 async function resolveBrandingMedia(
   branding: SiteBranding,
   set: (p: Partial<SettingsState>) => void,
+  get: () => SettingsState,
 ) {
   const logoSrc = branding.logo_url || "";
   const favSrc = branding.favicon_url || "";
@@ -332,17 +368,24 @@ async function resolveBrandingMedia(
   if (logo !== undefined) { patch.resolvedLogoUrl = logo; lastResolvedLogoSrc = logoSrc; }
   if (fav !== undefined) { patch.resolvedFaviconUrl = fav; lastResolvedFaviconSrc = favSrc; }
   set(patch);
+  const s = get();
+  writeBrandingCache({
+    logoSrc: lastResolvedLogoSrc ?? "",
+    faviconSrc: lastResolvedFaviconSrc ?? "",
+    resolvedLogoUrl: patch.resolvedLogoUrl ?? s.resolvedLogoUrl,
+    resolvedFaviconUrl: patch.resolvedFaviconUrl ?? s.resolvedFaviconUrl,
+  });
 }
 
-export const useSettings = create<SettingsState>((set) => ({
+export const useSettings = create<SettingsState>((set, get) => ({
   settings: defaultSettings,
   loaded: false,
-  resolvedLogoUrl: "",
-  resolvedFaviconUrl: "",
+  resolvedLogoUrl: hydrated?.resolvedLogoUrl ?? "",
+  resolvedFaviconUrl: hydrated?.resolvedFaviconUrl ?? "",
   resolvingMedia: false,
   setLocal: (next) => {
     set({ settings: next, loaded: true });
-    void resolveBrandingMedia(next.branding, (p) => set(p as SettingsState));
+    void resolveBrandingMedia(next.branding, (p) => set(p as SettingsState), get);
   },
   load: async () => {
     try {
@@ -379,12 +422,13 @@ export const useSettings = create<SettingsState>((set) => ({
         }
       }
       set({ settings: next, loaded: true });
-      await resolveBrandingMedia(next.branding, (p) => set(p as SettingsState));
+      await resolveBrandingMedia(next.branding, (p) => set(p as SettingsState), get);
     } catch {
       set({ loaded: true });
     }
   },
 }));
+
 
 export function formatCopyright(template: string, name: string): string {
   return template

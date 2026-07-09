@@ -49,11 +49,13 @@ export function useSiteLogo(): { logoUrl: string; loading: boolean } {
   const loaded = useSettings((s) => s.loaded);
   const resolving = useSettings((s) => s.resolvingMedia);
   const logoUrl = useSettings((s) => s.resolvedLogoUrl);
-  // "loading" only while we truly don't know yet: settings not loaded, or a
-  // logo is configured but hasn't been resolved once yet.
-  const loading = !loaded || (configured && !logoUrl && resolving);
+  // If we already have a resolved URL (hydrated from localStorage), render it
+  // instantly — background revalidation will update it if the source changed.
+  if (logoUrl) return { logoUrl, loading: false };
+  const loading = !loaded || (configured && resolving);
   return { logoUrl, loading };
 }
+
 
 /** Current favicon URL from the cached store value. */
 export function useSiteFavicon(): string {
