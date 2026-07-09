@@ -94,33 +94,40 @@ export function ProductCard({ product }: { product: Product }) {
           <h3 className="font-semibold text-sm leading-snug line-clamp-2 min-h-10 hover:text-primary transition-smooth">{product.name}</h3>
         </Link>
         <p className="text-xs text-muted-foreground line-clamp-2">{product.short}</p>
-        <div className={`flex ${isVariable ? "flex-col items-start sm:flex-row sm:items-end sm:justify-between" : "flex-wrap items-end justify-between"} gap-2 pt-2`}>
-          <div className="min-w-0 flex-1">
-            {showSelectOptions ? (
-              <div className="text-sm font-semibold text-primary">Select Options</div>
-            ) : (
-              <>
-                <div className="text-lg font-bold text-primary">
-                  {isVariable && <span className="text-xs font-medium text-muted-foreground mr-1">From</span>}
-                  ${(displayPrice ?? 0).toFixed(2)}
-                </div>
-                {displayOld && displayOld > (displayPrice ?? 0) && (
-                  <div className="text-xs text-muted-foreground line-through">${displayOld.toFixed(2)}</div>
-                )}
-              </>
-            )}
-          </div>
-          {isVariable ? (
+        {isVariable ? (
+          <div className="flex flex-col gap-2 pt-2">
+            <div className="min-w-0">
+              {showSelectOptions ? (
+                <div className="text-sm font-semibold text-primary">Select Options</div>
+              ) : (
+                <>
+                  <div className="text-lg font-bold text-primary">
+                    <span className="text-xs font-medium text-muted-foreground mr-1">From</span>
+                    ${(displayPrice ?? 0).toFixed(2)}
+                  </div>
+                  {displayOld && displayOld > (displayPrice ?? 0) && (
+                    <div className="text-xs text-muted-foreground line-through">${displayOld.toFixed(2)}</div>
+                  )}
+                </>
+              )}
+            </div>
             <Link
               to="/products/$slug"
               params={{ slug: product.slug }}
               aria-label="Select options"
-              style={{ width: "fit-content" }}
-              className="shrink-0 h-[30px] sm:h-[34px] lg:h-9 px-[10px] sm:px-3 lg:px-3.5 inline-flex items-center justify-center rounded-full bg-gradient-primary text-primary-foreground text-[12px] sm:text-[13px] lg:text-sm font-semibold leading-none whitespace-nowrap hover:shadow-glow transition-smooth"
+              className="w-full h-9 md:h-[38px] lg:h-10 px-4 inline-flex items-center justify-center rounded-full bg-gradient-primary text-primary-foreground text-sm font-semibold leading-none hover:shadow-glow transition-smooth"
             >
-              Options
+              Select Options
             </Link>
-          ) : (
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-end justify-between gap-2 pt-2">
+            <div className="min-w-0 flex-1">
+              <div className="text-lg font-bold text-primary">${(displayPrice ?? 0).toFixed(2)}</div>
+              {displayOld && displayOld > (displayPrice ?? 0) && (
+                <div className="text-xs text-muted-foreground line-through">${displayOld.toFixed(2)}</div>
+              )}
+            </div>
             <button
               onClick={() => { cart.add(product); toast.success("Added to cart"); }}
               aria-label="Add to cart"
@@ -128,8 +135,8 @@ export function ProductCard({ product }: { product: Product }) {
             >
               <ShoppingCart className="h-4 w-4" />
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
       </div>
     </article>
