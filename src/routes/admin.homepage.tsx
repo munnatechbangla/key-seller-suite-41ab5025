@@ -153,7 +153,13 @@ function HomepageBuilder() {
             <Field label="Secondary button label" value={cfg.hero.secondaryCta.label} onChange={(v) => patch("hero", { ...cfg.hero, secondaryCta: { ...cfg.hero.secondaryCta, label: v } })} />
             <Field label="Secondary button href" value={cfg.hero.secondaryCta.href} onChange={(v) => patch("hero", { ...cfg.hero, secondaryCta: { ...cfg.hero.secondaryCta, href: v } })} />
           </div>
-          <Field label="Floating product slugs (comma-separated, max 6)" value={cfg.hero.floatingProductSlugs.join(", ")} onChange={(v) => patch("hero", { ...cfg.hero, floatingProductSlugs: v.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 6) })} />
+          <HeroProductPicker
+            source={cfg.hero.productSource ?? "manual"}
+            manualSlugs={(cfg.hero.manualProductSlugs && cfg.hero.manualProductSlugs.length > 0 ? cfg.hero.manualProductSlugs : cfg.hero.floatingProductSlugs) ?? []}
+            onSourceChange={(s) => patch("hero", { ...cfg.hero, productSource: s })}
+            onManualChange={(slugs) => patch("hero", { ...cfg.hero, manualProductSlugs: slugs, floatingProductSlugs: slugs.slice(0, 6) })}
+          />
+
         </TabsContent>
 
         {/* ---------------- Trust ---------------- */}
