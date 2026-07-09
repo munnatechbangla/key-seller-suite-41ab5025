@@ -136,7 +136,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const initAuth = useAuth((s) => s.init);
   const loadSettings = useSettings((s) => s.load);
-  const favicon = useSettings((s) => s.settings.branding.favicon_url);
+  const favicon = useSiteFavicon();
   useEffect(() => initAuth(), [initAuth]);
   useEffect(() => { loadSettings(); }, [loadSettings]);
   useEffect(() => { import("@/lib/cms/homepage").then((m) => m.useHomepage.getState().load()); }, []);
