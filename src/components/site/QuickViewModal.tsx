@@ -36,7 +36,7 @@ export function QuickViewModal({ slug, open, onOpenChange }: { slug: string | nu
   const buyNow = () => {
     cart.add(product, qty);
     onOpenChange(false);
-    window.location.href = "/checkout";
+    navigate({ to: "/checkout" });
   };
 
   return (
