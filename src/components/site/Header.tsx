@@ -68,7 +68,7 @@ export function Header() {
 
       <header className={`sticky top-0 z-50 transition-smooth ${scrolled ? "glass shadow-elegant" : "bg-background/80 backdrop-blur-sm"}`}>
         <div className="container mx-auto px-3 sm:px-4 py-3 flex items-center gap-2 sm:gap-4 lg:gap-6 min-w-0">
-          <div className="min-w-0 shrink"><Logo size="md" /></div>
+          <div className="shrink-0"><Logo size="md" /></div>
 
           <nav className="hidden lg:flex items-center gap-1 ml-4 min-w-0">
             {nav.map((n) => (
