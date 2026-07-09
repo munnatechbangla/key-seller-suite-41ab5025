@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Star, ShieldCheck, Truck, Lock, ShoppingCart, Check } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 export type ProductLayoutSection = {
