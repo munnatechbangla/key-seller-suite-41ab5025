@@ -114,8 +114,13 @@ function AdminSettings() {
           </div>
           <Field label="Tagline" value={data.branding.tagline} onChange={(v) => set("branding", "tagline", v)} />
           <Area label="Description" value={data.branding.description} onChange={(v) => set("branding", "description", v)} />
-          <MediaPicker label="Logo" value={data.branding.logo_url} onChange={(v) => set("branding", "logo_url", v)} />
+          <MediaPicker label="Logo (fallback)" value={data.branding.logo_url} onChange={(v) => set("branding", "logo_url", v)} />
+          <div className="grid grid-cols-2 gap-3">
+            <MediaPicker label="Light Mode Logo" value={data.branding.light_logo_url} onChange={(v) => set("branding", "light_logo_url", v)} />
+            <MediaPicker label="Dark Mode Logo" value={data.branding.dark_logo_url} onChange={(v) => set("branding", "dark_logo_url", v)} />
+          </div>
           <MediaPicker label="Favicon" value={data.branding.favicon_url} onChange={(v) => set("branding", "favicon_url", v)} />
+
           <Field label="Footer Text" value={data.branding.footer_text} onChange={(v) => set("branding", "footer_text", v)} />
           <Field label="Copyright (use {year} and {name})" value={data.branding.copyright} onChange={(v) => set("branding", "copyright", v)} />
           <SaveBtn onClick={() => save("branding")} saving={saving === "branding"} />
