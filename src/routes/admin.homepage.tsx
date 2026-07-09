@@ -18,7 +18,10 @@ import {
   type HomeStatItem,
   type HomeTestimonial,
   type HomeFaqItem,
+  type HeroProductSource,
 } from "@/lib/cms/homepage";
+import { useQuery } from "@tanstack/react-query";
+import { searchQuery, productsBySlugsQuery, type Product } from "@/lib/catalog";
 import type { IconName } from "@/lib/cms/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
