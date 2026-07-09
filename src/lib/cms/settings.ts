@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
 import { siteConfig, socialLinks as defaultSocial } from "./site";
-import brandLogo from "@/assets/digitalnest-logo.png.asset.json";
+
 import brandOg from "@/assets/digitalnest-og.jpg.asset.json";
 
 export type SiteBranding = {
