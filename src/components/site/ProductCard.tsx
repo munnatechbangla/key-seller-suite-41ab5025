@@ -96,19 +96,40 @@ export function ProductCard({ product }: { product: Product }) {
         <p className="text-xs text-muted-foreground line-clamp-2">{product.short}</p>
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2 pt-2">
           <div className="min-w-0">
-            <div className="text-lg font-bold text-primary">${product.price}</div>
-            {product.oldPrice && (
-              <div className="text-xs text-muted-foreground line-through">${product.oldPrice}</div>
+            {showSelectOptions ? (
+              <div className="text-sm font-semibold text-primary">Select Options</div>
+            ) : (
+              <>
+                <div className="text-lg font-bold text-primary">
+                  {isVariable && <span className="text-xs font-medium text-muted-foreground mr-1">From</span>}
+                  ${(displayPrice ?? 0).toFixed(2)}
+                </div>
+                {displayOld && displayOld > (displayPrice ?? 0) && (
+                  <div className="text-xs text-muted-foreground line-through">${displayOld.toFixed(2)}</div>
+                )}
+              </>
             )}
           </div>
-          <button
-            onClick={() => { cart.add(product); toast.success("Added to cart"); }}
-            aria-label="Add to cart"
-            className="h-10 w-10 grid place-items-center rounded-xl bg-gradient-primary text-primary-foreground hover:shadow-glow transition-smooth"
-          >
-            <ShoppingCart className="h-4 w-4" />
-          </button>
+          {isVariable ? (
+            <Link
+              to="/products/$slug"
+              params={{ slug: product.slug }}
+              aria-label="Select options"
+              className="h-10 px-3 grid place-items-center rounded-xl bg-gradient-primary text-primary-foreground text-xs font-semibold hover:shadow-glow transition-smooth"
+            >
+              Options
+            </Link>
+          ) : (
+            <button
+              onClick={() => { cart.add(product); toast.success("Added to cart"); }}
+              aria-label="Add to cart"
+              className="h-10 w-10 grid place-items-center rounded-xl bg-gradient-primary text-primary-foreground hover:shadow-glow transition-smooth"
+            >
+              <ShoppingCart className="h-4 w-4" />
+            </button>
+          )}
         </div>
+
       </div>
     </article>
   );
