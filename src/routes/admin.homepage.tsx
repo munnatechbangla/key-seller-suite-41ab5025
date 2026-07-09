@@ -445,3 +445,114 @@ function ItemList<T extends Identified>({ items, onChange, renderItem, makeNew }
     </div>
   );
 }
+
+// ---------------- Hero product picker ----------------
+
+const HERO_SOURCE_OPTIONS: { value: HeroProductSource; label: string; desc: string }[] = [
+  { value: "manual", label: "Manual selection", desc: "Pick specific products and set their order." },
+  { value: "featured", label: "Featured products", desc: "Newest featured products (auto)." },
+  { value: "latest", label: "Latest products", desc: "Most recently published products (auto)." },
+];
+
+function HeroProductPicker({
+  source, manualSlugs, onSourceChange, onManualChange,
+}: {
+  source: HeroProductSource;
+  manualSlugs: string[];
+  onSourceChange: (s: HeroProductSource) => void;
+  onManualChange: (slugs: string[]) => void;
+}) {
+  const [q, setQ] = useState("");
+  const selected = useQuery({ ...productsBySlugsQuery(manualSlugs), enabled: manualSlugs.length > 0 });
+  const search = useQuery({ ...searchQuery(q), enabled: source === "manual" && q.trim().length >= 2 });
+  const selectedProducts: Product[] = selected.data ?? [];
+  // Preserve manualSlugs ordering
+  const orderedSelected = manualSlugs
+    .map((slug) => selectedProducts.find((p) => p.slug === slug))
+    .filter(Boolean) as Product[];
+  const move = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= manualSlugs.length) return;
+    const next = [...manualSlugs];
+    [next[i], next[j]] = [next[j], next[i]];
+    onManualChange(next);
+  };
+  const remove = (slug: string) => onManualChange(manualSlugs.filter((s) => s !== slug));
+  const add = (slug: string) => {
+    if (manualSlugs.includes(slug)) return;
+    if (manualSlugs.length >= 12) { toast.error("Maximum 12 products"); return; }
+    onManualChange([...manualSlugs, slug]);
+  };
+
+  return (
+    <div className="space-y-4 rounded-lg border p-4">
+      <div>
+        <Label className="text-sm font-semibold">Hero products</Label>
+        <p className="text-xs text-muted-foreground">Displays the first 6 of your selected pool inside the hero cards. Up to 12 products.</p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        {HERO_SOURCE_OPTIONS.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => onSourceChange(o.value)}
+            className={`text-left rounded-md border p-3 hover:border-primary transition ${source === o.value ? "border-primary bg-primary/5" : ""}`}
+          >
+            <div className="text-sm font-semibold">{o.label}</div>
+            <div className="text-xs text-muted-foreground">{o.desc}</div>
+          </button>
+        ))}
+      </div>
+
+      {source === "manual" && (
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">Search products to add</Label>
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Type at least 2 characters…" />
+            {q.trim().length >= 2 && (
+              <div className="mt-1 max-h-56 overflow-auto rounded-md border">
+                {(search.data ?? []).length === 0 && <div className="p-3 text-xs text-muted-foreground">No matches</div>}
+                {(search.data ?? []).map((p) => (
+                  <button
+                    key={p.slug}
+                    type="button"
+                    onClick={() => add(p.slug)}
+                    disabled={manualSlugs.includes(p.slug)}
+                    className="flex w-full items-center justify-between gap-2 border-b p-2 text-left text-sm hover:bg-muted/40 disabled:opacity-50"
+                  >
+                    <span className="truncate">{p.title}</span>
+                    <span className="text-xs text-muted-foreground">{manualSlugs.includes(p.slug) ? "Added" : "Add"}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <div className="mb-1 flex items-center justify-between">
+              <Label className="text-xs">Selected ({manualSlugs.length}/12)</Label>
+            </div>
+            {manualSlugs.length === 0 ? (
+              <div className="rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground">No products selected yet.</div>
+            ) : (
+              <div className="space-y-1.5">
+                {manualSlugs.map((slug, i) => {
+                  const p = orderedSelected.find((x) => x.slug === slug);
+                  return (
+                    <div key={slug} className="flex items-center gap-2 rounded-md border p-2">
+                      <span className="w-6 text-xs text-muted-foreground">#{i + 1}</span>
+                      <span className="flex-1 truncate text-sm">{p?.title ?? slug}</span>
+                      <Button variant="outline" size="icon" disabled={i === 0} onClick={() => move(i, -1)}><ArrowUp className="h-4 w-4" /></Button>
+                      <Button variant="outline" size="icon" disabled={i === manualSlugs.length - 1} onClick={() => move(i, 1)}><ArrowDown className="h-4 w-4" /></Button>
+                      <Button variant="outline" size="icon" onClick={() => remove(slug)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
