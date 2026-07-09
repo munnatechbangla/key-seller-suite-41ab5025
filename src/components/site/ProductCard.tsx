@@ -13,7 +13,15 @@ const QuickViewModal = lazy(() =>
 
 
 export function ProductCard({ product }: { product: Product }) {
-  const off = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
+  const isVariable = !!product.hasAttributes;
+  const hasVariantPrice = product.priceFrom != null && product.priceFrom > 0;
+  const displayPrice = isVariable ? (hasVariantPrice ? product.priceFrom! : null) : product.price;
+  const displayOld = isVariable ? (product.oldPriceFrom ?? null) : (product.oldPrice ?? null);
+  const off = displayPrice != null && displayOld && displayOld > displayPrice
+    ? Math.round((1 - displayPrice / displayOld) * 100)
+    : 0;
+  const showSelectOptions = isVariable && !hasVariantPrice;
+
   const cart = useCart();
   const wish = useWishlist();
   const wished = wish.has(product.slug);
