@@ -155,7 +155,7 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
       subscription_pool_id: activeVariant.subscription_pool_id,
       license_pool_id: activeVariant.license_pool_id,
     });
-    if (buy) window.location.href = "/checkout";
+    if (buy) navigate({ to: "/checkout" });
     else toast.success(`${product.name} — ${activeVariant.name} added to cart`);
   };
 
