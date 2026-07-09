@@ -75,6 +75,7 @@ const productSchema = z.object({
   delivery_type: deliveryTypeEnum.nullable().optional(),
   visibility: productVisibilityEnum.nullable().optional(),
   external_url: z.string().nullable().optional(),
+  category_id: z.string().uuid().nullable().optional(),
 });
 
 export const adminUpsertProductFn = createServerFn({ method: "POST" })
