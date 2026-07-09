@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { supabase } from "@/integrations/supabase/client";
 import { siteConfig, socialLinks as defaultSocial } from "./site";
-import brandLogo from "@/assets/digitalnest-logo.png.asset.json";
+
 import brandOg from "@/assets/digitalnest-og.jpg.asset.json";
 
 export type SiteBranding = {
@@ -168,8 +168,8 @@ export const defaultSettings: AllSettings = {
     brand_accent: siteConfig.brandSplit.accent,
     tagline: siteConfig.tagline,
     description: siteConfig.description,
-    logo_url: brandLogo.url,
-    favicon_url: brandLogo.url,
+    logo_url: "",
+    favicon_url: "",
     footer_text: "Crafted for digital enthusiasts. Instant delivery worldwide.",
     copyright: "© {year} {name}. All rights reserved.",
   },

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useSettings } from "@/lib/cms/settings";
+import { useSiteLogo } from "@/lib/cms/site-logo";
 import { cn } from "@/lib/utils";
 
 type LogoProps = {
@@ -20,22 +21,33 @@ const sizeMap: Record<NonNullable<LogoProps["size"]>, string> = {
   lg: "text-2xl",
 };
 
+const imgHeightMap: Record<NonNullable<LogoProps["size"]>, string> = {
+  sm: "h-6",
+  md: "h-8",
+  lg: "h-10",
+};
+
 /**
- * Single source of truth for brand wordmark. Text-only — no icon, no symbol,
- * no badge. "Digital" (lead) renders in solid white; "Nest" (accent) uses the
- * theme primary→secondary gradient. Weight is locked at 800 (font-extrabold).
+ * Single source of truth for brand mark. When Admin → Branding sets a
+ * logo URL, render it as an image; otherwise fall back to the text wordmark
+ * ("Digital" + gradient "Nest"). Weight is locked at 800 (font-extrabold).
  */
 export function Logo({ variant = "light", size = "md", asPlainText, className }: LogoProps) {
   const branding = useSettings((s) => s.settings.branding);
+  const logoUrl = useSiteLogo();
   const lead = branding.brand_lead || branding.name || "Digital";
   const accent = branding.brand_accent || "Nest";
 
-  // Lead half: white on dark surfaces, foreground on light — keeps contrast in
-  // both themes while preserving the "white DIGITAL" treatment on hero/footer.
   const leadClass = variant === "dark" ? "text-white" : "text-foreground";
 
-
-  const content = (
+  const content = logoUrl ? (
+    <img
+      src={logoUrl}
+      alt={branding.name}
+      className={cn("w-auto object-contain select-none", imgHeightMap[size], className)}
+      draggable={false}
+    />
+  ) : (
     <span
       className={cn(
         "font-extrabold tracking-tight leading-none select-none inline-flex max-w-full min-w-0",

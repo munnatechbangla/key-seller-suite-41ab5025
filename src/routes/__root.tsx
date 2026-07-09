@@ -17,6 +17,7 @@ import { ThemeStyleInjector } from "@/components/site/ThemeStyleInjector";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/lib/stores";
 import { useSettings } from "@/lib/cms/settings";
+import { useSiteFavicon } from "@/lib/cms/site-logo";
 import { AnalyticsScripts } from "@/components/site/AnalyticsScripts";
 import { SeoCenterInjector } from "@/components/site/SeoCenterInjector";
 import { seoMeta, organizationJsonLd, websiteJsonLd, jsonLdScript } from "@/lib/cms/seo";
@@ -136,7 +137,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const initAuth = useAuth((s) => s.init);
   const loadSettings = useSettings((s) => s.load);
-  const favicon = useSettings((s) => s.settings.branding.favicon_url);
+  const favicon = useSiteFavicon();
   useEffect(() => initAuth(), [initAuth]);
   useEffect(() => { loadSettings(); }, [loadSettings]);
   useEffect(() => { import("@/lib/cms/homepage").then((m) => m.useHomepage.getState().load()); }, []);
