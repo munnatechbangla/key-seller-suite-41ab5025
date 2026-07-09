@@ -283,6 +283,7 @@ async function fetchProductsBySlugs(slugs: string[]): Promise<Product[]> {
     .eq("status", "published");
   if (error) throw error;
   const items = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
+  await augmentWithVariantPricing(items);
   const order = new Map(slugs.map((s, i) => [s, i] as const));
   return items.sort((a, b) => (order.get(a.slug) ?? 0) - (order.get(b.slug) ?? 0));
 }
@@ -293,10 +294,13 @@ async function fetchCurated(table: "featured_products" | "trending_products" | "
     .select(`sort_order, products!inner ( ${SELECT_PRODUCT} )`)
     .order("sort_order", { ascending: true });
   if (error) throw error;
-  return ((data ?? []) as unknown as { products: ProductRow }[])
+  const items = ((data ?? []) as unknown as { products: ProductRow }[])
     .map((r) => mapProduct(r.products))
     .filter(Boolean);
+  await augmentWithVariantPricing(items);
+  return items;
 }
+
 
 async function fetchRelated(slug: string, n = 4): Promise<Product[]> {
   const current = await fetchProductBySlug(slug);
