@@ -293,6 +293,12 @@ export const defaultSettings: AllSettings = {
 type SettingsState = {
   settings: AllSettings;
   loaded: boolean;
+  /** Cached resolved (signed) URL for branding.logo_url. Signed once per source-value change. */
+  resolvedLogoUrl: string;
+  /** Cached resolved (signed) URL for branding.favicon_url. */
+  resolvedFaviconUrl: string;
+  /** True only while the initial resolve is in-flight (first load / after save). */
+  resolvingMedia: boolean;
   load: () => Promise<void>;
   setLocal: (next: AllSettings) => void;
 };
@@ -302,10 +308,42 @@ function merge<T extends object>(base: T, override: Partial<T> | undefined | nul
   return { ...base, ...override } as T;
 }
 
+// Module-level cache of last-resolved source values. Skips re-signing when unchanged
+// across page navigations, mounts, or repeat load() calls.
+let lastResolvedLogoSrc: string | null = null;
+let lastResolvedFaviconSrc: string | null = null;
+
+async function resolveBrandingMedia(
+  branding: SiteBranding,
+  set: (p: Partial<SettingsState>) => void,
+) {
+  const logoSrc = branding.logo_url || "";
+  const favSrc = branding.favicon_url || "";
+  const needsLogo = logoSrc !== lastResolvedLogoSrc;
+  const needsFav = favSrc !== lastResolvedFaviconSrc;
+  if (!needsLogo && !needsFav) return;
+  set({ resolvingMedia: true });
+  const { resolveStoredUrlAsync } = await import("@/lib/media/resolve");
+  const [logo, fav] = await Promise.all([
+    needsLogo ? resolveStoredUrlAsync(logoSrc) : Promise.resolve(undefined),
+    needsFav ? resolveStoredUrlAsync(favSrc) : Promise.resolve(undefined),
+  ]);
+  const patch: Partial<SettingsState> = { resolvingMedia: false };
+  if (logo !== undefined) { patch.resolvedLogoUrl = logo; lastResolvedLogoSrc = logoSrc; }
+  if (fav !== undefined) { patch.resolvedFaviconUrl = fav; lastResolvedFaviconSrc = favSrc; }
+  set(patch);
+}
+
 export const useSettings = create<SettingsState>((set) => ({
   settings: defaultSettings,
   loaded: false,
-  setLocal: (next) => set({ settings: next, loaded: true }),
+  resolvedLogoUrl: "",
+  resolvedFaviconUrl: "",
+  resolvingMedia: false,
+  setLocal: (next) => {
+    set({ settings: next, loaded: true });
+    void resolveBrandingMedia(next.branding, (p) => set(p as SettingsState));
+  },
   load: async () => {
     try {
       const { data, error } = await supabase
@@ -341,6 +379,7 @@ export const useSettings = create<SettingsState>((set) => ({
         }
       }
       set({ settings: next, loaded: true });
+      await resolveBrandingMedia(next.branding, (p) => set(p as SettingsState));
     } catch {
       set({ loaded: true });
     }
