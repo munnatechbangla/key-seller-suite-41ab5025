@@ -38,6 +38,7 @@ import { productBlocksPublicFn } from "@/lib/product-blocks.functions";
 import { ProductContentBlocks, type ProductBlock } from "@/components/cms/ProductContentBlocks";
 
 export const Route = createFileRoute("/products/$slug")({
+  validateSearch: zodValidator(productSearchSchema),
   loader: async ({ params, context }) => {
     const product = await context.queryClient.ensureQueryData(productQuery(params.slug));
     if (!product) throw notFound();
