@@ -213,7 +213,12 @@ export function MediaLibrary({
                       <Check className="h-3 w-3 mr-1" /> Use
                     </Button>
                   )}
-                  <Button size="icon" variant="ghost" className="h-7 w-7" title="Copy URL" onClick={() => { navigator.clipboard.writeText(a.public_url ?? ""); toast.success("URL copied"); }}>
+                  <Button size="icon" variant="ghost" className="h-7 w-7" title="Copy permanent link" onClick={() => {
+                    const { data: pub } = supabase.storage.from("media").getPublicUrl(a.storage_path);
+                    const permanent = pub?.publicUrl || `media://${a.storage_path}`;
+                    navigator.clipboard.writeText(permanent);
+                    toast.success("Permanent link copied");
+                  }}>
                     <Copy className="h-3 w-3" />
                   </Button>
                   <Button size="icon" variant="ghost" className="h-7 w-7" title="Rename" onClick={() => setEditing(a)}>
