@@ -64,8 +64,9 @@ export function useResolvedTheme(): "light" | "dark" {
  * Priority: theme-specific resolved logo → generic resolved logo → "".
  * Fallback to the text wordmark is handled by <Logo /> when logoUrl is "".
  */
-export function useSiteLogo(): { logoUrl: string; loading: boolean } {
-  const theme = useResolvedTheme();
+export function useSiteLogo(forceTheme?: "light" | "dark"): { logoUrl: string; loading: boolean } {
+  const resolvedTheme = useResolvedTheme();
+  const theme = forceTheme ?? resolvedTheme;
   const configured = useSettings((s) => {
     const b = s.settings.branding;
     return !!(theme === "dark"

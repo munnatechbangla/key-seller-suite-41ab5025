@@ -10,6 +10,8 @@ type LogoProps = {
   size?: "sm" | "md" | "lg";
   /** Render without a Link wrapper. */
   asPlainText?: boolean;
+  /** Force logo selection to a specific theme regardless of active theme (e.g. footer/auth on dark bg). */
+  forceTheme?: "light" | "dark";
   className?: string;
 };
 
@@ -34,9 +36,9 @@ const imgSizeMap: Record<NonNullable<LogoProps["size"]>, string> = {
  * logo URL, render it as an image; otherwise fall back to the text wordmark
  * ("Digital" + gradient "Nest"). Weight is locked at 800 (font-extrabold).
  */
-export function Logo({ variant = "light", size = "md", asPlainText, className }: LogoProps) {
+export function Logo({ variant = "light", size = "md", asPlainText, forceTheme, className }: LogoProps) {
   const branding = useSettings((s) => s.settings.branding);
-  const { logoUrl, loading } = useSiteLogo();
+  const { logoUrl, loading } = useSiteLogo(forceTheme);
   const lead = branding.brand_lead || branding.name || "Digital";
   const accent = branding.brand_accent || "Nest";
 
