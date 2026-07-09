@@ -322,7 +322,10 @@ async function searchProducts(q: string): Promise<Product[]> {
     .or(`title.ilike.${term},short_description.ilike.${term},description.ilike.${term}`)
     .limit(40);
   if (error) throw error;
-  return ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
+  const items = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
+  await augmentWithVariantPricing(items);
+  return items;
+
 }
 
 // ---------------- Query options ----------------
