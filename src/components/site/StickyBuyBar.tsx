@@ -18,6 +18,7 @@ export function StickyBuyBar({ product, threshold = 480, variant, hasAttributes 
   const enabled = useMarketplace((s) => s.config.product_experience.sticky_buy_bar_enabled);
   const speed = useMarketplace((s) => s.config.ui.animation_speed_ms);
   const cart = useCart();
+  const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
 
   const variantAvailable = variant
