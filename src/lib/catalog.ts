@@ -354,6 +354,39 @@ export const trendingQuery = () =>
 export const bestSellersQuery = () =>
   queryOptions({ queryKey: ["catalog", "best-sellers"], queryFn: () => fetchCurated("best_sellers") });
 
+async function fetchHeroFeatured(limit = 12): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from("featured_products")
+    .select(`created_at, products!inner ( ${SELECT_PRODUCT} )`)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  const items = ((data ?? []) as unknown as { products: ProductRow }[])
+    .map((r) => mapProduct(r.products))
+    .filter((p) => Boolean(p));
+  await augmentWithVariantPricing(items);
+  return items;
+}
+
+async function fetchHeroLatest(limit = 12): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from("products")
+    .select(SELECT_PRODUCT)
+    .eq("status", "published")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  const items = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
+  await augmentWithVariantPricing(items);
+  return items;
+}
+
+export const heroFeaturedQuery = (limit = 12) =>
+  queryOptions({ queryKey: ["catalog", "hero-featured", limit], queryFn: () => fetchHeroFeatured(limit) });
+
+export const heroLatestQuery = (limit = 12) =>
+  queryOptions({ queryKey: ["catalog", "hero-latest", limit], queryFn: () => fetchHeroLatest(limit) });
+
 export const relatedQuery = (slug: string, n = 4) =>
   queryOptions({ queryKey: ["catalog", "related", slug, n], queryFn: () => fetchRelated(slug, n) });
 

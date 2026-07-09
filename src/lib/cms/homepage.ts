@@ -22,6 +22,8 @@ import {
 
 // ---------------- Types ----------------
 
+export type HeroProductSource = "manual" | "featured" | "latest";
+
 export type HomeHero = {
   enabled: boolean;
   badge: { icon: IconName; text: string };
@@ -30,7 +32,10 @@ export type HomeHero = {
   primaryCta: { label: string; to: string; icon?: IconName };
   secondaryCta: { label: string; href: string; icon?: IconName };
   trustItems: { id: string; icon: IconName; label: string }[];
+  /** @deprecated use productSource + manualProductSlugs */
   floatingProductSlugs: string[];
+  productSource?: HeroProductSource;
+  manualProductSlugs?: string[];
 };
 
 export type HomeTrustItem = { id: string; icon: IconName; title: string; desc: string; enabled: boolean };
@@ -160,7 +165,9 @@ export const defaultHomepageConfig: HomepageConfig = {
       icon: defaultHero.ctas[1]?.icon,
     },
     trustItems: defaultHero.trustItems.map((t, i) => ({ id: uid("hero-trust", i), ...t })),
-    floatingProductSlugs: defaultHero.floatingProductSlugs.slice(0, 6),
+    floatingProductSlugs: defaultHero.floatingProductSlugs.slice(0, 12),
+    productSource: "manual",
+    manualProductSlugs: defaultHero.floatingProductSlugs.slice(0, 12),
   },
   trust: {
     enabled: true,

@@ -15,6 +15,8 @@ import {
   trendingQuery,
   bestSellersQuery,
   productsBySlugsQuery,
+  heroFeaturedQuery,
+  heroLatestQuery,
   type Product,
 } from "@/lib/catalog";
 import { useProductSection, useResolvedProducts, resolveIcon } from "@/lib/cms";
@@ -37,7 +39,7 @@ export const Route = createFileRoute("/")({
     context.queryClient.ensureQueryData(featuredQuery());
     context.queryClient.ensureQueryData(trendingQuery());
     context.queryClient.ensureQueryData(bestSellersQuery());
-    context.queryClient.ensureQueryData(productsBySlugsQuery(defaultHomepageConfig.hero.floatingProductSlugs));
+    context.queryClient.ensureQueryData(productsBySlugsQuery(defaultHomepageConfig.hero.manualProductSlugs ?? defaultHomepageConfig.hero.floatingProductSlugs));
   },
   component: Home,
   errorComponent: () => <div className="p-8 text-center">Something went wrong loading the homepage.</div>,
@@ -101,7 +103,18 @@ function Home() {
 function Hero() {
   const hero = useHomepage((s) => s.config.hero);
   const BadgeIcon = resolveIcon(hero.badge.icon);
-  const floatingProducts = useResolvedProducts(hero.floatingProductSlugs);
+  const source = hero.productSource ?? "manual";
+  const manualSlugs = (hero.manualProductSlugs && hero.manualProductSlugs.length > 0
+    ? hero.manualProductSlugs
+    : hero.floatingProductSlugs) ?? [];
+  const manualQ = useTQuery({ ...productsBySlugsQuery(manualSlugs), enabled: source === "manual" });
+  const featuredQ = useTQuery({ ...heroFeaturedQuery(12), enabled: source === "featured" });
+  const latestQ = useTQuery({ ...heroLatestQuery(12), enabled: source === "latest" });
+  const pool: Product[] =
+    source === "featured" ? (featuredQ.data ?? [])
+      : source === "latest" ? (latestQ.data ?? [])
+      : (manualQ.data ?? []);
+  const floatingProducts: Product[] = pool.slice(0, 6);
   const durations = ["10s", "11.5s", "9s", "12s", "9.5s", "11s"];
   const delays = ["0s", "1.6s", "0.8s", "2.4s", "1.2s", "3s"];
   const PrimaryIcon = hero.primaryCta.icon ? resolveIcon(hero.primaryCta.icon) : null;
