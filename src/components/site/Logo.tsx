@@ -46,7 +46,7 @@ export function Logo({ variant = "light", size = "md", asPlainText, className }:
     <img
       src={logoUrl}
       alt={branding.name}
-      className={cn("w-auto object-contain select-none", imgHeightMap[size], className)}
+      className={cn("w-auto shrink-0 object-contain select-none", imgSizeMap[size], className)}
       draggable={false}
     />
   ) : (
