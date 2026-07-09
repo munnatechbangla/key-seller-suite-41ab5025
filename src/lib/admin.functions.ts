@@ -87,6 +87,7 @@ export const adminUpsertProductFn = createServerFn({ method: "POST" })
     if (payload.visibility == null) delete payload.visibility;
     if (payload.product_type == null) delete payload.product_type;
     if (payload.delivery_type == null) delete payload.delivery_type;
+    if (payload.category_id === undefined) delete payload.category_id;
     if (payload.id) {
       const { error } = await context.supabase.from("products").update(payload).eq("id", payload.id);
       if (error) throw new Error(error.message);
