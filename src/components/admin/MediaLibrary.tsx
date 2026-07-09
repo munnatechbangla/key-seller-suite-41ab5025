@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Upload, Copy, Trash2, Pencil, Search, Loader2, Check } from "lucide-react";
+import { resolveMediaUrl } from "@/lib/media/resolve";
 
 export const MEDIA_FOLDERS = [
   "products", "categories", "brands", "hero", "banners",
