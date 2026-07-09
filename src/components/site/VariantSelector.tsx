@@ -108,6 +108,7 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
     if (activeVariant?.id) {
       const variantId = activeVariant.id;
       navigate({
+        to: ".",
         search: (prev) => ({ ...prev, variant: variantId }),
         replace: true,
         resetScroll: false,
