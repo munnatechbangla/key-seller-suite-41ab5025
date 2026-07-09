@@ -94,8 +94,8 @@ export function ProductCard({ product }: { product: Product }) {
           <h3 className="font-semibold text-sm leading-snug line-clamp-2 min-h-10 hover:text-primary transition-smooth">{product.name}</h3>
         </Link>
         <p className="text-xs text-muted-foreground line-clamp-2">{product.short}</p>
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2 pt-2">
-          <div className="min-w-0">
+        <div className="flex flex-wrap items-end justify-between gap-2 pt-2">
+          <div className="min-w-0 flex-1">
             {showSelectOptions ? (
               <div className="text-sm font-semibold text-primary">Select Options</div>
             ) : (
@@ -115,16 +115,16 @@ export function ProductCard({ product }: { product: Product }) {
               to="/products/$slug"
               params={{ slug: product.slug }}
               aria-label="Select options"
-              className="h-9 sm:h-10 px-3 sm:px-4 inline-flex items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground text-[13px] sm:text-sm font-semibold whitespace-nowrap hover:shadow-glow transition-smooth"
+              style={{ width: "fit-content" }}
+              className="shrink-0 h-[30px] sm:h-[34px] lg:h-9 px-[10px] sm:px-3 lg:px-3.5 inline-flex items-center justify-center rounded-full bg-gradient-primary text-primary-foreground text-[12px] sm:text-[13px] lg:text-sm font-semibold leading-none whitespace-nowrap hover:shadow-glow transition-smooth"
             >
               Options
             </Link>
-
           ) : (
             <button
               onClick={() => { cart.add(product); toast.success("Added to cart"); }}
               aria-label="Add to cart"
-              className="h-10 w-10 grid place-items-center rounded-xl bg-gradient-primary text-primary-foreground hover:shadow-glow transition-smooth"
+              className="shrink-0 h-10 w-10 grid place-items-center rounded-xl bg-gradient-primary text-primary-foreground hover:shadow-glow transition-smooth"
             >
               <ShoppingCart className="h-4 w-4" />
             </button>
