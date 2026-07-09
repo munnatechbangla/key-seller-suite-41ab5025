@@ -207,8 +207,53 @@ async function fetchProducts(filter: ProductsFilter = {}): Promise<Product[]> {
   if (filter.limit) q = q.limit(filter.limit);
   const { data, error } = await q;
   if (error) throw error;
-  return ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
+  const mapped = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
+  await augmentWithVariantPricing(mapped);
+  return mapped;
 }
+
+// Enrich products with variable-product pricing metadata so cards never show $0.
+async function augmentWithVariantPricing(products: Product[]): Promise<void> {
+  if (products.length === 0) return;
+  const ids = products.map((p) => p.id);
+  const [attrsRes, varsRes] = await Promise.all([
+    supabase.from("product_attributes").select("product_id").in("product_id", ids),
+    supabase
+      .from("product_variations")
+      .select("product_id, price, sale_price, status, visibility")
+      .in("product_id", ids),
+  ]);
+  const attrSet = new Set<string>();
+  (attrsRes.data ?? []).forEach((r: any) => attrSet.add(r.product_id));
+  const byProduct = new Map<string, { price: number; old: number | null }[]>();
+  (varsRes.data ?? []).forEach((v: any) => {
+    if (v.status && v.status !== "active") return;
+    if (v.visibility && v.visibility !== "public") return;
+    const sale = v.sale_price != null ? Number(v.sale_price) : null;
+    const reg = v.price != null ? Number(v.price) : 0;
+    const eff = sale != null && sale > 0 ? sale : reg;
+    if (!(eff > 0)) return;
+    const old = sale != null && sale > 0 && reg > sale ? reg : null;
+    const list = byProduct.get(v.product_id) ?? [];
+    list.push({ price: eff, old });
+    byProduct.set(v.product_id, list);
+  });
+  for (const p of products) {
+    const hasAttrs = attrSet.has(p.id);
+    const list = byProduct.get(p.id);
+    if (list && list.length > 0) {
+      const min = list.reduce((a, b) => (a.price <= b.price ? a : b));
+      p.hasAttributes = true;
+      p.priceFrom = min.price;
+      p.oldPriceFrom = min.old;
+    } else if (hasAttrs) {
+      p.hasAttributes = true;
+      p.priceFrom = null;
+      p.oldPriceFrom = null;
+    }
+  }
+}
+
 
 async function fetchProductBySlug(slug: string): Promise<Product | null> {
   const { data, error } = await supabase
