@@ -115,10 +115,11 @@ export function ProductCard({ product }: { product: Product }) {
               to="/products/$slug"
               params={{ slug: product.slug }}
               aria-label="Select options"
-              className="h-10 px-3 grid place-items-center rounded-xl bg-gradient-primary text-primary-foreground text-xs font-semibold hover:shadow-glow transition-smooth"
+              className="h-9 sm:h-10 px-3 sm:px-4 inline-flex items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground text-[13px] sm:text-sm font-semibold whitespace-nowrap hover:shadow-glow transition-smooth"
             >
               Options
             </Link>
+
           ) : (
             <button
               onClick={() => { cart.add(product); toast.success("Added to cart"); }}
