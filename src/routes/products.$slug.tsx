@@ -198,7 +198,8 @@ function LegacyProductPage() {
   const recentProducts = useProductsBySlugs(recentSlugs);
 
   const addToCart = () => { cart.add(product, qty); toast.success(`${product.name} added to cart`); };
-  const buyNow = () => { cart.add(product, qty); window.location.href = "/checkout"; };
+  const navigate = useNavigate();
+  const buyNow = () => { cart.add(product, qty); navigate({ to: "/checkout" }); };
 
   // Gallery images (public read on product_images)
   const galleryQuery = useQuery({
