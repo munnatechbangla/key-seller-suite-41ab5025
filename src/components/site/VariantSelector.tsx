@@ -45,8 +45,8 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
   const listAttrs = useServerFn(listProductAttributesFn);
   const listVars = useServerFn(listProductVariantsFn);
   const cart = useCart();
-  const navigate = useNavigate({ from: "/products/$slug" });
-  const search = useSearch({ from: "/products/$slug" });
+  const navigate = productRouteApi.useNavigate();
+  const search = productRouteApi.useSearch();
 
   const attrsQ = useQuery({
     queryKey: ["variant-attrs", product.id],
