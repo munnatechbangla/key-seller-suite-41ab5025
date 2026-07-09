@@ -265,7 +265,7 @@ export function MediaPicker({
   label?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const preview = useResolvedMediaUrl(value);
+  const { url: preview } = useResolvedMediaUrl(value);
   return (
     <div className="space-y-2">
       {label && <Label>{label}</Label>}

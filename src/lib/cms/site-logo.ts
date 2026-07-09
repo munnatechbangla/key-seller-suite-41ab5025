@@ -12,26 +12,37 @@ export function resolveStoredUrl(url: string | null | undefined): string {
   return "";
 }
 
-/** Reactive hook — resolves any stored value (`media://…`, legacy public URL, or plain http) to a browser URL. */
-export function useResolvedMediaUrl(stored: string | null | undefined): string {
+/** Reactive hook — resolves any stored value to a browser URL. Exposes `loading` so callers can avoid a flash of fallback content. */
+export function useResolvedMediaUrl(stored: string | null | undefined): { url: string; loading: boolean } {
+  const settingsLoaded = useSettings((s) => s.loaded);
   const [url, setUrl] = useState<string>("");
+  const [resolving, setResolving] = useState<boolean>(false);
+
   useEffect(() => {
     let cancelled = false;
-    if (!stored) { setUrl(""); return; }
-    resolveStoredUrlAsync(stored).then((v) => { if (!cancelled) setUrl(v); });
+    if (!settingsLoaded) return;
+    if (!stored) { setUrl(""); setResolving(false); return; }
+    setResolving(true);
+    resolveStoredUrlAsync(stored).then((v) => {
+      if (cancelled) return;
+      setUrl(v);
+      setResolving(false);
+    });
     return () => { cancelled = true; };
-  }, [stored]);
-  return url;
+  }, [stored, settingsLoaded]);
+
+  return { url, loading: !settingsLoaded || resolving };
 }
 
-/** Current logo URL (fresh signed URL when backed by a `media://` token). */
-export function useSiteLogo(): string {
+/** Current logo URL + loading flag. `loading` is true until settings load AND (if a logo is configured) it is resolved. */
+export function useSiteLogo(): { logoUrl: string; loading: boolean } {
   const logo = useSettings((s) => s.settings.branding.logo_url);
-  return useResolvedMediaUrl(logo);
+  const { url, loading } = useResolvedMediaUrl(logo);
+  return { logoUrl: url, loading };
 }
 
 /** Current favicon URL. */
 export function useSiteFavicon(): string {
   const fav = useSettings((s) => s.settings.branding.favicon_url);
-  return useResolvedMediaUrl(fav);
+  return useResolvedMediaUrl(fav).url;
 }
