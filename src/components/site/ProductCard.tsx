@@ -98,7 +98,7 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="flex flex-col gap-2 pt-2">
             <div className="min-w-0">
               {showSelectOptions ? (
-                <div className="text-sm font-semibold text-primary">Select Options</div>
+                <div className="text-sm font-semibold text-primary whitespace-nowrap">View Options</div>
               ) : (
                 <>
                   <div className="text-lg font-bold text-primary">
@@ -114,10 +114,10 @@ export function ProductCard({ product }: { product: Product }) {
             <Link
               to="/products/$slug"
               params={{ slug: product.slug }}
-              aria-label="Select options"
-              className="w-full h-9 md:h-[38px] lg:h-10 px-4 inline-flex items-center justify-center rounded-full bg-gradient-primary text-primary-foreground text-sm font-semibold leading-none hover:shadow-glow transition-smooth"
+              aria-label="View options"
+              className="w-full h-9 md:h-[38px] lg:h-10 px-4 inline-flex items-center justify-center whitespace-nowrap overflow-hidden text-ellipsis rounded-full bg-gradient-primary text-primary-foreground text-sm font-semibold leading-none hover:shadow-glow transition-smooth"
             >
-              Select Options
+              View Options
             </Link>
           </div>
         ) : (
