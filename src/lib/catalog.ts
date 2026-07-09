@@ -35,7 +35,11 @@ export type Product = {
   stock?: number;
   thumbnailUrl?: string | null;
   seo?: ProductSeo | null;
+  hasAttributes?: boolean;
+  priceFrom?: number | null;
+  oldPriceFrom?: number | null;
 };
+
 
 export type ProductSeo = {
   meta_title: string | null;
@@ -203,8 +207,53 @@ async function fetchProducts(filter: ProductsFilter = {}): Promise<Product[]> {
   if (filter.limit) q = q.limit(filter.limit);
   const { data, error } = await q;
   if (error) throw error;
-  return ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
+  const mapped = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
+  await augmentWithVariantPricing(mapped);
+  return mapped;
 }
+
+// Enrich products with variable-product pricing metadata so cards never show $0.
+async function augmentWithVariantPricing(products: Product[]): Promise<void> {
+  if (products.length === 0) return;
+  const ids = products.map((p) => p.id);
+  const [attrsRes, varsRes] = await Promise.all([
+    supabase.from("product_attributes").select("product_id").in("product_id", ids),
+    supabase
+      .from("product_variations")
+      .select("product_id, price, sale_price, status, visibility")
+      .in("product_id", ids),
+  ]);
+  const attrSet = new Set<string>();
+  (attrsRes.data ?? []).forEach((r: any) => attrSet.add(r.product_id));
+  const byProduct = new Map<string, { price: number; old: number | null }[]>();
+  (varsRes.data ?? []).forEach((v: any) => {
+    if (v.status && v.status !== "active") return;
+    if (v.visibility && v.visibility !== "public") return;
+    const sale = v.sale_price != null ? Number(v.sale_price) : null;
+    const reg = v.price != null ? Number(v.price) : 0;
+    const eff = sale != null && sale > 0 ? sale : reg;
+    if (!(eff > 0)) return;
+    const old = sale != null && sale > 0 && reg > sale ? reg : null;
+    const list = byProduct.get(v.product_id) ?? [];
+    list.push({ price: eff, old });
+    byProduct.set(v.product_id, list);
+  });
+  for (const p of products) {
+    const hasAttrs = attrSet.has(p.id);
+    const list = byProduct.get(p.id);
+    if (list && list.length > 0) {
+      const min = list.reduce((a, b) => (a.price <= b.price ? a : b));
+      p.hasAttributes = true;
+      p.priceFrom = min.price;
+      p.oldPriceFrom = min.old;
+    } else if (hasAttrs) {
+      p.hasAttributes = true;
+      p.priceFrom = null;
+      p.oldPriceFrom = null;
+    }
+  }
+}
+
 
 async function fetchProductBySlug(slug: string): Promise<Product | null> {
   const { data, error } = await supabase
@@ -234,6 +283,7 @@ async function fetchProductsBySlugs(slugs: string[]): Promise<Product[]> {
     .eq("status", "published");
   if (error) throw error;
   const items = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
+  await augmentWithVariantPricing(items);
   const order = new Map(slugs.map((s, i) => [s, i] as const));
   return items.sort((a, b) => (order.get(a.slug) ?? 0) - (order.get(b.slug) ?? 0));
 }
@@ -244,10 +294,13 @@ async function fetchCurated(table: "featured_products" | "trending_products" | "
     .select(`sort_order, products!inner ( ${SELECT_PRODUCT} )`)
     .order("sort_order", { ascending: true });
   if (error) throw error;
-  return ((data ?? []) as unknown as { products: ProductRow }[])
+  const items = ((data ?? []) as unknown as { products: ProductRow }[])
     .map((r) => mapProduct(r.products))
     .filter(Boolean);
+  await augmentWithVariantPricing(items);
+  return items;
 }
+
 
 async function fetchRelated(slug: string, n = 4): Promise<Product[]> {
   const current = await fetchProductBySlug(slug);
@@ -269,7 +322,10 @@ async function searchProducts(q: string): Promise<Product[]> {
     .or(`title.ilike.${term},short_description.ilike.${term},description.ilike.${term}`)
     .limit(40);
   if (error) throw error;
-  return ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
+  const items = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
+  await augmentWithVariantPricing(items);
+  return items;
+
 }
 
 // ---------------- Query options ----------------
