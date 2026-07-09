@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { isValidGa4, isValidGtm, isValidMetaPixel } from "@/lib/analytics/track";
+import { MediaPicker } from "@/components/admin/MediaLibrary";
 
 export const Route = createFileRoute("/admin/settings")({
   component: AdminSettings,
@@ -113,8 +114,8 @@ function AdminSettings() {
           </div>
           <Field label="Tagline" value={data.branding.tagline} onChange={(v) => set("branding", "tagline", v)} />
           <Area label="Description" value={data.branding.description} onChange={(v) => set("branding", "description", v)} />
-          <Field label="Logo URL" value={data.branding.logo_url} onChange={(v) => set("branding", "logo_url", v)} />
-          <Field label="Favicon URL" value={data.branding.favicon_url} onChange={(v) => set("branding", "favicon_url", v)} />
+          <MediaPicker label="Logo" value={data.branding.logo_url} onChange={(v) => set("branding", "logo_url", v)} />
+          <MediaPicker label="Favicon" value={data.branding.favicon_url} onChange={(v) => set("branding", "favicon_url", v)} />
           <Field label="Footer Text" value={data.branding.footer_text} onChange={(v) => set("branding", "footer_text", v)} />
           <Field label="Copyright (use {year} and {name})" value={data.branding.copyright} onChange={(v) => set("branding", "copyright", v)} />
           <SaveBtn onClick={() => save("branding")} saving={saving === "branding"} />
