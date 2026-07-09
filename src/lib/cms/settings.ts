@@ -301,10 +301,15 @@ type SettingsState = {
   loaded: boolean;
   /** Cached resolved (signed) URL for branding.logo_url. Signed once per source-value change. */
   resolvedLogoUrl: string;
+  /** Cached resolved (signed) URL for branding.light_logo_url. */
+  resolvedLightLogoUrl: string;
+  /** Cached resolved (signed) URL for branding.dark_logo_url. */
+  resolvedDarkLogoUrl: string;
   /** Cached resolved (signed) URL for branding.favicon_url. */
   resolvedFaviconUrl: string;
   /** True only while the initial resolve is in-flight (first load / after save). */
   resolvingMedia: boolean;
+
   load: () => Promise<void>;
   setLocal: (next: AllSettings) => void;
 };
