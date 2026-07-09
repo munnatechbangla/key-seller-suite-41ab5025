@@ -7,7 +7,7 @@ export function AuthShell({ title, subtitle, children, footer }: { title: string
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       <div className="hidden lg:flex bg-gradient-hero text-white p-12 flex-col justify-between">
-        <Logo size="lg" variant="dark" />
+        <Logo size="lg" variant="dark" forceTheme="dark" />
         <div className="space-y-4 max-w-md">
           <h2 className="text-4xl font-bold leading-tight">Premium digital products, delivered in seconds.</h2>
           <p className="text-white/70">Join thousands of customers who trust {name} for premium subscriptions and software — all at unbeatable prices.</p>
