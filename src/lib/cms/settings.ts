@@ -319,10 +319,8 @@ function merge<T extends object>(base: T, override: Partial<T> | undefined | nul
   return { ...base, ...override } as T;
 }
 
-// Module-level cache of last-resolved source values. Skips re-signing when unchanged
-// across page navigations, mounts, or repeat load() calls.
-let lastResolvedLogoSrc: string | null = null;
-let lastResolvedFaviconSrc: string | null = null;
+
+
 
 // Module-level cache of last-resolved source values. Skips re-signing when unchanged
 // across page navigations, mounts, or repeat load() calls.
