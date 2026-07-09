@@ -172,7 +172,10 @@ export const defaultSettings: AllSettings = {
     tagline: siteConfig.tagline,
     description: siteConfig.description,
     logo_url: "",
+    light_logo_url: "",
+    dark_logo_url: "",
     favicon_url: "",
+
     footer_text: "Crafted for digital enthusiasts. Instant delivery worldwide.",
     copyright: "© {year} {name}. All rights reserved.",
   },
