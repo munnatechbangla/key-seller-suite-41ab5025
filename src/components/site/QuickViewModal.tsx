@@ -14,6 +14,7 @@ export function QuickViewModal({ slug, open, onOpenChange }: { slug: string | nu
   const wish = useWishlist();
   const cmp = useCompare();
   const [qty, setQty] = useState(1);
+  const navigate = useNavigate();
 
   if (!product) {
     return (
