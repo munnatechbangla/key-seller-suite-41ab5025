@@ -110,11 +110,11 @@ function Hero() {
   const manualQ = useTQuery({ ...productsBySlugsQuery(manualSlugs), enabled: source === "manual" });
   const featuredQ = useTQuery({ ...heroFeaturedQuery(12), enabled: source === "featured" });
   const latestQ = useTQuery({ ...heroLatestQuery(12), enabled: source === "latest" });
-  const pool =
+  const pool: Product[] =
     source === "featured" ? (featuredQ.data ?? [])
       : source === "latest" ? (latestQ.data ?? [])
       : (manualQ.data ?? []);
-  const floatingProducts = pool.slice(0, 6);
+  const floatingProducts: Product[] = pool.slice(0, 6);
   const durations = ["10s", "11.5s", "9s", "12s", "9.5s", "11s"];
   const delays = ["0s", "1.6s", "0.8s", "2.4s", "1.2s", "3s"];
   const PrimaryIcon = hero.primaryCta.icon ? resolveIcon(hero.primaryCta.icon) : null;
