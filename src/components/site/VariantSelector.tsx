@@ -162,8 +162,8 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
     setSelection({});
     onVariantChange?.(null);
     navigate({
-      to: ".",
-      search: (prev: Record<string, unknown>) => {
+      to: "/products/$slug",
+      search: (prev) => {
         const { variant: _v, ...rest } = prev ?? {};
         return rest;
       },
