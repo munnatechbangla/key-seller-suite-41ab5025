@@ -20,6 +20,7 @@ const items = [
   { to: "/admin/cms", label: "CMS", icon: FileCode },
   { to: "/admin/marketplace", label: "Marketplace", icon: Sparkles },
   { to: "/admin/products", label: "Products", icon: Package },
+  { to: "/admin/categories", label: "Categories", icon: FileText },
   { to: "/admin/media", label: "Media Library", icon: ImageIcon },
   { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { to: "/admin/customers", label: "Customers", icon: Users },
