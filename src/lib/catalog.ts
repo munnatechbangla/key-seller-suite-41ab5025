@@ -35,7 +35,11 @@ export type Product = {
   stock?: number;
   thumbnailUrl?: string | null;
   seo?: ProductSeo | null;
+  hasAttributes?: boolean;
+  priceFrom?: number | null;
+  oldPriceFrom?: number | null;
 };
+
 
 export type ProductSeo = {
   meta_title: string | null;
