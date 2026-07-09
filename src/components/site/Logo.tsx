@@ -36,33 +36,48 @@ const imgSizeMap: Record<NonNullable<LogoProps["size"]>, string> = {
  */
 export function Logo({ variant = "light", size = "md", asPlainText, className }: LogoProps) {
   const branding = useSettings((s) => s.settings.branding);
-  const logoUrl = useSiteLogo();
+  const { logoUrl, loading } = useSiteLogo();
   const lead = branding.brand_lead || branding.name || "Digital";
   const accent = branding.brand_accent || "Nest";
 
   const leadClass = variant === "dark" ? "text-white" : "text-foreground";
 
-  const content = logoUrl ? (
-    <img
-      src={logoUrl}
-      alt={branding.name}
-      className={cn("w-auto shrink-0 object-contain select-none", imgSizeMap[size], className)}
-      draggable={false}
-    />
-  ) : (
-    <span
-      className={cn(
-        "font-extrabold tracking-tight leading-none select-none inline-flex max-w-full min-w-0",
-        sizeMap[size],
-        className,
-      )}
-    >
-      <span className={`${leadClass} min-w-0 truncate`}>{lead}</span>
-      <span className="text-gradient min-w-0 truncate">{accent}</span>
-    </span>
-  );
+  // While branding is loading, render an invisible skeleton with the same
+  // dimensions as the final logo — prevents "flash of default wordmark".
+  let content: React.ReactNode;
+  if (loading) {
+    content = (
+      <span
+        aria-hidden
+        className={cn("inline-block w-auto shrink-0", imgSizeMap[size], "opacity-0", className)}
+        style={{ minWidth: "80px" }}
+      />
+    );
+  } else if (logoUrl) {
+    content = (
+      <img
+        src={logoUrl}
+        alt={branding.name}
+        className={cn("w-auto shrink-0 object-contain select-none", imgSizeMap[size], className)}
+        draggable={false}
+      />
+    );
+  } else {
+    content = (
+      <span
+        className={cn(
+          "font-extrabold tracking-tight leading-none select-none inline-flex max-w-full min-w-0",
+          sizeMap[size],
+          className,
+        )}
+      >
+        <span className={`${leadClass} min-w-0 truncate`}>{lead}</span>
+        <span className="text-gradient min-w-0 truncate">{accent}</span>
+      </span>
+    );
+  }
 
-  if (asPlainText) return content;
+  if (asPlainText) return <>{content}</>;
   return (
     <Link to="/" aria-label={branding.name} className="inline-flex min-w-0 max-w-full items-center">
       {content}
