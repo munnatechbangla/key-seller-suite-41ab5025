@@ -106,10 +106,9 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
     onVariantChange?.(activeVariant);
     setPriceKey((k) => k + 1);
     if (activeVariant?.id) {
-      const variantId = activeVariant.id;
       navigate({
         to: ".",
-        search: (prev) => ({ ...prev, variant: variantId }),
+        search: { variant: activeVariant.id },
         replace: true,
         resetScroll: false,
       }).catch(() => {});
