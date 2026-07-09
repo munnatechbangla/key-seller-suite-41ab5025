@@ -72,7 +72,7 @@ export function StickyBuyBar({ product, threshold = 480, variant, hasAttributes 
       : undefined;
 
   const onAdd = () => { cart.add(product, 1, variantMeta()); toast.success(`${label} added to cart`); };
-  const onBuy = () => { cart.add(product, 1, variantMeta()); window.location.href = "/checkout"; };
+  const onBuy = () => { cart.add(product, 1, variantMeta()); navigate({ to: "/checkout" }); };
 
   return (
     <div
