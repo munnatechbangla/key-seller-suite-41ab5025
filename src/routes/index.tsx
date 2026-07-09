@@ -37,7 +37,7 @@ export const Route = createFileRoute("/")({
     context.queryClient.ensureQueryData(featuredQuery());
     context.queryClient.ensureQueryData(trendingQuery());
     context.queryClient.ensureQueryData(bestSellersQuery());
-    context.queryClient.ensureQueryData(productsBySlugsQuery(defaultHomepageConfig.hero.floatingProductSlugs));
+    context.queryClient.ensureQueryData(productsBySlugsQuery(defaultHomepageConfig.hero.manualProductSlugs ?? defaultHomepageConfig.hero.floatingProductSlugs));
   },
   component: Home,
   errorComponent: () => <div className="p-8 text-center">Something went wrong loading the homepage.</div>,
