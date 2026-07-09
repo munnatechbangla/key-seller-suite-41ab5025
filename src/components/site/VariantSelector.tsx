@@ -7,7 +7,9 @@
  * the existing `useCart().add()` so downstream logic is unchanged.
  */
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { getRouteApi } from "@tanstack/react-router";
+
+const productRouteApi = getRouteApi("/products/$slug");
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
