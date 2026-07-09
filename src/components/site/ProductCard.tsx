@@ -94,7 +94,7 @@ export function ProductCard({ product }: { product: Product }) {
           <h3 className="font-semibold text-sm leading-snug line-clamp-2 min-h-10 hover:text-primary transition-smooth">{product.name}</h3>
         </Link>
         <p className="text-xs text-muted-foreground line-clamp-2">{product.short}</p>
-        <div className="flex flex-wrap items-end justify-between gap-2 pt-2">
+        <div className={`flex ${isVariable ? "flex-col items-start sm:flex-row sm:items-end sm:justify-between" : "flex-wrap items-end justify-between"} gap-2 pt-2`}>
           <div className="min-w-0 flex-1">
             {showSelectOptions ? (
               <div className="text-sm font-semibold text-primary">Select Options</div>
