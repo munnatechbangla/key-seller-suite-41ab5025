@@ -10,6 +10,8 @@ type LogoProps = {
   size?: "sm" | "md" | "lg";
   /** Render without a Link wrapper. */
   asPlainText?: boolean;
+  /** Force logo selection to a specific theme regardless of active theme (e.g. footer/auth on dark bg). */
+  forceTheme?: "light" | "dark";
   className?: string;
 };
 
