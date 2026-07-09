@@ -105,7 +105,7 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
     setPriceKey((k) => k + 1);
     if (activeVariant?.id) {
       navigate({
-        to: ".",
+        to: "/products/$slug",
         search: (prev) => ({ ...prev, variant: activeVariant.id }),
         replace: true,
         resetScroll: false,
