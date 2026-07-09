@@ -13,10 +13,13 @@ export type SiteBranding = {
   tagline: string;
   description: string;
   logo_url: string;
+  light_logo_url: string;
+  dark_logo_url: string;
   favicon_url: string;
   footer_text: string;
   copyright: string;
 };
+
 
 export type SiteContact = {
   support_email: string;
