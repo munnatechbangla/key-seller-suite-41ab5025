@@ -98,7 +98,7 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="flex flex-col gap-2 pt-2">
             <div className="min-w-0">
               {showSelectOptions ? (
-                <div className="text-sm font-semibold text-primary">Select Options</div>
+                <div className="text-sm font-semibold text-primary whitespace-nowrap">View Options</div>
               ) : (
                 <>
                   <div className="text-lg font-bold text-primary">
