@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Star, ShoppingCart, Zap, Heart, GitCompare, Check, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useProduct } from "@/lib/catalog";
