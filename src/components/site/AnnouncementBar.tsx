@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { useHomepage } from "@/lib/cms/homepage";
 
@@ -20,10 +20,68 @@ function useCountdown(endsAt: string, enabled: boolean) {
   return { d, h, m, s, done: diff === 0 };
 }
 
+/**
+ * Detects on mobile only whether the announcement text overflows its container.
+ * Returns { overflow, distancePx } used to drive the ticker keyframes.
+ */
+function useMobileTickerOverflow(
+  containerRef: React.RefObject<HTMLDivElement | null>,
+  textRef: React.RefObject<HTMLSpanElement | null>,
+  deps: unknown[],
+) {
+  const [state, setState] = useState<{ overflow: boolean; distance: number }>({
+    overflow: false,
+    distance: 0,
+  });
+
+  useLayoutEffect(() => {
+    const measure = () => {
+      const isMobile = window.matchMedia("(max-width: 767px)").matches;
+      const container = containerRef.current;
+      const text = textRef.current;
+      if (!isMobile || !container || !text) {
+        setState({ overflow: false, distance: 0 });
+        return;
+      }
+      const cw = container.clientWidth;
+      const tw = text.scrollWidth;
+      if (tw > cw + 2) {
+        setState({ overflow: true, distance: tw });
+      } else {
+        setState({ overflow: false, distance: 0 });
+      }
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (containerRef.current) ro.observe(containerRef.current);
+    if (textRef.current) ro.observe(textRef.current);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+
+  return state;
+}
+
 export function AnnouncementBar() {
   const bar = useHomepage((st) => st.config.announcementBar);
   const [closed, setClosed] = useState(false);
   const countdown = useCountdown(bar?.countdownEndsAt ?? "", !!bar?.countdownEnabled);
+
+  const textWrapRef = useRef<HTMLDivElement | null>(null);
+  const textRef = useRef<HTMLSpanElement | null>(null);
+  const { overflow, distance } = useMobileTickerOverflow(textWrapRef, textRef, [
+    bar?.text,
+    bar?.highlight,
+    bar?.buttonLabel,
+    bar?.buttonUrl,
+    bar?.closable,
+    countdown?.d,
+    countdown?.h,
+  ]);
 
   if (!bar || !bar.enabled || closed) return null;
 
@@ -41,6 +99,9 @@ export function AnnouncementBar() {
 
   const pad = (n: number) => String(n).padStart(2, "0");
 
+  // Duration ~ 60px/sec, clamp 12–40s for readability.
+  const duration = Math.max(12, Math.min(40, Math.round(distance / 60)));
+
   return (
     <div
       className={`${visibilityClass} ${bar.sticky ? "sticky top-0 z-[60]" : ""} ${
@@ -56,12 +117,50 @@ export function AnnouncementBar() {
             {bar.highlight}
           </span>
         )}
-        <div className="flex-1 min-w-0 truncate">
-          <span>{bar.text}</span>
-          {countdown && !countdown.done && (
-            <span className="ml-3 inline-flex items-center gap-1 font-mono font-semibold">
-              {countdown.d > 0 && <span>{countdown.d}d</span>}
-              <span>{pad(countdown.h)}:{pad(countdown.m)}:{pad(countdown.s)}</span>
+        <div
+          ref={textWrapRef}
+          className="flex-1 min-w-0 overflow-hidden whitespace-nowrap ab-text-wrap"
+          data-ticker={overflow ? "on" : "off"}
+        >
+          {overflow ? (
+            <div
+              className="ab-ticker inline-flex items-center gap-12"
+              style={{ animationDuration: `${duration}s` }}
+            >
+              <span ref={textRef} className="inline-block">
+                {bar.text}
+                {countdown && !countdown.done && (
+                  <span className="ml-3 inline-flex items-center gap-1 font-mono font-semibold">
+                    {countdown.d > 0 && <span>{countdown.d}d </span>}
+                    <span>
+                      {pad(countdown.h)}:{pad(countdown.m)}:{pad(countdown.s)}
+                    </span>
+                  </span>
+                )}
+              </span>
+              <span aria-hidden="true" className="inline-block">
+                {bar.text}
+                {countdown && !countdown.done && (
+                  <span className="ml-3 inline-flex items-center gap-1 font-mono font-semibold">
+                    {countdown.d > 0 && <span>{countdown.d}d </span>}
+                    <span>
+                      {pad(countdown.h)}:{pad(countdown.m)}:{pad(countdown.s)}
+                    </span>
+                  </span>
+                )}
+              </span>
+            </div>
+          ) : (
+            <span ref={textRef} className="inline-block truncate max-w-full align-bottom">
+              {bar.text}
+              {countdown && !countdown.done && (
+                <span className="ml-3 inline-flex items-center gap-1 font-mono font-semibold">
+                  {countdown.d > 0 && <span>{countdown.d}d </span>}
+                  <span>
+                    {pad(countdown.h)}:{pad(countdown.m)}:{pad(countdown.s)}
+                  </span>
+                </span>
+              )}
             </span>
           )}
         </div>
@@ -84,6 +183,25 @@ export function AnnouncementBar() {
           </button>
         )}
       </div>
+      <style>{`
+        @keyframes ab-ticker-scroll {
+          0% { transform: translate3d(0, 0, 0); }
+          100% { transform: translate3d(-50%, 0, 0); }
+        }
+        .ab-ticker {
+          animation-name: ab-ticker-scroll;
+          animation-timing-function: linear;
+          animation-iteration-count: infinite;
+          will-change: transform;
+        }
+        .ab-text-wrap[data-ticker="on"]:hover .ab-ticker,
+        .ab-text-wrap[data-ticker="on"]:active .ab-ticker {
+          animation-play-state: paused;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ab-ticker { animation: none; transform: none; }
+        }
+      `}</style>
     </div>
   );
 }
