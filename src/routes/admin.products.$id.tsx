@@ -806,6 +806,7 @@ function BasicInfoTab({
         visibility: form.visibility || null,
         product_type: form.product_type || null,
         delivery_type: form.delivery_type || null,
+        category_id: form.category_id ? form.category_id : null,
       };
       return upsert({ data: payload });
     },
