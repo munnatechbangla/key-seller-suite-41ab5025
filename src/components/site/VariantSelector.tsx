@@ -165,10 +165,7 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
     onVariantChange?.(null);
     navigate({
       to: ".",
-      search: (prev) => {
-        const { variant: _v, ...rest } = prev ?? {};
-        return rest;
-      },
+      search: { variant: undefined },
       replace: true,
       resetScroll: false,
     }).catch(() => {});
