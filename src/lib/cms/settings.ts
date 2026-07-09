@@ -324,12 +324,23 @@ function merge<T extends object>(base: T, override: Partial<T> | undefined | nul
 let lastResolvedLogoSrc: string | null = null;
 let lastResolvedFaviconSrc: string | null = null;
 
+// Module-level cache of last-resolved source values. Skips re-signing when unchanged
+// across page navigations, mounts, or repeat load() calls.
+let lastResolvedLogoSrc: string | null = null;
+let lastResolvedLightLogoSrc: string | null = null;
+let lastResolvedDarkLogoSrc: string | null = null;
+let lastResolvedFaviconSrc: string | null = null;
+
 // ---- Persistent branding cache (localStorage) ----
-const BRANDING_CACHE_KEY = "dn.branding.cache.v1";
+const BRANDING_CACHE_KEY = "dn.branding.cache.v2";
 type BrandingCache = {
   logoSrc: string;
+  lightLogoSrc: string;
+  darkLogoSrc: string;
   faviconSrc: string;
   resolvedLogoUrl: string;
+  resolvedLightLogoUrl: string;
+  resolvedDarkLogoUrl: string;
   resolvedFaviconUrl: string;
 };
 
@@ -356,6 +367,8 @@ function writeBrandingCache(c: BrandingCache) {
 const hydrated = readBrandingCache();
 if (hydrated) {
   lastResolvedLogoSrc = hydrated.logoSrc;
+  lastResolvedLightLogoSrc = hydrated.lightLogoSrc;
+  lastResolvedDarkLogoSrc = hydrated.darkLogoSrc;
   lastResolvedFaviconSrc = hydrated.faviconSrc;
 }
 
@@ -365,25 +378,37 @@ async function resolveBrandingMedia(
   get: () => SettingsState,
 ) {
   const logoSrc = branding.logo_url || "";
+  const lightSrc = branding.light_logo_url || "";
+  const darkSrc = branding.dark_logo_url || "";
   const favSrc = branding.favicon_url || "";
   const needsLogo = logoSrc !== lastResolvedLogoSrc;
+  const needsLight = lightSrc !== lastResolvedLightLogoSrc;
+  const needsDark = darkSrc !== lastResolvedDarkLogoSrc;
   const needsFav = favSrc !== lastResolvedFaviconSrc;
-  if (!needsLogo && !needsFav) return;
+  if (!needsLogo && !needsLight && !needsDark && !needsFav) return;
   set({ resolvingMedia: true });
   const { resolveStoredUrlAsync } = await import("@/lib/media/resolve");
-  const [logo, fav] = await Promise.all([
+  const [logo, light, dark, fav] = await Promise.all([
     needsLogo ? resolveStoredUrlAsync(logoSrc) : Promise.resolve(undefined),
+    needsLight ? resolveStoredUrlAsync(lightSrc) : Promise.resolve(undefined),
+    needsDark ? resolveStoredUrlAsync(darkSrc) : Promise.resolve(undefined),
     needsFav ? resolveStoredUrlAsync(favSrc) : Promise.resolve(undefined),
   ]);
   const patch: Partial<SettingsState> = { resolvingMedia: false };
   if (logo !== undefined) { patch.resolvedLogoUrl = logo; lastResolvedLogoSrc = logoSrc; }
+  if (light !== undefined) { patch.resolvedLightLogoUrl = light; lastResolvedLightLogoSrc = lightSrc; }
+  if (dark !== undefined) { patch.resolvedDarkLogoUrl = dark; lastResolvedDarkLogoSrc = darkSrc; }
   if (fav !== undefined) { patch.resolvedFaviconUrl = fav; lastResolvedFaviconSrc = favSrc; }
   set(patch);
   const s = get();
   writeBrandingCache({
     logoSrc: lastResolvedLogoSrc ?? "",
+    lightLogoSrc: lastResolvedLightLogoSrc ?? "",
+    darkLogoSrc: lastResolvedDarkLogoSrc ?? "",
     faviconSrc: lastResolvedFaviconSrc ?? "",
     resolvedLogoUrl: patch.resolvedLogoUrl ?? s.resolvedLogoUrl,
+    resolvedLightLogoUrl: patch.resolvedLightLogoUrl ?? s.resolvedLightLogoUrl,
+    resolvedDarkLogoUrl: patch.resolvedDarkLogoUrl ?? s.resolvedDarkLogoUrl,
     resolvedFaviconUrl: patch.resolvedFaviconUrl ?? s.resolvedFaviconUrl,
   });
 }
@@ -392,8 +417,11 @@ export const useSettings = create<SettingsState>((set, get) => ({
   settings: defaultSettings,
   loaded: false,
   resolvedLogoUrl: hydrated?.resolvedLogoUrl ?? "",
+  resolvedLightLogoUrl: hydrated?.resolvedLightLogoUrl ?? "",
+  resolvedDarkLogoUrl: hydrated?.resolvedDarkLogoUrl ?? "",
   resolvedFaviconUrl: hydrated?.resolvedFaviconUrl ?? "",
   resolvingMedia: false,
+
   setLocal: (next) => {
     set({ settings: next, loaded: true });
     void resolveBrandingMedia(next.branding, (p) => set(p as SettingsState), get);
