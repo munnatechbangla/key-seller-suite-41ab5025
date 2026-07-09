@@ -95,6 +95,22 @@ export type HomeNewsletter = {
   successMessage: string;
 };
 
+export type HomeAnnouncementBar = {
+  enabled: boolean;
+  text: string;
+  highlight: string;
+  buttonLabel: string;
+  buttonUrl: string;
+  countdownEnabled: boolean;
+  countdownEndsAt: string; // ISO date string
+  backgroundColor: string; // CSS color, empty = default gradient
+  textColor: string; // CSS color, empty = default
+  closable: boolean;
+  sticky: boolean;
+  showOnDesktop: boolean;
+  showOnMobile: boolean;
+};
+
 export type HomePaymentMethods = {
   enabled: boolean;
   title: string;
