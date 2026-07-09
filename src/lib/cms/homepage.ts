@@ -145,6 +145,7 @@ export type HomepageConfig = {
   faq: HomeFaq;
   newsletter: HomeNewsletter;
   paymentMethods: HomePaymentMethods;
+  announcementBar: HomeAnnouncementBar;
 };
 
 // ---------------- Defaults ----------------
