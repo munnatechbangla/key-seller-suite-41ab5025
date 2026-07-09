@@ -937,12 +937,32 @@ function BasicInfoTab({
       )}
 
       <div>
+        <Label>Category</Label>
+        <div className="flex items-center gap-2">
+          <select
+            className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+            value={form.category_id || ""}
+            onChange={(e) => set({ category_id: e.target.value })}
+          >
+            <option value="">— Uncategorized —</option>
+            {(categories as any[]).map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+          <Link to="/admin/categories" className="text-xs text-primary whitespace-nowrap hover:underline">
+            Manage
+          </Link>
+        </div>
+      </div>
+
+      <div>
         <MediaPicker
           label="Featured image"
           value={form.thumbnail_url}
           onChange={(v) => set({ thumbnail_url: v })}
         />
       </div>
+
 
       <div className="flex justify-end">
         <Button onClick={() => save.mutate()} disabled={save.isPending}>
