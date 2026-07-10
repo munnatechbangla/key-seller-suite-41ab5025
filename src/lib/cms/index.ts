@@ -33,12 +33,13 @@ export function useProductSection(section: Pick<HomeProductSection, "source" | "
   const fallbackSource: Exclude<HomeProductSectionSource, "manual"> =
     section.source === "manual" ? "featured" : section.source;
 
-  const manual = useSuspenseQuery({ ...productsBySlugsQuery(manualSlugs), enabled: useManual });
+  const manual = useSuspenseQuery(productsBySlugsQuery(manualSlugs));
   const curated = useSuspenseQuery(curationQuery(fallbackSource));
 
-  const items = useManual ? (manual.data ?? []) : curated.data;
+  const items = useManual ? manual.data : curated.data;
   return section.limit ? items.slice(0, section.limit) : items;
 }
+
 
 export function useResolvedProducts(slugs: string[]): Product[] {
   return useSuspenseQuery(productsBySlugsQuery(slugs)).data;
