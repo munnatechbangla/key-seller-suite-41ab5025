@@ -165,6 +165,26 @@ function HomepageBuilder() {
           </div>
         </TabsContent>
 
+        {/* ---------------- Header Navigation ---------------- */}
+        <TabsContent value="headerNav" className="mt-4 space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Manage the primary header menu. Items appear on both desktop and mobile. Disabled items are hidden. Reorder with the arrows.
+          </p>
+          <ItemList<HeaderNavItem>
+            items={cfg.headerNav.items}
+            onChange={(items) => patch("headerNav", { ...cfg.headerNav, items })}
+            makeNew={() => ({ id: newId("nav"), label: "New link", url: "/", enabled: true })}
+            renderItem={(it, set) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <Field label="Label" value={it.label} onChange={(v) => set({ ...it, label: v })} />
+                <Field label="URL" value={it.url} onChange={(v) => set({ ...it, url: v })} />
+              </div>
+            )}
+          />
+        </TabsContent>
+
+
+
 
         {/* ---------------- Layout & Order ---------------- */}
         <TabsContent value="layout" className="mt-4 space-y-3">
