@@ -285,6 +285,16 @@ export const defaultHomepageConfig: HomepageConfig = {
     showOnDesktop: true,
     showOnMobile: true,
   },
+  headerNav: {
+    items: [
+      { id: "nav-home", label: "Home", url: "/", enabled: true, exact: true },
+      { id: "nav-products", label: "Products", url: "/products", enabled: true },
+      { id: "nav-categories", label: "Categories", url: "/categories", enabled: true },
+      { id: "nav-blog", label: "Blog", url: "/blog", enabled: true },
+      { id: "nav-about", label: "About", url: "/about", enabled: true },
+      { id: "nav-contact", label: "Contact", url: "/contact", enabled: true },
+    ],
+  },
 };
 
 // ---------------- Store ----------------
