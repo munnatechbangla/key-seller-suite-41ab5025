@@ -294,7 +294,9 @@ function HomepageBuilder() {
 
         {/* ---------------- Product sections ---------------- */}
         <TabsContent value="products" className="mt-4 space-y-3">
-          <p className="text-xs text-muted-foreground">Source pulls products from curated lists (featured / trending / best sellers).</p>
+          <p className="text-xs text-muted-foreground">
+            Each section can pull from a curated list (Latest / Featured / Trending / Best sellers) or use a manual product selection with custom ordering. Each section also has an optional countdown timer.
+          </p>
           <ItemList<HomeProductSection>
             items={cfg.productSections}
             onChange={(items) => patch("productSections", items)}
@@ -306,14 +308,36 @@ function HomepageBuilder() {
                 </div>
                 <Field label="Subtitle" value={it.subtitle} onChange={(v) => set({ ...it, subtitle: v })} />
                 <div className="grid grid-cols-2 gap-2">
-                  <SelectField label="Source" value={it.source} options={[{ value: "featured", label: "Featured" }, { value: "trending", label: "Trending" }, { value: "bestSellers", label: "Best sellers" }]} onChange={(v) => set({ ...it, source: v as HomeProductSection["source"] })} />
-                  <NumberField label="Limit" value={it.limit} onChange={(v) => set({ ...it, limit: v })} />
+                  <SelectField
+                    label="Product source"
+                    value={it.source}
+                    options={[
+                      { value: "latest", label: "Latest Products" },
+                      { value: "featured", label: "Featured Products" },
+                      { value: "trending", label: "Trending Products" },
+                      { value: "bestSellers", label: "Best Sellers" },
+                      { value: "manual", label: "Manual Products" },
+                    ]}
+                    onChange={(v) => set({ ...it, source: v as HomeProductSection["source"] })}
+                  />
+                  <NumberField label="Limit (auto modes)" value={it.limit} onChange={(v) => set({ ...it, limit: v })} />
                 </div>
+                {it.source === "manual" && (
+                  <SectionProductPicker
+                    slugs={it.manualProductSlugs ?? []}
+                    onChange={(slugs) => set({ ...it, manualProductSlugs: slugs })}
+                  />
+                )}
+                <SectionCountdownEditor
+                  countdown={it.countdown}
+                  onChange={(c) => set({ ...it, countdown: c })}
+                />
               </>
             )}
-            makeNew={() => ({ id: newId("psec"), enabled: true, eyebrow: "New section", title: "Untitled", subtitle: "", source: "featured", limit: 8 })}
+            makeNew={() => ({ id: newId("psec"), enabled: true, eyebrow: "New section", title: "Untitled", subtitle: "", source: "featured", limit: 8, manualProductSlugs: [], countdown: { enabled: false, endsAt: "", label: "", hideAfterExpiry: true, expiredMessage: "" } })}
           />
         </TabsContent>
+
 
         {/* ---------------- Why choose ---------------- */}
         <TabsContent value="whyChoose" className="mt-4 space-y-3">
