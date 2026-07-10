@@ -5,6 +5,7 @@ import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { PageHero } from "@/components/site/PageHero";
 import { useSearchResults } from "@/lib/catalog";
+import { resolveProductPrice, formatPrice } from "@/lib/product-price";
 import { Search, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
