@@ -104,12 +104,12 @@ export function Header() {
             <nav className="container mx-auto px-4 py-3 flex flex-col gap-1">
               {nav.map((n) => (
                 <Link
-                  key={n.to}
-                  to={n.to}
+                  key={n.id}
+                  to={n.url as string}
                   onClick={() => setOpen(false)}
                   className="px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-muted"
                   activeProps={{ className: "text-primary bg-primary/10" }}
-                  activeOptions={{ exact: n.exact ?? false }}
+                  activeOptions={{ exact: n.exact ?? n.url === "/" }}
                 >
                   {n.label}
                 </Link>
