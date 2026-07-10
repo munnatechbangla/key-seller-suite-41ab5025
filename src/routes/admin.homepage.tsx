@@ -229,6 +229,29 @@ function HomepageBuilder() {
             onManualChange={(slugs) => patch("hero", { ...cfg.hero, manualProductSlugs: slugs, floatingProductSlugs: slugs.slice(0, 6) })}
           />
 
+          <div className="rounded-lg border p-4 space-y-3">
+            <div>
+              <h3 className="font-semibold text-sm">Feature Badges</h3>
+              <p className="text-xs text-muted-foreground">
+                Small badges shown below the Hero buttons (e.g. Instant Delivery, Secure Checkout). Up to {HERO_FEATURE_BADGES_MAX} badges. Leave empty to restore defaults.
+              </p>
+            </div>
+            <ItemList<HeroFeatureBadge>
+              items={cfg.hero.featureBadges ?? []}
+              onChange={(items) => patch("hero", { ...cfg.hero, featureBadges: items })}
+              max={HERO_FEATURE_BADGES_MAX}
+              makeNew={() => ({ id: newId("badge"), enabled: true, icon: "Zap", title: "New badge", subtitle: "", url: "" })}
+              renderItem={(it, set) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <Field label="Icon" value={it.icon} onChange={(v) => set({ ...it, icon: v as IconName })} />
+                  <Field label="Title" value={it.title} onChange={(v) => set({ ...it, title: v })} />
+                  <Field label="Subtitle (optional)" value={it.subtitle ?? ""} onChange={(v) => set({ ...it, subtitle: v })} />
+                  <Field label="URL (optional)" value={it.url ?? ""} onChange={(v) => set({ ...it, url: v })} />
+                </div>
+              )}
+            />
+          </div>
+
         </TabsContent>
 
         {/* ---------------- Trust ---------------- */}
