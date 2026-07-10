@@ -477,15 +477,17 @@ function EnableToggle({ label, value, onChange }: { label: string; value: boolea
 
 type Identified = { id: string; enabled: boolean };
 
-function ItemList<T extends Identified>({ items, onChange, renderItem, makeNew }: {
+function ItemList<T extends Identified>({ items, onChange, renderItem, makeNew, max }: {
   items: T[];
   onChange: (items: T[]) => void;
   renderItem: (item: T, set: (next: T) => void) => React.ReactNode;
   makeNew: () => T;
+  max?: number;
 }) {
   const setAt = (i: number, next: T) => onChange(items.map((it, idx) => (idx === i ? next : it)));
   const move = (i: number, dir: -1 | 1) => onChange(reorder(items, i, i + dir));
   const remove = (i: number) => onChange(items.filter((_, idx) => idx !== i));
+  const atMax = typeof max === "number" && items.length >= max;
   return (
     <div className="space-y-3">
       {items.map((it, i) => (
@@ -503,8 +505,8 @@ function ItemList<T extends Identified>({ items, onChange, renderItem, makeNew }
           {renderItem(it, (next) => setAt(i, next))}
         </div>
       ))}
-      <Button variant="outline" onClick={() => onChange([...items, makeNew()])} className="gap-2">
-        <Plus className="h-4 w-4" /> Add item
+      <Button variant="outline" onClick={() => onChange([...items, makeNew()])} className="gap-2" disabled={atMax}>
+        <Plus className="h-4 w-4" /> {atMax ? `Maximum ${max} items` : "Add item"}
       </Button>
     </div>
   );
