@@ -32,11 +32,23 @@ export type HomeHero = {
   primaryCta: { label: string; to: string; icon?: IconName };
   secondaryCta: { label: string; href: string; icon?: IconName };
   trustItems: { id: string; icon: IconName; label: string }[];
+  featureBadges?: HeroFeatureBadge[];
   /** @deprecated use productSource + manualProductSlugs */
   floatingProductSlugs: string[];
   productSource?: HeroProductSource;
   manualProductSlugs?: string[];
 };
+
+export type HeroFeatureBadge = {
+  id: string;
+  enabled: boolean;
+  icon: IconName;
+  title: string;
+  subtitle?: string;
+  url?: string;
+};
+
+export const HERO_FEATURE_BADGES_MAX = 6;
 
 export type HomeTrustItem = { id: string; icon: IconName; title: string; desc: string; enabled: boolean };
 
