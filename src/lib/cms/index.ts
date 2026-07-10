@@ -14,12 +14,13 @@ import {
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { HomeProductSection, HomeProductSectionSource } from "./homepage";
 
-function curationQuery(source: Exclude<HomeProductSectionSource, "manual">) {
+function curationQuery(source: Exclude<HomeProductSectionSource, "manual">): ReturnType<typeof featuredQuery> {
   if (source === "featured") return featuredQuery();
   if (source === "trending") return trendingQuery();
-  if (source === "latest") return { ...heroLatestQuery(24), queryKey: ["catalog", "hero-latest", String(24)] };
+  if (source === "latest") return heroLatestQuery(24) as unknown as ReturnType<typeof featuredQuery>;
   return bestSellersQuery();
 }
+
 
 
 /**
