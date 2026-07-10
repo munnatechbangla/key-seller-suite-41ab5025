@@ -235,6 +235,9 @@ export const defaultHomepageConfig: HomepageConfig = {
     subtitle: defaultCategories.subtitle,
     viewAllLabel: defaultCategories.viewAllLabel,
     limit: 10,
+    source: "manual",
+    manualCategoryIds: [],
+    featuredCategoryIds: [],
   },
   productSections: defaultProductSections.map((s) => ({
     id: s.id,
