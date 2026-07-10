@@ -52,6 +52,8 @@ export const HERO_FEATURE_BADGES_MAX = 6;
 
 export type HomeTrustItem = { id: string; icon: IconName; title: string; desc: string; enabled: boolean };
 
+export type HomeCategorySource = "manual" | "featured" | "latest";
+
 export type HomeCategoriesSection = {
   enabled: boolean;
   eyebrow: string;
@@ -59,6 +61,9 @@ export type HomeCategoriesSection = {
   subtitle: string;
   viewAllLabel: string;
   limit: number;
+  source?: HomeCategorySource;
+  manualCategoryIds?: string[];
+  featuredCategoryIds?: string[];
 };
 
 export type HomeProductSection = {
@@ -230,6 +235,9 @@ export const defaultHomepageConfig: HomepageConfig = {
     subtitle: defaultCategories.subtitle,
     viewAllLabel: defaultCategories.viewAllLabel,
     limit: 10,
+    source: "manual",
+    manualCategoryIds: [],
+    featuredCategoryIds: [],
   },
   productSections: defaultProductSections.map((s) => ({
     id: s.id,
