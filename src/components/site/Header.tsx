@@ -2,14 +2,12 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Heart, ShoppingCart, User, Search, Menu, X, GitCompare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useCart, useWishlist, useCompare, useAuth } from "@/lib/stores";
-import { primaryNav } from "@/lib/cms";
+import { useHomepage } from "@/lib/cms/homepage";
 import { AnnouncementBar } from "@/components/site/AnnouncementBar";
 
 import { ThemeToggle } from "@/components/site/ThemeToggle";
 import { Logo } from "@/components/site/Logo";
 import { MiniCart } from "@/components/site/MiniCart";
-
-const nav = primaryNav;
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -21,6 +19,7 @@ export function Header() {
   const wishCount = useWishlist((s) => s.slugs.length);
   const cmpCount = useCompare((s) => s.slugs.length);
   const user = useAuth((s) => s.user);
+  const nav = useHomepage((s) => s.config.headerNav.items.filter((i) => i.enabled));
 
 
 
@@ -48,11 +47,11 @@ export function Header() {
           <nav className="hidden lg:flex items-center gap-1 ml-4 min-w-0">
             {nav.map((n) => (
               <Link
-                key={n.to}
-                to={n.to}
+                key={n.id}
+                to={n.url as string}
                 className="px-3 py-2 rounded-lg text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted transition-smooth"
                 activeProps={{ className: "text-primary bg-primary/10" }}
-                activeOptions={{ exact: n.exact ?? false }}
+                activeOptions={{ exact: n.exact ?? n.url === "/" }}
               >
                 {n.label}
               </Link>
@@ -105,12 +104,12 @@ export function Header() {
             <nav className="container mx-auto px-4 py-3 flex flex-col gap-1">
               {nav.map((n) => (
                 <Link
-                  key={n.to}
-                  to={n.to}
+                  key={n.id}
+                  to={n.url as string}
                   onClick={() => setOpen(false)}
                   className="px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-muted"
                   activeProps={{ className: "text-primary bg-primary/10" }}
-                  activeOptions={{ exact: n.exact ?? false }}
+                  activeOptions={{ exact: n.exact ?? n.url === "/" }}
                 >
                   {n.label}
                 </Link>

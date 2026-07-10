@@ -111,6 +111,18 @@ export type HomeAnnouncementBar = {
   showOnMobile: boolean;
 };
 
+export type HeaderNavItem = {
+  id: string;
+  label: string;
+  url: string;
+  enabled: boolean;
+  exact?: boolean;
+};
+
+export type HomeHeaderNav = {
+  items: HeaderNavItem[];
+};
+
 export type HomePaymentMethods = {
   enabled: boolean;
   title: string;
@@ -146,6 +158,7 @@ export type HomepageConfig = {
   newsletter: HomeNewsletter;
   paymentMethods: HomePaymentMethods;
   announcementBar: HomeAnnouncementBar;
+  headerNav: HomeHeaderNav;
 };
 
 // ---------------- Defaults ----------------
@@ -272,6 +285,16 @@ export const defaultHomepageConfig: HomepageConfig = {
     showOnDesktop: true,
     showOnMobile: true,
   },
+  headerNav: {
+    items: [
+      { id: "nav-home", label: "Home", url: "/", enabled: true, exact: true },
+      { id: "nav-products", label: "Products", url: "/products", enabled: true },
+      { id: "nav-categories", label: "Categories", url: "/categories", enabled: true },
+      { id: "nav-blog", label: "Blog", url: "/blog", enabled: true },
+      { id: "nav-about", label: "About", url: "/about", enabled: true },
+      { id: "nav-contact", label: "Contact", url: "/contact", enabled: true },
+    ],
+  },
 };
 
 // ---------------- Store ----------------
@@ -299,6 +322,7 @@ export function mergeConfig(base: HomepageConfig, override: Partial<HomepageConf
     newsletter: { ...base.newsletter, ...(override.newsletter ?? {}) },
     paymentMethods: { ...base.paymentMethods, ...(override.paymentMethods ?? {}) },
     announcementBar: { ...base.announcementBar, ...(override.announcementBar ?? {}) },
+    headerNav: override.headerNav ? { items: override.headerNav.items ?? base.headerNav.items } : base.headerNav,
     productSections: override.productSections ?? base.productSections,
     sectionOrder: override.sectionOrder ?? base.sectionOrder,
   };
