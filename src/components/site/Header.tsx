@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Heart, ShoppingCart, User, Search, Menu, X, GitCompare } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCart, useWishlist, useCompare, useAuth } from "@/lib/stores";
 import { useHomepage } from "@/lib/cms/homepage";
 import { AnnouncementBar } from "@/components/site/AnnouncementBar";
@@ -19,7 +19,8 @@ export function Header() {
   const wishCount = useWishlist((s) => s.slugs.length);
   const cmpCount = useCompare((s) => s.slugs.length);
   const user = useAuth((s) => s.user);
-  const nav = useHomepage((s) => (s.config?.headerNav?.items ?? []).filter((i) => i && i.enabled));
+  const navItems = useHomepage((s) => s.config?.headerNav?.items);
+  const nav = useMemo(() => (navItems ?? []).filter((i) => i && i.enabled), [navItems]);
 
 
 
