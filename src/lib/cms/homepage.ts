@@ -322,7 +322,12 @@ export function mergeConfig(base: HomepageConfig, override: Partial<HomepageConf
     newsletter: { ...base.newsletter, ...(override.newsletter ?? {}) },
     paymentMethods: { ...base.paymentMethods, ...(override.paymentMethods ?? {}) },
     announcementBar: { ...base.announcementBar, ...(override.announcementBar ?? {}) },
-    headerNav: override.headerNav ? { items: override.headerNav.items ?? base.headerNav.items } : base.headerNav,
+    headerNav: {
+      items:
+        Array.isArray(override.headerNav?.items) && override.headerNav!.items.length > 0
+          ? override.headerNav!.items
+          : base.headerNav.items,
+    },
     productSections: override.productSections ?? base.productSections,
     sectionOrder: override.sectionOrder ?? base.sectionOrder,
   };
