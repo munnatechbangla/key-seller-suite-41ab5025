@@ -348,24 +348,26 @@ function ProductSectionsBlock() {
   const sections = useMemo(() => rawSections.filter((p) => p.enabled), [rawSections]);
   return (
     <>
-      {sections.map((s, i) => (
-        <ProductSectionBlock key={s.id} section={s} action={i === 0 ? <Countdown /> : undefined} />
+      {sections.map((s) => (
+        <ProductSectionBlock key={s.id} section={s} />
       ))}
     </>
   );
 }
 
-function ProductSectionBlock({ section, action }: { section: HomeProductSection; action?: React.ReactNode }) {
+function ProductSectionBlock({ section }: { section: HomeProductSection }) {
   const items = useProductSection({
-    id: section.id,
-    eyebrow: section.eyebrow,
-    title: section.title,
-    subtitle: section.subtitle,
     source: section.source,
     limit: section.limit,
+    manualProductSlugs: section.manualProductSlugs,
   });
   return (
-    <Section eyebrow={section.eyebrow} title={section.title} subtitle={section.subtitle} action={action}>
+    <Section
+      eyebrow={section.eyebrow}
+      title={section.title}
+      subtitle={section.subtitle}
+      action={section.countdown?.enabled ? <SectionCountdown countdown={section.countdown} /> : undefined}
+    >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
         {items.map((p) => <ProductCard key={p.slug} product={p} />)}
       </div>
@@ -373,14 +375,41 @@ function ProductSectionBlock({ section, action }: { section: HomeProductSection;
   );
 }
 
-function Countdown() {
+function SectionCountdown({ countdown }: { countdown: NonNullable<HomeProductSection["countdown"]> }) {
+  const endTs = countdown.endsAt ? new Date(countdown.endsAt).getTime() : 0;
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!endTs) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [endTs]);
+  if (!endTs) return null;
+  const remaining = Math.max(0, endTs - now);
+  const expired = remaining <= 0;
+  if (expired && countdown.hideAfterExpiry) return null;
+  if (expired) {
+    return (
+      <div className="text-sm font-semibold text-muted-foreground">
+        {countdown.expiredMessage || "Offer ended"}
+      </div>
+    );
+  }
+  const totalSec = Math.floor(remaining / 1000);
+  const days = Math.floor(totalSec / 86400);
+  const hrs = Math.floor((totalSec % 86400) / 3600);
+  const min = Math.floor((totalSec % 3600) / 60);
+  const sec = totalSec % 60;
   const segments = [
-    { v: String(flashDealCountdown.hours).padStart(2, "0"), l: "hrs" },
-    { v: String(flashDealCountdown.minutes).padStart(2, "0"), l: "min" },
-    { v: String(flashDealCountdown.seconds).padStart(2, "0"), l: "sec" },
+    ...(days > 0 ? [{ v: String(days).padStart(2, "0"), l: "day" }] : []),
+    { v: String(hrs).padStart(2, "0"), l: "hrs" },
+    { v: String(min).padStart(2, "0"), l: "min" },
+    { v: String(sec).padStart(2, "0"), l: "sec" },
   ];
   return (
     <div className="flex items-center gap-2">
+      {countdown.label ? (
+        <span className="hidden sm:inline text-xs font-semibold text-muted-foreground mr-1">{countdown.label}</span>
+      ) : null}
       {segments.map(({ v, l }) => (
         <div key={l} className="h-14 w-14 rounded-xl bg-gradient-primary text-primary-foreground grid place-items-center shadow-elegant">
           <div className="text-center leading-none">
@@ -392,6 +421,7 @@ function Countdown() {
     </div>
   );
 }
+
 
 function WhyChoose() {
   const cfg = useHomepage((s) => s.config.whyChoose);
