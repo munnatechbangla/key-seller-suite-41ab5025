@@ -24,7 +24,8 @@ import {
   type HeroFeatureBadge,
 } from "@/lib/cms/homepage";
 import { useQuery } from "@tanstack/react-query";
-import { searchQuery, productsBySlugsQuery, type Product } from "@/lib/catalog";
+import { searchQuery, productsBySlugsQuery, categoriesQuery, type Product } from "@/lib/catalog";
+import type { HomeCategorySource } from "@/lib/cms/homepage";
 import type { IconName } from "@/lib/cms/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
