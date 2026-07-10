@@ -111,6 +111,7 @@ function HomepageBuilder() {
         <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="layout">Layout & Order</TabsTrigger>
           <TabsTrigger value="announcement">Announcement Bar</TabsTrigger>
+          <TabsTrigger value="headerNav">Header Navigation</TabsTrigger>
           <TabsTrigger value="hero">Hero</TabsTrigger>
           <TabsTrigger value="trust">Trust</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
