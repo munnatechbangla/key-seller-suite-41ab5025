@@ -19,7 +19,7 @@ export function Header() {
   const wishCount = useWishlist((s) => s.slugs.length);
   const cmpCount = useCompare((s) => s.slugs.length);
   const user = useAuth((s) => s.user);
-  const nav = useHomepage((s) => s.config.headerNav.items.filter((i) => i.enabled));
+  const nav = useHomepage((s) => (s.config?.headerNav?.items ?? []).filter((i) => i && i.enabled));
 
 
 
