@@ -294,7 +294,9 @@ function HomepageBuilder() {
 
         {/* ---------------- Product sections ---------------- */}
         <TabsContent value="products" className="mt-4 space-y-3">
-          <p className="text-xs text-muted-foreground">Source pulls products from curated lists (featured / trending / best sellers).</p>
+          <p className="text-xs text-muted-foreground">
+            Each section can pull from a curated list (Latest / Featured / Trending / Best sellers) or use a manual product selection with custom ordering. Each section also has an optional countdown timer.
+          </p>
           <ItemList<HomeProductSection>
             items={cfg.productSections}
             onChange={(items) => patch("productSections", items)}
@@ -306,14 +308,36 @@ function HomepageBuilder() {
                 </div>
                 <Field label="Subtitle" value={it.subtitle} onChange={(v) => set({ ...it, subtitle: v })} />
                 <div className="grid grid-cols-2 gap-2">
-                  <SelectField label="Source" value={it.source} options={[{ value: "featured", label: "Featured" }, { value: "trending", label: "Trending" }, { value: "bestSellers", label: "Best sellers" }]} onChange={(v) => set({ ...it, source: v as HomeProductSection["source"] })} />
-                  <NumberField label="Limit" value={it.limit} onChange={(v) => set({ ...it, limit: v })} />
+                  <SelectField
+                    label="Product source"
+                    value={it.source}
+                    options={[
+                      { value: "latest", label: "Latest Products" },
+                      { value: "featured", label: "Featured Products" },
+                      { value: "trending", label: "Trending Products" },
+                      { value: "bestSellers", label: "Best Sellers" },
+                      { value: "manual", label: "Manual Products" },
+                    ]}
+                    onChange={(v) => set({ ...it, source: v as HomeProductSection["source"] })}
+                  />
+                  <NumberField label="Limit (auto modes)" value={it.limit} onChange={(v) => set({ ...it, limit: v })} />
                 </div>
+                {it.source === "manual" && (
+                  <SectionProductPicker
+                    slugs={it.manualProductSlugs ?? []}
+                    onChange={(slugs) => set({ ...it, manualProductSlugs: slugs })}
+                  />
+                )}
+                <SectionCountdownEditor
+                  countdown={it.countdown}
+                  onChange={(c) => set({ ...it, countdown: c })}
+                />
               </>
             )}
-            makeNew={() => ({ id: newId("psec"), enabled: true, eyebrow: "New section", title: "Untitled", subtitle: "", source: "featured", limit: 8 })}
+            makeNew={() => ({ id: newId("psec"), enabled: true, eyebrow: "New section", title: "Untitled", subtitle: "", source: "featured", limit: 8, manualProductSlugs: [], countdown: { enabled: false, endsAt: "", label: "", hideAfterExpiry: true, expiredMessage: "" } })}
           />
         </TabsContent>
+
 
         {/* ---------------- Why choose ---------------- */}
         <TabsContent value="whyChoose" className="mt-4 space-y-3">
@@ -787,3 +811,113 @@ function CategoryList({
     </div>
   );
 }
+
+// ---------------- Product section — manual product picker ----------------
+
+function SectionProductPicker({ slugs, onChange }: { slugs: string[]; onChange: (slugs: string[]) => void }) {
+  const [q, setQ] = useState("");
+  const selected = useQuery({ ...productsBySlugsQuery(slugs), enabled: slugs.length > 0 });
+  const search = useQuery({ ...searchQuery(q), enabled: q.trim().length >= 2 });
+  const selectedProducts: Product[] = selected.data ?? [];
+  const ordered = slugs
+    .map((slug) => selectedProducts.find((p) => p.slug === slug))
+    .filter(Boolean) as Product[];
+  const move = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= slugs.length) return;
+    const next = [...slugs];
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange(next);
+  };
+  const remove = (slug: string) => onChange(slugs.filter((s) => s !== slug));
+  const add = (slug: string) => {
+    if (slugs.includes(slug)) return;
+    onChange([...slugs, slug]);
+  };
+  return (
+    <div className="space-y-3 rounded-md border p-3 bg-background">
+      <div className="space-y-1.5">
+        <Label className="text-xs">Search products to add</Label>
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Type at least 2 characters…" />
+        {q.trim().length >= 2 && (
+          <div className="mt-1 max-h-56 overflow-auto rounded-md border">
+            {(search.data ?? []).length === 0 && <div className="p-3 text-xs text-muted-foreground">No matches</div>}
+            {(search.data ?? []).map((p) => (
+              <button
+                key={p.slug}
+                type="button"
+                onClick={() => add(p.slug)}
+                disabled={slugs.includes(p.slug)}
+                className="flex w-full items-center justify-between gap-2 border-b p-2 text-left text-sm hover:bg-muted/40 disabled:opacity-50"
+              >
+                <span className="truncate">{p.name}</span>
+                <span className="text-xs text-muted-foreground">{slugs.includes(p.slug) ? "Added" : "Add"}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div>
+        <Label className="text-xs">Selected products ({slugs.length})</Label>
+        {slugs.length === 0 ? (
+          <div className="mt-1 rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground">
+            No products selected — will fall back to Featured products automatically.
+          </div>
+        ) : (
+          <div className="mt-1 space-y-1.5">
+            {slugs.map((slug, i) => {
+              const p = ordered.find((x) => x.slug === slug);
+              return (
+                <div key={slug} className="flex items-center gap-2 rounded-md border p-2">
+                  <span className="w-6 text-xs text-muted-foreground">#{i + 1}</span>
+                  <span className="flex-1 truncate text-sm">{p?.name ?? slug}</span>
+                  <Button variant="outline" size="icon" disabled={i === 0} onClick={() => move(i, -1)}><ArrowUp className="h-4 w-4" /></Button>
+                  <Button variant="outline" size="icon" disabled={i === slugs.length - 1} onClick={() => move(i, 1)}><ArrowDown className="h-4 w-4" /></Button>
+                  <Button variant="outline" size="icon" onClick={() => remove(slug)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------- Product section — countdown editor ----------------
+
+function SectionCountdownEditor({
+  countdown,
+  onChange,
+}: {
+  countdown: HomeProductSection["countdown"];
+  onChange: (c: NonNullable<HomeProductSection["countdown"]>) => void;
+}) {
+  const c = countdown ?? { enabled: false, endsAt: "", label: "", hideAfterExpiry: true, expiredMessage: "" };
+  const set = (patch: Partial<NonNullable<HomeProductSection["countdown"]>>) => onChange({ ...c, ...patch });
+  return (
+    <div className="space-y-3 rounded-md border p-3 bg-background">
+      <Toggle label="Enable countdown" value={c.enabled} onChange={(v) => set({ enabled: v })} />
+      {c.enabled && (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Countdown end date/time</Label>
+              <Input
+                type="datetime-local"
+                value={c.endsAt ? c.endsAt.slice(0, 16) : ""}
+                onChange={(e) => set({ endsAt: e.target.value ? new Date(e.target.value).toISOString() : "" })}
+              />
+            </div>
+            <Field label="Countdown label (optional)" value={c.label ?? ""} onChange={(v) => set({ label: v })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Toggle label="Hide countdown after expiry" value={c.hideAfterExpiry} onChange={(v) => set({ hideAfterExpiry: v })} />
+            <Field label="Expired message (optional)" value={c.expiredMessage ?? ""} onChange={(v) => set({ expiredMessage: v })} />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
