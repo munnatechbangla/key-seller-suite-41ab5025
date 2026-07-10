@@ -279,8 +279,16 @@ function HomepageBuilder() {
           <Area label="Subtitle" value={cfg.categories.subtitle} onChange={(v) => patch("categories", { ...cfg.categories, subtitle: v })} />
           <div className="grid grid-cols-2 gap-3">
             <Field label="View all label" value={cfg.categories.viewAllLabel} onChange={(v) => patch("categories", { ...cfg.categories, viewAllLabel: v })} />
-            <NumberField label="Limit" value={cfg.categories.limit} onChange={(v) => patch("categories", { ...cfg.categories, limit: v })} />
+            <NumberField label="Limit (auto modes)" value={cfg.categories.limit} onChange={(v) => patch("categories", { ...cfg.categories, limit: v })} />
           </div>
+          <CategoryPicker
+            source={cfg.categories.source ?? "manual"}
+            manualIds={cfg.categories.manualCategoryIds ?? []}
+            featuredIds={cfg.categories.featuredCategoryIds ?? []}
+            onSourceChange={(s) => patch("categories", { ...cfg.categories, source: s })}
+            onManualChange={(ids) => patch("categories", { ...cfg.categories, manualCategoryIds: ids })}
+            onFeaturedChange={(ids) => patch("categories", { ...cfg.categories, featuredCategoryIds: ids })}
+          />
         </TabsContent>
 
         {/* ---------------- Product sections ---------------- */}
