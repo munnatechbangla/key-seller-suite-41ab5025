@@ -10,6 +10,7 @@ import {
   useHomepage,
   reorder,
   newId,
+  HERO_FEATURE_BADGES_MAX,
   type HomepageConfig,
   type SectionId,
   type HomeProductSection,
@@ -20,6 +21,7 @@ import {
   type HomeFaqItem,
   type HeroProductSource,
   type HeaderNavItem,
+  type HeroFeatureBadge,
 } from "@/lib/cms/homepage";
 import { useQuery } from "@tanstack/react-query";
 import { searchQuery, productsBySlugsQuery, type Product } from "@/lib/catalog";
