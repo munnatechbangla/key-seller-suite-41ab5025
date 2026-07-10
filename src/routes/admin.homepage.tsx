@@ -656,3 +656,134 @@ function HeroProductPicker({
     </div>
   );
 }
+
+// ---------------- Category picker ----------------
+
+const CATEGORY_SOURCE_OPTIONS: { value: HomeCategorySource; label: string; desc: string }[] = [
+  { value: "manual", label: "Manual selection", desc: "Pick specific categories and set their order." },
+  { value: "featured", label: "Featured categories", desc: "Curated featured list (managed below)." },
+  { value: "latest", label: "Latest categories", desc: "Automatic — uses sort order and limit." },
+];
+
+function CategoryPicker({
+  source, manualIds, featuredIds, onSourceChange, onManualChange, onFeaturedChange,
+}: {
+  source: HomeCategorySource;
+  manualIds: string[];
+  featuredIds: string[];
+  onSourceChange: (s: HomeCategorySource) => void;
+  onManualChange: (ids: string[]) => void;
+  onFeaturedChange: (ids: string[]) => void;
+}) {
+  const cats = useQuery(categoriesQuery()).data ?? [];
+  return (
+    <div className="space-y-4 rounded-lg border p-4">
+      <div>
+        <Label className="text-sm font-semibold">Category source</Label>
+        <p className="text-xs text-muted-foreground">Choose how the homepage decides which categories to render.</p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        {CATEGORY_SOURCE_OPTIONS.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => onSourceChange(o.value)}
+            className={`text-left rounded-md border p-3 hover:border-primary transition ${source === o.value ? "border-primary bg-primary/5" : ""}`}
+          >
+            <div className="text-sm font-semibold">{o.label}</div>
+            <div className="text-xs text-muted-foreground">{o.desc}</div>
+          </button>
+        ))}
+      </div>
+
+      {source === "manual" && (
+        <CategoryList
+          label="Selected categories"
+          ids={manualIds}
+          all={cats}
+          onChange={onManualChange}
+        />
+      )}
+      {source === "featured" && (
+        <CategoryList
+          label="Featured categories"
+          ids={featuredIds}
+          all={cats}
+          onChange={onFeaturedChange}
+        />
+      )}
+      {source === "latest" && (
+        <div className="text-xs text-muted-foreground">Automatic — categories render by sort order, capped by the Limit above.</div>
+      )}
+    </div>
+  );
+}
+
+function CategoryList({
+  label, ids, all, onChange,
+}: {
+  label: string;
+  ids: string[];
+  all: { id: string; name: string; emoji: string }[];
+  onChange: (ids: string[]) => void;
+}) {
+  const [q, setQ] = useState("");
+  const byId = new Map(all.map((c) => [c.id, c]));
+  const available = all.filter((c) => !ids.includes(c.id) && (q.trim() === "" || c.name.toLowerCase().includes(q.trim().toLowerCase())));
+  const move = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= ids.length) return;
+    const next = [...ids];
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange(next);
+  };
+  const remove = (id: string) => onChange(ids.filter((x) => x !== id));
+  const add = (id: string) => { if (!ids.includes(id)) onChange([...ids, id]); };
+  return (
+    <div className="space-y-3">
+      <div className="space-y-1.5">
+        <Label className="text-xs">Search categories to add</Label>
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Type to filter…" />
+        <div className="mt-1 max-h-56 overflow-auto rounded-md border">
+          {available.length === 0 && <div className="p-3 text-xs text-muted-foreground">No matches</div>}
+          {available.slice(0, 30).map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => add(c.id)}
+              className="flex w-full items-center justify-between gap-2 border-b p-2 text-left text-sm hover:bg-muted/40"
+            >
+              <span className="truncate">{c.emoji} {c.name}</span>
+              <span className="text-xs text-muted-foreground">Add</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="mb-1 flex items-center justify-between">
+          <Label className="text-xs">{label} ({ids.length})</Label>
+        </div>
+        {ids.length === 0 ? (
+          <div className="rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground">
+            No categories selected — homepage will fall back to automatic (latest).
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {ids.map((id, i) => {
+              const c = byId.get(id);
+              return (
+                <div key={id} className="flex items-center gap-2 rounded-md border p-2">
+                  <span className="w-6 text-xs text-muted-foreground">#{i + 1}</span>
+                  <span className="flex-1 truncate text-sm">{c ? `${c.emoji} ${c.name}` : `(missing: ${id})`}</span>
+                  <Button variant="outline" size="icon" disabled={i === 0} onClick={() => move(i, -1)}><ArrowUp className="h-4 w-4" /></Button>
+                  <Button variant="outline" size="icon" disabled={i === ids.length - 1} onClick={() => move(i, 1)}><ArrowDown className="h-4 w-4" /></Button>
+                  <Button variant="outline" size="icon" onClick={() => remove(id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
