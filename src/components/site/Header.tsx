@@ -47,11 +47,11 @@ export function Header() {
           <nav className="hidden lg:flex items-center gap-1 ml-4 min-w-0">
             {nav.map((n) => (
               <Link
-                key={n.to}
-                to={n.to}
+                key={n.id}
+                to={n.url as string}
                 className="px-3 py-2 rounded-lg text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted transition-smooth"
                 activeProps={{ className: "text-primary bg-primary/10" }}
-                activeOptions={{ exact: n.exact ?? false }}
+                activeOptions={{ exact: n.exact ?? n.url === "/" }}
               >
                 {n.label}
               </Link>
