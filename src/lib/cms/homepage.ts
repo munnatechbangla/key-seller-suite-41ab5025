@@ -331,7 +331,13 @@ export function mergeConfig(base: HomepageConfig, override: Partial<HomepageConf
   return {
     ...base,
     ...override,
-    hero: { ...base.hero, ...(override.hero ?? {}) },
+    hero: (() => {
+      const merged = { ...base.hero, ...(override.hero ?? {}) };
+      const fb = (override.hero as HomeHero | undefined)?.featureBadges;
+      merged.featureBadges =
+        Array.isArray(fb) && fb.length > 0 ? fb.slice(0, HERO_FEATURE_BADGES_MAX) : base.hero.featureBadges;
+      return merged;
+    })(),
     trust: { ...base.trust, ...(override.trust ?? {}) },
     categories: { ...base.categories, ...(override.categories ?? {}) },
     whyChoose: { ...base.whyChoose, ...(override.whyChoose ?? {}) },
