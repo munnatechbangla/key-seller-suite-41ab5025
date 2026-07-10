@@ -295,7 +295,24 @@ function TrustStrip() {
 
 function CategoriesGrid() {
   const cfg = useHomepage((s) => s.config.categories);
-  const cats = useCategories().slice(0, cfg.limit);
+  const all = useCategories();
+  const cats = useMemo(() => {
+    const source = cfg.source ?? "latest";
+    const byId = new Map(all.map((c) => [c.id, c]));
+    if (source === "manual") {
+      const ids = cfg.manualCategoryIds ?? [];
+      const picked = ids.map((id) => byId.get(id)).filter(Boolean) as typeof all;
+      if (picked.length > 0) return picked;
+      return all.slice(0, cfg.limit);
+    }
+    if (source === "featured") {
+      const ids = cfg.featuredCategoryIds ?? [];
+      const picked = ids.map((id) => byId.get(id)).filter(Boolean) as typeof all;
+      if (picked.length > 0) return picked;
+      return all.slice(0, cfg.limit);
+    }
+    return all.slice(0, cfg.limit);
+  }, [all, cfg.source, cfg.manualCategoryIds, cfg.featuredCategoryIds, cfg.limit]);
   return (
     <Section
       eyebrow={cfg.eyebrow}
