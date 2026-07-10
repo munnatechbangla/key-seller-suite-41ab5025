@@ -238,11 +238,6 @@ function FloatingCard({ product, delay = "0s", duration = "10s", size = "md", cl
     </Link>
   );
 }
-        </div>
-      </div>
-    </Link>
-  );
-}
 
 
 function TrustStrip() {
