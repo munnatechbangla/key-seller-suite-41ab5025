@@ -44,16 +44,28 @@ function SearchPage() {
           />
           {q && results.length > 0 && (
             <div className="absolute top-full mt-2 w-full rounded-2xl bg-card border border-border shadow-premium overflow-hidden z-10">
-              {results.slice(0, 5).map((p) => (
-                <Link key={p.slug} to="/products/$slug" params={{ slug: p.slug }} className="flex items-center gap-3 p-3 hover:bg-muted">
-                  <span className="text-2xl">{p.emoji}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm truncate">{p.name}</div>
-                    <div className="text-xs text-muted-foreground truncate">{p.short}</div>
-                  </div>
-                  <div className="text-primary font-bold text-sm">${p.price}</div>
-                </Link>
-              ))}
+              {results.slice(0, 5).map((p) => {
+                const rp = resolveProductPrice(p);
+                return (
+                  <Link key={p.slug} to="/products/$slug" params={{ slug: p.slug }} className="flex items-center gap-3 p-3 hover:bg-muted">
+                    <span className="text-2xl">{p.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm truncate">{p.name}</div>
+                      <div className="text-xs text-muted-foreground truncate">{p.short}</div>
+                    </div>
+                    <div className="text-primary font-bold text-sm whitespace-nowrap">
+                      {rp.unavailable ? (
+                        <span className="text-muted-foreground font-medium">Unavailable</span>
+                      ) : (
+                        <>
+                          {rp.fromLabel && <span className="text-[10px] font-medium text-muted-foreground mr-1">From</span>}
+                          {formatPrice(rp.price!)}
+                        </>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>
