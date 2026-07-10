@@ -32,11 +32,23 @@ export type HomeHero = {
   primaryCta: { label: string; to: string; icon?: IconName };
   secondaryCta: { label: string; href: string; icon?: IconName };
   trustItems: { id: string; icon: IconName; label: string }[];
+  featureBadges?: HeroFeatureBadge[];
   /** @deprecated use productSource + manualProductSlugs */
   floatingProductSlugs: string[];
   productSource?: HeroProductSource;
   manualProductSlugs?: string[];
 };
+
+export type HeroFeatureBadge = {
+  id: string;
+  enabled: boolean;
+  icon: IconName;
+  title: string;
+  subtitle?: string;
+  url?: string;
+};
+
+export const HERO_FEATURE_BADGES_MAX = 6;
 
 export type HomeTrustItem = { id: string; icon: IconName; title: string; desc: string; enabled: boolean };
 
@@ -195,6 +207,14 @@ export const defaultHomepageConfig: HomepageConfig = {
       icon: defaultHero.ctas[1]?.icon,
     },
     trustItems: defaultHero.trustItems.map((t, i) => ({ id: uid("hero-trust", i), ...t })),
+    featureBadges: defaultHero.trustItems.slice(0, HERO_FEATURE_BADGES_MAX).map((t, i) => ({
+      id: uid("hero-badge", i),
+      enabled: true,
+      icon: t.icon,
+      title: t.label,
+      subtitle: "",
+      url: "",
+    })),
     floatingProductSlugs: defaultHero.floatingProductSlugs.slice(0, 12),
     productSource: "manual",
     manualProductSlugs: defaultHero.floatingProductSlugs.slice(0, 12),
@@ -311,7 +331,13 @@ export function mergeConfig(base: HomepageConfig, override: Partial<HomepageConf
   return {
     ...base,
     ...override,
-    hero: { ...base.hero, ...(override.hero ?? {}) },
+    hero: (() => {
+      const merged = { ...base.hero, ...(override.hero ?? {}) };
+      const fb = (override.hero as HomeHero | undefined)?.featureBadges;
+      merged.featureBadges =
+        Array.isArray(fb) && fb.length > 0 ? fb.slice(0, HERO_FEATURE_BADGES_MAX) : base.hero.featureBadges;
+      return merged;
+    })(),
     trust: { ...base.trust, ...(override.trust ?? {}) },
     categories: { ...base.categories, ...(override.categories ?? {}) },
     whyChoose: { ...base.whyChoose, ...(override.whyChoose ?? {}) },

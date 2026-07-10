@@ -10,6 +10,7 @@ import {
   useHomepage,
   reorder,
   newId,
+  HERO_FEATURE_BADGES_MAX,
   type HomepageConfig,
   type SectionId,
   type HomeProductSection,
@@ -20,6 +21,7 @@ import {
   type HomeFaqItem,
   type HeroProductSource,
   type HeaderNavItem,
+  type HeroFeatureBadge,
 } from "@/lib/cms/homepage";
 import { useQuery } from "@tanstack/react-query";
 import { searchQuery, productsBySlugsQuery, type Product } from "@/lib/catalog";
@@ -226,6 +228,29 @@ function HomepageBuilder() {
             onSourceChange={(s) => patch("hero", { ...cfg.hero, productSource: s })}
             onManualChange={(slugs) => patch("hero", { ...cfg.hero, manualProductSlugs: slugs, floatingProductSlugs: slugs.slice(0, 6) })}
           />
+
+          <div className="rounded-lg border p-4 space-y-3">
+            <div>
+              <h3 className="font-semibold text-sm">Feature Badges</h3>
+              <p className="text-xs text-muted-foreground">
+                Small badges shown below the Hero buttons (e.g. Instant Delivery, Secure Checkout). Up to {HERO_FEATURE_BADGES_MAX} badges. Leave empty to restore defaults.
+              </p>
+            </div>
+            <ItemList<HeroFeatureBadge>
+              items={cfg.hero.featureBadges ?? []}
+              onChange={(items) => patch("hero", { ...cfg.hero, featureBadges: items })}
+              max={HERO_FEATURE_BADGES_MAX}
+              makeNew={() => ({ id: newId("badge"), enabled: true, icon: "Zap", title: "New badge", subtitle: "", url: "" })}
+              renderItem={(it, set) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <Field label="Icon" value={it.icon} onChange={(v) => set({ ...it, icon: v as IconName })} />
+                  <Field label="Title" value={it.title} onChange={(v) => set({ ...it, title: v })} />
+                  <Field label="Subtitle (optional)" value={it.subtitle ?? ""} onChange={(v) => set({ ...it, subtitle: v })} />
+                  <Field label="URL (optional)" value={it.url ?? ""} onChange={(v) => set({ ...it, url: v })} />
+                </div>
+              )}
+            />
+          </div>
 
         </TabsContent>
 
@@ -477,15 +502,17 @@ function EnableToggle({ label, value, onChange }: { label: string; value: boolea
 
 type Identified = { id: string; enabled: boolean };
 
-function ItemList<T extends Identified>({ items, onChange, renderItem, makeNew }: {
+function ItemList<T extends Identified>({ items, onChange, renderItem, makeNew, max }: {
   items: T[];
   onChange: (items: T[]) => void;
   renderItem: (item: T, set: (next: T) => void) => React.ReactNode;
   makeNew: () => T;
+  max?: number;
 }) {
   const setAt = (i: number, next: T) => onChange(items.map((it, idx) => (idx === i ? next : it)));
   const move = (i: number, dir: -1 | 1) => onChange(reorder(items, i, i + dir));
   const remove = (i: number) => onChange(items.filter((_, idx) => idx !== i));
+  const atMax = typeof max === "number" && items.length >= max;
   return (
     <div className="space-y-3">
       {items.map((it, i) => (
@@ -503,8 +530,8 @@ function ItemList<T extends Identified>({ items, onChange, renderItem, makeNew }
           {renderItem(it, (next) => setAt(i, next))}
         </div>
       ))}
-      <Button variant="outline" onClick={() => onChange([...items, makeNew()])} className="gap-2">
-        <Plus className="h-4 w-4" /> Add item
+      <Button variant="outline" onClick={() => onChange([...items, makeNew()])} className="gap-2" disabled={atMax}>
+        <Plus className="h-4 w-4" /> {atMax ? `Maximum ${max} items` : "Add item"}
       </Button>
     </div>
   );

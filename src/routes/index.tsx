@@ -159,17 +159,45 @@ function Hero() {
             </a>
           </div>
           <div className="flex min-w-0 flex-wrap gap-6 pt-6 text-sm">
-            {hero.trustItems.map((item) => {
-              const Icon = resolveIcon(item.icon);
-              return (
-                <div key={item.id} className="flex min-w-0 items-center gap-2 text-white/80">
-                  <div className="h-8 w-8 shrink-0 grid place-items-center rounded-lg bg-white/10">
-                    <Icon className="h-4 w-4 text-accent" />
-                  </div>
-                  <span className="min-w-0 break-words">{item.label}</span>
-                </div>
+            {(() => {
+              const fallback = hero.trustItems.map((t) => ({
+                id: t.id,
+                enabled: true,
+                icon: t.icon,
+                title: t.label,
+                subtitle: "",
+                url: "",
+              }));
+              const badges = (hero.featureBadges && hero.featureBadges.length > 0 ? hero.featureBadges : fallback).filter(
+                (b) => b.enabled !== false,
               );
-            })}
+              return badges.map((item) => {
+                const Icon = resolveIcon(item.icon);
+                const inner = (
+                  <>
+                    <div className="h-8 w-8 shrink-0 grid place-items-center rounded-lg bg-white/10">
+                      <Icon className="h-4 w-4 text-accent" />
+                    </div>
+                    <div className="min-w-0 flex flex-col leading-tight">
+                      <span className="min-w-0 break-words">{item.title}</span>
+                      {item.subtitle ? (
+                        <span className="text-xs text-white/60 break-words">{item.subtitle}</span>
+                      ) : null}
+                    </div>
+                  </>
+                );
+                const cls = "flex min-w-0 items-center gap-2 text-white/80";
+                return item.url ? (
+                  <a key={item.id} href={item.url} className={cls + " hover:text-white transition"}>
+                    {inner}
+                  </a>
+                ) : (
+                  <div key={item.id} className={cls}>
+                    {inner}
+                  </div>
+                );
+              });
+            })()}
           </div>
         </div>
 
