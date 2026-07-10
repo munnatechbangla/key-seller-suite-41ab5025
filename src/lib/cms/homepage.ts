@@ -158,6 +158,7 @@ export type HomepageConfig = {
   newsletter: HomeNewsletter;
   paymentMethods: HomePaymentMethods;
   announcementBar: HomeAnnouncementBar;
+  headerNav: HomeHeaderNav;
 };
 
 // ---------------- Defaults ----------------
