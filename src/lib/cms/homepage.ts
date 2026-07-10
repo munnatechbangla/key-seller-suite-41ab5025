@@ -111,6 +111,18 @@ export type HomeAnnouncementBar = {
   showOnMobile: boolean;
 };
 
+export type HeaderNavItem = {
+  id: string;
+  label: string;
+  url: string;
+  enabled: boolean;
+  exact?: boolean;
+};
+
+export type HomeHeaderNav = {
+  items: HeaderNavItem[];
+};
+
 export type HomePaymentMethods = {
   enabled: boolean;
   title: string;
