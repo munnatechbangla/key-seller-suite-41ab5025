@@ -217,9 +217,27 @@ function FloatingCard({ product, delay = "0s", duration = "10s", size = "md", cl
             </div>
           </div>
           <div className="text-right shrink-0">
-            <div className={`${isMd ? "text-sm" : "text-[13px]"} font-bold text-accent leading-tight`}>${product.price}</div>
-            {product.oldPrice && <div className="text-[10px] text-white/40 line-through">${product.oldPrice}</div>}
+            {(() => {
+              const rp = resolveProductPrice(product);
+              if (rp.unavailable) {
+                return <div className={`${isMd ? "text-xs" : "text-[10px]"} font-semibold text-white/70 leading-tight`}>Unavailable</div>;
+              }
+              return (
+                <>
+                  <div className={`${isMd ? "text-sm" : "text-[13px]"} font-bold text-accent leading-tight whitespace-nowrap`}>
+                    {rp.fromLabel && <span className="text-[9px] font-medium text-white/60 mr-1">From</span>}
+                    {formatPrice(rp.price!)}
+                  </div>
+                  {rp.oldPrice && <div className="text-[10px] text-white/40 line-through">{formatPrice(rp.oldPrice)}</div>}
+                </>
+              );
+            })()}
           </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
         </div>
       </div>
     </Link>
