@@ -328,8 +328,8 @@ export function mergeConfig(base: HomepageConfig, override: Partial<HomepageConf
           ? override.headerNav!.items
           : base.headerNav.items,
     },
-    productSections: override.productSections ?? base.productSections,
-    sectionOrder: override.sectionOrder ?? base.sectionOrder,
+    productSections: Array.isArray(override.productSections) ? override.productSections : base.productSections,
+    sectionOrder: Array.isArray(override.sectionOrder) && override.sectionOrder.length > 0 ? override.sectionOrder : base.sectionOrder,
   };
 }
 
