@@ -17,9 +17,10 @@ import type { HomeProductSection, HomeProductSectionSource } from "./homepage";
 function curationQuery(source: Exclude<HomeProductSectionSource, "manual">) {
   if (source === "featured") return featuredQuery();
   if (source === "trending") return trendingQuery();
-  if (source === "latest") return heroLatestQuery(24);
+  if (source === "latest") return { ...heroLatestQuery(24), queryKey: ["catalog", "hero-latest", String(24)] };
   return bestSellersQuery();
 }
+
 
 /**
  * Resolves the products for a homepage product section.
