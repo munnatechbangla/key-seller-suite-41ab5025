@@ -66,15 +66,28 @@ export type HomeCategoriesSection = {
   featuredCategoryIds?: string[];
 };
 
+export type HomeProductSectionSource = "featured" | "trending" | "bestSellers" | "latest" | "manual";
+
+export type HomeSectionCountdown = {
+  enabled: boolean;
+  endsAt: string; // ISO date string
+  label?: string;
+  hideAfterExpiry: boolean;
+  expiredMessage?: string;
+};
+
 export type HomeProductSection = {
   id: string;
   enabled: boolean;
   eyebrow: string;
   title: string;
   subtitle: string;
-  source: "featured" | "trending" | "bestSellers";
+  source: HomeProductSectionSource;
   limit: number;
+  manualProductSlugs?: string[];
+  countdown?: HomeSectionCountdown;
 };
+
 
 export type HomeWhyChooseItem = { id: string; icon: IconName; title: string; desc: string; enabled: boolean };
 export type HomeWhyChoose = { enabled: boolean; eyebrow: string; title: string; items: HomeWhyChooseItem[] };
