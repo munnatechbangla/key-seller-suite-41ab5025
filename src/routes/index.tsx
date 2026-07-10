@@ -9,6 +9,7 @@ import { Footer } from "@/components/site/Footer";
 import { Section } from "@/components/site/Section";
 import { ProductCard } from "@/components/site/ProductCard";
 import { blogPosts } from "@/lib/catalog";
+import { resolveProductPrice, formatPrice } from "@/lib/product-price";
 import {
   useCategories,
   featuredQuery,
