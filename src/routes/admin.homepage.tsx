@@ -385,24 +385,43 @@ function HomepageBuilder() {
             <Field label="Eyebrow" value={cfg.testimonials.eyebrow} onChange={(v) => patch("testimonials", { ...cfg.testimonials, eyebrow: v })} />
             <Field label="Title" value={cfg.testimonials.title} onChange={(v) => patch("testimonials", { ...cfg.testimonials, title: v })} />
           </div>
-          <ItemList<HomeTestimonial>
-            items={cfg.testimonials.items}
-            onChange={(items) => patch("testimonials", { ...cfg.testimonials, items })}
-            renderItem={(it, set) => (
-              <>
-                <div className="grid grid-cols-3 gap-2">
-                  <Field label="Name" value={it.name} onChange={(v) => set({ ...it, name: v })} />
-                  <Field label="Role" value={it.role} onChange={(v) => set({ ...it, role: v })} />
-                  <Field label="Avatar (emoji)" value={it.emoji} onChange={(v) => set({ ...it, emoji: v })} />
-                </div>
-                <div className="grid grid-cols-[100px_1fr] gap-2">
-                  <NumberField label="Rating" value={it.rating} onChange={(v) => set({ ...it, rating: Math.min(5, Math.max(1, v)) })} />
-                  <Area label="Review" value={it.text} onChange={(v) => set({ ...it, text: v })} />
-                </div>
-              </>
-            )}
-            makeNew={() => ({ id: newId("test"), name: "Customer", role: "Buyer", emoji: "🙂", rating: 5, text: "Great service!", enabled: true })}
-          />
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <div className="text-xs mb-1 text-muted-foreground">Number of reviews</div>
+              <select
+                className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm"
+                value={cfg.testimonials.limit}
+                onChange={(e) => patch("testimonials", { ...cfg.testimonials, limit: Number(e.target.value) })}
+              >
+                {[3, 5, 6, 8, 10].map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </div>
+            <div>
+              <div className="text-xs mb-1 text-muted-foreground">Minimum rating</div>
+              <select
+                className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm"
+                value={cfg.testimonials.minRating}
+                onChange={(e) => patch("testimonials", { ...cfg.testimonials, minRating: Number(e.target.value) })}
+              >
+                <option value={4}>4★ and up</option>
+                <option value={5}>5★ only</option>
+              </select>
+            </div>
+            <div>
+              <div className="text-xs mb-1 text-muted-foreground">Sort</div>
+              <select
+                className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm"
+                value={cfg.testimonials.sort}
+                onChange={(e) => patch("testimonials", { ...cfg.testimonials, sort: e.target.value as "latest" | "random" })}
+              >
+                <option value="latest">Latest</option>
+                <option value="random">Random</option>
+              </select>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Testimonials are pulled automatically from approved customer reviews.
+          </p>
         </TabsContent>
 
         {/* ---------------- Blog ---------------- */}
