@@ -524,6 +524,35 @@ export function mergeConfig(base: HomepageConfig, override: Partial<HomepageConf
           ? override.headerNav!.items
           : base.headerNav.items,
     },
+    footer: (() => {
+      const ov = override.footer;
+      if (!ov) return base.footer;
+      return {
+        brand: { ...base.footer.brand, ...(ov.brand ?? {}) },
+        companyLinks: {
+          title: ov.companyLinks?.title ?? base.footer.companyLinks.title,
+          items: Array.isArray(ov.companyLinks?.items) ? ov.companyLinks!.items : base.footer.companyLinks.items,
+        },
+        supportLinks: {
+          title: ov.supportLinks?.title ?? base.footer.supportLinks.title,
+          items: Array.isArray(ov.supportLinks?.items) ? ov.supportLinks!.items : base.footer.supportLinks.items,
+        },
+        newsletter: { ...base.footer.newsletter, ...(ov.newsletter ?? {}) },
+        paymentLogos: {
+          enabled: ov.paymentLogos?.enabled ?? base.footer.paymentLogos.enabled,
+          label: ov.paymentLogos?.label ?? base.footer.paymentLogos.label,
+          items: Array.isArray(ov.paymentLogos?.items) ? ov.paymentLogos!.items : base.footer.paymentLogos.items,
+        },
+        socials: {
+          enabled: ov.socials?.enabled ?? base.footer.socials.enabled,
+          label: ov.socials?.label ?? base.footer.socials.label,
+          items: Array.isArray(ov.socials?.items) && ov.socials!.items.length > 0
+            ? ov.socials!.items
+            : base.footer.socials.items,
+        },
+        bottom: { ...base.footer.bottom, ...(ov.bottom ?? {}) },
+      };
+    })(),
     productSections: Array.isArray(override.productSections) ? override.productSections : base.productSections,
     sectionOrder: Array.isArray(override.sectionOrder) && override.sectionOrder.length > 0 ? override.sectionOrder : base.sectionOrder,
   };
