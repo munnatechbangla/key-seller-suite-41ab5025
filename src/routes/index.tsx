@@ -576,11 +576,7 @@ function Testimonials() {
 }
 
 function TestimonialsSlider({ items }: { items: ReviewRow[] }) {
-  const [Carousel, CarouselContent, CarouselItem, AutoplayPlugin] = useCarouselModules();
-  const autoplayRef = useRef<ReturnType<typeof AutoplayPlugin> | null>(null);
-  if (!autoplayRef.current && AutoplayPlugin) {
-    autoplayRef.current = AutoplayPlugin({ delay: 4000, stopOnInteraction: false, stopOnMouseEnter: true });
-  }
+  const autoplayRef = useRef(Autoplay({ delay: 4000, stopOnInteraction: false, stopOnMouseEnter: true }));
   const [api, setApi] = useState<import("embla-carousel-react").UseEmblaCarouselType[1] | null>(null);
   const [selected, setSelected] = useState(0);
   const [snaps, setSnaps] = useState<number[]>([]);
