@@ -434,6 +434,12 @@ function PostPage() {
       </div>
 
       <Footer />
+
+      {lightbox && (
+        <div className="lightbox" role="dialog" aria-modal="true" aria-label="Image preview" onClick={() => setLightbox(null)}>
+          <img src={lightbox.src} alt={lightbox.alt} onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
     </div>
   );
 }
