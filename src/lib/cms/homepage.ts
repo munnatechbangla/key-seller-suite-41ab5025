@@ -19,6 +19,7 @@ import {
   faqSection as defaultFaqSection,
   newsletterCta as defaultNewsletter,
 } from "./home";
+import { footerColumns as defaultFooterColumns, siteConfig as defaultSiteConfig } from "./site";
 
 // ---------------- Types ----------------
 
@@ -182,6 +183,55 @@ export type HomePaymentMethods = {
   logosMigrated?: boolean;
 };
 
+// ---------------- Footer ----------------
+
+export type FooterLink = {
+  id: string;
+  enabled: boolean;
+  title: string;
+  url: string;
+  openInNewTab?: boolean;
+};
+
+export type FooterSocial = {
+  id: string;
+  enabled: boolean;
+  icon: IconName;
+  url: string;
+  tooltip: string;
+};
+
+export type FooterPaymentLogo = {
+  id: string;
+  enabled: boolean;
+  logo: string; // media:// token or absolute URL
+  title: string;
+  url?: string;
+};
+
+export type HomeFooter = {
+  brand: {
+    logo: string;         // media:// or url; empty = use site Logo/branding
+    name: string;         // empty = fall back to branding.name
+    description: string;  // empty = fall back to branding.description
+    copyright: string;    // template with {year} {name}
+    bottomText: string;   // right-side small text; empty = branding.footer_text
+  };
+  companyLinks: { title: string; items: FooterLink[] };
+  supportLinks: { title: string; items: FooterLink[] };
+  newsletter: {
+    enabled: boolean;
+    title: string;
+    subtitle: string;
+    placeholder: string;
+    buttonText: string;
+    successMessage: string;
+  };
+  paymentLogos: { enabled: boolean; label: string; items: FooterPaymentLogo[] };
+  socials: { enabled: boolean; label: string; items: FooterSocial[] };
+  bottom: { leftText: string; rightText: string };
+};
+
 // Stable section ids drive both visibility and rendering order.
 export type SectionId =
   | "hero"
@@ -211,6 +261,7 @@ export type HomepageConfig = {
   paymentMethods: HomePaymentMethods;
   announcementBar: HomeAnnouncementBar;
   headerNav: HomeHeaderNav;
+  footer: HomeFooter;
 };
 
 // ---------------- Defaults ----------------
@@ -371,6 +422,58 @@ export const defaultHomepageConfig: HomepageConfig = {
       { id: "nav-contact", label: "Contact", url: "/contact", enabled: true },
     ],
   },
+  footer: {
+    brand: {
+      logo: "",
+      name: "",
+      description: "",
+      copyright: "© {year} {name}. All rights reserved.",
+      bottomText: "",
+    },
+    companyLinks: {
+      title: defaultFooterColumns[0]?.title ?? "Company",
+      items: (defaultFooterColumns[0]?.links ?? []).map((l, i) => ({
+        id: uid("company", i), enabled: true, title: l.label, url: l.href, openInNewTab: false,
+      })),
+    },
+    supportLinks: {
+      title: defaultFooterColumns[1]?.title ?? "Support",
+      items: (defaultFooterColumns[1]?.links ?? []).map((l, i) => ({
+        id: uid("support", i), enabled: true, title: l.label, url: l.href, openInNewTab: false,
+      })),
+    },
+    newsletter: {
+      enabled: true,
+      title: defaultSiteConfig.newsletter.title,
+      subtitle: defaultSiteConfig.newsletter.subtitle,
+      placeholder: defaultSiteConfig.newsletter.placeholder,
+      buttonText: "Subscribe",
+      successMessage: "Thanks — check your inbox to confirm.",
+    },
+    paymentLogos: {
+      enabled: true,
+      label: "We accept",
+      items: [],
+    },
+    socials: {
+      enabled: true,
+      label: "Follow us",
+      items: [
+        { id: "soc-fb", enabled: true, icon: "Facebook", url: "", tooltip: "Facebook" },
+        { id: "soc-ig", enabled: true, icon: "Instagram", url: "", tooltip: "Instagram" },
+        { id: "soc-tw", enabled: true, icon: "Twitter", url: "", tooltip: "X (Twitter)" },
+        { id: "soc-li", enabled: true, icon: "Linkedin", url: "", tooltip: "LinkedIn" },
+        { id: "soc-yt", enabled: true, icon: "Youtube", url: "", tooltip: "YouTube" },
+        { id: "soc-tg", enabled: true, icon: "Send", url: "", tooltip: "Telegram" },
+        { id: "soc-dc", enabled: true, icon: "MessageSquare", url: "", tooltip: "Discord" },
+        { id: "soc-gh", enabled: true, icon: "Github", url: "", tooltip: "GitHub" },
+      ],
+    },
+    bottom: {
+      leftText: "",  // empty → falls back to formatted copyright
+      rightText: "", // empty → falls back to branding.footer_text
+    },
+  },
 };
 
 // ---------------- Store ----------------
@@ -421,6 +524,35 @@ export function mergeConfig(base: HomepageConfig, override: Partial<HomepageConf
           ? override.headerNav!.items
           : base.headerNav.items,
     },
+    footer: (() => {
+      const ov = override.footer;
+      if (!ov) return base.footer;
+      return {
+        brand: { ...base.footer.brand, ...(ov.brand ?? {}) },
+        companyLinks: {
+          title: ov.companyLinks?.title ?? base.footer.companyLinks.title,
+          items: Array.isArray(ov.companyLinks?.items) ? ov.companyLinks!.items : base.footer.companyLinks.items,
+        },
+        supportLinks: {
+          title: ov.supportLinks?.title ?? base.footer.supportLinks.title,
+          items: Array.isArray(ov.supportLinks?.items) ? ov.supportLinks!.items : base.footer.supportLinks.items,
+        },
+        newsletter: { ...base.footer.newsletter, ...(ov.newsletter ?? {}) },
+        paymentLogos: {
+          enabled: ov.paymentLogos?.enabled ?? base.footer.paymentLogos.enabled,
+          label: ov.paymentLogos?.label ?? base.footer.paymentLogos.label,
+          items: Array.isArray(ov.paymentLogos?.items) ? ov.paymentLogos!.items : base.footer.paymentLogos.items,
+        },
+        socials: {
+          enabled: ov.socials?.enabled ?? base.footer.socials.enabled,
+          label: ov.socials?.label ?? base.footer.socials.label,
+          items: Array.isArray(ov.socials?.items) && ov.socials!.items.length > 0
+            ? ov.socials!.items
+            : base.footer.socials.items,
+        },
+        bottom: { ...base.footer.bottom, ...(ov.bottom ?? {}) },
+      };
+    })(),
     productSections: Array.isArray(override.productSections) ? override.productSections : base.productSections,
     sectionOrder: Array.isArray(override.sectionOrder) && override.sectionOrder.length > 0 ? override.sectionOrder : base.sectionOrder,
   };
