@@ -378,10 +378,10 @@ function PostPage() {
             {toc.length > 0 && (
               <div className="rounded-2xl border border-border bg-card p-4">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">On this page</div>
-                <ul className="space-y-1.5 text-sm">
+                <ul className="space-y-0.5 max-h-[60vh] overflow-y-auto pr-1">
                   {toc.map((h) => (
-                    <li key={h.id} className={h.level === 3 ? "pl-3" : ""}>
-                      <a href={`#${h.id}`} className="text-muted-foreground hover:text-primary line-clamp-2">{h.text}</a>
+                    <li key={h.id} style={{ paddingLeft: `${(h.level - 2) * 12}px` }}>
+                      <a href={`#${h.id}`} data-active={activeId === h.id} className="toc-link line-clamp-2">{h.text}</a>
                     </li>
                   ))}
                 </ul>
