@@ -22,7 +22,7 @@ import {
 } from "@/lib/catalog";
 import { useProductSection, useResolvedProducts, resolveIcon } from "@/lib/cms";
 import { useHomepage, defaultHomepageConfig, type HomeProductSection, type SectionId } from "@/lib/cms/homepage";
-import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
+import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
 import { subscribeNewsletterFn } from "@/lib/newsletter.functions";
 import { blogListPublicFn } from "@/lib/blog.functions";
 import { BlogImage } from "@/components/site/BlogImage";
