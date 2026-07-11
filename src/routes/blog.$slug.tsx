@@ -56,6 +56,7 @@ export const Route = createFileRoute("/blog/$slug")({
     const post: LoadedPost = {
       slug: s.slug, title: s.title, excerpt: s.excerpt, category: s.category, date: s.date,
       cover_url: null, content_html: null, emoji: s.emoji,
+      author: "Admin", reading: `${Math.max(1, Math.round((s.excerpt ?? "").split(/\s+/).length / 220))} min read`,
     };
     return { post };
   },
