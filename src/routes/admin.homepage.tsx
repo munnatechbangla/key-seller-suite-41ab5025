@@ -164,6 +164,7 @@ function HomepageBuilder() {
           <TabsTrigger value="faq">FAQ</TabsTrigger>
           <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
+          <TabsTrigger value="footer">Footer</TabsTrigger>
         </TabsList>
 
         {/* ---------------- Announcement Bar ---------------- */}
