@@ -125,16 +125,11 @@ function initials(name: string) {
   return name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 }
 
-function extractHeadings(html: string | null): { id: string; text: string; level: number }[] {
-  if (!html || typeof window === "undefined") return [];
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const nodes = Array.from(doc.querySelectorAll("h2, h3"));
-  return nodes.map((n, i) => {
-    const text = (n.textContent ?? "").trim();
-    const id = (n.getAttribute("id") || text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")) + (i ? `-${i}` : "");
-    return { id, text, level: n.tagName === "H2" ? 2 : 3 };
-  }).filter((h) => h.text);
+function slugify(text: string, i: number) {
+  const base = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return base ? `${base}${i ? `-${i}` : ""}` : `section-${i}`;
 }
+
 
 function ShareBar({ url, title }: { url: string; title: string }) {
   const [copied, setCopied] = useState(false);
