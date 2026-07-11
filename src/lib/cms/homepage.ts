@@ -294,6 +294,9 @@ export const defaultHomepageConfig: HomepageConfig = {
     eyebrow: defaultTestimonialsSection.eyebrow,
     title: defaultTestimonialsSection.title,
     items: defaultTestimonials.map((t, i) => ({ id: uid("test", i), enabled: true, ...t })),
+    limit: 6,
+    minRating: 4,
+    sort: "latest",
   },
   blog: {
     enabled: true,
