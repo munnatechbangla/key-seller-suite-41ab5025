@@ -18,7 +18,7 @@ export const Route = createFileRoute("/blog/")({
   component: BlogPage,
 });
 
-type Card = { slug: string; title: string; excerpt: string; category: string; date: string; cover_url?: string | null; emoji?: string };
+type Card = { slug: string; title: string; excerpt: string; category: string; date: string; cover_url?: string | null; emoji?: string; reading?: string };
 
 function BlogPage() {
   const listFn = useServerFn(blogListPublicFn);
