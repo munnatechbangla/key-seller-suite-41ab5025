@@ -523,7 +523,29 @@ function HomepageBuilder() {
           <Field label="Trust label" value={cfg.paymentMethods.trustLabel} onChange={(v) => patch("paymentMethods", { ...cfg.paymentMethods, trustLabel: v })} />
           <Field label="Title" value={cfg.paymentMethods.title} onChange={(v) => patch("paymentMethods", { ...cfg.paymentMethods, title: v })} />
           <Area label="Subtitle" value={cfg.paymentMethods.subtitle} onChange={(v) => patch("paymentMethods", { ...cfg.paymentMethods, subtitle: v })} />
-          <p className="text-xs text-muted-foreground">Payment logos are managed in <a className="text-primary underline" href="/admin/gateways">Admin → Gateways</a>. Upload an SVG/PNG/WEBP per gateway, set the order, and toggle enabled — the homepage renders them automatically.</p>
+
+          <div className="pt-2">
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-sm font-semibold">Payment Logos</Label>
+              <span className="text-xs text-muted-foreground">Independent of Admin → Gateways</span>
+            </div>
+            <ItemList<HomePaymentLogo>
+              items={cfg.paymentMethods.logos ?? []}
+              onChange={(items) => patch("paymentMethods", { ...cfg.paymentMethods, logos: items })}
+              makeNew={() => ({ id: newId("pay"), enabled: true, logo: "", title: "New payment", subtitle: "", url: "", badge: "" })}
+              renderItem={(it, set) => (
+                <div className="space-y-2">
+                  <MediaPicker label="Logo" value={it.logo} onChange={(v) => set({ ...it, logo: v })} />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Field label="Title" value={it.title} onChange={(v) => set({ ...it, title: v })} />
+                    <Field label="Subtitle (optional)" value={it.subtitle ?? ""} onChange={(v) => set({ ...it, subtitle: v })} />
+                    <Field label="URL (optional)" value={it.url ?? ""} onChange={(v) => set({ ...it, url: v })} />
+                    <Field label="Badge (optional)" value={it.badge ?? ""} onChange={(v) => set({ ...it, badge: v })} />
+                  </div>
+                </div>
+              )}
+            />
+          </div>
         </TabsContent>
       </Tabs>
     </div>
