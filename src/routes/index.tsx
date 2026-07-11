@@ -601,7 +601,7 @@ function TestimonialsSlider({ items }: { items: ReviewRow[] }) {
       <Carousel
         setApi={setApi}
         opts={{ loop: true, align: "start" }}
-        plugins={autoplayRef.current ? [autoplayRef.current] : []}
+        plugins={[autoplayRef.current]}
         className="w-full"
       >
         <CarouselContent className="-ml-5">
