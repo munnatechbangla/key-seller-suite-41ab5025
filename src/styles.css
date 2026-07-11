@@ -171,3 +171,32 @@
   backface-visibility: hidden;
 }
 
+
+/* Blog article typography */
+.blog-prose { color: color-mix(in oklab, var(--foreground) 90%, transparent); font-size: 1.0625rem; line-height: 1.8; }
+.blog-prose > * + * { margin-top: 1.25em; }
+.blog-prose h1, .blog-prose h2, .blog-prose h3, .blog-prose h4 { color: var(--foreground); font-weight: 700; line-height: 1.25; margin-top: 2em; margin-bottom: 0.6em; letter-spacing: -0.01em; }
+.blog-prose h2 { font-size: 1.75rem; }
+.blog-prose h3 { font-size: 1.375rem; }
+.blog-prose h4 { font-size: 1.125rem; }
+.blog-prose p { margin: 1.1em 0; }
+.blog-prose a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.blog-prose a:hover { text-decoration-thickness: 2px; }
+.blog-prose ul, .blog-prose ol { padding-left: 1.5rem; margin: 1.1em 0; }
+.blog-prose ul { list-style: disc; }
+.blog-prose ol { list-style: decimal; }
+.blog-prose li { margin: 0.45em 0; }
+.blog-prose li > p { margin: 0.25em 0; }
+.blog-prose blockquote { border-left: 4px solid var(--primary); padding: 0.4em 1.1em; margin: 1.5em 0; color: var(--muted-foreground); font-style: italic; background: color-mix(in oklab, var(--muted) 40%, transparent); border-radius: 0 0.75rem 0.75rem 0; }
+.blog-prose img { border-radius: 1rem; margin: 1.75em auto; max-width: 100%; height: auto; box-shadow: var(--shadow-md); }
+.blog-prose figure { margin: 1.75em 0; }
+.blog-prose figcaption { text-align: center; font-size: 0.875rem; color: var(--muted-foreground); margin-top: 0.5em; }
+.blog-prose pre { background: var(--muted); padding: 1rem 1.25rem; border-radius: 0.85rem; overflow-x: auto; font-size: 0.9rem; line-height: 1.6; border: 1px solid var(--border); }
+.blog-prose code { background: var(--muted); padding: 0.15em 0.4em; border-radius: 0.35rem; font-size: 0.9em; }
+.blog-prose pre code { background: transparent; padding: 0; }
+.blog-prose table { width: 100%; border-collapse: collapse; margin: 1.5em 0; font-size: 0.95rem; }
+.blog-prose th, .blog-prose td { border: 1px solid var(--border); padding: 0.6em 0.85em; text-align: left; }
+.blog-prose th { background: var(--muted); font-weight: 600; }
+.blog-prose hr { border: 0; border-top: 1px solid var(--border); margin: 2.5em 0; }
+.blog-prose iframe { width: 100%; aspect-ratio: 16/9; border-radius: 1rem; margin: 1.75em 0; border: 0; }
+@media (min-width: 768px) { .blog-prose { font-size: 1.125rem; } .blog-prose h2 { font-size: 2rem; } }
