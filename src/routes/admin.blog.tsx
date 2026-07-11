@@ -15,7 +15,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { MediaPicker } from "@/components/admin/MediaLibrary";
 import { Plus, Trash2, ExternalLink } from "lucide-react";
+
+function slugify(s: string) {
+  return s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+}
 
 export const Route = createFileRoute("/admin/blog")({ component: AdminBlog });
 
@@ -128,8 +133,15 @@ function PostsTab() {
           {editing && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
-                <div><Label>Title</Label><Input value={editing.title ?? ""} onChange={(e) => setEditing({ ...editing, title: e.target.value })} /></div>
-                <div><Label>Slug</Label><Input value={editing.slug ?? ""} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} /></div>
+                <div><Label>Title</Label><Input value={editing.title ?? ""} onChange={(e) => {
+                  const title = e.target.value;
+                  setEditing((prev) => {
+                    if (!prev) return prev;
+                    const autoSlug = !prev.id && (!prev.slug || prev.slug === slugify(prev.title ?? ""));
+                    return { ...prev, title, slug: autoSlug ? slugify(title) : prev.slug };
+                  });
+                }} /></div>
+                <div><Label>Slug</Label><Input value={editing.slug ?? ""} onChange={(e) => setEditing({ ...editing, slug: slugify(e.target.value) })} /></div>
               </div>
               <div><Label>Subtitle</Label><Input value={editing.subtitle ?? ""} onChange={(e) => setEditing({ ...editing, subtitle: e.target.value })} /></div>
               <div><Label>Excerpt</Label><Textarea rows={2} value={editing.excerpt ?? ""} onChange={(e) => setEditing({ ...editing, excerpt: e.target.value })} /></div>
@@ -158,7 +170,7 @@ function PostsTab() {
                 <div className="flex items-center gap-2"><Switch checked={!!editing.pinned} onCheckedChange={(v) => setEditing({ ...editing, pinned: v })} /><Label>Pinned</Label></div>
                 <div className="flex items-center gap-2"><Switch checked={editing.allow_comments !== false} onCheckedChange={(v) => setEditing({ ...editing, allow_comments: v })} /><Label>Comments</Label></div>
               </div>
-              <div><Label>Cover image URL</Label><Input value={editing.cover_url ?? ""} onChange={(e) => setEditing({ ...editing, cover_url: e.target.value })} /></div>
+              <MediaPicker label="Featured image" value={editing.cover_url ?? ""} onChange={(v) => setEditing({ ...editing, cover_url: v || null })} />
               <div><Label>Content (Markdown or HTML)</Label>
                 <Textarea rows={12} value={editing.content_markdown ?? editing.content_html ?? ""} onChange={(e) => setEditing({ ...editing, content_markdown: e.target.value })} placeholder="Rich text, Markdown, HTML, code blocks, images, callouts, tables, FAQs, quotes, CTAs..." />
               </div>

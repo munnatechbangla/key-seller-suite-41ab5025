@@ -1,9 +1,12 @@
 import { seoMeta, siteName, canonicalLink } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { PageHero } from "@/components/site/PageHero";
-import { blogPosts } from "@/lib/catalog";
+import { blogPosts as staticPosts } from "@/lib/catalog";
+import { blogListPublicFn } from "@/lib/blog.functions";
 import { Calendar, ArrowRight, Send } from "lucide-react";
 
 export const Route = createFileRoute("/blog/")({
@@ -14,28 +17,44 @@ export const Route = createFileRoute("/blog/")({
   component: BlogPage,
 });
 
-const categories = ["All", "AI Tools", "Streaming", "Design", "IPTV"];
+type Card = { slug: string; title: string; excerpt: string; category: string; date: string; cover_url?: string | null; emoji?: string };
 
 function BlogPage() {
+  const listFn = useServerFn(blogListPublicFn);
+  const { data: dbPosts } = useQuery({
+    queryKey: ["blog", "public", "list"],
+    queryFn: () => listFn({ data: { post_type: "blog", limit: 100 } }),
+    staleTime: 30_000,
+  });
+
+  const cards: Card[] = (dbPosts && dbPosts.length > 0)
+    ? dbPosts.map((p) => ({
+        slug: p.slug,
+        title: p.title,
+        excerpt: p.excerpt ?? "",
+        category: "Blog",
+        date: p.published_at ? new Date(p.published_at).toLocaleDateString() : "",
+        cover_url: p.cover_url,
+      }))
+    : staticPosts.map((p) => ({ slug: p.slug, title: p.title, excerpt: p.excerpt, category: p.category, date: p.date, emoji: p.emoji }));
+
   return (
     <div className="min-h-screen">
       <Header />
       <PageHero title={`${siteName()} Blog`} subtitle="Reviews, guides and pro tips on premium digital products" crumbs={[{ label: "Home", to: "/" }, { label: "Blog" }]} />
       <div className="container mx-auto px-4 py-10">
-        <div className="flex gap-2 overflow-x-auto pb-2 mb-6">
-          {categories.map((c, i) => (
-            <button key={c} className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-smooth ${i === 0 ? "bg-gradient-primary text-primary-foreground" : "bg-card border border-border hover:border-primary"}`}>{c}</button>
-          ))}
-        </div>
-
         <div className="grid lg:grid-cols-3 gap-6">
-          {blogPosts.map((p) => (
+          {cards.map((p) => (
             <Link key={p.slug} to="/blog/$slug" params={{ slug: p.slug }} className="rounded-2xl bg-card border border-border overflow-hidden hover:shadow-premium hover:-translate-y-1 transition-smooth group">
-              <div className="aspect-[16/10] bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center text-7xl">{p.emoji}</div>
+              {p.cover_url ? (
+                <img src={p.cover_url} alt={p.title} className="aspect-[16/10] w-full object-cover" loading="lazy" />
+              ) : (
+                <div className="aspect-[16/10] bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center text-7xl">{p.emoji ?? "📝"}</div>
+              )}
               <div className="p-5 space-y-2">
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="font-semibold text-primary">{p.category}</span>
-                  <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" /> {p.date}</span>
+                  {p.date && <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" /> {p.date}</span>}
                 </div>
                 <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-smooth">{p.title}</h3>
                 <p className="text-sm text-muted-foreground line-clamp-2">{p.excerpt}</p>
