@@ -4,6 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Loader2, Save, Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { adminListSettingsFn, adminUpsertSettingFn } from "@/lib/admin-settings.functions";
+import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
+import { MediaPicker } from "@/components/admin/MediaLibrary";
 import {
   defaultHomepageConfig,
   mergeConfig,
@@ -17,11 +19,12 @@ import {
   type HomeTrustItem,
   type HomeWhyChooseItem,
   type HomeStatItem,
-  
+
   type HomeFaqItem,
   type HeroProductSource,
   type HeaderNavItem,
   type HeroFeatureBadge,
+  type HomePaymentLogo,
 } from "@/lib/cms/homepage";
 import { useQuery } from "@tanstack/react-query";
 import { searchQuery, productsBySlugsQuery, categoriesQuery, type Product } from "@/lib/catalog";
