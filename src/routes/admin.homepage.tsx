@@ -4,6 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Loader2, Save, Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import { adminListSettingsFn, adminUpsertSettingFn } from "@/lib/admin-settings.functions";
+import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
+import { MediaPicker } from "@/components/admin/MediaLibrary";
 import {
   defaultHomepageConfig,
   mergeConfig,
@@ -17,11 +19,12 @@ import {
   type HomeTrustItem,
   type HomeWhyChooseItem,
   type HomeStatItem,
-  
+
   type HomeFaqItem,
   type HeroProductSource,
   type HeaderNavItem,
   type HeroFeatureBadge,
+  type HomePaymentLogo,
 } from "@/lib/cms/homepage";
 import { useQuery } from "@tanstack/react-query";
 import { searchQuery, productsBySlugsQuery, categoriesQuery, type Product } from "@/lib/catalog";
@@ -77,6 +80,37 @@ function HomepageBuilder() {
       }
     })();
   }, [list]);
+
+  // One-time migration: seed Payment Logos from Admin → Gateways for legacy configs.
+  const listGateways = useServerFn(listEnabledGatewaysFn);
+  useEffect(() => {
+    if (loading) return;
+    if (cfg.paymentMethods.logosMigrated) return;
+    if ((cfg.paymentMethods.logos?.length ?? 0) > 0) {
+      setCfg((c) => ({ ...c, paymentMethods: { ...c.paymentMethods, logosMigrated: true } }));
+      return;
+    }
+    (async () => {
+      try {
+        const res = (await listGateways()) as { gateways: Array<{ id: string; name: string; logo_url: string | null }> };
+        const seeded: HomePaymentLogo[] = (res.gateways ?? []).map((g, i) => ({
+          id: newId(`pay-${i}`),
+          enabled: true,
+          logo: g.logo_url ?? "",
+          title: g.name,
+          subtitle: "",
+          url: "",
+          badge: "",
+        }));
+        setCfg((c) => ({
+          ...c,
+          paymentMethods: { ...c.paymentMethods, logos: seeded, logosMigrated: true },
+        }));
+      } catch {
+        setCfg((c) => ({ ...c, paymentMethods: { ...c.paymentMethods, logosMigrated: true } }));
+      }
+    })();
+  }, [loading, cfg.paymentMethods.logosMigrated, cfg.paymentMethods.logos, listGateways]);
 
   async function save() {
     setSaving(true);
@@ -489,7 +523,29 @@ function HomepageBuilder() {
           <Field label="Trust label" value={cfg.paymentMethods.trustLabel} onChange={(v) => patch("paymentMethods", { ...cfg.paymentMethods, trustLabel: v })} />
           <Field label="Title" value={cfg.paymentMethods.title} onChange={(v) => patch("paymentMethods", { ...cfg.paymentMethods, title: v })} />
           <Area label="Subtitle" value={cfg.paymentMethods.subtitle} onChange={(v) => patch("paymentMethods", { ...cfg.paymentMethods, subtitle: v })} />
-          <p className="text-xs text-muted-foreground">Payment logos are managed in <a className="text-primary underline" href="/admin/gateways">Admin → Gateways</a>. Upload an SVG/PNG/WEBP per gateway, set the order, and toggle enabled — the homepage renders them automatically.</p>
+
+          <div className="pt-2">
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-sm font-semibold">Payment Logos</Label>
+              <span className="text-xs text-muted-foreground">Independent of Admin → Gateways</span>
+            </div>
+            <ItemList<HomePaymentLogo>
+              items={cfg.paymentMethods.logos ?? []}
+              onChange={(items) => patch("paymentMethods", { ...cfg.paymentMethods, logos: items })}
+              makeNew={() => ({ id: newId("pay"), enabled: true, logo: "", title: "New payment", subtitle: "", url: "", badge: "" })}
+              renderItem={(it, set) => (
+                <div className="space-y-2">
+                  <MediaPicker label="Logo" value={it.logo} onChange={(v) => set({ ...it, logo: v })} />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Field label="Title" value={it.title} onChange={(v) => set({ ...it, title: v })} />
+                    <Field label="Subtitle (optional)" value={it.subtitle ?? ""} onChange={(v) => set({ ...it, subtitle: v })} />
+                    <Field label="URL (optional)" value={it.url ?? ""} onChange={(v) => set({ ...it, url: v })} />
+                    <Field label="Badge (optional)" value={it.badge ?? ""} onChange={(v) => set({ ...it, badge: v })} />
+                  </div>
+                </div>
+              )}
+            />
+          </div>
         </TabsContent>
       </Tabs>
     </div>
