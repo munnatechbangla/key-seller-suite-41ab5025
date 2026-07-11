@@ -269,7 +269,13 @@ export const defaultHomepageConfig: HomepageConfig = {
   },
   stats: {
     enabled: true,
-    items: defaultStats.map((s, i) => ({ id: uid("stat", i), enabled: true, value: s.value, label: s.label })),
+    items: defaultStats.map((s, i) => ({
+      id: uid("stat", i),
+      enabled: true,
+      icon: STATS_DEFAULT_ICONS[i % STATS_DEFAULT_ICONS.length],
+      value: s.value,
+      label: s.label,
+    })),
   },
   testimonials: {
     enabled: true,
