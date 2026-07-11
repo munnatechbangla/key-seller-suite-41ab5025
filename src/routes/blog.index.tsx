@@ -47,20 +47,17 @@ function BlogPage() {
       <div className="container mx-auto px-4 py-10">
         <div className="grid lg:grid-cols-3 gap-6">
           {cards.map((p) => (
-            <Link key={p.slug} to="/blog/$slug" params={{ slug: p.slug }} className="rounded-2xl bg-card border border-border overflow-hidden hover:shadow-premium hover:-translate-y-1 transition-smooth group">
-              {p.cover_url ? (
-                <img src={p.cover_url} alt={p.title} className="aspect-[16/10] w-full object-cover" loading="lazy" />
-              ) : (
-                <div className="aspect-[16/10] bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center text-7xl">{p.emoji ?? "📝"}</div>
-              )}
-              <div className="p-5 space-y-2">
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                  <span className="font-semibold text-primary">{p.category}</span>
+            <Link key={p.slug} to="/blog/$slug" params={{ slug: p.slug }} className="group flex flex-col rounded-2xl bg-card border border-border overflow-hidden hover:shadow-premium hover:-translate-y-1 transition-smooth">
+              <BlogImage src={p.cover_url} alt={p.title} />
+              <div className="p-5 space-y-2 flex-1 flex flex-col">
+                <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                  <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">{p.category || "General"}</span>
                   {p.date && <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" /> {p.date}</span>}
+                  {p.reading && <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> {p.reading}</span>}
                 </div>
-                <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-smooth">{p.title}</h3>
+                <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-smooth line-clamp-2">{p.title}</h3>
                 <p className="text-sm text-muted-foreground line-clamp-2">{p.excerpt}</p>
-                <div className="inline-flex items-center gap-1 text-sm font-semibold text-primary pt-2">Read article <ArrowRight className="h-3.5 w-3.5" /></div>
+                <div className="inline-flex items-center gap-1 text-sm font-semibold text-primary pt-2 mt-auto">Read article <ArrowRight className="h-3.5 w-3.5" /></div>
               </div>
             </Link>
           ))}
