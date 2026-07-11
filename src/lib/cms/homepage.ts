@@ -422,6 +422,58 @@ export const defaultHomepageConfig: HomepageConfig = {
       { id: "nav-contact", label: "Contact", url: "/contact", enabled: true },
     ],
   },
+  footer: {
+    brand: {
+      logo: "",
+      name: "",
+      description: "",
+      copyright: "© {year} {name}. All rights reserved.",
+      bottomText: "",
+    },
+    companyLinks: {
+      title: defaultFooterColumns[0]?.title ?? "Company",
+      items: (defaultFooterColumns[0]?.links ?? []).map((l, i) => ({
+        id: uid("company", i), enabled: true, title: l.label, url: l.href, openInNewTab: false,
+      })),
+    },
+    supportLinks: {
+      title: defaultFooterColumns[1]?.title ?? "Support",
+      items: (defaultFooterColumns[1]?.links ?? []).map((l, i) => ({
+        id: uid("support", i), enabled: true, title: l.label, url: l.href, openInNewTab: false,
+      })),
+    },
+    newsletter: {
+      enabled: true,
+      title: defaultSiteConfig.newsletter.title,
+      subtitle: defaultSiteConfig.newsletter.subtitle,
+      placeholder: defaultSiteConfig.newsletter.placeholder,
+      buttonText: "Subscribe",
+      successMessage: "Thanks — check your inbox to confirm.",
+    },
+    paymentLogos: {
+      enabled: true,
+      label: "We accept",
+      items: [],
+    },
+    socials: {
+      enabled: true,
+      label: "Follow us",
+      items: [
+        { id: "soc-fb", enabled: true, icon: "Facebook", url: "", tooltip: "Facebook" },
+        { id: "soc-ig", enabled: true, icon: "Instagram", url: "", tooltip: "Instagram" },
+        { id: "soc-tw", enabled: true, icon: "Twitter", url: "", tooltip: "X (Twitter)" },
+        { id: "soc-li", enabled: true, icon: "Linkedin", url: "", tooltip: "LinkedIn" },
+        { id: "soc-yt", enabled: true, icon: "Youtube", url: "", tooltip: "YouTube" },
+        { id: "soc-tg", enabled: true, icon: "Send", url: "", tooltip: "Telegram" },
+        { id: "soc-dc", enabled: true, icon: "MessageSquare", url: "", tooltip: "Discord" },
+        { id: "soc-gh", enabled: true, icon: "Github", url: "", tooltip: "GitHub" },
+      ],
+    },
+    bottom: {
+      leftText: "",  // empty → falls back to formatted copyright
+      rightText: "", // empty → falls back to branding.footer_text
+    },
+  },
 };
 
 // ---------------- Store ----------------
