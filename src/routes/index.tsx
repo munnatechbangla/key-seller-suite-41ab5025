@@ -659,12 +659,6 @@ function TestimonialsSlider({ items }: { items: ReviewRow[] }) {
   );
 }
 
-// Lazy import carousel + autoplay so SSR bundle stays lean and hooks-order stays stable.
-import { Carousel as _Carousel, CarouselContent as _CC, CarouselItem as _CI } from "@/components/ui/carousel";
-import _Autoplay from "embla-carousel-autoplay";
-function useCarouselModules() {
-  return [_Carousel, _CC, _CI, _Autoplay] as const;
-}
 
 function BlogSection() {
   const cfg = useHomepage((s) => s.config.blog);
