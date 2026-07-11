@@ -183,6 +183,55 @@ export type HomePaymentMethods = {
   logosMigrated?: boolean;
 };
 
+// ---------------- Footer ----------------
+
+export type FooterLink = {
+  id: string;
+  enabled: boolean;
+  title: string;
+  url: string;
+  openInNewTab?: boolean;
+};
+
+export type FooterSocial = {
+  id: string;
+  enabled: boolean;
+  icon: IconName;
+  url: string;
+  tooltip: string;
+};
+
+export type FooterPaymentLogo = {
+  id: string;
+  enabled: boolean;
+  logo: string; // media:// token or absolute URL
+  title: string;
+  url?: string;
+};
+
+export type HomeFooter = {
+  brand: {
+    logo: string;         // media:// or url; empty = use site Logo/branding
+    name: string;         // empty = fall back to branding.name
+    description: string;  // empty = fall back to branding.description
+    copyright: string;    // template with {year} {name}
+    bottomText: string;   // right-side small text; empty = branding.footer_text
+  };
+  companyLinks: { title: string; items: FooterLink[] };
+  supportLinks: { title: string; items: FooterLink[] };
+  newsletter: {
+    enabled: boolean;
+    title: string;
+    subtitle: string;
+    placeholder: string;
+    buttonText: string;
+    successMessage: string;
+  };
+  paymentLogos: { enabled: boolean; label: string; items: FooterPaymentLogo[] };
+  socials: { enabled: boolean; label: string; items: FooterSocial[] };
+  bottom: { leftText: string; rightText: string };
+};
+
 // Stable section ids drive both visibility and rendering order.
 export type SectionId =
   | "hero"
