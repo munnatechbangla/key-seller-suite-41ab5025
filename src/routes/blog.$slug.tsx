@@ -18,6 +18,11 @@ type LoadedPost = {
   cover_url: string | null;
   content_html: string | null;
   emoji?: string;
+  author: string;
+  reading: string;
+  og_image?: string | null;
+  meta_title?: string | null;
+  meta_description?: string | null;
 };
 
 export const Route = createFileRoute("/blog/$slug")({
