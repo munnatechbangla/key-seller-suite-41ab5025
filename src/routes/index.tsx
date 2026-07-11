@@ -25,6 +25,7 @@ import { useHomepage, defaultHomepageConfig, type HomeProductSection, type Secti
 import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
 import { subscribeNewsletterFn } from "@/lib/newsletter.functions";
 import { blogListPublicFn } from "@/lib/blog.functions";
+import { BlogImage } from "@/components/site/BlogImage";
 import { useServerFn } from "@tanstack/react-start";
 import { categoriesQuery } from "@/lib/catalog";
 
