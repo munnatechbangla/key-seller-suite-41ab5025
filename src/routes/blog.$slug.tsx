@@ -165,8 +165,77 @@ function PostPage() {
   const { post, related, prev, next, recent, categories } = Route.useLoaderData();
   const brand = useSettings((s) => s.settings.branding.name);
   const [toc, setToc] = useState<{ id: string; text: string; level: number }[]>([]);
+  const [activeId, setActiveId] = useState<string>("");
+  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
+  const [progress, setProgress] = useState(0);
+  const articleRef = useRef<HTMLElement | null>(null);
 
-  useEffect(() => { setToc(extractHeadings(post.content_html)); }, [post.content_html]);
+  // Enhance article DOM: heading IDs, lazy images, click-to-zoom
+  useEffect(() => {
+    const root = articleRef.current;
+    if (!root || !post.content_html) return;
+
+    const headings = Array.from(root.querySelectorAll("h2, h3, h4")) as HTMLElement[];
+    const toc: { id: string; text: string; level: number }[] = [];
+    headings.forEach((h, i) => {
+      const text = (h.textContent ?? "").trim();
+      if (!text) return;
+      const id = h.id || slugify(text, i);
+      h.id = id;
+      toc.push({ id, text, level: h.tagName === "H2" ? 2 : h.tagName === "H3" ? 3 : 4 });
+    });
+    setToc(toc);
+
+    const imgs = Array.from(root.querySelectorAll("img")) as HTMLImageElement[];
+    const imgHandlers: Array<[HTMLImageElement, (e: MouseEvent) => void]> = [];
+    imgs.forEach((img) => {
+      img.loading = "lazy";
+      img.decoding = "async";
+      if (!img.alt) img.alt = post.title;
+      const onClick = (e: MouseEvent) => { e.preventDefault(); setLightbox({ src: img.currentSrc || img.src, alt: img.alt }); };
+      img.addEventListener("click", onClick);
+      imgHandlers.push([img, onClick]);
+    });
+
+    return () => { imgHandlers.forEach(([img, fn]) => img.removeEventListener("click", fn)); };
+  }, [post.content_html, post.title]);
+
+  // Scroll spy + reading progress
+  useEffect(() => {
+    const onScroll = () => {
+      const doc = document.documentElement;
+      const total = doc.scrollHeight - doc.clientHeight;
+      setProgress(total > 0 ? Math.min(100, Math.max(0, (doc.scrollTop / total) * 100)) : 0);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (toc.length === 0) return;
+    const els = toc.map((h) => document.getElementById(h.id)).filter(Boolean) as HTMLElement[];
+    if (els.length === 0) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) setActiveId(visible[0].target.id);
+      },
+      { rootMargin: "-88px 0px -70% 0px", threshold: [0, 1] },
+    );
+    els.forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, [toc]);
+
+  // Lightbox: close on Escape
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setLightbox(null); };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prevOverflow; };
+  }, [lightbox]);
 
   const shareUrl = useMemo(() => {
     const base = siteUrl() || (typeof window !== "undefined" ? window.location.origin : "");
@@ -175,6 +244,7 @@ function PostPage() {
 
   return (
     <div className="min-h-screen">
+      <div className="reading-progress" aria-hidden="true"><span style={{ ["--p" as string]: `${progress}%` } as React.CSSProperties} /></div>
       <Header />
 
       {/* Hero (compact) */}
@@ -198,7 +268,7 @@ function PostPage() {
 
       {/* Body + sidebar */}
       <div className="container mx-auto px-4 pt-10 pb-16 max-w-6xl grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <article className="min-w-0 max-w-[820px] mx-auto lg:mx-0 w-full">
+        <article ref={articleRef} className="min-w-0 max-w-[820px] mx-auto lg:mx-0 w-full">
           {post.content_html ? (
             <div className="blog-prose" dangerouslySetInnerHTML={{ __html: post.content_html }} />
           ) : (
@@ -206,6 +276,7 @@ function PostPage() {
               <p>Check out the latest deals on {brand} and grab yours today.</p>
             </div>
           )}
+
 
           {/* Author box */}
           <div className="mt-12 rounded-2xl border border-border bg-card p-5 sm:p-6 flex items-start gap-4">
