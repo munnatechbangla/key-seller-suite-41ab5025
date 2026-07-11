@@ -19,6 +19,7 @@ import {
   faqSection as defaultFaqSection,
   newsletterCta as defaultNewsletter,
 } from "./home";
+import { footerColumns as defaultFooterColumns, siteConfig as defaultSiteConfig } from "./site";
 
 // ---------------- Types ----------------
 
