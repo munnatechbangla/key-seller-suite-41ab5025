@@ -36,6 +36,7 @@ function BlogPage() {
         category: "Blog",
         date: p.published_at ? new Date(p.published_at).toLocaleDateString() : "",
         cover_url: p.cover_url,
+        reading: readingTimeLabel(p),
       }))
     : staticPosts.map((p) => ({ slug: p.slug, title: p.title, excerpt: p.excerpt, category: p.category, date: p.date, emoji: p.emoji }));
 
