@@ -17,7 +17,7 @@ import {
   type HomeTrustItem,
   type HomeWhyChooseItem,
   type HomeStatItem,
-  type HomeTestimonial,
+  
   type HomeFaqItem,
   type HeroProductSource,
   type HeaderNavItem,
