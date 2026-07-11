@@ -70,14 +70,16 @@ import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 import { Route as AdminCmsRouteImport } from './routes/admin.cms'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
-import { Route as AdminBlogRouteImport } from './routes/admin.blog'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminProductsIndexRouteImport } from './routes/admin.products.index'
+import { Route as AdminBlogIndexRouteImport } from './routes/admin.blog.index'
 import { Route as AdminProductsIdRouteImport } from './routes/admin.products.$id'
 import { Route as AdminCmsProductLayoutsRouteImport } from './routes/admin.cms.product-layouts'
 import { Route as AdminCmsLandingPagesRouteImport } from './routes/admin.cms.landing-pages'
 import { Route as AdminCmsHomepageRouteImport } from './routes/admin.cms.homepage'
+import { Route as AdminBlogTagsRouteImport } from './routes/admin.blog.tags'
+import { Route as AdminBlogCategoriesRouteImport } from './routes/admin.blog.categories'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments.webhook'
 import { Route as ApiPublicNotificationsProcessRouteImport } from './routes/api/public/notifications.process'
 import { Route as AdminCmsLandingPagesIdRouteImport } from './routes/admin.cms.landing-pages.$id'
@@ -390,11 +392,6 @@ const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   path: '/categories',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminBlogRoute = AdminBlogRouteImport.update({
-  id: '/blog',
-  path: '/blog',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminAuditLogsRoute = AdminAuditLogsRouteImport.update({
   id: '/audit-logs',
   path: '/audit-logs',
@@ -409,6 +406,11 @@ const AdminProductsIndexRoute = AdminProductsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminProductsRoute,
+} as any)
+const AdminBlogIndexRoute = AdminBlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminProductsIdRoute = AdminProductsIdRouteImport.update({
   id: '/$id',
@@ -429,6 +431,16 @@ const AdminCmsHomepageRoute = AdminCmsHomepageRouteImport.update({
   id: '/homepage',
   path: '/homepage',
   getParentRoute: () => AdminCmsRoute,
+} as any)
+const AdminBlogTagsRoute = AdminBlogTagsRouteImport.update({
+  id: '/blog/tags',
+  path: '/blog/tags',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBlogCategoriesRoute = AdminBlogCategoriesRouteImport.update({
+  id: '/blog/categories',
+  path: '/blog/categories',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
@@ -492,7 +504,6 @@ export interface FileRoutesByFullPath {
   '/wishlist': typeof WishlistRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
-  '/admin/blog': typeof AdminBlogRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/cms': typeof AdminCmsRouteWithChildren
   '/admin/coupons': typeof AdminCouponsRoute
@@ -531,10 +542,13 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/blog/': typeof BlogIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/admin/blog/categories': typeof AdminBlogCategoriesRoute
+  '/admin/blog/tags': typeof AdminBlogTagsRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
   '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRouteWithChildren
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
+  '/admin/blog/': typeof AdminBlogIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
   '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
@@ -568,7 +582,6 @@ export interface FileRoutesByTo {
   '/wishlist': typeof WishlistRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
-  '/admin/blog': typeof AdminBlogRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/cms': typeof AdminCmsRouteWithChildren
   '/admin/coupons': typeof AdminCouponsRoute
@@ -606,10 +619,13 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/blog': typeof BlogIndexRoute
   '/products': typeof ProductsIndexRoute
+  '/admin/blog/categories': typeof AdminBlogCategoriesRoute
+  '/admin/blog/tags': typeof AdminBlogTagsRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
   '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRouteWithChildren
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
+  '/admin/blog': typeof AdminBlogIndexRoute
   '/admin/products': typeof AdminProductsIndexRoute
   '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
@@ -645,7 +661,6 @@ export interface FileRoutesById {
   '/wishlist': typeof WishlistRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
-  '/admin/blog': typeof AdminBlogRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/cms': typeof AdminCmsRouteWithChildren
   '/admin/coupons': typeof AdminCouponsRoute
@@ -684,10 +699,13 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/blog/': typeof BlogIndexRoute
   '/products/': typeof ProductsIndexRoute
+  '/admin/blog/categories': typeof AdminBlogCategoriesRoute
+  '/admin/blog/tags': typeof AdminBlogTagsRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
   '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRouteWithChildren
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
+  '/admin/blog/': typeof AdminBlogIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
   '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
@@ -724,7 +742,6 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/audit'
     | '/admin/audit-logs'
-    | '/admin/blog'
     | '/admin/categories'
     | '/admin/cms'
     | '/admin/coupons'
@@ -763,10 +780,13 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/blog/'
     | '/products/'
+    | '/admin/blog/categories'
+    | '/admin/blog/tags'
     | '/admin/cms/homepage'
     | '/admin/cms/landing-pages'
     | '/admin/cms/product-layouts'
     | '/admin/products/$id'
+    | '/admin/blog/'
     | '/admin/products/'
     | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
@@ -800,7 +820,6 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/audit'
     | '/admin/audit-logs'
-    | '/admin/blog'
     | '/admin/categories'
     | '/admin/cms'
     | '/admin/coupons'
@@ -838,10 +857,13 @@ export interface FileRouteTypes {
     | '/admin'
     | '/blog'
     | '/products'
+    | '/admin/blog/categories'
+    | '/admin/blog/tags'
     | '/admin/cms/homepage'
     | '/admin/cms/landing-pages'
     | '/admin/cms/product-layouts'
     | '/admin/products/$id'
+    | '/admin/blog'
     | '/admin/products'
     | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
@@ -876,7 +898,6 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/audit'
     | '/admin/audit-logs'
-    | '/admin/blog'
     | '/admin/categories'
     | '/admin/cms'
     | '/admin/coupons'
@@ -915,10 +936,13 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/blog/'
     | '/products/'
+    | '/admin/blog/categories'
+    | '/admin/blog/tags'
     | '/admin/cms/homepage'
     | '/admin/cms/landing-pages'
     | '/admin/cms/product-layouts'
     | '/admin/products/$id'
+    | '/admin/blog/'
     | '/admin/products/'
     | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
@@ -1399,13 +1423,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCategoriesRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/blog': {
-      id: '/admin/blog'
-      path: '/blog'
-      fullPath: '/admin/blog'
-      preLoaderRoute: typeof AdminBlogRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/audit-logs': {
       id: '/admin/audit-logs'
       path: '/audit-logs'
@@ -1426,6 +1443,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/products/'
       preLoaderRoute: typeof AdminProductsIndexRouteImport
       parentRoute: typeof AdminProductsRoute
+    }
+    '/admin/blog/': {
+      id: '/admin/blog/'
+      path: '/blog'
+      fullPath: '/admin/blog/'
+      preLoaderRoute: typeof AdminBlogIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/products/$id': {
       id: '/admin/products/$id'
@@ -1454,6 +1478,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/cms/homepage'
       preLoaderRoute: typeof AdminCmsHomepageRouteImport
       parentRoute: typeof AdminCmsRoute
+    }
+    '/admin/blog/tags': {
+      id: '/admin/blog/tags'
+      path: '/blog/tags'
+      fullPath: '/admin/blog/tags'
+      preLoaderRoute: typeof AdminBlogTagsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/blog/categories': {
+      id: '/admin/blog/categories'
+      path: '/blog/categories'
+      fullPath: '/admin/blog/categories'
+      preLoaderRoute: typeof AdminBlogCategoriesRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
@@ -1544,7 +1582,6 @@ const AdminProductsRouteWithChildren = AdminProductsRoute._addFileChildren(
 interface AdminRouteChildren {
   AdminAuditRoute: typeof AdminAuditRoute
   AdminAuditLogsRoute: typeof AdminAuditLogsRoute
-  AdminBlogRoute: typeof AdminBlogRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminCmsRoute: typeof AdminCmsRouteWithChildren
   AdminCouponsRoute: typeof AdminCouponsRoute
@@ -1572,12 +1609,14 @@ interface AdminRouteChildren {
   AdminSetupRoute: typeof AdminSetupRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminBlogCategoriesRoute: typeof AdminBlogCategoriesRoute
+  AdminBlogTagsRoute: typeof AdminBlogTagsRoute
+  AdminBlogIndexRoute: typeof AdminBlogIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAuditRoute: AdminAuditRoute,
   AdminAuditLogsRoute: AdminAuditLogsRoute,
-  AdminBlogRoute: AdminBlogRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminCmsRoute: AdminCmsRouteWithChildren,
   AdminCouponsRoute: AdminCouponsRoute,
@@ -1605,6 +1644,9 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminSetupRoute: AdminSetupRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminBlogCategoriesRoute: AdminBlogCategoriesRoute,
+  AdminBlogTagsRoute: AdminBlogTagsRoute,
+  AdminBlogIndexRoute: AdminBlogIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

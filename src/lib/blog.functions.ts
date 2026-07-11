@@ -103,3 +103,75 @@ export const blogSubmitCommentFn = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// -------- Category admin --------
+export const blogAdminListCategoriesFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.from("blog_categories").select("*").order("sort_order").order("name");
+    if (error) throw new Error(error.message);
+    const cats = data ?? [];
+    const { data: counts } = await context.supabase.from("blog_posts").select("category_id");
+    const map = new Map<string, number>();
+    (counts ?? []).forEach((r: { category_id: string | null }) => {
+      if (r.category_id) map.set(r.category_id, (map.get(r.category_id) ?? 0) + 1);
+    });
+    return cats.map((c) => ({ ...c, post_count: map.get(c.id) ?? 0 }));
+  });
+
+export const blogAdminUpsertCategoryFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: Record<string, unknown>) => d)
+  .handler(async ({ data, context }) => {
+    const row = { ...data } as Record<string, unknown>;
+    if (!row.id) delete row.id;
+    if (!row.kind) row.kind = "blog";
+    const { data: saved, error } = await context.supabase.from("blog_categories").upsert(row as never).select().single();
+    if (error) throw new Error(error.message);
+    return saved;
+  });
+
+export const blogAdminDeleteCategoryFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string }) => d)
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("blog_categories").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// -------- Tag admin --------
+export const blogAdminListTagsFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.from("blog_tags").select("*").order("name");
+    if (error) throw new Error(error.message);
+    const tags = data ?? [];
+    const { data: posts } = await context.supabase.from("blog_posts").select("tag_ids");
+    const map = new Map<string, number>();
+    (posts ?? []).forEach((p: { tag_ids: string[] | null }) => {
+      (p.tag_ids ?? []).forEach((t) => map.set(t, (map.get(t) ?? 0) + 1));
+    });
+    return tags.map((t) => ({ ...t, post_count: map.get(t.id) ?? 0 }));
+  });
+
+export const blogAdminUpsertTagFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id?: string; name: string; slug: string }) => d)
+  .handler(async ({ data, context }) => {
+    const row: Record<string, unknown> = { name: data.name, slug: data.slug };
+    if (data.id) row.id = data.id;
+    const { data: saved, error } = await context.supabase.from("blog_tags").upsert(row as never).select().single();
+    if (error) throw new Error(error.message);
+    return saved;
+  });
+
+export const blogAdminDeleteTagFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string }) => d)
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("blog_tags").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
