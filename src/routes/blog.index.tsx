@@ -7,7 +7,8 @@ import { Footer } from "@/components/site/Footer";
 import { PageHero } from "@/components/site/PageHero";
 import { blogPosts as staticPosts } from "@/lib/catalog";
 import { blogListPublicFn } from "@/lib/blog.functions";
-import { Calendar, ArrowRight, Send } from "lucide-react";
+import { Calendar, ArrowRight, Send, Clock } from "lucide-react";
+import { BlogImage, readingTimeLabel } from "@/components/site/BlogImage";
 
 export const Route = createFileRoute("/blog/")({
   head: () => ({
