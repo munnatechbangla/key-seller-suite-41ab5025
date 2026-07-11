@@ -368,12 +368,13 @@ function HomepageBuilder() {
             items={cfg.stats.items}
             onChange={(items) => patch("stats", { ...cfg.stats, items })}
             renderItem={(it, set) => (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-[auto_1fr_1fr] gap-2 items-end">
+                <IconPicker label="Icon" value={it.icon ?? "Shield"} onChange={(v) => set({ ...it, icon: v })} />
                 <Field label="Value (e.g. 200K+, 4.9★)" value={it.value} onChange={(v) => set({ ...it, value: v })} />
                 <Field label="Label" value={it.label} onChange={(v) => set({ ...it, label: v })} />
               </div>
             )}
-            makeNew={() => ({ id: newId("stat"), value: "100+", label: "New metric", enabled: true })}
+            makeNew={() => ({ id: newId("stat"), value: "100+", label: "New metric", icon: "Shield", enabled: true })}
           />
         </TabsContent>
 
