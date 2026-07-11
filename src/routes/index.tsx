@@ -721,13 +721,7 @@ function BlogSection() {
 
 function PaymentMethods() {
   const cfg = useHomepage((s) => s.config.paymentMethods);
-  const listFn = useServerFn(listEnabledGatewaysFn);
-  const { data } = useTQuery({
-    queryKey: ["home", "payment-gateways"],
-    queryFn: () => listFn(),
-    staleTime: 60_000,
-  });
-  const gateways = data?.gateways ?? [];
+  const logos = (cfg.logos ?? []).filter((l) => l.enabled && (l.logo || l.title));
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="rounded-3xl bg-card border border-border p-6 sm:p-8 text-center">
@@ -736,24 +730,44 @@ function PaymentMethods() {
         </div>
         <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-1">{cfg.title}</h3>
         <p className="text-sm text-muted-foreground mb-6">{cfg.subtitle}</p>
-        {gateways.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-            {gateways.map((g) => (
-              <div key={g.id} title={g.name} className="h-14 grid place-items-center rounded-xl border border-border bg-muted/40 px-2 hover:border-primary/40 transition-smooth">
-                {g.logo_url ? (
-                  <img src={g.logo_url} alt={g.name} className="max-h-8 max-w-full object-contain" loading="lazy" />
-                ) : (
-                  <span className="text-xs font-bold tracking-tight text-foreground/80">{g.name}</span>
-                )}
-              </div>
-            ))}
+        {logos.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {logos.map((l) => <PaymentLogoCard key={l.id} logo={l} />)}
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground italic">No payment methods configured yet.</p>
+          <p className="text-xs text-muted-foreground italic">No payment logos configured yet.</p>
         )}
       </div>
     </div>
   );
+}
+
+function PaymentLogoCard({ logo }: { logo: { logo: string; title: string; subtitle?: string; url?: string; badge?: string } }) {
+  const { url } = useResolvedMediaUrl(logo.logo);
+  const inner = (
+    <div className="group relative h-full flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-muted/40 p-3 hover:border-primary/40 hover:shadow-sm transition-smooth">
+      {logo.badge && (
+        <span className="absolute -top-2 right-2 rounded-full bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5">{logo.badge}</span>
+      )}
+      <div className="h-10 grid place-items-center w-full">
+        {url ? (
+          <img src={url} alt={logo.title} className="max-h-8 max-w-full object-contain" loading="lazy" />
+        ) : (
+          <span className="text-xs font-bold tracking-tight text-foreground/80">{logo.title}</span>
+        )}
+      </div>
+      {logo.title && url && <div className="text-xs font-semibold text-foreground/80">{logo.title}</div>}
+      {logo.subtitle && <div className="text-[11px] text-muted-foreground">{logo.subtitle}</div>}
+    </div>
+  );
+  if (logo.url) {
+    return (
+      <a href={logo.url} target="_blank" rel="noopener noreferrer" className="block">
+        {inner}
+      </a>
+    );
+  }
+  return inner;
 }
 
 function FAQ() {
