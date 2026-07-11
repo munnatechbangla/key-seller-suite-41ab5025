@@ -195,6 +195,8 @@ export type HomepageConfig = {
 
 const uid = (p: string, i: number) => `${p}-${i + 1}`;
 
+export const STATS_DEFAULT_ICONS: IconName[] = ["Users", "Gift", "Star", "Headphones"];
+
 export const defaultHomepageConfig: HomepageConfig = {
   sectionOrder: [
     "hero",
@@ -269,7 +271,13 @@ export const defaultHomepageConfig: HomepageConfig = {
   },
   stats: {
     enabled: true,
-    items: defaultStats.map((s, i) => ({ id: uid("stat", i), enabled: true, value: s.value, label: s.label })),
+    items: defaultStats.map((s, i) => ({
+      id: uid("stat", i),
+      enabled: true,
+      icon: STATS_DEFAULT_ICONS[i % STATS_DEFAULT_ICONS.length],
+      value: s.value,
+      label: s.label,
+    })),
   },
   testimonials: {
     enabled: true,
@@ -362,7 +370,14 @@ export function mergeConfig(base: HomepageConfig, override: Partial<HomepageConf
     trust: { ...base.trust, ...(override.trust ?? {}) },
     categories: { ...base.categories, ...(override.categories ?? {}) },
     whyChoose: { ...base.whyChoose, ...(override.whyChoose ?? {}) },
-    stats: { ...base.stats, ...(override.stats ?? {}) },
+    stats: (() => {
+      const merged = { ...base.stats, ...(override.stats ?? {}) };
+      merged.items = (merged.items ?? []).map((it, i) => ({
+        ...it,
+        icon: it.icon ?? STATS_DEFAULT_ICONS[i % STATS_DEFAULT_ICONS.length],
+      }));
+      return merged;
+    })(),
     testimonials: { ...base.testimonials, ...(override.testimonials ?? {}) },
     blog: { ...base.blog, ...(override.blog ?? {}) },
     faq: { ...base.faq, ...(override.faq ?? {}) },

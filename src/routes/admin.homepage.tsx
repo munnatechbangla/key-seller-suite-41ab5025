@@ -26,7 +26,8 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { searchQuery, productsBySlugsQuery, categoriesQuery, type Product } from "@/lib/catalog";
 import type { HomeCategorySource } from "@/lib/cms/homepage";
-import type { IconName } from "@/lib/cms/icons";
+import { iconRegistry, resolveIcon, type IconName } from "@/lib/cms/icons";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -367,12 +368,13 @@ function HomepageBuilder() {
             items={cfg.stats.items}
             onChange={(items) => patch("stats", { ...cfg.stats, items })}
             renderItem={(it, set) => (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-[auto_1fr_1fr] gap-2 items-end">
+                <IconPicker label="Icon" value={it.icon ?? "Shield"} onChange={(v) => set({ ...it, icon: v })} />
                 <Field label="Value (e.g. 200K+, 4.9★)" value={it.value} onChange={(v) => set({ ...it, value: v })} />
                 <Field label="Label" value={it.label} onChange={(v) => set({ ...it, label: v })} />
               </div>
             )}
-            makeNew={() => ({ id: newId("stat"), value: "100+", label: "New metric", enabled: true })}
+            makeNew={() => ({ id: newId("stat"), value: "100+", label: "New metric", icon: "Shield", enabled: true })}
           />
         </TabsContent>
 
@@ -921,3 +923,48 @@ function SectionCountdownEditor({
   );
 }
 
+
+// ---------------- Icon picker (searchable) ----------------
+
+function IconPicker({ label, value, onChange }: { label: string; value: IconName; onChange: (v: IconName) => void }) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const names = Object.keys(iconRegistry) as IconName[];
+  const filtered = names.filter((n) => n.toLowerCase().includes(q.trim().toLowerCase()));
+  const safe: IconName = (value in iconRegistry ? value : "Shield") as IconName;
+  const Current = resolveIcon(safe);
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs">{label}</Label>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button type="button" variant="outline" className="h-10 gap-2 min-w-[9rem] justify-start">
+            <Current className="h-4 w-4 shrink-0" />
+            <span className="text-sm truncate">{safe}</span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-64 p-2" align="start">
+          <Input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search icons…" className="h-8 mb-2" />
+          <div className="grid grid-cols-4 gap-1 max-h-56 overflow-auto">
+            {filtered.length === 0 && <div className="col-span-4 p-2 text-xs text-muted-foreground">No matches</div>}
+            {filtered.map((n) => {
+              const I = resolveIcon(n);
+              const active = n === safe;
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  title={n}
+                  onClick={() => { onChange(n); setOpen(false); }}
+                  className={`grid place-items-center rounded-md border p-2 hover:bg-muted/50 ${active ? "border-primary bg-primary/10" : ""}`}
+                >
+                  <I className="h-4 w-4" />
+                </button>
+              );
+            })}
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
