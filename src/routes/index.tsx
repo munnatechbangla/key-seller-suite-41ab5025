@@ -24,6 +24,7 @@ import { useProductSection, useResolvedProducts, resolveIcon } from "@/lib/cms";
 import { useHomepage, defaultHomepageConfig, type HomeProductSection, type SectionId } from "@/lib/cms/homepage";
 import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
 import { subscribeNewsletterFn } from "@/lib/newsletter.functions";
+import { blogListPublicFn } from "@/lib/blog.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { categoriesQuery } from "@/lib/catalog";
 
@@ -660,7 +661,23 @@ function TestimonialsSlider({ items }: { items: ReviewRow[] }) {
 
 function BlogSection() {
   const cfg = useHomepage((s) => s.config.blog);
-  const posts = blogPosts.slice(0, cfg.limit);
+  const listFn = useServerFn(blogListPublicFn);
+  const { data: dbPosts } = useTQuery({
+    queryKey: ["home", "blog", "list", cfg.limit],
+    queryFn: () => listFn({ data: { post_type: "blog", limit: cfg.limit } }),
+    staleTime: 30_000,
+  });
+  const posts = (dbPosts && dbPosts.length > 0)
+    ? dbPosts.slice(0, cfg.limit).map((p) => ({
+        slug: p.slug,
+        title: p.title,
+        excerpt: p.excerpt ?? "",
+        category: "Blog",
+        date: p.published_at ? new Date(p.published_at).toLocaleDateString() : "",
+        cover_url: p.cover_url as string | null,
+        emoji: "📝",
+      }))
+    : blogPosts.slice(0, cfg.limit).map((p) => ({ ...p, cover_url: null as string | null }));
   if (!posts.length) return null;
   return (
     <Section
@@ -677,12 +694,16 @@ function BlogSection() {
         {posts.map((p) => (
           <Link key={p.slug} to="/blog/$slug" params={{ slug: p.slug }} className="group flex flex-col rounded-2xl bg-card border border-border overflow-hidden hover:shadow-premium hover:-translate-y-1 transition-smooth">
             {cfg.showImage && (
-              <div className="aspect-[16/10] bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center text-7xl">{p.emoji}</div>
+              p.cover_url ? (
+                <img src={p.cover_url} alt={p.title} className="aspect-[16/10] w-full object-cover" loading="lazy" />
+              ) : (
+                <div className="aspect-[16/10] bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center text-7xl">{p.emoji}</div>
+              )
             )}
             <div className="p-5 flex-1 flex flex-col gap-2">
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="font-semibold text-primary">{p.category}</span>
-                {cfg.showDate && (
+                {cfg.showDate && p.date && (
                   <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" /> {p.date}</span>
                 )}
               </div>
