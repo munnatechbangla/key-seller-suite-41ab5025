@@ -370,7 +370,14 @@ export function mergeConfig(base: HomepageConfig, override: Partial<HomepageConf
     trust: { ...base.trust, ...(override.trust ?? {}) },
     categories: { ...base.categories, ...(override.categories ?? {}) },
     whyChoose: { ...base.whyChoose, ...(override.whyChoose ?? {}) },
-    stats: { ...base.stats, ...(override.stats ?? {}) },
+    stats: (() => {
+      const merged = { ...base.stats, ...(override.stats ?? {}) };
+      merged.items = (merged.items ?? []).map((it, i) => ({
+        ...it,
+        icon: it.icon ?? STATS_DEFAULT_ICONS[i % STATS_DEFAULT_ICONS.length],
+      }));
+      return merged;
+    })(),
     testimonials: { ...base.testimonials, ...(override.testimonials ?? {}) },
     blog: { ...base.blog, ...(override.blog ?? {}) },
     faq: { ...base.faq, ...(override.faq ?? {}) },
