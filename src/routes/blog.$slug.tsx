@@ -62,10 +62,25 @@ export const Route = createFileRoute("/blog/$slug")({
   },
   head: ({ loaderData }) => ({
     meta: seoMeta({
-      title: loaderData?.post.title,
-      description: loaderData?.post.excerpt ?? undefined,
+      title: loaderData?.post.meta_title || loaderData?.post.title,
+      description: loaderData?.post.meta_description || loaderData?.post.excerpt || undefined,
       ogType: "article",
+      image: loaderData?.post.og_image || undefined,
     }),
+    scripts: loaderData?.post
+      ? [{
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: loaderData.post.title,
+            description: loaderData.post.excerpt ?? undefined,
+            image: loaderData.post.og_image ?? undefined,
+            datePublished: loaderData.post.date || undefined,
+            author: { "@type": "Person", name: loaderData.post.author },
+          }),
+        }]
+      : [],
   }),
   component: PostPage,
   notFoundComponent: () => <div className="p-16 text-center"><Link to="/blog" className="text-primary">← Back to blog</Link></div>,
