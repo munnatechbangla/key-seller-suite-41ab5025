@@ -409,7 +409,11 @@ export function mergeConfig(base: HomepageConfig, override: Partial<HomepageConf
     blog: { ...base.blog, ...(override.blog ?? {}) },
     faq: { ...base.faq, ...(override.faq ?? {}) },
     newsletter: { ...base.newsletter, ...(override.newsletter ?? {}) },
-    paymentMethods: { ...base.paymentMethods, ...(override.paymentMethods ?? {}) },
+    paymentMethods: (() => {
+      const merged = { ...base.paymentMethods, ...(override.paymentMethods ?? {}) };
+      merged.logos = Array.isArray(merged.logos) ? merged.logos : [];
+      return merged;
+    })(),
     announcementBar: { ...base.announcementBar, ...(override.announcementBar ?? {}) },
     headerNav: {
       items:
