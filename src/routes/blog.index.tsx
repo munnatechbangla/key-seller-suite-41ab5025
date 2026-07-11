@@ -6,7 +6,7 @@ import { PageHero } from "@/components/site/PageHero";
 import { blogPosts } from "@/lib/catalog";
 import { Calendar, ArrowRight, Send } from "lucide-react";
 
-export const Route = createFileRoute("/blog")({
+export const Route = createFileRoute("/blog/")({
   head: () => ({
     meta: seoMeta({ title: "Blog", description: "Guides, reviews and tips on digital subscriptions, AI tools and streaming services.", path: "/blog" }),
     links: [canonicalLink("/blog")],
