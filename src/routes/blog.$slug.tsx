@@ -39,6 +39,11 @@ export const Route = createFileRoute("/blog/$slug")({
           date: row.published_at ? new Date(row.published_at).toLocaleDateString() : "",
           cover_url: row.cover_url,
           content_html: row.content_html ?? (row.content_markdown ?? null),
+          author: "Admin",
+          reading: readingTimeLabel(row),
+          og_image: row.og_image ?? row.cover_url ?? null,
+          meta_title: row.meta_title,
+          meta_description: row.meta_description,
         };
         return { post };
       }
