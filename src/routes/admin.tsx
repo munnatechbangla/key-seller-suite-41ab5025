@@ -96,21 +96,49 @@ function AdminLayout() {
         <nav className="flex-1 p-2 space-y-1">
           {items.map((it) => {
             const active = it.exact ? pathname === it.to : pathname.startsWith(it.to);
+            const isBlog = it.to === "/admin/blog";
+            const blogOpen = isBlog && pathname.startsWith("/admin/blog");
             return (
-              <Link
-                key={it.to}
-                to={it.to}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
-                  active ? "bg-primary text-primary-foreground" : "hover:bg-muted",
+              <div key={it.to}>
+                <Link
+                  to={it.to}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
+                    active ? "bg-primary text-primary-foreground" : "hover:bg-muted",
+                  )}
+                >
+                  <it.icon className="h-4 w-4" />
+                  {it.label}
+                </Link>
+                {blogOpen && (
+                  <div className="ml-7 mt-1 space-y-0.5 border-l pl-3">
+                    {[
+                      { to: "/admin/blog", label: "All Posts" },
+                      { to: "/admin/blog/categories", label: "Categories" },
+                      { to: "/admin/blog/tags", label: "Tags" },
+                    ].map((s) => {
+                      const sActive = pathname === s.to;
+                      return (
+                        <Link
+                          key={s.to}
+                          to={s.to}
+                          className={cn(
+                            "block px-2 py-1 rounded text-xs transition-colors",
+                            sActive ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground",
+                          )}
+                        >
+                          {s.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 )}
-              >
-                <it.icon className="h-4 w-4" />
-                {it.label}
-              </Link>
+
+              </div>
             );
           })}
         </nav>
+
         <div className="p-4 border-t text-xs text-muted-foreground">{user?.email}</div>
       </aside>
       <main className="flex-1 min-w-0">
