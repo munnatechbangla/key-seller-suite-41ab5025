@@ -195,6 +195,8 @@ export type HomepageConfig = {
 
 const uid = (p: string, i: number) => `${p}-${i + 1}`;
 
+export const STATS_DEFAULT_ICONS: IconName[] = ["Users", "Gift", "Star", "Headphones"];
+
 export const defaultHomepageConfig: HomepageConfig = {
   sectionOrder: [
     "hero",
