@@ -260,7 +260,7 @@ function PostPage() {
             <section className="mt-14">
               <h2 className="text-2xl font-bold mb-5">Related articles</h2>
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {related.map((r) => (
+                {related.map((r: RelatedCard) => (
                   <Link key={r.slug} to="/blog/$slug" params={{ slug: r.slug }} className="group flex flex-col rounded-2xl bg-card border border-border overflow-hidden hover:shadow-premium hover:-translate-y-1 transition-smooth">
                     <BlogImage src={r.cover_url} alt={r.title} />
                     <div className="p-4 flex-1 flex flex-col">
@@ -326,7 +326,7 @@ function PostPage() {
               <div className="rounded-2xl border border-border bg-card p-4">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Recent posts</div>
                 <ul className="space-y-2 text-sm">
-                  {recent.map((r) => (
+                  {recent.map((r: { slug: string; title: string; published_at: string | null }) => (
                     <li key={r.slug}>
                       <Link to="/blog/$slug" params={{ slug: r.slug }} className="block group">
                         <div className="font-medium leading-snug line-clamp-2 group-hover:text-primary transition-colors">{r.title}</div>
@@ -342,7 +342,7 @@ function PostPage() {
               <div className="rounded-2xl border border-border bg-card p-4">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Categories</div>
                 <div className="flex flex-wrap gap-1.5">
-                  {categories.map((c) => (
+                  {categories.map((c: { id: string; name: string; slug: string }) => (
                     <span key={c.id} className="text-xs px-2 py-1 rounded-full bg-muted text-foreground/80">{c.name}</span>
                   ))}
                 </div>
@@ -353,7 +353,7 @@ function PostPage() {
               <div className="rounded-2xl border border-border bg-card p-4">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Tags</div>
                 <div className="flex flex-wrap gap-1.5">
-                  {post.tag_ids.slice(0, 12).map((t) => (
+                  {post.tag_ids.slice(0, 12).map((t: string) => (
                     <span key={t} className="text-xs px-2 py-1 rounded-full border border-border text-muted-foreground">#{t.slice(0, 6)}</span>
                   ))}
                 </div>
