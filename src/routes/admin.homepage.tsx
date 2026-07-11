@@ -81,6 +81,37 @@ function HomepageBuilder() {
     })();
   }, [list]);
 
+  // One-time migration: seed Payment Logos from Admin → Gateways for legacy configs.
+  const listGateways = useServerFn(listEnabledGatewaysFn);
+  useEffect(() => {
+    if (loading) return;
+    if (cfg.paymentMethods.logosMigrated) return;
+    if ((cfg.paymentMethods.logos?.length ?? 0) > 0) {
+      setCfg((c) => ({ ...c, paymentMethods: { ...c.paymentMethods, logosMigrated: true } }));
+      return;
+    }
+    (async () => {
+      try {
+        const res = (await listGateways()) as { gateways: Array<{ id: string; name: string; logo_url: string | null }> };
+        const seeded: HomePaymentLogo[] = (res.gateways ?? []).map((g, i) => ({
+          id: newId(`pay-${i}`),
+          enabled: true,
+          logo: g.logo_url ?? "",
+          title: g.name,
+          subtitle: "",
+          url: "",
+          badge: "",
+        }));
+        setCfg((c) => ({
+          ...c,
+          paymentMethods: { ...c.paymentMethods, logos: seeded, logosMigrated: true },
+        }));
+      } catch {
+        setCfg((c) => ({ ...c, paymentMethods: { ...c.paymentMethods, logosMigrated: true } }));
+      }
+    })();
+  }, [loading, cfg.paymentMethods.logosMigrated, cfg.paymentMethods.logos, listGateways]);
+
   async function save() {
     setSaving(true);
     try {
