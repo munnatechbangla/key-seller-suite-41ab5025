@@ -110,16 +110,6 @@ function PostPage() {
       <div className="container mx-auto px-4 py-12 grid lg:grid-cols-[1fr_260px] gap-10">
         <article className="prose-content space-y-6 max-w-3xl">
           <BlogImage src={post.cover_url} alt={post.title} aspect="aspect-[16/9]" className="rounded-3xl" eager />
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-12 grid lg:grid-cols-[1fr_260px] gap-10">
-        <article className="prose-content space-y-6 max-w-3xl">
-          {post.cover_url ? (
-            <img src={post.cover_url} alt={post.title} className="aspect-[16/9] w-full rounded-3xl object-cover" />
-          ) : (
-            <div className="aspect-[16/9] rounded-3xl bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center text-9xl">{post.emoji ?? "📝"}</div>
-          )}
           {post.excerpt && <p className="text-lg text-muted-foreground leading-relaxed">{post.excerpt}</p>}
           {post.content_html ? (
             <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: post.content_html }} />
