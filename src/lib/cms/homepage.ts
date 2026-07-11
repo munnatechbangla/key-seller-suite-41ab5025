@@ -343,6 +343,8 @@ export const defaultHomepageConfig: HomepageConfig = {
     title: "We accept secure payments",
     subtitle: "Pay confidently with your preferred provider — all transactions are encrypted.",
     trustLabel: "100% Secure Checkout",
+    logos: [],
+    logosMigrated: false,
   },
   announcementBar: {
     enabled: true,
