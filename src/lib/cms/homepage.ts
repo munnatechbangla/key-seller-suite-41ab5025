@@ -163,11 +163,23 @@ export type HomeHeaderNav = {
   items: HeaderNavItem[];
 };
 
+export type HomePaymentLogo = {
+  id: string;
+  enabled: boolean;
+  logo: string; // media:// token or absolute URL
+  title: string;
+  subtitle?: string;
+  url?: string;
+  badge?: string;
+};
+
 export type HomePaymentMethods = {
   enabled: boolean;
   title: string;
   subtitle: string;
   trustLabel: string;
+  logos: HomePaymentLogo[];
+  logosMigrated?: boolean;
 };
 
 // Stable section ids drive both visibility and rendering order.
