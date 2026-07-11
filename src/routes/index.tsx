@@ -530,7 +530,7 @@ type ReviewRow = {
   avatar_url: string | null;
   is_verified: boolean;
   created_at: string;
-  products: { name: string | null } | null;
+  products: { title: string | null } | null;
 };
 
 function Testimonials() {
@@ -543,11 +543,10 @@ function Testimonials() {
     queryKey: ["home", "testimonial-reviews", { limit, minRating, sort }],
     queryFn: async (): Promise<ReviewRow[]> => {
       const { supabase } = await import("@/integrations/supabase/client");
-      // Random: overfetch then shuffle client-side to avoid a heavy query.
       const fetchLimit = sort === "random" ? Math.max(limit * 4, 20) : limit;
       const { data, error } = await supabase
         .from("product_reviews")
-        .select("id, rating, body, title, display_name, avatar_url, is_verified, created_at, products:product_id(name)")
+        .select("id, rating, body, title, display_name, avatar_url, is_verified, created_at, products:product_id(title)")
         .eq("status", "approved")
         .gte("rating", minRating)
         .not("body", "is", null)
@@ -569,53 +568,102 @@ function Testimonials() {
 
   return (
     <Section eyebrow={cfg.eyebrow} title={cfg.title}>
-      <div className="grid md:grid-cols-3 gap-5 items-stretch">
-        {items.map((r) => {
-          const name = r.display_name?.trim() || "Verified Customer";
-          const productName = r.products?.name ?? "";
-          const text = r.body ?? r.title ?? "";
-          return (
-            <div
-              key={r.id}
-              className="group relative flex flex-col h-full rounded-2xl bg-card border border-border p-6 hover:border-primary/30 hover:shadow-premium hover:-translate-y-1 transition-all duration-400 ease-out"
-            >
-              <div className="absolute -top-3 left-6 text-5xl leading-none text-primary/15 select-none pointer-events-none font-serif">"</div>
-              <div className="flex gap-0.5 mb-3">
-                {Array.from({ length: Math.max(1, Math.min(5, Math.round(r.rating))) }).map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-                ))}
-              </div>
-              <p className="text-sm leading-relaxed text-foreground/90 mb-5 flex-1">"{text}"</p>
-              <div className="flex items-center gap-3 mt-auto">
-                {r.avatar_url ? (
-                  <img
-                    src={r.avatar_url}
-                    alt={name}
-                    className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-background shadow-elegant"
-                  />
-                ) : (
-                  <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-primary grid place-items-center text-sm font-semibold text-primary-foreground ring-2 ring-background shadow-elegant">
-                    {initialsFromName(name)}
-                  </div>
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <div className="font-semibold text-sm truncate">{name}</div>
-                    {r.is_verified && (
-                      <BadgeCheck className="h-4 w-4 shrink-0 text-primary" aria-label="Verified buyer" />
-                    )}
-                  </div>
-                  {productName && (
-                    <div className="text-xs text-muted-foreground truncate">{productName}</div>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <TestimonialsSlider items={items} />
     </Section>
   );
+}
+
+function TestimonialsSlider({ items }: { items: ReviewRow[] }) {
+  const [Carousel, CarouselContent, CarouselItem, AutoplayPlugin] = useCarouselModules();
+  const autoplayRef = useRef<ReturnType<typeof AutoplayPlugin> | null>(null);
+  if (!autoplayRef.current && AutoplayPlugin) {
+    autoplayRef.current = AutoplayPlugin({ delay: 4000, stopOnInteraction: false, stopOnMouseEnter: true });
+  }
+  const [api, setApi] = useState<import("embla-carousel-react").UseEmblaCarouselType[1] | null>(null);
+  const [selected, setSelected] = useState(0);
+  const [snaps, setSnaps] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (!api) return;
+    setSnaps(api.scrollSnapList());
+    setSelected(api.selectedScrollSnap());
+    const onSel = () => setSelected(api.selectedScrollSnap());
+    api.on("select", onSel);
+    api.on("reInit", onSel);
+    return () => {
+      api.off("select", onSel);
+      api.off("reInit", onSel);
+    };
+  }, [api]);
+
+  if (!Carousel || !CarouselContent || !CarouselItem) return null;
+
+  return (
+    <div className="relative">
+      <Carousel
+        setApi={setApi}
+        opts={{ loop: true, align: "start" }}
+        plugins={autoplayRef.current ? [autoplayRef.current] : []}
+        className="w-full"
+      >
+        <CarouselContent className="-ml-5">
+          {items.map((r) => {
+            const name = r.display_name?.trim() || "Verified Customer";
+            const productName = r.products?.title ?? "";
+            const text = r.body ?? r.title ?? "";
+            return (
+              <CarouselItem key={r.id} className="pl-5 md:basis-1/2 lg:basis-1/3">
+                <div className="group relative flex flex-col h-full rounded-2xl bg-card border border-border p-6 hover:border-primary/30 hover:shadow-premium hover:-translate-y-1 transition-all duration-400 ease-out">
+                  <div className="absolute -top-3 left-6 text-5xl leading-none text-primary/15 select-none pointer-events-none font-serif">"</div>
+                  <div className="flex gap-0.5 mb-3">
+                    {Array.from({ length: Math.max(1, Math.min(5, Math.round(r.rating))) }).map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-sm leading-relaxed text-foreground/90 mb-5 flex-1">"{text}"</p>
+                  <div className="flex items-center gap-3 mt-auto">
+                    {r.avatar_url ? (
+                      <img src={r.avatar_url} alt={name} className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-background shadow-elegant" />
+                    ) : (
+                      <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-primary grid place-items-center text-sm font-semibold text-primary-foreground ring-2 ring-background shadow-elegant">
+                        {initialsFromName(name)}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <div className="font-semibold text-sm truncate">{name}</div>
+                        {r.is_verified && <BadgeCheck className="h-4 w-4 shrink-0 text-primary" aria-label="Verified buyer" />}
+                      </div>
+                      {productName && <div className="text-xs text-muted-foreground truncate">{productName}</div>}
+                    </div>
+                  </div>
+                </div>
+              </CarouselItem>
+            );
+          })}
+        </CarouselContent>
+      </Carousel>
+      {snaps.length > 1 && (
+        <div className="flex justify-center gap-2 mt-6">
+          {snaps.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => api?.scrollTo(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`h-2 rounded-full transition-all ${i === selected ? "w-6 bg-primary" : "w-2 bg-border hover:bg-primary/50"}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Lazy import carousel + autoplay so SSR bundle stays lean and hooks-order stays stable.
+import { Carousel as _Carousel, CarouselContent as _CC, CarouselItem as _CI } from "@/components/ui/carousel";
+import _Autoplay from "embla-carousel-autoplay";
+function useCarouselModules() {
+  return [_Carousel, _CC, _CI, _Autoplay] as const;
 }
 
 function BlogSection() {
