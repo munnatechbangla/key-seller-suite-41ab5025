@@ -6,7 +6,8 @@ import { Footer } from "@/components/site/Footer";
 import { Breadcrumbs } from "@/components/site/PageHero";
 import { blogPosts as staticPosts } from "@/lib/catalog";
 import { blogGetBySlugPublicFn } from "@/lib/blog.functions";
-import { Calendar, ArrowLeft } from "lucide-react";
+import { BlogImage, readingTimeLabel } from "@/components/site/BlogImage";
+import { Calendar, ArrowLeft, Clock, User } from "lucide-react";
 
 type LoadedPost = {
   slug: string;
@@ -17,6 +18,11 @@ type LoadedPost = {
   cover_url: string | null;
   content_html: string | null;
   emoji?: string;
+  author: string;
+  reading: string;
+  og_image?: string | null;
+  meta_title?: string | null;
+  meta_description?: string | null;
 };
 
 export const Route = createFileRoute("/blog/$slug")({
@@ -33,6 +39,11 @@ export const Route = createFileRoute("/blog/$slug")({
           date: row.published_at ? new Date(row.published_at).toLocaleDateString() : "",
           cover_url: row.cover_url,
           content_html: row.content_html ?? (row.content_markdown ?? null),
+          author: "Admin",
+          reading: readingTimeLabel(row),
+          og_image: row.og_image ?? row.cover_url ?? null,
+          meta_title: row.meta_title,
+          meta_description: row.meta_description,
         };
         return { post };
       }
@@ -45,15 +56,31 @@ export const Route = createFileRoute("/blog/$slug")({
     const post: LoadedPost = {
       slug: s.slug, title: s.title, excerpt: s.excerpt, category: s.category, date: s.date,
       cover_url: null, content_html: null, emoji: s.emoji,
+      author: "Admin", reading: `${Math.max(1, Math.round((s.excerpt ?? "").split(/\s+/).length / 220))} min read`,
     };
     return { post };
   },
   head: ({ loaderData }) => ({
     meta: seoMeta({
-      title: loaderData?.post.title,
-      description: loaderData?.post.excerpt ?? undefined,
+      title: loaderData?.post.meta_title || loaderData?.post.title,
+      description: loaderData?.post.meta_description || loaderData?.post.excerpt || undefined,
       ogType: "article",
+      image: loaderData?.post.og_image || undefined,
     }),
+    scripts: loaderData?.post
+      ? [{
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: loaderData.post.title,
+            description: loaderData.post.excerpt ?? undefined,
+            image: loaderData.post.og_image ?? undefined,
+            datePublished: loaderData.post.date || undefined,
+            author: { "@type": "Person", name: loaderData.post.author },
+          }),
+        }]
+      : [],
   }),
   component: PostPage,
   notFoundComponent: () => <div className="p-16 text-center"><Link to="/blog" className="text-primary">← Back to blog</Link></div>,
@@ -70,9 +97,11 @@ function PostPage() {
       <div className="bg-gradient-hero text-white">
         <div className="container mx-auto px-4 py-10">
           <Breadcrumbs items={[{ label: "Home", to: "/" }, { label: "Blog", to: "/blog" }, { label: post.title }]} />
-          <div className="text-sm text-white/70 flex items-center gap-3 mt-3">
+          <div className="text-sm text-white/70 flex flex-wrap items-center gap-3 mt-3">
             <span className="px-2.5 py-1 rounded-full bg-white/10">{post.category}</span>
             {post.date && <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {post.date}</span>}
+            <span className="inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {post.reading}</span>
+            <span className="inline-flex items-center gap-1"><User className="h-3.5 w-3.5" /> {post.author}</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-bold mt-3 max-w-3xl leading-tight">{post.title}</h1>
         </div>
@@ -80,11 +109,7 @@ function PostPage() {
 
       <div className="container mx-auto px-4 py-12 grid lg:grid-cols-[1fr_260px] gap-10">
         <article className="prose-content space-y-6 max-w-3xl">
-          {post.cover_url ? (
-            <img src={post.cover_url} alt={post.title} className="aspect-[16/9] w-full rounded-3xl object-cover" />
-          ) : (
-            <div className="aspect-[16/9] rounded-3xl bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center text-9xl">{post.emoji ?? "📝"}</div>
-          )}
+          <BlogImage src={post.cover_url} alt={post.title} aspect="aspect-[16/9]" className="rounded-3xl" eager />
           {post.excerpt && <p className="text-lg text-muted-foreground leading-relaxed">{post.excerpt}</p>}
           {post.content_html ? (
             <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: post.content_html }} />

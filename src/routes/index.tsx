@@ -25,6 +25,7 @@ import { useHomepage, defaultHomepageConfig, type HomeProductSection, type Secti
 import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
 import { subscribeNewsletterFn } from "@/lib/newsletter.functions";
 import { blogListPublicFn } from "@/lib/blog.functions";
+import { BlogImage } from "@/components/site/BlogImage";
 import { useServerFn } from "@tanstack/react-start";
 import { categoriesQuery } from "@/lib/catalog";
 
@@ -694,11 +695,7 @@ function BlogSection() {
         {posts.map((p) => (
           <Link key={p.slug} to="/blog/$slug" params={{ slug: p.slug }} className="group flex flex-col rounded-2xl bg-card border border-border overflow-hidden hover:shadow-premium hover:-translate-y-1 transition-smooth">
             {cfg.showImage && (
-              p.cover_url ? (
-                <img src={p.cover_url} alt={p.title} className="aspect-[16/10] w-full object-cover" loading="lazy" />
-              ) : (
-                <div className="aspect-[16/10] bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center text-7xl">{p.emoji}</div>
-              )
+              <BlogImage src={p.cover_url} alt={p.title} />
             )}
             <div className="p-5 flex-1 flex flex-col gap-2">
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
