@@ -25,6 +25,9 @@ import {
   type HeaderNavItem,
   type HeroFeatureBadge,
   type HomePaymentLogo,
+  type FooterLink,
+  type FooterSocial,
+  type FooterPaymentLogo,
 } from "@/lib/cms/homepage";
 import { useQuery } from "@tanstack/react-query";
 import { searchQuery, productsBySlugsQuery, categoriesQuery, type Product } from "@/lib/catalog";
