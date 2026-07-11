@@ -551,6 +551,124 @@ function HomepageBuilder() {
             />
           </div>
         </TabsContent>
+
+        {/* ---------------- Footer ---------------- */}
+        <TabsContent value="footer" className="mt-4 space-y-6">
+          {/* Brand */}
+          <section className="rounded-lg border p-4 space-y-3">
+            <h3 className="font-semibold text-sm">Brand</h3>
+            <MediaPicker label="Logo (leave empty to use site logo)" value={cfg.footer.brand.logo} onChange={(v) => patch("footer", { ...cfg.footer, brand: { ...cfg.footer.brand, logo: v } })} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Field label="Company name (empty = branding name)" value={cfg.footer.brand.name} onChange={(v) => patch("footer", { ...cfg.footer, brand: { ...cfg.footer.brand, name: v } })} />
+              <Field label="Copyright template (use {year} and {name})" value={cfg.footer.brand.copyright} onChange={(v) => patch("footer", { ...cfg.footer, brand: { ...cfg.footer.brand, copyright: v } })} />
+            </div>
+            <Area label="Description (empty = branding description)" value={cfg.footer.brand.description} onChange={(v) => patch("footer", { ...cfg.footer, brand: { ...cfg.footer.brand, description: v } })} />
+            <Area label="Bottom small text (empty = branding footer text)" value={cfg.footer.brand.bottomText} onChange={(v) => patch("footer", { ...cfg.footer, brand: { ...cfg.footer.brand, bottomText: v } })} />
+          </section>
+
+          {/* Company Links */}
+          <section className="rounded-lg border p-4 space-y-3">
+            <h3 className="font-semibold text-sm">Company Links</h3>
+            <Field label="Column title" value={cfg.footer.companyLinks.title} onChange={(v) => patch("footer", { ...cfg.footer, companyLinks: { ...cfg.footer.companyLinks, title: v } })} />
+            <ItemList<FooterLink>
+              items={cfg.footer.companyLinks.items}
+              onChange={(items) => patch("footer", { ...cfg.footer, companyLinks: { ...cfg.footer.companyLinks, items } })}
+              makeNew={() => ({ id: newId("company"), enabled: true, title: "New link", url: "/", openInNewTab: false })}
+              renderItem={(it, set) => (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Field label="Title" value={it.title} onChange={(v) => set({ ...it, title: v })} />
+                    <Field label="URL" value={it.url} onChange={(v) => set({ ...it, url: v })} />
+                  </div>
+                  <Toggle label="Open in new tab" value={!!it.openInNewTab} onChange={(v) => set({ ...it, openInNewTab: v })} />
+                </div>
+              )}
+            />
+          </section>
+
+          {/* Support Links */}
+          <section className="rounded-lg border p-4 space-y-3">
+            <h3 className="font-semibold text-sm">Support Links</h3>
+            <Field label="Column title" value={cfg.footer.supportLinks.title} onChange={(v) => patch("footer", { ...cfg.footer, supportLinks: { ...cfg.footer.supportLinks, title: v } })} />
+            <ItemList<FooterLink>
+              items={cfg.footer.supportLinks.items}
+              onChange={(items) => patch("footer", { ...cfg.footer, supportLinks: { ...cfg.footer.supportLinks, items } })}
+              makeNew={() => ({ id: newId("support"), enabled: true, title: "New link", url: "/" })}
+              renderItem={(it, set) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <Field label="Title" value={it.title} onChange={(v) => set({ ...it, title: v })} />
+                  <Field label="URL" value={it.url} onChange={(v) => set({ ...it, url: v })} />
+                </div>
+              )}
+            />
+          </section>
+
+          {/* Newsletter */}
+          <section className="rounded-lg border p-4 space-y-3">
+            <h3 className="font-semibold text-sm">Newsletter</h3>
+            <EnableToggle label="Enable newsletter" value={cfg.footer.newsletter.enabled} onChange={(v) => patch("footer", { ...cfg.footer, newsletter: { ...cfg.footer.newsletter, enabled: v } })} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Field label="Title" value={cfg.footer.newsletter.title} onChange={(v) => patch("footer", { ...cfg.footer, newsletter: { ...cfg.footer.newsletter, title: v } })} />
+              <Field label="Button text" value={cfg.footer.newsletter.buttonText} onChange={(v) => patch("footer", { ...cfg.footer, newsletter: { ...cfg.footer.newsletter, buttonText: v } })} />
+              <Field label="Placeholder" value={cfg.footer.newsletter.placeholder} onChange={(v) => patch("footer", { ...cfg.footer, newsletter: { ...cfg.footer.newsletter, placeholder: v } })} />
+              <Field label="Success message" value={cfg.footer.newsletter.successMessage} onChange={(v) => patch("footer", { ...cfg.footer, newsletter: { ...cfg.footer.newsletter, successMessage: v } })} />
+            </div>
+            <Area label="Subtitle" value={cfg.footer.newsletter.subtitle} onChange={(v) => patch("footer", { ...cfg.footer, newsletter: { ...cfg.footer.newsletter, subtitle: v } })} />
+          </section>
+
+          {/* Payment Logos (footer-only, independent) */}
+          <section className="rounded-lg border p-4 space-y-3">
+            <h3 className="font-semibold text-sm">Accepted Payment Logos</h3>
+            <p className="text-xs text-muted-foreground">Independent of Checkout Gateways. Nothing is synced.</p>
+            <EnableToggle label="Show payment logos" value={cfg.footer.paymentLogos.enabled} onChange={(v) => patch("footer", { ...cfg.footer, paymentLogos: { ...cfg.footer.paymentLogos, enabled: v } })} />
+            <Field label="Section label" value={cfg.footer.paymentLogos.label} onChange={(v) => patch("footer", { ...cfg.footer, paymentLogos: { ...cfg.footer.paymentLogos, label: v } })} />
+            <ItemList<FooterPaymentLogo>
+              items={cfg.footer.paymentLogos.items}
+              onChange={(items) => patch("footer", { ...cfg.footer, paymentLogos: { ...cfg.footer.paymentLogos, items } })}
+              makeNew={() => ({ id: newId("fpay"), enabled: true, logo: "", title: "New payment", url: "" })}
+              renderItem={(it, set) => (
+                <div className="space-y-2">
+                  <MediaPicker label="Logo" value={it.logo} onChange={(v) => set({ ...it, logo: v })} />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Field label="Title" value={it.title} onChange={(v) => set({ ...it, title: v })} />
+                    <Field label="URL (optional)" value={it.url ?? ""} onChange={(v) => set({ ...it, url: v })} />
+                  </div>
+                </div>
+              )}
+            />
+          </section>
+
+          {/* Social Links */}
+          <section className="rounded-lg border p-4 space-y-3">
+            <h3 className="font-semibold text-sm">Social Links</h3>
+            <EnableToggle label="Show social icons" value={cfg.footer.socials.enabled} onChange={(v) => patch("footer", { ...cfg.footer, socials: { ...cfg.footer.socials, enabled: v } })} />
+            <Field label="Section label" value={cfg.footer.socials.label} onChange={(v) => patch("footer", { ...cfg.footer, socials: { ...cfg.footer.socials, label: v } })} />
+            <ItemList<FooterSocial>
+              items={cfg.footer.socials.items}
+              onChange={(items) => patch("footer", { ...cfg.footer, socials: { ...cfg.footer.socials, items } })}
+              makeNew={() => ({ id: newId("soc"), enabled: true, icon: "Globe", url: "", tooltip: "" })}
+              renderItem={(it, set) => (
+                <div className="space-y-2">
+                  <IconPicker label="Icon" value={it.icon} onChange={(v) => set({ ...it, icon: v })} />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Field label="URL" value={it.url} onChange={(v) => set({ ...it, url: v })} />
+                    <Field label="Tooltip" value={it.tooltip} onChange={(v) => set({ ...it, tooltip: v })} />
+                  </div>
+                </div>
+              )}
+            />
+          </section>
+
+          {/* Bottom */}
+          <section className="rounded-lg border p-4 space-y-3">
+            <h3 className="font-semibold text-sm">Footer Bottom</h3>
+            <p className="text-xs text-muted-foreground">Leave empty to fall back to Copyright template and Branding footer text.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Field label="Left text" value={cfg.footer.bottom.leftText} onChange={(v) => patch("footer", { ...cfg.footer, bottom: { ...cfg.footer.bottom, leftText: v } })} />
+              <Field label="Right text" value={cfg.footer.bottom.rightText} onChange={(v) => patch("footer", { ...cfg.footer, bottom: { ...cfg.footer.bottom, rightText: v } })} />
+            </div>
+          </section>
+        </TabsContent>
       </Tabs>
     </div>
   );
