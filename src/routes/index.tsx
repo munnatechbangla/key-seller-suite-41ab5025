@@ -29,6 +29,8 @@ import { categoriesQuery } from "@/lib/catalog";
 
 import { cmsPublicGetPageBySlugFn } from "@/lib/cms.functions";
 import { HomepageRenderer } from "@/components/cms/SectionRenderer";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 export const Route = createFileRoute("/")({
   head: () => ({
