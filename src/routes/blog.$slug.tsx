@@ -97,11 +97,19 @@ function PostPage() {
       <div className="bg-gradient-hero text-white">
         <div className="container mx-auto px-4 py-10">
           <Breadcrumbs items={[{ label: "Home", to: "/" }, { label: "Blog", to: "/blog" }, { label: post.title }]} />
-          <div className="text-sm text-white/70 flex items-center gap-3 mt-3">
+          <div className="text-sm text-white/70 flex flex-wrap items-center gap-3 mt-3">
             <span className="px-2.5 py-1 rounded-full bg-white/10">{post.category}</span>
             {post.date && <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {post.date}</span>}
+            <span className="inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {post.reading}</span>
+            <span className="inline-flex items-center gap-1"><User className="h-3.5 w-3.5" /> {post.author}</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-bold mt-3 max-w-3xl leading-tight">{post.title}</h1>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-12 grid lg:grid-cols-[1fr_260px] gap-10">
+        <article className="prose-content space-y-6 max-w-3xl">
+          <BlogImage src={post.cover_url} alt={post.title} aspect="aspect-[16/9]" className="rounded-3xl" eager />
         </div>
       </div>
 
