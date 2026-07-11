@@ -22,7 +22,7 @@ function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
 }
 
-export const Route = createFileRoute("/admin/blog")({ component: AdminBlog });
+export const Route = createFileRoute("/admin/blog/")({ component: AdminBlog });
 
 const POST_TYPES = ["blog","kb","docs","tutorial","news","update","release","changelog","guide","review","comparison","faq"] as const;
 
