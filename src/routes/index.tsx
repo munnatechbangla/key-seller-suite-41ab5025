@@ -513,36 +513,106 @@ function CountUp({ value, duration = 1400 }: { value: string; duration?: number 
   return <span ref={ref}>{display}{suffix}</span>;
 }
 
+function initialsFromName(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  const first = parts[0][0] ?? "";
+  const last = parts.length > 1 ? parts[parts.length - 1][0] ?? "" : "";
+  return (first + last).toUpperCase();
+}
+
+type ReviewRow = {
+  id: string;
+  rating: number;
+  body: string | null;
+  title: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  is_verified: boolean;
+  created_at: string;
+  products: { name: string | null } | null;
+};
+
 function Testimonials() {
   const cfg = useHomepage((s) => s.config.testimonials);
-  const items = cfg.items.filter((t) => t.enabled);
+  const limit = cfg.limit ?? 6;
+  const minRating = cfg.minRating ?? 4;
+  const sort = cfg.sort ?? "latest";
+
+  const { data } = useTQuery({
+    queryKey: ["home", "testimonial-reviews", { limit, minRating, sort }],
+    queryFn: async (): Promise<ReviewRow[]> => {
+      const { supabase } = await import("@/integrations/supabase/client");
+      // Random: overfetch then shuffle client-side to avoid a heavy query.
+      const fetchLimit = sort === "random" ? Math.max(limit * 4, 20) : limit;
+      const { data, error } = await supabase
+        .from("product_reviews")
+        .select("id, rating, body, title, display_name, avatar_url, is_verified, created_at, products:product_id(name)")
+        .eq("status", "approved")
+        .gte("rating", minRating)
+        .not("body", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(fetchLimit);
+      if (error) throw error;
+      return (data ?? []) as unknown as ReviewRow[];
+    },
+    staleTime: 60_000,
+  });
+
+  const items = useMemo(() => {
+    const rows = data ?? [];
+    const picked = sort === "random" ? [...rows].sort(() => Math.random() - 0.5) : rows;
+    return picked.slice(0, limit);
+  }, [data, sort, limit]);
+
+  if (!items.length) return null;
+
   return (
     <Section eyebrow={cfg.eyebrow} title={cfg.title}>
       <div className="grid md:grid-cols-3 gap-5 items-stretch">
-        {items.map((r) => (
-          <div
-            key={r.id}
-            className="group relative flex flex-col h-full rounded-2xl bg-card border border-border p-6 hover:border-primary/30 hover:shadow-premium hover:-translate-y-1 transition-all duration-400 ease-out"
-          >
-            <div className="absolute -top-3 left-6 text-5xl leading-none text-primary/15 select-none pointer-events-none font-serif">"</div>
-            <div className="flex gap-0.5 mb-3">
-              {Array.from({ length: r.rating }).map((_, i) => (
-                <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-              ))}
-            </div>
-            <p className="text-sm leading-relaxed text-foreground/90 mb-5 flex-1">"{r.text}"</p>
-            <div className="flex items-center gap-3 mt-auto">
-              <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-primary grid place-items-center text-xl ring-2 ring-background shadow-elegant">{r.emoji}</div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <div className="font-semibold text-sm truncate">{r.name}</div>
-                  <BadgeCheck className="h-4 w-4 shrink-0 text-primary" aria-label="Verified buyer" />
+        {items.map((r) => {
+          const name = r.display_name?.trim() || "Verified Customer";
+          const productName = r.products?.name ?? "";
+          const text = r.body ?? r.title ?? "";
+          return (
+            <div
+              key={r.id}
+              className="group relative flex flex-col h-full rounded-2xl bg-card border border-border p-6 hover:border-primary/30 hover:shadow-premium hover:-translate-y-1 transition-all duration-400 ease-out"
+            >
+              <div className="absolute -top-3 left-6 text-5xl leading-none text-primary/15 select-none pointer-events-none font-serif">"</div>
+              <div className="flex gap-0.5 mb-3">
+                {Array.from({ length: Math.max(1, Math.min(5, Math.round(r.rating))) }).map((_, i) => (
+                  <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                ))}
+              </div>
+              <p className="text-sm leading-relaxed text-foreground/90 mb-5 flex-1">"{text}"</p>
+              <div className="flex items-center gap-3 mt-auto">
+                {r.avatar_url ? (
+                  <img
+                    src={r.avatar_url}
+                    alt={name}
+                    className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-background shadow-elegant"
+                  />
+                ) : (
+                  <div className="h-12 w-12 shrink-0 rounded-full bg-gradient-primary grid place-items-center text-sm font-semibold text-primary-foreground ring-2 ring-background shadow-elegant">
+                    {initialsFromName(name)}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <div className="font-semibold text-sm truncate">{name}</div>
+                    {r.is_verified && (
+                      <BadgeCheck className="h-4 w-4 shrink-0 text-primary" aria-label="Verified buyer" />
+                    )}
+                  </div>
+                  {productName && (
+                    <div className="text-xs text-muted-foreground truncate">{productName}</div>
+                  )}
                 </div>
-                <div className="text-xs text-muted-foreground truncate">{r.role}</div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </Section>
   );

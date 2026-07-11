@@ -96,7 +96,17 @@ export type HomeStatItem = { id: string; icon?: IconName; value: string; label: 
 export type HomeStats = { enabled: boolean; items: HomeStatItem[] };
 
 export type HomeTestimonial = { id: string; name: string; role: string; emoji: string; rating: number; text: string; enabled: boolean };
-export type HomeTestimonials = { enabled: boolean; eyebrow: string; title: string; items: HomeTestimonial[] };
+export type HomeTestimonialsSort = "latest" | "random";
+export type HomeTestimonials = {
+  enabled: boolean;
+  eyebrow: string;
+  title: string;
+  /** @deprecated no longer used — testimonials come from approved product reviews */
+  items: HomeTestimonial[];
+  limit: number;
+  minRating: number;
+  sort: HomeTestimonialsSort;
+};
 
 export type HomeBlog = {
   enabled: boolean;
@@ -284,6 +294,9 @@ export const defaultHomepageConfig: HomepageConfig = {
     eyebrow: defaultTestimonialsSection.eyebrow,
     title: defaultTestimonialsSection.title,
     items: defaultTestimonials.map((t, i) => ({ id: uid("test", i), enabled: true, ...t })),
+    limit: 6,
+    minRating: 4,
+    sort: "latest",
   },
   blog: {
     enabled: true,
