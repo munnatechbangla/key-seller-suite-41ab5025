@@ -168,7 +168,7 @@ export const adminListReviewsFn = createServerFn({ method: "GET" })
     await assertAdmin(context.supabase, context.userId);
     let q = context.supabase
       .from("product_reviews")
-      .select("id, product_id, user_id, rating, title, body, status, is_verified, admin_reply, admin_reply_at, display_name, created_at, products(slug, title), profiles:user_id(full_name, email)")
+      .select("id, product_id, user_id, rating, title, body, status, is_verified, admin_reply, admin_reply_at, display_name, created_at, products(slug, title)")
       .order("created_at", { ascending: false })
       .limit(data.limit);
     if (data.status !== "all") q = q.eq("status", data.status);
