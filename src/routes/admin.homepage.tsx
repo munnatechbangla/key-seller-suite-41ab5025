@@ -26,7 +26,8 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { searchQuery, productsBySlugsQuery, categoriesQuery, type Product } from "@/lib/catalog";
 import type { HomeCategorySource } from "@/lib/cms/homepage";
-import type { IconName } from "@/lib/cms/icons";
+import { iconRegistry, resolveIcon, type IconName } from "@/lib/cms/icons";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
