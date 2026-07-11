@@ -923,3 +923,48 @@ function SectionCountdownEditor({
   );
 }
 
+
+// ---------------- Icon picker (searchable) ----------------
+
+function IconPicker({ label, value, onChange }: { label: string; value: IconName; onChange: (v: IconName) => void }) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const names = Object.keys(iconRegistry) as IconName[];
+  const filtered = names.filter((n) => n.toLowerCase().includes(q.trim().toLowerCase()));
+  const safe: IconName = (value in iconRegistry ? value : "Shield") as IconName;
+  const Current = resolveIcon(safe);
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs">{label}</Label>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button type="button" variant="outline" className="h-10 gap-2 min-w-[9rem] justify-start">
+            <Current className="h-4 w-4 shrink-0" />
+            <span className="text-sm truncate">{safe}</span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-64 p-2" align="start">
+          <Input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search icons…" className="h-8 mb-2" />
+          <div className="grid grid-cols-4 gap-1 max-h-56 overflow-auto">
+            {filtered.length === 0 && <div className="col-span-4 p-2 text-xs text-muted-foreground">No matches</div>}
+            {filtered.map((n) => {
+              const I = resolveIcon(n);
+              const active = n === safe;
+              return (
+                <button
+                  key={n}
+                  type="button"
+                  title={n}
+                  onClick={() => { onChange(n); setOpen(false); }}
+                  className={`grid place-items-center rounded-md border p-2 hover:bg-muted/50 ${active ? "border-primary bg-primary/10" : ""}`}
+                >
+                  <I className="h-4 w-4" />
+                </button>
+              );
+            })}
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
