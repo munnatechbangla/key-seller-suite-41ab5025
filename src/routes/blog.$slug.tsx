@@ -11,7 +11,7 @@ import {
   Calendar, ArrowLeft, ArrowRight, Clock, User, BadgeCheck, Send,
   Facebook, Twitter, Linkedin, MessageCircle, Link2, Check,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type Row = {
