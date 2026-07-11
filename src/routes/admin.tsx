@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tan
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/stores";
-import { LayoutDashboard, Package, ShoppingBag, Users, KeyRound, Loader2, Ticket, Settings as SettingsIcon, Mail, FileText, CreditCard, Wallet, Star, ScrollText, Wand2, HeartPulse, Database, BookOpen, ClipboardCheck, History, LayoutTemplate, Sparkles, Image as ImageIcon, Boxes, TrendingDown, Repeat, Bell, FileCode } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Users, KeyRound, Loader2, Ticket, Settings as SettingsIcon, Mail, FileText, CreditCard, Wallet, Star, ScrollText, Wand2, HeartPulse, Database, BookOpen, ClipboardCheck, History, LayoutTemplate, Sparkles, Image as ImageIcon, Boxes, TrendingDown, Repeat, Bell, FileCode, Newspaper } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/site/Logo";
 
@@ -20,6 +20,7 @@ const items = [
   { to: "/admin/cms", label: "CMS", icon: FileCode },
   { to: "/admin/marketplace", label: "Marketplace", icon: Sparkles },
   { to: "/admin/products", label: "Products", icon: Package },
+  { to: "/admin/blog", label: "Blog", icon: Newspaper },
   { to: "/admin/categories", label: "Categories", icon: FileText },
   { to: "/admin/media", label: "Media Library", icon: ImageIcon },
   { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
