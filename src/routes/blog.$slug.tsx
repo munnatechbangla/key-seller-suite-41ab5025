@@ -6,7 +6,8 @@ import { Footer } from "@/components/site/Footer";
 import { Breadcrumbs } from "@/components/site/PageHero";
 import { blogPosts as staticPosts } from "@/lib/catalog";
 import { blogGetBySlugPublicFn } from "@/lib/blog.functions";
-import { Calendar, ArrowLeft } from "lucide-react";
+import { BlogImage, readingTimeLabel } from "@/components/site/BlogImage";
+import { Calendar, ArrowLeft, Clock, User } from "lucide-react";
 
 type LoadedPost = {
   slug: string;
