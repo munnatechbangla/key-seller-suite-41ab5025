@@ -28,12 +28,12 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as CartRouteImport } from './routes/cart'
-import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as PayOrderNumberRouteImport } from './routes/pay.$orderNumber'
@@ -180,11 +180,6 @@ const CartRoute = CartRouteImport.update({
   path: '/cart',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BlogRoute = BlogRouteImport.update({
-  id: '/blog',
-  path: '/blog',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -210,6 +205,11 @@ const ProductsIndexRoute = ProductsIndexRouteImport.update({
   path: '/products/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -231,9 +231,9 @@ const LSlugRoute = LSlugRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => BlogRoute,
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthResetRoute = AuthResetRouteImport.update({
   id: '/auth/reset',
@@ -471,7 +471,6 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
   '/admin': typeof AdminRouteWithChildren
-  '/blog': typeof BlogRouteWithChildren
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/changelog': typeof ChangelogRoute
@@ -530,6 +529,7 @@ export interface FileRoutesByFullPath {
   '/pay/$orderNumber': typeof PayOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/blog/': typeof BlogIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
   '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRouteWithChildren
@@ -547,7 +547,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
-  '/blog': typeof BlogRouteWithChildren
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/changelog': typeof ChangelogRoute
@@ -605,6 +604,7 @@ export interface FileRoutesByTo {
   '/pay/$orderNumber': typeof PayOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/admin': typeof AdminIndexRoute
+  '/blog': typeof BlogIndexRoute
   '/products': typeof ProductsIndexRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
   '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRouteWithChildren
@@ -624,7 +624,6 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
   '/admin': typeof AdminRouteWithChildren
-  '/blog': typeof BlogRouteWithChildren
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/changelog': typeof ChangelogRoute
@@ -683,6 +682,7 @@ export interface FileRoutesById {
   '/pay/$orderNumber': typeof PayOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/blog/': typeof BlogIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/admin/cms/homepage': typeof AdminCmsHomepageRoute
   '/admin/cms/landing-pages': typeof AdminCmsLandingPagesRouteWithChildren
@@ -703,7 +703,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/account'
     | '/admin'
-    | '/blog'
     | '/cart'
     | '/categories'
     | '/changelog'
@@ -762,6 +761,7 @@ export interface FileRouteTypes {
     | '/pay/$orderNumber'
     | '/products/$slug'
     | '/admin/'
+    | '/blog/'
     | '/products/'
     | '/admin/cms/homepage'
     | '/admin/cms/landing-pages'
@@ -779,7 +779,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/account'
-    | '/blog'
     | '/cart'
     | '/categories'
     | '/changelog'
@@ -837,6 +836,7 @@ export interface FileRouteTypes {
     | '/pay/$orderNumber'
     | '/products/$slug'
     | '/admin'
+    | '/blog'
     | '/products'
     | '/admin/cms/homepage'
     | '/admin/cms/landing-pages'
@@ -855,7 +855,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/account'
     | '/admin'
-    | '/blog'
     | '/cart'
     | '/categories'
     | '/changelog'
@@ -914,6 +913,7 @@ export interface FileRouteTypes {
     | '/pay/$orderNumber'
     | '/products/$slug'
     | '/admin/'
+    | '/blog/'
     | '/products/'
     | '/admin/cms/homepage'
     | '/admin/cms/landing-pages'
@@ -933,7 +933,6 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AccountRoute: typeof AccountRoute
   AdminRoute: typeof AdminRouteWithChildren
-  BlogRoute: typeof BlogRouteWithChildren
   CartRoute: typeof CartRoute
   CategoriesRoute: typeof CategoriesRoute
   ChangelogRoute: typeof ChangelogRoute
@@ -958,9 +957,11 @@ export interface RootRouteChildren {
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
   AuthResetRoute: typeof AuthResetRoute
+  BlogSlugRoute: typeof BlogSlugRoute
   LSlugRoute: typeof LSlugRoute
   PayOrderNumberRoute: typeof PayOrderNumberRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
   ApiPublicNotificationsProcessRoute: typeof ApiPublicNotificationsProcessRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -1104,13 +1105,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CartRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/blog': {
-      id: '/blog'
-      path: '/blog'
-      fullPath: '/blog'
-      preLoaderRoute: typeof BlogRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -1146,6 +1140,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
@@ -1176,10 +1177,10 @@ declare module '@tanstack/react-router' {
     }
     '/blog/$slug': {
       id: '/blog/$slug'
-      path: '/$slug'
+      path: '/blog/$slug'
       fullPath: '/blog/$slug'
       preLoaderRoute: typeof BlogSlugRouteImport
-      parentRoute: typeof BlogRoute
+      parentRoute: typeof rootRouteImport
     }
     '/auth/reset': {
       id: '/auth/reset'
@@ -1608,22 +1609,11 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
-interface BlogRouteChildren {
-  BlogSlugRoute: typeof BlogSlugRoute
-}
-
-const BlogRouteChildren: BlogRouteChildren = {
-  BlogSlugRoute: BlogSlugRoute,
-}
-
-const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AccountRoute: AccountRoute,
   AdminRoute: AdminRouteWithChildren,
-  BlogRoute: BlogRouteWithChildren,
   CartRoute: CartRoute,
   CategoriesRoute: CategoriesRoute,
   ChangelogRoute: ChangelogRoute,
@@ -1648,9 +1638,11 @@ const rootRouteChildren: RootRouteChildren = {
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
   AuthResetRoute: AuthResetRoute,
+  BlogSlugRoute: BlogSlugRoute,
   LSlugRoute: LSlugRoute,
   PayOrderNumberRoute: PayOrderNumberRoute,
   ProductsSlugRoute: ProductsSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
   ProductsIndexRoute: ProductsIndexRoute,
   ApiPublicNotificationsProcessRoute: ApiPublicNotificationsProcessRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
