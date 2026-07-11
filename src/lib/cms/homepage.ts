@@ -261,6 +261,7 @@ export type HomepageConfig = {
   paymentMethods: HomePaymentMethods;
   announcementBar: HomeAnnouncementBar;
   headerNav: HomeHeaderNav;
+  footer: HomeFooter;
 };
 
 // ---------------- Defaults ----------------
