@@ -73,7 +73,12 @@ export const Route = createFileRoute("/$slug")({
 
 function CmsSlugPage() {
   const { page } = Route.useLoaderData();
-  const heroImg = useResolvedMediaUrl(page.featured_image);
+  const [heroImg, setHeroImg] = useState("");
+  useEffect(() => {
+    let alive = true;
+    resolveStoredUrlAsync(page.featured_image).then((u) => { if (alive) setHeroImg(u); });
+    return () => { alive = false; };
+  }, [page.featured_image]);
   const isFullWidth = page.template === "full-width";
   return (
     <div className="min-h-screen">
