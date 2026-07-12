@@ -490,6 +490,7 @@ function TrackOrderEditor({ value, onChange }: { value: TrackOrderContent; onCha
           )}
         />
       </Section>
+      <CtaEditor value={value.cta} onChange={(cta) => onChange({ ...value, cta })} />
     </>
   );
 }
