@@ -41,6 +41,7 @@ function PageEditor() {
   const [row, setRow] = useState<Row | null>(null);
   const [content, setContent] = useState<any>(defaults[slug]);
   const [title, setTitle] = useState(meta?.title ?? "");
+  const [subtitle, setSubtitle] = useState("");
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDesc, setSeoDesc] = useState("");
   const [published, setPublished] = useState(false);
