@@ -3,18 +3,23 @@
 
 export type Hero = { title: string; subtitle: string; image?: string };
 
+export type CTA = { title: string; subtitle: string; button_label: string; button_url: string };
+
 export type AboutContent = {
   hero: Hero;
   stats?: Array<{ icon: string; value: string; label: string }>;
   story?: { badge: string; heading: string; paragraphs: string[] };
   team?: Array<{ name: string; role: string; avatar?: string; bio?: string }>;
+  values?: Array<{ icon?: string; title: string; description: string }>;
   mission?: string;
   vision?: string;
-  cta?: { title: string; subtitle: string; button_label: string; button_url: string };
+  cta?: CTA;
 };
 
+export type ContactCard = { icon?: string; title: string; description?: string; value?: string; href?: string };
 export type ContactContent = {
   hero: Hero;
+  cards?: ContactCard[];
   form: { title: string; subtitle: string; submit_label: string; success_message: string };
   email?: string;
   phone?: string;
@@ -23,6 +28,7 @@ export type ContactContent = {
   address?: string;
   map_embed?: string;
   hours?: Array<{ day: string; hours: string }>;
+  cta?: CTA;
 };
 
 export type FaqCategory = { id: string; name: string };
@@ -35,7 +41,7 @@ export type FaqContent = {
   categories?: FaqCategory[];
   items?: FaqEntry[];
   faq_groups?: FaqGroup[]; // legacy compatibility (existing rows)
-  cta?: { title: string; subtitle: string; button_label: string; button_url: string };
+  cta?: CTA;
 };
 
 export type SupportContent = {
@@ -43,13 +49,15 @@ export type SupportContent = {
   cards: Array<{ icon: string; title: string; body: string; link?: string }>;
   contact_methods: Array<{ icon: string; label: string; value: string; href: string; color?: string }>;
   ticket_form: { heading: string; submit_label: string; success_message: string };
-  cta?: { title: string; subtitle: string; button_label: string; button_url: string };
+  cta?: CTA;
 };
 
 export type TrackOrderContent = {
   hero: Hero;
   tracker: { heading: string; placeholder_order: string; placeholder_email: string; button_label: string; help_text: string };
+  help?: { heading: string; body: string };
   faq?: Array<{ q: string; a: string }>;
+  cta?: CTA;
 };
 
 export type LegalSection = { h: string; p: string };
@@ -57,6 +65,7 @@ export type LegalRichContent = {
   hero?: { title?: string; subtitle?: string };
   sections?: LegalSection[];
   body_md?: string;
+  cta?: CTA;
 };
 
 export type AnyPageContent =
