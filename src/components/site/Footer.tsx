@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
 import { useHomepage } from "@/lib/cms/homepage";
+import { useCmsFooterPages } from "@/lib/cms/nav-pages";
 import { useSettings, formatCopyright } from "@/lib/cms/settings";
 import { resolveIcon } from "@/lib/cms/icons";
 import { resolveStoredUrlAsync } from "@/lib/media/resolve";
