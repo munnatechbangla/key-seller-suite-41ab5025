@@ -62,10 +62,13 @@ function AdminCMSPage() {
 // ============= PAGES =============
 type PageRow = {
   id: string; slug: string; title: string; description: string | null;
+  featured_image: string | null; excerpt: string | null; body_html: string | null;
+  template: string | null;
   meta_title: string | null; meta_description: string | null;
   og_title: string | null; og_description: string | null; og_image: string | null;
   canonical_url: string | null; robots: string | null;
   page_type: string; status: string; published_at: string | null; updated_at: string;
+  show_in_header: boolean; show_in_footer: boolean; menu_order: number; open_new_tab: boolean;
 };
 
 function PagesTab() {
