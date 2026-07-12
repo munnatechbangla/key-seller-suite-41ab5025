@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Package, CheckCircle2, Search, Clock, XCircle, Loader2 } from "lucide-react";
 import { getOrderByNumberFn } from "@/lib/orders.functions";
 import { toast } from "sonner";
+import { usePage } from "@/lib/cms/pages/hooks";
 
 export const Route = createFileRoute("/track-order")({
   head: () => ({ meta: [{ title: `Track Order — ${siteName()}` }] }),
@@ -21,6 +22,7 @@ function TrackOrder() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<OrderResult | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const { content } = usePage("track-order");
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -43,16 +45,18 @@ function TrackOrder() {
   return (
     <div className="min-h-screen">
       <Header />
-      <PageHero title="Track your order" subtitle="Enter your order ID and email to see status" crumbs={[{ label: "Home", to: "/" }, { label: "Track" }]} />
+      <PageHero title={content.hero.title} subtitle={content.hero.subtitle} crumbs={[{ label: "Home", to: "/" }, { label: "Track" }]} />
       <div className="container mx-auto px-4 py-12 max-w-2xl">
+        {content.tracker.heading && <h2 className="text-xl font-bold mb-3">{content.tracker.heading}</h2>}
         <form onSubmit={submit} className="rounded-2xl bg-card border border-border p-5 space-y-3">
           <div className="grid sm:grid-cols-2 gap-3">
-            <input name="order" required placeholder="Order ID (e.g. TH-20260624-ABC123)" className="px-4 py-3 rounded-xl bg-muted/60 border border-border outline-none focus:border-primary text-sm" />
-            <input name="email" required type="email" placeholder="Email used at checkout" className="px-4 py-3 rounded-xl bg-muted/60 border border-border outline-none focus:border-primary text-sm" />
+            <input name="order" required placeholder={content.tracker.placeholder_order} className="px-4 py-3 rounded-xl bg-muted/60 border border-border outline-none focus:border-primary text-sm" />
+            <input name="email" required type="email" placeholder={content.tracker.placeholder_email} className="px-4 py-3 rounded-xl bg-muted/60 border border-border outline-none focus:border-primary text-sm" />
           </div>
           <button disabled={loading} className="w-full py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-60">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />} Track order
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />} {content.tracker.button_label}
           </button>
+          {content.tracker.help_text && <p className="text-xs text-muted-foreground text-center">{content.tracker.help_text}</p>}
         </form>
 
         {notFound && <div className="mt-6 p-5 rounded-2xl bg-card border border-border text-center text-sm text-muted-foreground">No order found with that ID and email.</div>}
@@ -94,6 +98,18 @@ function TrackOrder() {
               <div className="flex justify-between"><span className="text-muted-foreground">Total</span><span className="font-bold">${Number(result.order.total).toFixed(2)}</span></div>
             </div>
           </div>
+        )}
+
+        {content.faq && content.faq.length > 0 && (
+          <section className="mt-10 space-y-2">
+            <h2 className="text-lg font-bold mb-3">Tracking help</h2>
+            {content.faq.map((it) => (
+              <details key={it.q} className="rounded-2xl bg-card border border-border p-4 group">
+                <summary className="font-semibold cursor-pointer text-sm flex justify-between items-center">{it.q}<span className="text-primary group-open:rotate-45 transition-smooth">+</span></summary>
+                <p className="text-sm text-muted-foreground mt-2">{it.a}</p>
+              </details>
+            ))}
+          </section>
         )}
       </div>
       <Footer />
