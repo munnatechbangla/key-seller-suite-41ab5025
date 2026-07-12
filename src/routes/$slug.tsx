@@ -1,9 +1,10 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { cmsPublicGetPageBySlugFn } from "@/lib/cms.functions";
 import { seoMeta, canonicalLink } from "@/lib/cms/seo";
-import { useResolvedMediaUrl } from "@/lib/media/resolve";
+import { resolveStoredUrlAsync } from "@/lib/media/resolve";
 
 type CmsPage = {
   slug: string;
