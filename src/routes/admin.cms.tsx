@@ -183,6 +183,14 @@ function PagesTab() {
                   </Select>
                 </div>
               </div>
+              <details className="border rounded p-3" open>
+                <summary className="cursor-pointer font-medium text-sm">Navigation</summary>
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <label className="flex items-center gap-2"><Switch checked={!!editing.show_in_header} onCheckedChange={(v) => setEditing({ ...editing, show_in_header: v })} /> Show in header</label>
+                  <label className="flex items-center gap-2"><Switch checked={!!editing.show_in_footer} onCheckedChange={(v) => setEditing({ ...editing, show_in_footer: v })} /> Show in footer</label>
+                  <label className="flex items-center gap-2"><Switch checked={!!editing.open_new_tab} onCheckedChange={(v) => setEditing({ ...editing, open_new_tab: v })} /> Open in new tab</label>
+                </div>
+              </details>
               <details className="border rounded p-3">
                 <summary className="cursor-pointer font-medium text-sm">SEO & Open Graph</summary>
                 <div className="mt-3 space-y-3">
