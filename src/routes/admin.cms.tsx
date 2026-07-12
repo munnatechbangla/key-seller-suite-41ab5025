@@ -85,7 +85,7 @@ function PagesTab() {
   useEffect(() => { refresh(); }, []);
 
   const openNew = () => {
-    setEditing({ slug: "", title: "", page_type: "standard", status: "draft", robots: "index,follow" });
+    setEditing({ slug: "", title: "", page_type: "standard", status: "draft", robots: "index,follow", template: "default", show_in_header: false, show_in_footer: false, menu_order: 0, open_new_tab: false });
     setOpen(true);
   };
   const openEdit = (r: PageRow) => { setEditing(r); setOpen(true); };
