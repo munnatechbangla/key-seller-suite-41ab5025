@@ -140,7 +140,27 @@ function PagesTab() {
                 <div><Label>Title</Label><Input value={editing.title ?? ""} onChange={(e) => setEditing({ ...editing, title: e.target.value })} /></div>
                 <div><Label>Slug</Label><Input value={editing.slug ?? ""} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} /></div>
               </div>
-              <div><Label>Description</Label><Textarea value={editing.description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></div>
+              <MediaPicker label="Featured image" value={editing.featured_image ?? ""} onChange={(v) => setEditing({ ...editing, featured_image: v || null })} />
+              <div><Label>Excerpt</Label><Textarea rows={2} value={editing.excerpt ?? ""} onChange={(e) => setEditing({ ...editing, excerpt: e.target.value })} /></div>
+              <div><Label>Description (internal)</Label><Textarea value={editing.description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></div>
+              <div><Label>Body</Label><RichTextEditor value={editing.body_html ?? ""} onChange={(v) => setEditing({ ...editing, body_html: v })} /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Template</Label>
+                  <Select value={editing.template ?? "default"} onValueChange={(v) => setEditing({ ...editing, template: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="default">Default</SelectItem>
+                      <SelectItem value="full-width">Full Width</SelectItem>
+                      <SelectItem value="landing">Landing Page</SelectItem>
+                      <SelectItem value="contact">Contact</SelectItem>
+                      <SelectItem value="faq">FAQ</SelectItem>
+                      <SelectItem value="blog">Blog</SelectItem>
+                      <SelectItem value="custom">Custom</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div><Label>Menu order</Label><Input type="number" value={editing.menu_order ?? 0} onChange={(e) => setEditing({ ...editing, menu_order: Number(e.target.value) || 0 })} /></div>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div><Label>Page type</Label>
                   <Select value={editing.page_type ?? "standard"} onValueChange={(v) => setEditing({ ...editing, page_type: v })}>
