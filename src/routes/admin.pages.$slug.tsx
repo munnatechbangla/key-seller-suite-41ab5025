@@ -196,26 +196,11 @@ function Repeater<T>({ items, add, empty, render, onChange }: { items: T[]; add:
   );
 }
 
-function HeroEditor({ value, onChange }: { value: { title: string; subtitle: string; image?: string }; onChange: (v: any) => void }) {
+function HeroEditor({ value, onChange }: { value: { title: string; subtitle: string }; onChange: (v: { title: string; subtitle: string }) => void }) {
   return (
     <Section title="Hero">
       <Field label="Title" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
       <TextArea label="Subtitle" value={value.subtitle} onChange={(v) => onChange({ ...value, subtitle: v })} rows={2} />
-      <Field label="Image URL (optional, reserved)" value={value.image ?? ""} onChange={(v) => onChange({ ...value, image: v })} placeholder="media://… or https://…" />
-    </Section>
-  );
-}
-
-function CtaEditor({ value, onChange }: { value?: { title: string; subtitle: string; button_label: string; button_url: string }; onChange: (v: any) => void }) {
-  const v = value ?? { title: "", subtitle: "", button_label: "", button_url: "" };
-  return (
-    <Section title="Call-to-action (reserved — saved for future layout)">
-      <Field label="Title" value={v.title} onChange={(x) => onChange({ ...v, title: x })} />
-      <TextArea label="Subtitle" value={v.subtitle} onChange={(x) => onChange({ ...v, subtitle: x })} rows={2} />
-      <div className="grid sm:grid-cols-2 gap-2">
-        <Field label="Button label" value={v.button_label} onChange={(x) => onChange({ ...v, button_label: x })} />
-        <Field label="Button URL" value={v.button_url} onChange={(x) => onChange({ ...v, button_url: x })} />
-      </div>
     </Section>
   );
 }
