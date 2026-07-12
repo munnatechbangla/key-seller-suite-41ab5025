@@ -332,7 +332,6 @@ function FaqEditor({ value, onChange }: { value: FaqContent; onChange: (v: FaqCo
           )}
         />
       </Section>
-      <CtaEditor value={value.cta} onChange={(cta) => onChange({ ...value, cta })} />
     </>
   );
 }
@@ -382,7 +381,6 @@ function SupportEditor({ value, onChange }: { value: SupportContent; onChange: (
         <Field label="Submit label" value={value.ticket_form.submit_label} onChange={(v) => onChange({ ...value, ticket_form: { ...value.ticket_form, submit_label: v } })} />
         <Field label="Success message" value={value.ticket_form.success_message} onChange={(v) => onChange({ ...value, ticket_form: { ...value.ticket_form, success_message: v } })} />
       </Section>
-      <CtaEditor value={value.cta} onChange={(cta) => onChange({ ...value, cta })} />
     </>
   );
 }
@@ -418,7 +416,6 @@ function TrackOrderEditor({ value, onChange }: { value: TrackOrderContent; onCha
           )}
         />
       </Section>
-      <CtaEditor value={value.cta} onChange={(cta) => onChange({ ...value, cta })} />
     </>
   );
 }
@@ -445,7 +442,6 @@ function LegalEditor({ value, onChange }: { value: LegalRichContent; onChange: (
           )}
         />
       </Section>
-      <CtaEditor value={value.cta} onChange={(cta) => onChange({ ...value, cta })} />
     </>
   );
 }
