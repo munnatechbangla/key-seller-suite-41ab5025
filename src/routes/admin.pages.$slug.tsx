@@ -252,6 +252,42 @@ function AboutEditor({ value, onChange }: { value: AboutContent; onChange: (v: A
           render={(p, i, update) => <TextArea label={`Paragraph ${i + 1}`} value={p as string} onChange={(v) => update(v as any)} rows={3} />}
         />
       </Section>
+      <Section title="Mission & Vision (reserved)">
+        <TextArea label="Mission" value={value.mission ?? ""} onChange={(v) => onChange({ ...value, mission: v })} rows={3} />
+        <TextArea label="Vision" value={value.vision ?? ""} onChange={(v) => onChange({ ...value, vision: v })} rows={3} />
+      </Section>
+      <Section title="Values (reserved)">
+        <Repeater
+          items={value.values ?? []}
+          add={() => ({ icon: "Sparkles", title: "New value", description: "" })}
+          empty="No values yet."
+          onChange={(vals) => onChange({ ...value, values: vals })}
+          render={(v, _i, update) => (
+            <div className="grid sm:grid-cols-3 gap-2">
+              <Field label="Icon" value={v.icon ?? ""} onChange={(x) => update({ icon: x })} />
+              <Field label="Title" value={v.title} onChange={(x) => update({ title: x })} />
+              <Field label="Description" value={v.description} onChange={(x) => update({ description: x })} />
+            </div>
+          )}
+        />
+      </Section>
+      <Section title="Team (reserved)">
+        <Repeater
+          items={value.team ?? []}
+          add={() => ({ name: "New member", role: "", avatar: "", bio: "" })}
+          empty="No team members yet."
+          onChange={(team) => onChange({ ...value, team })}
+          render={(m, _i, update) => (
+            <div className="grid sm:grid-cols-2 gap-2">
+              <Field label="Name" value={m.name} onChange={(x) => update({ name: x })} />
+              <Field label="Role" value={m.role} onChange={(x) => update({ role: x })} />
+              <Field label="Avatar URL" value={m.avatar ?? ""} onChange={(x) => update({ avatar: x })} />
+              <TextArea label="Bio" value={m.bio ?? ""} onChange={(x) => update({ bio: x })} rows={2} />
+            </div>
+          )}
+        />
+      </Section>
+      <CtaEditor value={value.cta} onChange={(cta) => onChange({ ...value, cta })} />
     </>
   );
 }
