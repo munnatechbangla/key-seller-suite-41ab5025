@@ -33,9 +33,12 @@ function AdminCMSPage() {
           Manage pages, menus, footer, and site settings. All existing storefront routes continue to work unchanged.
         </p>
       </header>
-      <Tabs defaultValue="pages">
+      <Card className="mb-4"><CardContent className="p-4 flex items-center justify-between gap-4">
+        <div className="text-sm text-muted-foreground">Page editing has moved to its own dedicated module — <strong>Admin → Pages</strong> — with per-page editors and support for unlimited custom pages.</div>
+        <Button asChild><a href="/admin/pages">Open Pages</a></Button>
+      </CardContent></Card>
+      <Tabs defaultValue="homepage">
         <TabsList>
-          <TabsTrigger value="pages">Pages</TabsTrigger>
           <TabsTrigger value="homepage">Homepage</TabsTrigger>
           <TabsTrigger value="landing">Landing Pages</TabsTrigger>
           <TabsTrigger value="product-layouts">Product Layouts</TabsTrigger>
@@ -45,7 +48,6 @@ function AdminCMSPage() {
           <TabsTrigger value="seo">SEO &amp; Analytics</TabsTrigger>
           <TabsTrigger value="blog">Blog &amp; KB</TabsTrigger>
         </TabsList>
-        <TabsContent value="pages"><PagesTab /></TabsContent>
         <TabsContent value="homepage"><HomepagePointer /></TabsContent>
         <TabsContent value="landing"><LandingPointer /></TabsContent>
         <TabsContent value="product-layouts"><ProductLayoutsPointer /></TabsContent>
