@@ -135,6 +135,62 @@ export const cmsPublishPageFn = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const legalPageInput = z.object({
+  slug: z.enum(["about", "contact", "faq", "support", "track-order", "privacy", "terms", "refund"]),
+  title: z.string().min(1),
+  subtitle: z.string().nullable().optional(),
+  content: z.record(z.string(), z.unknown()).default({}),
+  is_published: z.boolean().default(true),
+  seo_title: z.string().nullable().optional(),
+  seo_description: z.string().nullable().optional(),
+});
+
+export const cmsGetBuiltInPageFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { slug: string }) => ({ slug: d.slug }))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: page, error } = await context.supabase
+      .from("legal_pages")
+      .select("*")
+      .eq("slug", data.slug)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return page;
+  });
+
+export const cmsUpsertBuiltInPageFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => legalPageInput.parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: existing, error: readError } = await context.supabase
+      .from("legal_pages")
+      .select("id")
+      .eq("slug", data.slug)
+      .maybeSingle();
+    if (readError) throw new Error(readError.message);
+
+    if (existing?.id) {
+      const { data: row, error } = await context.supabase
+        .from("legal_pages")
+        .update(data)
+        .eq("id", existing.id)
+        .select()
+        .single();
+      if (error) throw new Error(error.message);
+      return row;
+    }
+
+    const { data: row, error } = await context.supabase
+      .from("legal_pages")
+      .insert(data)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return row;
+  });
+
 // ============ SECTIONS ============
 const sectionInput = z.object({
   id: z.string().uuid().optional(),
