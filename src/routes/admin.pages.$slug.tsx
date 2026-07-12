@@ -328,6 +328,24 @@ function ContactEditor({ value, onChange }: { value: ContactContent; onChange: (
           <Field label="Success message" value={value.form.success_message} onChange={(v) => onChange({ ...value, form: { ...value.form, success_message: v } })} />
         </div>
       </Section>
+      <Section title="Contact cards (reserved)">
+        <Repeater
+          items={value.cards ?? []}
+          add={() => ({ icon: "Mail", title: "New card", description: "", value: "", href: "" })}
+          empty="No cards."
+          onChange={(cards) => onChange({ ...value, cards })}
+          render={(c, _i, update) => (
+            <div className="grid sm:grid-cols-2 gap-2">
+              <Field label="Icon" value={c.icon ?? ""} onChange={(x) => update({ icon: x })} />
+              <Field label="Title" value={c.title} onChange={(x) => update({ title: x })} />
+              <Field label="Description" value={c.description ?? ""} onChange={(x) => update({ description: x })} />
+              <Field label="Value" value={c.value ?? ""} onChange={(x) => update({ value: x })} />
+              <Field label="Href" value={c.href ?? ""} onChange={(x) => update({ href: x })} />
+            </div>
+          )}
+        />
+      </Section>
+      <CtaEditor value={value.cta} onChange={(cta) => onChange({ ...value, cta })} />
     </>
   );
 }
