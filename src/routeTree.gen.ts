@@ -52,7 +52,6 @@ import { Route as AdminSeoRouteImport } from './routes/admin.seo'
 import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminPaymentLogsRouteImport } from './routes/admin.payment-logs'
-import { Route as AdminPagesRouteImport } from './routes/admin.pages'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminNotificationsRouteImport } from './routes/admin.notifications'
 import { Route as AdminMediaRouteImport } from './routes/admin.media'
@@ -75,6 +74,7 @@ import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin.audit-logs'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminProductsIndexRouteImport } from './routes/admin.products.index'
+import { Route as AdminPagesIndexRouteImport } from './routes/admin.pages.index'
 import { Route as AdminBlogIndexRouteImport } from './routes/admin.blog.index'
 import { Route as AdminProductsIdRouteImport } from './routes/admin.products.$id'
 import { Route as AdminPagesSlugRouteImport } from './routes/admin.pages.$slug'
@@ -305,11 +305,6 @@ const AdminPaymentLogsRoute = AdminPaymentLogsRouteImport.update({
   path: '/payment-logs',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminPagesRoute = AdminPagesRouteImport.update({
-  id: '/pages',
-  path: '/pages',
-  getParentRoute: () => AdminRoute,
-} as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
@@ -420,6 +415,11 @@ const AdminProductsIndexRoute = AdminProductsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminProductsRoute,
 } as any)
+const AdminPagesIndexRoute = AdminPagesIndexRouteImport.update({
+  id: '/pages/',
+  path: '/pages/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminBlogIndexRoute = AdminBlogIndexRouteImport.update({
   id: '/blog/',
   path: '/blog/',
@@ -431,9 +431,9 @@ const AdminProductsIdRoute = AdminProductsIdRouteImport.update({
   getParentRoute: () => AdminProductsRoute,
 } as any)
 const AdminPagesSlugRoute = AdminPagesSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => AdminPagesRoute,
+  id: '/pages/$slug',
+  path: '/pages/$slug',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminCmsProductLayoutsRoute = AdminCmsProductLayoutsRouteImport.update({
   id: '/product-layouts',
@@ -542,7 +542,6 @@ export interface FileRoutesByFullPath {
   '/admin/media': typeof AdminMediaRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/orders': typeof AdminOrdersRoute
-  '/admin/pages': typeof AdminPagesRouteWithChildren
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reviews': typeof AdminReviewsRoute
@@ -570,6 +569,7 @@ export interface FileRoutesByFullPath {
   '/admin/pages/$slug': typeof AdminPagesSlugRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
   '/admin/blog/': typeof AdminBlogIndexRoute
+  '/admin/pages/': typeof AdminPagesIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
   '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
@@ -623,7 +623,6 @@ export interface FileRoutesByTo {
   '/admin/media': typeof AdminMediaRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/orders': typeof AdminOrdersRoute
-  '/admin/pages': typeof AdminPagesRouteWithChildren
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/seo': typeof AdminSeoRoute
@@ -650,6 +649,7 @@ export interface FileRoutesByTo {
   '/admin/pages/$slug': typeof AdminPagesSlugRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
   '/admin/blog': typeof AdminBlogIndexRoute
+  '/admin/pages': typeof AdminPagesIndexRoute
   '/admin/products': typeof AdminProductsIndexRoute
   '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
@@ -705,7 +705,6 @@ export interface FileRoutesById {
   '/admin/media': typeof AdminMediaRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/orders': typeof AdminOrdersRoute
-  '/admin/pages': typeof AdminPagesRouteWithChildren
   '/admin/payment-logs': typeof AdminPaymentLogsRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reviews': typeof AdminReviewsRoute
@@ -733,6 +732,7 @@ export interface FileRoutesById {
   '/admin/pages/$slug': typeof AdminPagesSlugRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
   '/admin/blog/': typeof AdminBlogIndexRoute
+  '/admin/pages/': typeof AdminPagesIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
   '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
@@ -789,7 +789,6 @@ export interface FileRouteTypes {
     | '/admin/media'
     | '/admin/notifications'
     | '/admin/orders'
-    | '/admin/pages'
     | '/admin/payment-logs'
     | '/admin/products'
     | '/admin/reviews'
@@ -817,6 +816,7 @@ export interface FileRouteTypes {
     | '/admin/pages/$slug'
     | '/admin/products/$id'
     | '/admin/blog/'
+    | '/admin/pages/'
     | '/admin/products/'
     | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
@@ -870,7 +870,6 @@ export interface FileRouteTypes {
     | '/admin/media'
     | '/admin/notifications'
     | '/admin/orders'
-    | '/admin/pages'
     | '/admin/payment-logs'
     | '/admin/reviews'
     | '/admin/seo'
@@ -897,6 +896,7 @@ export interface FileRouteTypes {
     | '/admin/pages/$slug'
     | '/admin/products/$id'
     | '/admin/blog'
+    | '/admin/pages'
     | '/admin/products'
     | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
@@ -951,7 +951,6 @@ export interface FileRouteTypes {
     | '/admin/media'
     | '/admin/notifications'
     | '/admin/orders'
-    | '/admin/pages'
     | '/admin/payment-logs'
     | '/admin/products'
     | '/admin/reviews'
@@ -979,6 +978,7 @@ export interface FileRouteTypes {
     | '/admin/pages/$slug'
     | '/admin/products/$id'
     | '/admin/blog/'
+    | '/admin/pages/'
     | '/admin/products/'
     | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
@@ -1334,13 +1334,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPaymentLogsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/pages': {
-      id: '/admin/pages'
-      path: '/pages'
-      fullPath: '/admin/pages'
-      preLoaderRoute: typeof AdminPagesRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/admin/orders': {
       id: '/admin/orders'
       path: '/orders'
@@ -1495,6 +1488,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsIndexRouteImport
       parentRoute: typeof AdminProductsRoute
     }
+    '/admin/pages/': {
+      id: '/admin/pages/'
+      path: '/pages'
+      fullPath: '/admin/pages/'
+      preLoaderRoute: typeof AdminPagesIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/blog/': {
       id: '/admin/blog/'
       path: '/blog'
@@ -1511,10 +1511,10 @@ declare module '@tanstack/react-router' {
     }
     '/admin/pages/$slug': {
       id: '/admin/pages/$slug'
-      path: '/$slug'
+      path: '/pages/$slug'
       fullPath: '/admin/pages/$slug'
       preLoaderRoute: typeof AdminPagesSlugRouteImport
-      parentRoute: typeof AdminPagesRoute
+      parentRoute: typeof AdminRoute
     }
     '/admin/cms/product-layouts': {
       id: '/admin/cms/product-layouts'
@@ -1623,18 +1623,6 @@ const AdminCmsRouteWithChildren = AdminCmsRoute._addFileChildren(
   AdminCmsRouteChildren,
 )
 
-interface AdminPagesRouteChildren {
-  AdminPagesSlugRoute: typeof AdminPagesSlugRoute
-}
-
-const AdminPagesRouteChildren: AdminPagesRouteChildren = {
-  AdminPagesSlugRoute: AdminPagesSlugRoute,
-}
-
-const AdminPagesRouteWithChildren = AdminPagesRoute._addFileChildren(
-  AdminPagesRouteChildren,
-)
-
 interface AdminProductsRouteChildren {
   AdminProductsIdRoute: typeof AdminProductsIdRoute
   AdminProductsIndexRoute: typeof AdminProductsIndexRoute
@@ -1671,7 +1659,6 @@ interface AdminRouteChildren {
   AdminMediaRoute: typeof AdminMediaRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
-  AdminPagesRoute: typeof AdminPagesRouteWithChildren
   AdminPaymentLogsRoute: typeof AdminPaymentLogsRoute
   AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminReviewsRoute: typeof AdminReviewsRoute
@@ -1682,7 +1669,9 @@ interface AdminRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminBlogCategoriesRoute: typeof AdminBlogCategoriesRoute
   AdminBlogTagsRoute: typeof AdminBlogTagsRoute
+  AdminPagesSlugRoute: typeof AdminPagesSlugRoute
   AdminBlogIndexRoute: typeof AdminBlogIndexRoute
+  AdminPagesIndexRoute: typeof AdminPagesIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -1707,7 +1696,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminMediaRoute: AdminMediaRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
   AdminOrdersRoute: AdminOrdersRoute,
-  AdminPagesRoute: AdminPagesRouteWithChildren,
   AdminPaymentLogsRoute: AdminPaymentLogsRoute,
   AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminReviewsRoute: AdminReviewsRoute,
@@ -1718,7 +1706,9 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminBlogCategoriesRoute: AdminBlogCategoriesRoute,
   AdminBlogTagsRoute: AdminBlogTagsRoute,
+  AdminPagesSlugRoute: AdminPagesSlugRoute,
   AdminBlogIndexRoute: AdminBlogIndexRoute,
+  AdminPagesIndexRoute: AdminPagesIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -1770,3 +1760,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

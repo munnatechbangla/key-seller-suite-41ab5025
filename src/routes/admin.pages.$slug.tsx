@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Save, Trash2, Plus, ExternalLink } from "lucide-react";
 import {
@@ -15,6 +15,7 @@ import {
   type TrackOrderContent,
   type LegalRichContent,
 } from "@/lib/cms/pages/schemas";
+import { cmsGetBuiltInPageFn, cmsUpsertBuiltInPageFn } from "@/lib/cms.functions";
 
 export const Route = createFileRoute("/admin/pages/$slug")({
   component: PageEditor,
@@ -34,6 +35,8 @@ type Row = {
 function PageEditor() {
   const { slug: slugParam } = Route.useParams();
   const navigate = useNavigate();
+  const getPage = useServerFn(cmsGetBuiltInPageFn);
+  const upsertPage = useServerFn(cmsUpsertBuiltInPageFn);
   const slug = slugParam as PageSlug;
   const meta = PAGE_META[slug];
   const [loading, setLoading] = useState(true);
@@ -45,16 +48,17 @@ function PageEditor() {
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDesc, setSeoDesc] = useState("");
   const [published, setPublished] = useState(false);
+  const isLegalPage = slug === "privacy" || slug === "terms" || slug === "refund";
 
   useEffect(() => {
     if (!meta) return;
     (async () => {
       setLoading(true);
-      const { data } = await supabase.from("legal_pages").select("*").eq("slug", slug).maybeSingle();
+      const data = await getPage({ data: { slug } });
       if (data) {
         const r = data as unknown as Row;
         setRow(r);
-        setContent({ ...defaults[slug], ...(r.content as any) });
+        setContent(deepMerge(defaults[slug], r.content ?? {}));
         setTitle(r.title ?? meta.title);
         setSubtitle(r.subtitle ?? "");
         setSeoTitle(r.seo_title ?? "");
@@ -67,11 +71,11 @@ function PageEditor() {
         setSubtitle("");
         setSeoTitle("");
         setSeoDesc("");
-        setPublished(false);
+        setPublished(true);
       }
       setLoading(false);
     })();
-  }, [slug, meta]);
+  }, [slug, meta, getPage]);
 
   if (!meta) {
     return (
@@ -86,24 +90,22 @@ function PageEditor() {
     setSaving(true);
     const payload = {
       slug,
-      title,
-      subtitle: subtitle || null,
+      title: isLegalPage ? title : meta.title,
+      subtitle: isLegalPage ? subtitle || null : null,
       content,
       is_published: published,
       seo_title: seoTitle || null,
       seo_description: seoDesc || null,
     };
-    let error: any;
-    if (row) {
-      ({ error } = await supabase.from("legal_pages").update(payload).eq("id", row.id));
-    } else {
-      const res = await supabase.from("legal_pages").insert(payload).select().single();
-      error = res.error;
-      if (res.data) setRow(res.data as unknown as Row);
+    try {
+      const saved = await upsertPage({ data: payload });
+      setRow(saved as unknown as Row);
+      toast.success("Saved");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save page");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    if (error) toast.error(error.message);
-    else toast.success("Saved");
   }
 
   return (
@@ -132,12 +134,12 @@ function PageEditor() {
         <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading…</div>
       ) : (
         <div className="space-y-6">
-          <Section title="Page basics">
-            <Field label="Title (admin)" value={title} onChange={setTitle} />
-            <Field label="Subtitle" value={subtitle} onChange={setSubtitle} placeholder="Shown under the page title (legal pages)" />
-            <Field label="SEO title" value={seoTitle} onChange={setSeoTitle} placeholder="Defaults to page title" />
-            <TextArea label="SEO description" value={seoDesc} onChange={setSeoDesc} rows={2} />
-          </Section>
+          {isLegalPage && (
+            <Section title="Hero">
+              <Field label="Title" value={title} onChange={setTitle} />
+              <TextArea label="Subtitle" value={subtitle} onChange={setSubtitle} rows={2} />
+            </Section>
+          )}
 
           {slug === "about" && <AboutEditor value={content} onChange={setContent} />}
           {slug === "contact" && <ContactEditor value={content} onChange={setContent} />}
@@ -152,6 +154,19 @@ function PageEditor() {
 }
 
 /* ============ Field primitives ============ */
+
+function deepMerge<T>(defaultsVal: T, override: unknown): T {
+  if (override == null) return defaultsVal;
+  if (Array.isArray(defaultsVal)) return (Array.isArray(override) ? override : defaultsVal) as T;
+  if (typeof defaultsVal === "object" && defaultsVal && typeof override === "object") {
+    const out: Record<string, unknown> = { ...(defaultsVal as Record<string, unknown>) };
+    for (const [key, value] of Object.entries(override as Record<string, unknown>)) {
+      out[key] = deepMerge((defaultsVal as Record<string, unknown>)[key], value);
+    }
+    return out as T;
+  }
+  return (override === "" ? defaultsVal : (override as T));
+}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
