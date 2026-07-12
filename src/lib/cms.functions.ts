@@ -17,6 +17,10 @@ const pageInput = z.object({
   slug: z.string().min(1),
   title: z.string().min(1),
   description: z.string().nullable().optional(),
+  featured_image: z.string().nullable().optional(),
+  excerpt: z.string().nullable().optional(),
+  body_html: z.string().nullable().optional(),
+  template: z.string().default("default"),
   meta_title: z.string().nullable().optional(),
   meta_description: z.string().nullable().optional(),
   og_title: z.string().nullable().optional(),
@@ -26,6 +30,10 @@ const pageInput = z.object({
   robots: z.string().nullable().optional(),
   page_type: z.string().default("standard"),
   status: z.enum(["draft", "published"]).default("draft"),
+  show_in_header: z.boolean().default(false),
+  show_in_footer: z.boolean().default(false),
+  menu_order: z.number().default(0),
+  open_new_tab: z.boolean().default(false),
 });
 
 export const cmsListPagesFn = createServerFn({ method: "GET" })
@@ -399,3 +407,24 @@ export const cmsDuplicateSectionFn = createServerFn({ method: "POST" })
     return row;
   });
 
+
+// ============ PUBLIC NAV PAGES (no auth) ============
+export const cmsPublicListNavPagesFn = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { createClient } = await import("@supabase/supabase-js");
+    const sb = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_PUBLISHABLE_KEY!,
+      { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
+    );
+    const { data } = await sb
+      .from("cms_pages")
+      .select("slug,title,show_in_header,show_in_footer,menu_order,open_new_tab")
+      .eq("status", "published")
+      .or("show_in_header.eq.true,show_in_footer.eq.true")
+      .order("menu_order", { ascending: true });
+    return (data ?? []) as Array<{
+      slug: string; title: string; show_in_header: boolean;
+      show_in_footer: boolean; menu_order: number; open_new_tab: boolean;
+    }>;
+  });

@@ -17,6 +17,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, Copy, Eye, EyeOff, Plus, ExternalLink } from "lucide-react";
+import { MediaPicker } from "@/components/admin/MediaLibrary";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 
 export const Route = createFileRoute("/admin/cms")({
   component: AdminCMSPage,
@@ -60,10 +62,13 @@ function AdminCMSPage() {
 // ============= PAGES =============
 type PageRow = {
   id: string; slug: string; title: string; description: string | null;
+  featured_image: string | null; excerpt: string | null; body_html: string | null;
+  template: string | null;
   meta_title: string | null; meta_description: string | null;
   og_title: string | null; og_description: string | null; og_image: string | null;
   canonical_url: string | null; robots: string | null;
   page_type: string; status: string; published_at: string | null; updated_at: string;
+  show_in_header: boolean; show_in_footer: boolean; menu_order: number; open_new_tab: boolean;
 };
 
 function PagesTab() {
@@ -80,7 +85,7 @@ function PagesTab() {
   useEffect(() => { refresh(); }, []);
 
   const openNew = () => {
-    setEditing({ slug: "", title: "", page_type: "standard", status: "draft", robots: "index,follow" });
+    setEditing({ slug: "", title: "", page_type: "standard", status: "draft", robots: "index,follow", template: "default", show_in_header: false, show_in_footer: false, menu_order: 0, open_new_tab: false });
     setOpen(true);
   };
   const openEdit = (r: PageRow) => { setEditing(r); setOpen(true); };
@@ -135,7 +140,27 @@ function PagesTab() {
                 <div><Label>Title</Label><Input value={editing.title ?? ""} onChange={(e) => setEditing({ ...editing, title: e.target.value })} /></div>
                 <div><Label>Slug</Label><Input value={editing.slug ?? ""} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} /></div>
               </div>
-              <div><Label>Description</Label><Textarea value={editing.description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></div>
+              <MediaPicker label="Featured image" value={editing.featured_image ?? ""} onChange={(v) => setEditing({ ...editing, featured_image: v || null })} />
+              <div><Label>Excerpt</Label><Textarea rows={2} value={editing.excerpt ?? ""} onChange={(e) => setEditing({ ...editing, excerpt: e.target.value })} /></div>
+              <div><Label>Description (internal)</Label><Textarea value={editing.description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></div>
+              <div><Label>Body</Label><RichTextEditor value={editing.body_html ?? ""} onChange={(v) => setEditing({ ...editing, body_html: v })} /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label>Template</Label>
+                  <Select value={editing.template ?? "default"} onValueChange={(v) => setEditing({ ...editing, template: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="default">Default</SelectItem>
+                      <SelectItem value="full-width">Full Width</SelectItem>
+                      <SelectItem value="landing">Landing Page</SelectItem>
+                      <SelectItem value="contact">Contact</SelectItem>
+                      <SelectItem value="faq">FAQ</SelectItem>
+                      <SelectItem value="blog">Blog</SelectItem>
+                      <SelectItem value="custom">Custom</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div><Label>Menu order</Label><Input type="number" value={editing.menu_order ?? 0} onChange={(e) => setEditing({ ...editing, menu_order: Number(e.target.value) || 0 })} /></div>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div><Label>Page type</Label>
                   <Select value={editing.page_type ?? "standard"} onValueChange={(v) => setEditing({ ...editing, page_type: v })}>
@@ -158,6 +183,14 @@ function PagesTab() {
                   </Select>
                 </div>
               </div>
+              <details className="border rounded p-3" open>
+                <summary className="cursor-pointer font-medium text-sm">Navigation</summary>
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  <label className="flex items-center gap-2"><Switch checked={!!editing.show_in_header} onCheckedChange={(v) => setEditing({ ...editing, show_in_header: v })} /> Show in header</label>
+                  <label className="flex items-center gap-2"><Switch checked={!!editing.show_in_footer} onCheckedChange={(v) => setEditing({ ...editing, show_in_footer: v })} /> Show in footer</label>
+                  <label className="flex items-center gap-2"><Switch checked={!!editing.open_new_tab} onCheckedChange={(v) => setEditing({ ...editing, open_new_tab: v })} /> Open in new tab</label>
+                </div>
+              </details>
               <details className="border rounded p-3">
                 <summary className="cursor-pointer font-medium text-sm">SEO & Open Graph</summary>
                 <div className="mt-3 space-y-3">
