@@ -134,6 +134,7 @@ function PageEditor() {
         <div className="space-y-6">
           <Section title="Page basics">
             <Field label="Title (admin)" value={title} onChange={setTitle} />
+            <Field label="Subtitle" value={subtitle} onChange={setSubtitle} placeholder="Shown under the page title (legal pages)" />
             <Field label="SEO title" value={seoTitle} onChange={setSeoTitle} placeholder="Defaults to page title" />
             <TextArea label="SEO description" value={seoDesc} onChange={setSeoDesc} rows={2} />
           </Section>
