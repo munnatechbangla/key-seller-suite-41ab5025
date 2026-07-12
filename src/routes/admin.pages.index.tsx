@@ -26,7 +26,7 @@ type CustomPageRow = {
   updated_at: string;
 };
 
-export const Route = createFileRoute("/admin/pages")({
+export const Route = createFileRoute("/admin/pages/")({
   validateSearch: (s: Record<string, unknown>) => ({ new: s.new ? 1 : undefined }),
   component: AdminPagesIndex,
 });
