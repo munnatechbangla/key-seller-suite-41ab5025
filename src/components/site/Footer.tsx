@@ -34,7 +34,17 @@ export function Footer() {
   const bottomRight = f.bottom.rightText || s.branding.footer_text;
 
   const socials = (f.socials.items ?? []).filter((it) => it.enabled && it.url);
-  const companyItems = (f.companyLinks.items ?? []).filter((it) => it.enabled);
+  const cmsFooterPages = useCmsFooterPages();
+  const cmsFooterItems = cmsFooterPages.map((p) => ({
+    id: `cms-${p.slug}`,
+    title: p.title,
+    url: `/${p.slug}`,
+    openInNewTab: p.open_new_tab,
+  }));
+  const companyItems = [
+    ...(f.companyLinks.items ?? []).filter((it) => it.enabled),
+    ...cmsFooterItems,
+  ];
   const supportItems = (f.supportLinks.items ?? []).filter((it) => it.enabled);
   const payments = (f.paymentLogos.items ?? []).filter((it) => it.enabled);
 
