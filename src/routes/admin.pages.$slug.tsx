@@ -87,6 +87,7 @@ function PageEditor() {
     const payload = {
       slug,
       title,
+      subtitle: subtitle || null,
       content,
       is_published: published,
       seo_title: seoTitle || null,
