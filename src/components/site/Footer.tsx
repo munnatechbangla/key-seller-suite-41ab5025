@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
 import { useHomepage } from "@/lib/cms/homepage";
+import { useCmsFooterPages } from "@/lib/cms/nav-pages";
 import { useSettings, formatCopyright } from "@/lib/cms/settings";
 import { resolveIcon } from "@/lib/cms/icons";
 import { resolveStoredUrlAsync } from "@/lib/media/resolve";
@@ -33,7 +34,17 @@ export function Footer() {
   const bottomRight = f.bottom.rightText || s.branding.footer_text;
 
   const socials = (f.socials.items ?? []).filter((it) => it.enabled && it.url);
-  const companyItems = (f.companyLinks.items ?? []).filter((it) => it.enabled);
+  const cmsFooterPages = useCmsFooterPages();
+  const cmsFooterItems = cmsFooterPages.map((p) => ({
+    id: `cms-${p.slug}`,
+    title: p.title,
+    url: `/${p.slug}`,
+    openInNewTab: p.open_new_tab,
+  }));
+  const companyItems = [
+    ...(f.companyLinks.items ?? []).filter((it) => it.enabled),
+    ...cmsFooterItems,
+  ];
   const supportItems = (f.supportLinks.items ?? []).filter((it) => it.enabled);
   const payments = (f.paymentLogos.items ?? []).filter((it) => it.enabled);
 

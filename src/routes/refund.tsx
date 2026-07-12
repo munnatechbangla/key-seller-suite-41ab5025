@@ -1,31 +1,6 @@
-import { siteName } from "@/lib/cms/seo";
-import { useSettings } from "@/lib/cms/settings";
 import { createFileRoute } from "@tanstack/react-router";
-import { LegalPage } from "@/components/site/LegalPage";
-import { useLegalPage } from "@/lib/cms/legal";
+import { CmsPageView } from "@/components/site/CmsPageView";
 
 export const Route = createFileRoute("/refund")({
-  head: () => ({ meta: [{ title: `Refund Policy — ${siteName()}` }] }),
-  component: RefundPage,
+  component: () => <CmsPageView slug="refund" />,
 });
-
-function RefundPage() {
-  const email = useSettings((st) => st.settings.contact.support_email) || "support@example.com";
-  const { data: page } = useLegalPage("refund");
-
-  const fallbackSections = [
-    { h: "Eligibility", p: "Refunds are issued in full if the product cannot be delivered or activated within 24 hours of purchase." },
-    { h: "Non-refundable cases", p: "Once a product is delivered and activated successfully, it is not eligible for refund — but warranty/replacement still applies." },
-    { h: "How to request", p: `Open a support ticket from your account dashboard or email ${email} with your order ID.` },
-    { h: "Processing time", p: "Refunds are processed back to the original payment method within 3–7 business days." },
-  ];
-
-  return (
-    <LegalPage
-      title={page?.title ?? "Refund Policy"}
-      subtitle={page?.subtitle ?? "Our promise: you get what you pay for"}
-      sections={page?.content?.sections ?? fallbackSections}
-      bodyMd={page?.content?.body_md ?? null}
-    />
-  );
-}
