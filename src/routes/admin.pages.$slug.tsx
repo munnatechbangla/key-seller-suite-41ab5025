@@ -472,6 +472,10 @@ function TrackOrderEditor({ value, onChange }: { value: TrackOrderContent; onCha
         <Field label="Button label" value={value.tracker.button_label} onChange={(v) => onChange({ ...value, tracker: { ...value.tracker, button_label: v } })} />
         <TextArea label="Help text" value={value.tracker.help_text} onChange={(v) => onChange({ ...value, tracker: { ...value.tracker, help_text: v } })} rows={2} />
       </Section>
+      <Section title="Help section (reserved)">
+        <Field label="Heading" value={value.help?.heading ?? ""} onChange={(v) => onChange({ ...value, help: { ...(value.help ?? { heading: "", body: "" }), heading: v } })} />
+        <TextArea label="Body" value={value.help?.body ?? ""} onChange={(v) => onChange({ ...value, help: { ...(value.help ?? { heading: "", body: "" }), body: v } })} rows={3} />
+      </Section>
       <Section title="Tracking help FAQ">
         <Repeater
           items={value.faq ?? []}
