@@ -41,6 +41,7 @@ function PageEditor() {
   const [row, setRow] = useState<Row | null>(null);
   const [content, setContent] = useState<any>(defaults[slug]);
   const [title, setTitle] = useState(meta?.title ?? "");
+  const [subtitle, setSubtitle] = useState("");
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDesc, setSeoDesc] = useState("");
   const [published, setPublished] = useState(false);
@@ -55,6 +56,7 @@ function PageEditor() {
         setRow(r);
         setContent({ ...defaults[slug], ...(r.content as any) });
         setTitle(r.title ?? meta.title);
+        setSubtitle(r.subtitle ?? "");
         setSeoTitle(r.seo_title ?? "");
         setSeoDesc(r.seo_description ?? "");
         setPublished(r.is_published);
@@ -62,6 +64,7 @@ function PageEditor() {
         setRow(null);
         setContent(defaults[slug]);
         setTitle(meta.title);
+        setSubtitle("");
         setSeoTitle("");
         setSeoDesc("");
         setPublished(false);
@@ -84,6 +87,7 @@ function PageEditor() {
     const payload = {
       slug,
       title,
+      subtitle: subtitle || null,
       content,
       is_published: published,
       seo_title: seoTitle || null,
@@ -130,6 +134,7 @@ function PageEditor() {
         <div className="space-y-6">
           <Section title="Page basics">
             <Field label="Title (admin)" value={title} onChange={setTitle} />
+            <Field label="Subtitle" value={subtitle} onChange={setSubtitle} placeholder="Shown under the page title (legal pages)" />
             <Field label="SEO title" value={seoTitle} onChange={setSeoTitle} placeholder="Defaults to page title" />
             <TextArea label="SEO description" value={seoDesc} onChange={setSeoDesc} rows={2} />
           </Section>
@@ -196,26 +201,11 @@ function Repeater<T>({ items, add, empty, render, onChange }: { items: T[]; add:
   );
 }
 
-function HeroEditor({ value, onChange }: { value: { title: string; subtitle: string; image?: string }; onChange: (v: any) => void }) {
+function HeroEditor({ value, onChange }: { value: { title: string; subtitle: string }; onChange: (v: { title: string; subtitle: string }) => void }) {
   return (
     <Section title="Hero">
       <Field label="Title" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
       <TextArea label="Subtitle" value={value.subtitle} onChange={(v) => onChange({ ...value, subtitle: v })} rows={2} />
-      <Field label="Image URL (optional, reserved)" value={value.image ?? ""} onChange={(v) => onChange({ ...value, image: v })} placeholder="media://… or https://…" />
-    </Section>
-  );
-}
-
-function CtaEditor({ value, onChange }: { value?: { title: string; subtitle: string; button_label: string; button_url: string }; onChange: (v: any) => void }) {
-  const v = value ?? { title: "", subtitle: "", button_label: "", button_url: "" };
-  return (
-    <Section title="Call-to-action (reserved — saved for future layout)">
-      <Field label="Title" value={v.title} onChange={(x) => onChange({ ...v, title: x })} />
-      <TextArea label="Subtitle" value={v.subtitle} onChange={(x) => onChange({ ...v, subtitle: x })} rows={2} />
-      <div className="grid sm:grid-cols-2 gap-2">
-        <Field label="Button label" value={v.button_label} onChange={(x) => onChange({ ...v, button_label: x })} />
-        <Field label="Button URL" value={v.button_url} onChange={(x) => onChange({ ...v, button_url: x })} />
-      </div>
     </Section>
   );
 }
@@ -252,42 +242,6 @@ function AboutEditor({ value, onChange }: { value: AboutContent; onChange: (v: A
           render={(p, i, update) => <TextArea label={`Paragraph ${i + 1}`} value={p as string} onChange={(v) => update(v as any)} rows={3} />}
         />
       </Section>
-      <Section title="Mission & Vision (reserved)">
-        <TextArea label="Mission" value={value.mission ?? ""} onChange={(v) => onChange({ ...value, mission: v })} rows={3} />
-        <TextArea label="Vision" value={value.vision ?? ""} onChange={(v) => onChange({ ...value, vision: v })} rows={3} />
-      </Section>
-      <Section title="Values (reserved)">
-        <Repeater
-          items={value.values ?? []}
-          add={() => ({ icon: "Sparkles", title: "New value", description: "" })}
-          empty="No values yet."
-          onChange={(vals) => onChange({ ...value, values: vals })}
-          render={(v, _i, update) => (
-            <div className="grid sm:grid-cols-3 gap-2">
-              <Field label="Icon" value={v.icon ?? ""} onChange={(x) => update({ icon: x })} />
-              <Field label="Title" value={v.title} onChange={(x) => update({ title: x })} />
-              <Field label="Description" value={v.description} onChange={(x) => update({ description: x })} />
-            </div>
-          )}
-        />
-      </Section>
-      <Section title="Team (reserved)">
-        <Repeater
-          items={value.team ?? []}
-          add={() => ({ name: "New member", role: "", avatar: "", bio: "" })}
-          empty="No team members yet."
-          onChange={(team) => onChange({ ...value, team })}
-          render={(m, _i, update) => (
-            <div className="grid sm:grid-cols-2 gap-2">
-              <Field label="Name" value={m.name} onChange={(x) => update({ name: x })} />
-              <Field label="Role" value={m.role} onChange={(x) => update({ role: x })} />
-              <Field label="Avatar URL" value={m.avatar ?? ""} onChange={(x) => update({ avatar: x })} />
-              <TextArea label="Bio" value={m.bio ?? ""} onChange={(x) => update({ bio: x })} rows={2} />
-            </div>
-          )}
-        />
-      </Section>
-      <CtaEditor value={value.cta} onChange={(cta) => onChange({ ...value, cta })} />
     </>
   );
 }
@@ -323,29 +277,8 @@ function ContactEditor({ value, onChange }: { value: ContactContent; onChange: (
       <Section title="Form">
         <Field label="Form title" value={value.form.title} onChange={(v) => onChange({ ...value, form: { ...value.form, title: v } })} />
         <TextArea label="Form subtitle" value={value.form.subtitle} onChange={(v) => onChange({ ...value, form: { ...value.form, subtitle: v } })} rows={2} />
-        <div className="grid sm:grid-cols-2 gap-2">
-          <Field label="Submit label" value={value.form.submit_label} onChange={(v) => onChange({ ...value, form: { ...value.form, submit_label: v } })} />
-          <Field label="Success message" value={value.form.success_message} onChange={(v) => onChange({ ...value, form: { ...value.form, success_message: v } })} />
-        </div>
+        <Field label="Submit label" value={value.form.submit_label} onChange={(v) => onChange({ ...value, form: { ...value.form, submit_label: v } })} />
       </Section>
-      <Section title="Contact cards (reserved)">
-        <Repeater
-          items={value.cards ?? []}
-          add={() => ({ icon: "Mail", title: "New card", description: "", value: "", href: "" })}
-          empty="No cards."
-          onChange={(cards) => onChange({ ...value, cards })}
-          render={(c, _i, update) => (
-            <div className="grid sm:grid-cols-2 gap-2">
-              <Field label="Icon" value={c.icon ?? ""} onChange={(x) => update({ icon: x })} />
-              <Field label="Title" value={c.title} onChange={(x) => update({ title: x })} />
-              <Field label="Description" value={c.description ?? ""} onChange={(x) => update({ description: x })} />
-              <Field label="Value" value={c.value ?? ""} onChange={(x) => update({ value: x })} />
-              <Field label="Href" value={c.href ?? ""} onChange={(x) => update({ href: x })} />
-            </div>
-          )}
-        />
-      </Section>
-      <CtaEditor value={value.cta} onChange={(cta) => onChange({ ...value, cta })} />
     </>
   );
 }
@@ -404,7 +337,6 @@ function FaqEditor({ value, onChange }: { value: FaqContent; onChange: (v: FaqCo
           )}
         />
       </Section>
-      <CtaEditor value={value.cta} onChange={(cta) => onChange({ ...value, cta })} />
     </>
   );
 }
@@ -454,7 +386,6 @@ function SupportEditor({ value, onChange }: { value: SupportContent; onChange: (
         <Field label="Submit label" value={value.ticket_form.submit_label} onChange={(v) => onChange({ ...value, ticket_form: { ...value.ticket_form, submit_label: v } })} />
         <Field label="Success message" value={value.ticket_form.success_message} onChange={(v) => onChange({ ...value, ticket_form: { ...value.ticket_form, success_message: v } })} />
       </Section>
-      <CtaEditor value={value.cta} onChange={(cta) => onChange({ ...value, cta })} />
     </>
   );
 }
@@ -472,10 +403,6 @@ function TrackOrderEditor({ value, onChange }: { value: TrackOrderContent; onCha
         <Field label="Button label" value={value.tracker.button_label} onChange={(v) => onChange({ ...value, tracker: { ...value.tracker, button_label: v } })} />
         <TextArea label="Help text" value={value.tracker.help_text} onChange={(v) => onChange({ ...value, tracker: { ...value.tracker, help_text: v } })} rows={2} />
       </Section>
-      <Section title="Help section (reserved)">
-        <Field label="Heading" value={value.help?.heading ?? ""} onChange={(v) => onChange({ ...value, help: { ...(value.help ?? { heading: "", body: "" }), heading: v } })} />
-        <TextArea label="Body" value={value.help?.body ?? ""} onChange={(v) => onChange({ ...value, help: { ...(value.help ?? { heading: "", body: "" }), body: v } })} rows={3} />
-      </Section>
       <Section title="Tracking help FAQ">
         <Repeater
           items={value.faq ?? []}
@@ -490,7 +417,6 @@ function TrackOrderEditor({ value, onChange }: { value: TrackOrderContent; onCha
           )}
         />
       </Section>
-      <CtaEditor value={value.cta} onChange={(cta) => onChange({ ...value, cta })} />
     </>
   );
 }
@@ -498,10 +424,6 @@ function TrackOrderEditor({ value, onChange }: { value: TrackOrderContent; onCha
 function LegalEditor({ value, onChange }: { value: LegalRichContent; onChange: (v: LegalRichContent) => void }) {
   return (
     <>
-      <Section title="Hero (reserved)">
-        <Field label="Title" value={value.hero?.title ?? ""} onChange={(v) => onChange({ ...value, hero: { ...(value.hero ?? {}), title: v } })} />
-        <TextArea label="Subtitle" value={value.hero?.subtitle ?? ""} onChange={(v) => onChange({ ...value, hero: { ...(value.hero ?? {}), subtitle: v } })} rows={2} />
-      </Section>
       <Section title="Sections">
         <p className="text-xs text-muted-foreground">Use tokens <code>{"{name}"}</code> and <code>{"{email}"}</code> to interpolate values from Settings.</p>
         <Repeater
@@ -517,7 +439,6 @@ function LegalEditor({ value, onChange }: { value: LegalRichContent; onChange: (
           )}
         />
       </Section>
-      <CtaEditor value={value.cta} onChange={(cta) => onChange({ ...value, cta })} />
     </>
   );
 }
