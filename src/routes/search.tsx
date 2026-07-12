@@ -4,6 +4,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { PageHero } from "@/components/site/PageHero";
+import { ProductThumb } from "@/components/site/ProductThumb";
 import { useSearchResults } from "@/lib/catalog";
 import { resolveProductPrice, formatPrice } from "@/lib/product-price";
 import { Search, TrendingUp } from "lucide-react";
@@ -48,7 +49,7 @@ function SearchPage() {
                 const rp = resolveProductPrice(p);
                 return (
                   <Link key={p.slug} to="/products/$slug" params={{ slug: p.slug }} className="flex items-center gap-3 p-3 hover:bg-muted">
-                    <span className="text-2xl">{p.emoji}</span>
+                    <ProductThumb src={p.thumbnailUrl} emoji={p.emoji} alt={p.name} size={64} />
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-sm truncate">{p.name}</div>
                       <div className="text-xs text-muted-foreground truncate">{p.short}</div>
