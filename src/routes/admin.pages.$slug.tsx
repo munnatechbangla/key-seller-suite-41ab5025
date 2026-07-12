@@ -68,7 +68,7 @@ function PageEditor() {
         setSubtitle("");
         setSeoTitle("");
         setSeoDesc("");
-        setPublished(false);
+        setPublished(true);
       }
       setLoading(false);
     })();
