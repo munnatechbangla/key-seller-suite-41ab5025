@@ -533,56 +533,80 @@ export type Database = {
       }
       cms_pages: {
         Row: {
+          body_html: string | null
           canonical_url: string | null
           created_at: string
           description: string | null
+          excerpt: string | null
+          featured_image: string | null
           id: string
+          menu_order: number
           meta_description: string | null
           meta_title: string | null
           og_description: string | null
           og_image: string | null
           og_title: string | null
+          open_new_tab: boolean
           page_type: string
           published_at: string | null
           robots: string | null
+          show_in_footer: boolean
+          show_in_header: boolean
           slug: string
           status: string
+          template: string
           title: string
           updated_at: string
         }
         Insert: {
+          body_html?: string | null
           canonical_url?: string | null
           created_at?: string
           description?: string | null
+          excerpt?: string | null
+          featured_image?: string | null
           id?: string
+          menu_order?: number
           meta_description?: string | null
           meta_title?: string | null
           og_description?: string | null
           og_image?: string | null
           og_title?: string | null
+          open_new_tab?: boolean
           page_type?: string
           published_at?: string | null
           robots?: string | null
+          show_in_footer?: boolean
+          show_in_header?: boolean
           slug: string
           status?: string
+          template?: string
           title: string
           updated_at?: string
         }
         Update: {
+          body_html?: string | null
           canonical_url?: string | null
           created_at?: string
           description?: string | null
+          excerpt?: string | null
+          featured_image?: string | null
           id?: string
+          menu_order?: number
           meta_description?: string | null
           meta_title?: string | null
           og_description?: string | null
           og_image?: string | null
           og_title?: string | null
+          open_new_tab?: boolean
           page_type?: string
           published_at?: string | null
           robots?: string | null
+          show_in_footer?: boolean
+          show_in_header?: boolean
           slug?: string
           status?: string
+          template?: string
           title?: string
           updated_at?: string
         }
