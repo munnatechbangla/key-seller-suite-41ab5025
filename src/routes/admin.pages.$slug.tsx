@@ -497,21 +497,28 @@ function TrackOrderEditor({ value, onChange }: { value: TrackOrderContent; onCha
 
 function LegalEditor({ value, onChange }: { value: LegalRichContent; onChange: (v: LegalRichContent) => void }) {
   return (
-    <Section title="Sections">
-      <p className="text-xs text-muted-foreground">Use tokens <code>{"{name}"}</code> and <code>{"{email}"}</code> to interpolate values from Settings.</p>
-      <Repeater
-        items={value.sections ?? []}
-        add={() => ({ h: "New section", p: "" })}
-        empty="No sections."
-        onChange={(sections) => onChange({ ...value, sections })}
-        render={(s, _i, update) => (
-          <div className="space-y-2">
-            <Field label="Heading" value={s.h} onChange={(v) => update({ h: v })} />
-            <TextArea label="Body" value={s.p} onChange={(v) => update({ p: v })} rows={4} />
-          </div>
-        )}
-      />
-    </Section>
+    <>
+      <Section title="Hero (reserved)">
+        <Field label="Title" value={value.hero?.title ?? ""} onChange={(v) => onChange({ ...value, hero: { ...(value.hero ?? {}), title: v } })} />
+        <TextArea label="Subtitle" value={value.hero?.subtitle ?? ""} onChange={(v) => onChange({ ...value, hero: { ...(value.hero ?? {}), subtitle: v } })} rows={2} />
+      </Section>
+      <Section title="Sections">
+        <p className="text-xs text-muted-foreground">Use tokens <code>{"{name}"}</code> and <code>{"{email}"}</code> to interpolate values from Settings.</p>
+        <Repeater
+          items={value.sections ?? []}
+          add={() => ({ h: "New section", p: "" })}
+          empty="No sections."
+          onChange={(sections) => onChange({ ...value, sections })}
+          render={(s, _i, update) => (
+            <div className="space-y-2">
+              <Field label="Heading" value={s.h} onChange={(v) => update({ h: v })} />
+              <TextArea label="Body" value={s.p} onChange={(v) => update({ p: v })} rows={4} />
+            </div>
+          )}
+        />
+      </Section>
+      <CtaEditor value={value.cta} onChange={(cta) => onChange({ ...value, cta })} />
+    </>
   );
 }
 
