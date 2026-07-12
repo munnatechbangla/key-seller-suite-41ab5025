@@ -3,6 +3,7 @@ import { Heart, ShoppingCart, User, Search, Menu, X, GitCompare } from "lucide-r
 import { useEffect, useMemo, useState } from "react";
 import { useCart, useWishlist, useCompare, useAuth } from "@/lib/stores";
 import { useHomepage } from "@/lib/cms/homepage";
+import { useCmsHeaderPages } from "@/lib/cms/nav-pages";
 import { AnnouncementBar } from "@/components/site/AnnouncementBar";
 
 import { ThemeToggle } from "@/components/site/ThemeToggle";
@@ -20,7 +21,19 @@ export function Header() {
   const cmpCount = useCompare((s) => s.slugs.length);
   const user = useAuth((s) => s.user);
   const navItems = useHomepage((s) => s.config?.headerNav?.items);
-  const nav = useMemo(() => (navItems ?? []).filter((i) => i && i.enabled), [navItems]);
+  const cmsPages = useCmsHeaderPages();
+  const nav = useMemo(() => {
+    const base = (navItems ?? []).filter((i) => i && i.enabled);
+    const cms = cmsPages.map((p) => ({
+      id: `cms-${p.slug}`,
+      label: p.title,
+      url: `/${p.slug}`,
+      enabled: true,
+      exact: false,
+      newTab: p.open_new_tab,
+    }));
+    return [...base, ...cms];
+  }, [navItems, cmsPages]);
 
 
 
