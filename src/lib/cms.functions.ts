@@ -164,17 +164,18 @@ export const cmsUpsertBuiltInPageFn = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => legalPageInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    const payload = data as any;
     const { data: existing, error: readError } = await context.supabase
       .from("legal_pages")
       .select("id")
-      .eq("slug", data.slug)
+      .eq("slug", payload.slug)
       .maybeSingle();
     if (readError) throw new Error(readError.message);
 
     if (existing?.id) {
       const { data: row, error } = await context.supabase
         .from("legal_pages")
-        .update(data)
+        .update(payload)
         .eq("id", existing.id)
         .select()
         .single();
@@ -184,7 +185,7 @@ export const cmsUpsertBuiltInPageFn = createServerFn({ method: "POST" })
 
     const { data: row, error } = await context.supabase
       .from("legal_pages")
-      .insert(data)
+      .insert(payload)
       .select()
       .single();
     if (error) throw new Error(error.message);

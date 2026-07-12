@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Save, Trash2, Plus, ExternalLink } from "lucide-react";
 import {
@@ -15,6 +15,7 @@ import {
   type TrackOrderContent,
   type LegalRichContent,
 } from "@/lib/cms/pages/schemas";
+import { cmsGetBuiltInPageFn, cmsUpsertBuiltInPageFn } from "@/lib/cms.functions";
 
 export const Route = createFileRoute("/admin/pages/$slug")({
   component: PageEditor,
@@ -34,6 +35,8 @@ type Row = {
 function PageEditor() {
   const { slug: slugParam } = Route.useParams();
   const navigate = useNavigate();
+  const getPage = useServerFn(cmsGetBuiltInPageFn);
+  const upsertPage = useServerFn(cmsUpsertBuiltInPageFn);
   const slug = slugParam as PageSlug;
   const meta = PAGE_META[slug];
   const [loading, setLoading] = useState(true);
@@ -51,7 +54,7 @@ function PageEditor() {
     if (!meta) return;
     (async () => {
       setLoading(true);
-      const { data } = await supabase.from("legal_pages").select("*").eq("slug", slug).maybeSingle();
+      const data = await getPage({ data: { slug } });
       if (data) {
         const r = data as unknown as Row;
         setRow(r);
@@ -72,7 +75,7 @@ function PageEditor() {
       }
       setLoading(false);
     })();
-  }, [slug, meta]);
+  }, [slug, meta, getPage]);
 
   if (!meta) {
     return (
@@ -94,17 +97,15 @@ function PageEditor() {
       seo_title: seoTitle || null,
       seo_description: seoDesc || null,
     };
-    let error: any;
-    if (row) {
-      ({ error } = await supabase.from("legal_pages").update(payload).eq("id", row.id));
-    } else {
-      const res = await supabase.from("legal_pages").insert(payload).select().single();
-      error = res.error;
-      if (res.data) setRow(res.data as unknown as Row);
+    try {
+      const saved = await upsertPage({ data: payload });
+      setRow(saved as unknown as Row);
+      toast.success("Saved");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save page");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    if (error) toast.error(error.message);
-    else toast.success("Saved");
   }
 
   return (
