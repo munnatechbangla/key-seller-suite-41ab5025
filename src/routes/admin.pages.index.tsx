@@ -94,34 +94,31 @@ function AdminPagesIndex() {
             const row = bySlug.get(slug) as any;
             const published = row?.is_published ?? false;
             return (
-              <Link
-                key={slug}
-                to="/admin/pages/$slug"
-                params={{ slug }}
-                className="flex items-center gap-4 p-4 hover:bg-muted/40 transition-colors"
-              >
-                <div className="flex-1 min-w-0">
+              <div key={slug} className="flex items-center gap-4 p-4 hover:bg-muted/40 transition-colors">
+                <Link to="/admin/pages/$slug" params={{ slug }} className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold">{PAGE_META[slug].title}</span>
                     <span className="text-xs text-muted-foreground">/{slug}</span>
                   </div>
                   <div className="text-xs text-muted-foreground">{PAGE_META[slug].description}</div>
-                </div>
+                </Link>
                 <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${published ? "bg-emerald-500/10 text-emerald-600" : "bg-muted text-muted-foreground"}`}>
                   {published ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
                   {published ? "Published" : "Draft"}
                 </span>
+                <Button size="sm" variant="outline" asChild>
+                  <Link to="/admin/pages/$slug" params={{ slug }}>Edit</Link>
+                </Button>
                 <a
                   href={PAGE_META[slug].frontendPath}
                   target="_blank"
                   rel="noreferrer"
-                  onClick={(e) => e.stopPropagation()}
                   className="text-xs text-primary hover:underline inline-flex items-center gap-1"
                 >
                   View <ExternalLink className="h-3 w-3" />
                 </a>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </Link>
+              </div>
             );
           })}
         </div>
