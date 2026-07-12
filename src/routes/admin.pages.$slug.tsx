@@ -45,6 +45,7 @@ function PageEditor() {
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDesc, setSeoDesc] = useState("");
   const [published, setPublished] = useState(false);
+  const isLegalPage = slug === "privacy" || slug === "terms" || slug === "refund";
 
   useEffect(() => {
     if (!meta) return;
@@ -54,7 +55,7 @@ function PageEditor() {
       if (data) {
         const r = data as unknown as Row;
         setRow(r);
-        setContent({ ...defaults[slug], ...(r.content as any) });
+        setContent(deepMerge(defaults[slug], r.content ?? {}));
         setTitle(r.title ?? meta.title);
         setSubtitle(r.subtitle ?? "");
         setSeoTitle(r.seo_title ?? "");
@@ -86,8 +87,8 @@ function PageEditor() {
     setSaving(true);
     const payload = {
       slug,
-      title,
-      subtitle: subtitle || null,
+      title: isLegalPage ? title : meta.title,
+      subtitle: isLegalPage ? subtitle || null : null,
       content,
       is_published: published,
       seo_title: seoTitle || null,
@@ -132,12 +133,12 @@ function PageEditor() {
         <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading…</div>
       ) : (
         <div className="space-y-6">
-          <Section title="Page basics">
-            <Field label="Title (admin)" value={title} onChange={setTitle} />
-            <Field label="Subtitle" value={subtitle} onChange={setSubtitle} placeholder="Shown under the page title (legal pages)" />
-            <Field label="SEO title" value={seoTitle} onChange={setSeoTitle} placeholder="Defaults to page title" />
-            <TextArea label="SEO description" value={seoDesc} onChange={setSeoDesc} rows={2} />
-          </Section>
+          {isLegalPage && (
+            <Section title="Hero">
+              <Field label="Title" value={title} onChange={setTitle} />
+              <TextArea label="Subtitle" value={subtitle} onChange={setSubtitle} rows={2} />
+            </Section>
+          )}
 
           {slug === "about" && <AboutEditor value={content} onChange={setContent} />}
           {slug === "contact" && <ContactEditor value={content} onChange={setContent} />}
@@ -152,6 +153,19 @@ function PageEditor() {
 }
 
 /* ============ Field primitives ============ */
+
+function deepMerge<T>(defaultsVal: T, override: unknown): T {
+  if (override == null) return defaultsVal;
+  if (Array.isArray(defaultsVal)) return (Array.isArray(override) ? override : defaultsVal) as T;
+  if (typeof defaultsVal === "object" && defaultsVal && typeof override === "object") {
+    const out: Record<string, unknown> = { ...(defaultsVal as Record<string, unknown>) };
+    for (const [key, value] of Object.entries(override as Record<string, unknown>)) {
+      out[key] = deepMerge((defaultsVal as Record<string, unknown>)[key], value);
+    }
+    return out as T;
+  }
+  return (override === "" ? defaultsVal : (override as T));
+}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
