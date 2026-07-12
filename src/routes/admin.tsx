@@ -99,6 +99,8 @@ function AdminLayout() {
             const active = it.exact ? pathname === it.to : pathname.startsWith(it.to);
             const isBlog = it.to === "/admin/blog";
             const blogOpen = isBlog && pathname.startsWith("/admin/blog");
+            const isPages = it.to === "/admin/pages";
+            const pagesOpen = isPages && pathname.startsWith("/admin/pages");
             return (
               <div key={it.to}>
                 <Link
@@ -132,6 +134,42 @@ function AdminLayout() {
                         </Link>
                       );
                     })}
+                  </div>
+                )}
+                {pagesOpen && (
+                  <div className="ml-7 mt-1 space-y-0.5 border-l pl-3">
+                    {[
+                      { to: "/admin/pages/about", label: "About" },
+                      { to: "/admin/pages/contact", label: "Contact" },
+                      { to: "/admin/pages/faq", label: "FAQ" },
+                      { to: "/admin/pages/support", label: "Support Center" },
+                      { to: "/admin/pages/track-order", label: "Track Order" },
+                      { to: "/admin/pages/privacy", label: "Privacy Policy" },
+                      { to: "/admin/pages/terms", label: "Terms & Conditions" },
+                      { to: "/admin/pages/refund", label: "Refund Policy" },
+                    ].map((s) => {
+                      const sActive = pathname === s.to;
+                      return (
+                        <Link
+                          key={s.to}
+                          to={s.to as any}
+                          params={{ slug: s.to.split("/").pop()! } as any}
+                          className={cn(
+                            "block px-2 py-1 rounded text-xs transition-colors",
+                            sActive ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground",
+                          )}
+                        >
+                          {s.label}
+                        </Link>
+                      );
+                    })}
+                    <Link
+                      to="/admin/pages"
+                      search={{ new: 1 } as any}
+                      className="block px-2 py-1 rounded text-xs text-primary hover:underline"
+                    >
+                      + New Page
+                    </Link>
                   </div>
                 )}
 
