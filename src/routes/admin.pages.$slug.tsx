@@ -404,6 +404,7 @@ function FaqEditor({ value, onChange }: { value: FaqContent; onChange: (v: FaqCo
           )}
         />
       </Section>
+      <CtaEditor value={value.cta} onChange={(cta) => onChange({ ...value, cta })} />
     </>
   );
 }
