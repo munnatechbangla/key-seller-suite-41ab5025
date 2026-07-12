@@ -407,3 +407,24 @@ export const cmsDuplicateSectionFn = createServerFn({ method: "POST" })
     return row;
   });
 
+
+// ============ PUBLIC NAV PAGES (no auth) ============
+export const cmsPublicListNavPagesFn = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { createClient } = await import("@supabase/supabase-js");
+    const sb = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_PUBLISHABLE_KEY!,
+      { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
+    );
+    const { data } = await sb
+      .from("cms_pages")
+      .select("slug,title,show_in_header,show_in_footer,menu_order,open_new_tab")
+      .eq("status", "published")
+      .or("show_in_header.eq.true,show_in_footer.eq.true")
+      .order("menu_order", { ascending: true });
+    return (data ?? []) as Array<{
+      slug: string; title: string; show_in_header: boolean;
+      show_in_footer: boolean; menu_order: number; open_new_tab: boolean;
+    }>;
+  });
