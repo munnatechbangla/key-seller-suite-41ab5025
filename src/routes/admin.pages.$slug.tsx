@@ -56,6 +56,7 @@ function PageEditor() {
         setRow(r);
         setContent({ ...defaults[slug], ...(r.content as any) });
         setTitle(r.title ?? meta.title);
+        setSubtitle(r.subtitle ?? "");
         setSeoTitle(r.seo_title ?? "");
         setSeoDesc(r.seo_description ?? "");
         setPublished(r.is_published);
@@ -63,6 +64,7 @@ function PageEditor() {
         setRow(null);
         setContent(defaults[slug]);
         setTitle(meta.title);
+        setSubtitle("");
         setSeoTitle("");
         setSeoDesc("");
         setPublished(false);
