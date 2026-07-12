@@ -419,9 +419,8 @@ function TrackOrderEditor({ value, onChange }: { value: TrackOrderContent; onCha
 function LegalEditor({ value, onChange }: { value: LegalRichContent; onChange: (v: LegalRichContent) => void }) {
   return (
     <>
-      <Section title="Hero (reserved)">
-        <Field label="Title" value={value.hero?.title ?? ""} onChange={(v) => onChange({ ...value, hero: { ...(value.hero ?? {}), title: v } })} />
-        <TextArea label="Subtitle" value={value.hero?.subtitle ?? ""} onChange={(v) => onChange({ ...value, hero: { ...(value.hero ?? {}), subtitle: v } })} rows={2} />
+      <Section title="Hero">
+        <Field label="Page title" value={title} onChange={setTitle} />
       </Section>
       <Section title="Sections">
         <p className="text-xs text-muted-foreground">Use tokens <code>{"{name}"}</code> and <code>{"{email}"}</code> to interpolate values from Settings.</p>
