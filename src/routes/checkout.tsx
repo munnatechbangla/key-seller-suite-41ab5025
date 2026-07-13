@@ -14,7 +14,7 @@ import { couponReason } from "@/routes/cart";
 import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
 import { seoMeta } from "@/lib/cms/seo";
 import { track } from "@/lib/analytics/track";
-import { CheckoutCustomFields, useCheckoutFields, validateCheckoutFields, type CheckoutFieldValues } from "@/components/checkout/CheckoutCustomFields";
+import { useCheckoutFields } from "@/components/checkout/CheckoutCustomFields";
 import { saveOrderCustomFieldsAuthFn, saveOrderCustomFieldsGuestFn } from "@/lib/order-custom-fields.functions";
 import { resolveLineImage } from "@/lib/cart-image";
 
