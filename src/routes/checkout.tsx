@@ -170,12 +170,8 @@ function CheckoutPage() {
             </div>
           </Section>
 
-          <CheckoutCustomFields
-            fields={customFields}
-            values={fieldValues}
-            errors={fieldErrors}
-            onChange={setFieldValue}
-          />
+
+
 
 
 
