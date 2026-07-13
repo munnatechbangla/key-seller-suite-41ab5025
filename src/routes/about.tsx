@@ -67,9 +67,15 @@ function AboutPage() {
             ))}
           </div>
           <div className="rounded-3xl bg-gradient-hero h-80 lg:h-96 shadow-premium relative overflow-hidden">
-            <div className="absolute inset-0 grid place-items-center text-8xl opacity-90">🚀</div>
-            <div className="absolute -top-10 -left-10 h-60 w-60 rounded-full bg-accent/30 blur-3xl" />
-            <div className="absolute -bottom-10 -right-10 h-60 w-60 rounded-full bg-primary/40 blur-3xl" />
+            {storyImage ? (
+              <img src={storyImage} alt={interpolate(story.heading, vars)} className="absolute inset-0 h-full w-full object-cover" />
+            ) : (
+              <>
+                <div className="absolute inset-0 grid place-items-center text-8xl opacity-90">🚀</div>
+                <div className="absolute -top-10 -left-10 h-60 w-60 rounded-full bg-accent/30 blur-3xl" />
+                <div className="absolute -bottom-10 -right-10 h-60 w-60 rounded-full bg-primary/40 blur-3xl" />
+              </>
+            )}
           </div>
         </section>
       )}
