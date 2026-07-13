@@ -233,7 +233,7 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
     description: gateway?.description ?? "",
     is_enabled: gateway?.is_enabled ?? false,
     mode: gateway?.mode ?? "sandbox" as const,
-    sort_order: gateway?.sort_order ?? 100,
+    sort_order: gateway?.sort_order as number | undefined,
     configText: JSON.stringify(gateway?.config ?? defaultConfig(defaultType), null, 2),
   });
   const [saving, setSaving] = useState(false);
