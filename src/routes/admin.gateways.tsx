@@ -12,6 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { MediaPicker } from "@/components/admin/MediaLibrary";
+import { GatewayLogo } from "@/components/site/GatewayLogo";
 import { supabase } from "@/integrations/supabase/client";
 import {
   listAllGatewaysFn, upsertGatewayFn, deleteGatewayFn, toggleGatewayFn,
