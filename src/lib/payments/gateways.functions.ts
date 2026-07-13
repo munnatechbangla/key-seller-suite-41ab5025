@@ -93,6 +93,17 @@ export const upsertGatewayFn = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
       return { gateway: row };
     }
+    // New gateway: append to bottom of its type by using max(sort_order)+10
+    if (data.sort_order == null) {
+      const { data: maxRow } = await context.supabase
+        .from("payment_gateways")
+        .select("sort_order")
+        .eq("type", data.type)
+        .order("sort_order", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      payload.sort_order = ((maxRow?.sort_order ?? 0) as number) + 10;
+    }
     const { data: row, error } = await context.supabase
       .from("payment_gateways").insert(payload).select("*").single();
     if (error) throw new Error(error.message);
