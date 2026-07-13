@@ -198,9 +198,15 @@ function LegacyProductPage() {
   const recentSlugs = recent.filter((s) => s !== product.slug).slice(0, 4);
   const recentProducts = useProductsBySlugs(recentSlugs);
 
-  const addToCart = () => { cart.add(product, qty); toast.success(`${product.name} added to cart`); };
+  const customFieldsRef = useRef<ProductCustomFieldsHandle | null>(null);
+  const validateCustomFields = () => customFieldsRef.current?.validate() ?? true;
+  const guardCustomFields = () => {
+    if (!validateCustomFields()) { toast.error("Please complete the product details"); return false; }
+    return true;
+  };
+  const addToCart = () => { if (!guardCustomFields()) return; cart.add(product, qty); toast.success(`${product.name} added to cart`); };
   const navigate = useNavigate();
-  const buyNow = () => { cart.add(product, qty); navigate({ to: "/checkout" }); };
+  const buyNow = () => { if (!guardCustomFields()) return; cart.add(product, qty); navigate({ to: "/checkout" }); };
 
   // Gallery images (public read on product_images)
   const galleryQuery = useQuery({
