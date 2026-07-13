@@ -80,7 +80,7 @@ function GatewayList({ type }: { type: GatewayType }) {
           <div key={g.id} className="rounded-xl border bg-card p-4">
             <div className="flex items-start gap-3">
               <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
-                {g.logo_url ? <img src={g.logo_url} alt={g.name} className="h-full w-full object-contain" /> : <ImageIcon className="h-5 w-5 text-muted-foreground" />}
+                {g.logo_url ? <GatewayLogo src={g.logo_url} alt={g.name} className="h-10 w-10 flex items-center justify-center" /> : <ImageIcon className="h-5 w-5 text-muted-foreground" />}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
