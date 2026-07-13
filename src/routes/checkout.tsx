@@ -47,7 +47,7 @@ function CheckoutPage() {
   const cartSlugs = cart.items.map((i) => i.productSlug ?? i.slug);
   const fieldsQuery = useCheckoutFields(cartSlugs);
   const customFields = fieldsQuery.data ?? [];
-  const storedFieldValues = useCart((s) => s.productFieldValues);
+  const storedFieldValues = useCart((s) => s.productFieldValues ?? {});
   const [fieldValues, setFieldValues] = useState<CheckoutFieldValues>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   // Hydrate field values from the product-page selections whenever fields load.
