@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { Loader2, Plus, Trash2, CheckCircle2, XCircle, Image as ImageIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Loader2, Plus, Trash2, CheckCircle2, XCircle, Image as ImageIcon, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,12 +16,21 @@ import { MediaPicker } from "@/components/admin/MediaLibrary";
 import { GatewayLogo } from "@/components/site/GatewayLogo";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  listAllGatewaysFn, upsertGatewayFn, deleteGatewayFn, toggleGatewayFn,
+  listAllGatewaysFn, upsertGatewayFn, deleteGatewayFn, toggleGatewayFn, reorderGatewaysFn,
   listSubmissionsFn, reviewSubmissionFn,
   type GatewayRow, type GatewayType, type JsonValue,
 } from "@/lib/payments/gateways.functions";
 import { testGatewayConnectionFn, getGatewayHealthFn } from "@/lib/payments/admin.functions";
 import { Activity, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  DndContext, closestCenter, PointerSensor, TouchSensor, KeyboardSensor,
+  useSensor, useSensors, type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext, arrayMove, useSortable, verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export const Route = createFileRoute("/admin/gateways")({
   component: GatewaysPage,
@@ -56,66 +65,94 @@ function GatewayList({ type }: { type: GatewayType }) {
   const fetchAll = useServerFn(listAllGatewaysFn);
   const toggle = useServerFn(toggleGatewayFn);
   const remove = useServerFn(deleteGatewayFn);
+  const reorder = useServerFn(reorderGatewaysFn);
   const qc = useQueryClient();
   const [editing, setEditing] = useState<GatewayRow | null>(null);
   const [creating, setCreating] = useState(false);
+  const [orderedIds, setOrderedIds] = useState<string[] | null>(null);
 
   const q = useQuery({
     queryKey: ["admin", "gateways"],
     queryFn: () => fetchAll(),
   });
-  const rows = (q.data?.gateways ?? []).filter((g) => g.type === type);
+  const serverRows = (q.data?.gateways ?? []).filter((g) => g.type === type);
+
+  // Sync local order with server results.
+  useEffect(() => {
+    setOrderedIds(serverRows.map((g) => g.id));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q.dataUpdatedAt, type]);
+
+  const rowMap = new Map(serverRows.map((g) => [g.id, g]));
+  const rows: GatewayRow[] = (orderedIds ?? serverRows.map((g) => g.id))
+    .map((id) => rowMap.get(id))
+    .filter((g): g is GatewayRow => !!g);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const canReorder = rows.length > 1;
+
+  const onDragEnd = async (e: DragEndEvent) => {
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    const oldIndex = rows.findIndex((r) => r.id === active.id);
+    const newIndex = rows.findIndex((r) => r.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    const next = arrayMove(rows, oldIndex, newIndex);
+    setOrderedIds(next.map((r) => r.id));
+    const items = next.map((r, i) => ({ id: r.id, sort_order: (i + 1) * 10 }));
+    try {
+      await reorder({ data: { items } });
+      qc.invalidateQueries({ queryKey: ["admin", "gateways"] });
+      qc.invalidateQueries({ queryKey: ["public", "gateways"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save order");
+      setOrderedIds(serverRows.map((g) => g.id));
+    }
+  };
 
   return (
     <div className="space-y-4 mt-4">
       <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">{rows.length} gateway{rows.length === 1 ? "" : "s"}</div>
+        <div className="text-sm text-muted-foreground">
+          {rows.length} gateway{rows.length === 1 ? "" : "s"}
+          {canReorder && <span className="ml-2 hidden sm:inline">· drag <GripVertical className="inline h-3 w-3" /> to reorder</span>}
+        </div>
         {type !== "builtin" && (
           <Button size="sm" onClick={() => setCreating(true)}><Plus className="h-4 w-4 mr-2" />Add {type === "manual" ? "Manual Method" : "Custom Gateway"}</Button>
         )}
       </div>
       {q.isLoading && <div className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Loading…</div>}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {rows.map((g) => (
-          <div key={g.id} className="rounded-xl border bg-card p-4">
-            <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
-                {g.logo_url ? <GatewayLogo src={g.logo_url} alt={g.name} className="h-10 w-10 flex items-center justify-center" /> : <ImageIcon className="h-5 w-5 text-muted-foreground" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <div className="font-semibold truncate">{g.name}</div>
-                  <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{g.mode}</span>
-                </div>
-                <div className="text-xs text-muted-foreground font-mono">{g.slug}</div>
-                {g.description && <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{g.description}</div>}
-              </div>
-              <Switch
-                checked={g.is_enabled}
-                onCheckedChange={async (v) => {
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+        <SortableContext items={rows.map((r) => r.id)} strategy={verticalListSortingStrategy}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {rows.map((g) => (
+              <SortableGatewayCard
+                key={g.id}
+                gateway={g}
+                onToggle={async (v) => {
                   await toggle({ data: { id: g.id, is_enabled: v } });
                   qc.invalidateQueries({ queryKey: ["admin", "gateways"] });
                 }}
+                onEdit={() => setEditing(g)}
+                onDelete={async () => {
+                  if (!confirm(`Delete ${g.name}?`)) return;
+                  await remove({ data: { id: g.id } });
+                  qc.invalidateQueries({ queryKey: ["admin", "gateways"] });
+                  toast.success("Deleted");
+                }}
               />
-            </div>
-            <div className="mt-3 flex items-center gap-2">
-              <Button size="sm" variant="outline" onClick={() => setEditing(g)}>Edit</Button>
-              {g.type !== "builtin" && (
-                <Button size="sm" variant="ghost" className="text-destructive"
-                  onClick={async () => {
-                    if (!confirm(`Delete ${g.name}?`)) return;
-                    await remove({ data: { id: g.id } });
-                    qc.invalidateQueries({ queryKey: ["admin", "gateways"] });
-                    toast.success("Deleted");
-                  }}><Trash2 className="h-4 w-4" /></Button>
-              )}
-            </div>
+            ))}
+            {!q.isLoading && rows.length === 0 && (
+              <div className="col-span-full text-sm text-muted-foreground text-center p-8 border rounded-xl border-dashed">No {type} gateways yet.</div>
+            )}
           </div>
-        ))}
-        {!q.isLoading && rows.length === 0 && (
-          <div className="col-span-full text-sm text-muted-foreground text-center p-8 border rounded-xl border-dashed">No {type} gateways yet.</div>
-        )}
-      </div>
+        </SortableContext>
+      </DndContext>
 
       {(editing || creating) && (
         <GatewayEditor
@@ -128,6 +165,60 @@ function GatewayList({ type }: { type: GatewayType }) {
     </div>
   );
 }
+
+function SortableGatewayCard({
+  gateway: g, onToggle, onEdit, onDelete,
+}: {
+  gateway: GatewayRow;
+  onToggle: (v: boolean) => void | Promise<void>;
+  onEdit: () => void;
+  onDelete: () => void | Promise<void>;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: g.id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 30 : undefined,
+    boxShadow: isDragging ? "0 12px 32px rgba(0,0,0,0.18)" : undefined,
+    opacity: isDragging ? 0.95 : 1,
+  };
+  return (
+    <div ref={setNodeRef} style={style} className={cn("rounded-xl border bg-card p-4", isDragging && "ring-2 ring-primary/40")}>
+      <div className="flex items-start gap-3">
+        <button
+          type="button"
+          aria-label="Drag to reorder"
+          className="mt-1 -ml-1 text-muted-foreground hover:text-foreground touch-none cursor-grab active:cursor-grabbing"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+        <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
+          {g.logo_url ? <GatewayLogo src={g.logo_url} alt={g.name} className="h-10 w-10 flex items-center justify-center" /> : <ImageIcon className="h-5 w-5 text-muted-foreground" />}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <div className="font-semibold truncate">{g.name}</div>
+            <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{g.mode}</span>
+          </div>
+          <div className="text-xs text-muted-foreground font-mono">{g.slug}</div>
+          {g.description && <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{g.description}</div>}
+        </div>
+        <Switch checked={g.is_enabled} onCheckedChange={onToggle} />
+      </div>
+      <div className="mt-3 flex items-center gap-2">
+        <Button size="sm" variant="outline" onClick={onEdit}>Edit</Button>
+        {g.type !== "builtin" && (
+          <Button size="sm" variant="ghost" className="text-destructive" onClick={onDelete}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
   gateway: GatewayRow | null; defaultType: GatewayType; onClose: () => void; onSaved: () => void;
@@ -142,7 +233,7 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
     description: gateway?.description ?? "",
     is_enabled: gateway?.is_enabled ?? false,
     mode: gateway?.mode ?? "sandbox" as const,
-    sort_order: gateway?.sort_order ?? 100,
+    sort_order: gateway?.sort_order as number | undefined,
     configText: JSON.stringify(gateway?.config ?? defaultConfig(defaultType), null, 2),
   });
   const [saving, setSaving] = useState(false);
@@ -174,7 +265,7 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
             </div>
           </div>
           <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} /></div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Mode</Label>
               <select value={form.mode} onChange={(e) => setForm({ ...form, mode: e.target.value as "sandbox" | "live" })}
@@ -182,9 +273,9 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
                 <option value="sandbox">Sandbox</option><option value="live">Live</option>
               </select>
             </div>
-            <div><Label>Sort Order</Label><Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} /></div>
             <div className="flex items-end gap-2"><Switch checked={form.is_enabled} onCheckedChange={(v) => setForm({ ...form, is_enabled: v })} /><Label>Enabled</Label></div>
           </div>
+          <p className="text-xs text-muted-foreground -mt-2">Display order is controlled by drag-and-drop on the gateway list.</p>
           <div>
             <Label>Config (JSON)</Label>
             <Textarea value={form.configText} onChange={(e) => setForm({ ...form, configText: e.target.value })} rows={12} className="font-mono text-xs" />

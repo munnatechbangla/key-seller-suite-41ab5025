@@ -84,7 +84,7 @@ export const upsertGatewayFn = createServerFn({ method: "POST" })
       description: data.description ?? null,
       is_enabled: data.is_enabled ?? false,
       mode: data.mode ?? "sandbox",
-      sort_order: data.sort_order ?? 100,
+      sort_order: data.sort_order ?? 0,
       config: (data.config ?? {}) as never,
     };
     if (data.id) {
@@ -92,6 +92,17 @@ export const upsertGatewayFn = createServerFn({ method: "POST" })
         .from("payment_gateways").update(payload).eq("id", data.id).select("*").single();
       if (error) throw new Error(error.message);
       return { gateway: row };
+    }
+    // New gateway: append to bottom of its type by using max(sort_order)+10
+    if (data.sort_order == null) {
+      const { data: maxRow } = await context.supabase
+        .from("payment_gateways")
+        .select("sort_order")
+        .eq("type", data.type)
+        .order("sort_order", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      payload.sort_order = ((maxRow?.sort_order ?? 0) as number) + 10;
     }
     const { data: row, error } = await context.supabase
       .from("payment_gateways").insert(payload).select("*").single();
@@ -117,6 +128,22 @@ export const toggleGatewayFn = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("payment_gateways").update({ is_enabled: data.is_enabled }).eq("id", data.id);
     if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const reorderGatewaysFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { items: { id: string; sort_order: number }[] }) => d)
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context as never);
+    // Update each row's sort_order. Small set (typically <20), sequential is fine.
+    for (const it of data.items) {
+      const { error } = await context.supabase
+        .from("payment_gateways")
+        .update({ sort_order: it.sort_order })
+        .eq("id", it.id);
+      if (error) throw new Error(error.message);
+    }
     return { ok: true };
   });
 
