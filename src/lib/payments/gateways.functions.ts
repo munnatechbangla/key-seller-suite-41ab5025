@@ -84,7 +84,7 @@ export const upsertGatewayFn = createServerFn({ method: "POST" })
       description: data.description ?? null,
       is_enabled: data.is_enabled ?? false,
       mode: data.mode ?? "sandbox",
-      sort_order: data.sort_order ?? 100,
+      sort_order: data.sort_order ?? 0,
       config: (data.config ?? {}) as never,
     };
     if (data.id) {
