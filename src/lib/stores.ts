@@ -63,6 +63,7 @@ export const useCart = create<CartState>()(
       items: [],
       coupon: null,
       couponDiscount: 0,
+      productFieldValues: {},
       add: (p, qty = 1, variant) =>
         set((s) => {
           const lineKey = variant ? `${p.slug}::${variant.variant_id}` : p.slug;
