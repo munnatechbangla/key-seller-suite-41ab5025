@@ -265,7 +265,7 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
             </div>
           </div>
           <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} /></div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Mode</Label>
               <select value={form.mode} onChange={(e) => setForm({ ...form, mode: e.target.value as "sandbox" | "live" })}
@@ -273,9 +273,9 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
                 <option value="sandbox">Sandbox</option><option value="live">Live</option>
               </select>
             </div>
-            <div><Label>Sort Order</Label><Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} /></div>
             <div className="flex items-end gap-2"><Switch checked={form.is_enabled} onCheckedChange={(v) => setForm({ ...form, is_enabled: v })} /><Label>Enabled</Label></div>
           </div>
+          <p className="text-xs text-muted-foreground -mt-2">Display order is controlled by drag-and-drop on the gateway list.</p>
           <div>
             <Label>Config (JSON)</Label>
             <Textarea value={form.configText} onChange={(e) => setForm({ ...form, configText: e.target.value })} rows={12} className="font-mono text-xs" />
