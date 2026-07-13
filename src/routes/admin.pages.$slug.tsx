@@ -16,6 +16,7 @@ import {
   type LegalRichContent,
 } from "@/lib/cms/pages/schemas";
 import { cmsGetBuiltInPageFn, cmsUpsertBuiltInPageFn } from "@/lib/cms.functions";
+import { MediaPicker } from "@/components/admin/MediaLibrary";
 
 export const Route = createFileRoute("/admin/pages/$slug")({
   component: PageEditor,
