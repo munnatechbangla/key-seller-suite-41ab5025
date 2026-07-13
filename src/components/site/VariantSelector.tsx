@@ -129,6 +129,7 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes, bef
 
   const handleAdd = (buy = false) => {
     if (!canBuy || !activeVariant) return;
+    if (beforeAdd && !beforeAdd()) { toast.error("Please complete the product details"); return; }
     addProductSelectionToCart(cart, product, qty, activeVariant);
     if (buy) navigate({ to: "/checkout" });
     else toast.success(`${product.name} — ${activeVariant.name} added to cart`);
