@@ -116,7 +116,14 @@ export const useCart = create<CartState>()(
       count: () => get().items.reduce((s, i) => s + i.qty, 0),
     }),
 
-    { name: storageKey("cart") },
+    {
+      name: storageKey("cart"),
+      merge: (persisted, current) => ({
+        ...current,
+        ...(persisted as object),
+        productFieldValues: (persisted as any)?.productFieldValues ?? {},
+      }),
+    },
   ),
 );
 
