@@ -42,12 +42,15 @@ type CartState = {
   items: CartItem[];
   coupon: string | null;
   couponDiscount: number;
+  productFieldValues: Record<string, Record<string, string>>; // productSlug -> field_id -> value
   add: (p: Product, qty?: number, variant?: CartVariantMeta) => void;
   remove: (slug: string) => void;
   setQty: (slug: string, qty: number) => void;
   clear: () => void;
   setCoupon: (code: string, discount: number) => void;
   clearCoupon: () => void;
+  setProductField: (productSlug: string, fieldId: string, value: string) => void;
+  clearProductFields: (productSlugs?: string[]) => void;
   subtotal: () => number;
   discount: () => number;
   total: () => number;
