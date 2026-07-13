@@ -120,7 +120,7 @@ function CheckoutPage() {
       // Persist custom field values (best-effort; server re-validates)
       if (customFields.length > 0) {
         const values = customFields
-          .map((f) => ({ field_id: f.id, value: fieldValues[f.id] ?? "" }));
+          .map((f) => ({ field_id: f.id, value: storedFieldValues[f.product_slug]?.[f.id] ?? "" }));
         try {
           const saveArgs = { data: { orderId: result.orderId, email: customer.email, values } };
           if (user) await saveFieldsAuth(saveArgs);
