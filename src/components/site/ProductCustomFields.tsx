@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { Component, forwardRef, useEffect, useImperativeHandle, useState, type ReactNode } from "react";
 import { useCart } from "@/lib/stores";
 import {
   CheckoutCustomFields,
@@ -11,38 +11,43 @@ export type ProductCustomFieldsHandle = {
   validate: () => boolean;
 };
 
-/**
- * Renders enabled custom fields for a single product, persisting values into
- * the cart store keyed by product slug. Values survive variant switches and
- * flow through cart → checkout → order automatically.
- */
-export const ProductCustomFields = forwardRef<ProductCustomFieldsHandle, { productSlug: string }>(
-  function ProductCustomFields({ productSlug }, ref) {
-    const q = useCheckoutFields([productSlug]);
-    const fields = q.data ?? [];
-    const stored = useCart((s) => s.productFieldValues[productSlug] ?? {});
+/** Isolate any render/runtime error so the product page stays alive. */
+class SilentBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(err: unknown) { console.error("[ProductCustomFields] suppressed:", err); }
+  render() { return this.state.hasError ? null : this.props.children; }
+}
+
+const Inner = forwardRef<ProductCustomFieldsHandle, { productSlug: string }>(
+  function Inner({ productSlug }, ref) {
+    const slug = (productSlug ?? "").trim();
+    const q = useCheckoutFields(slug ? [slug] : []);
+    const fields = Array.isArray(q.data) ? q.data : [];
+    const stored = useCart((s) => (s.productFieldValues ?? {})[slug] ?? {});
     const setProductField = useCart((s) => s.setProductField);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    // Seed defaults into the store the first time we see the fields.
     useEffect(() => {
+      if (!slug || fields.length === 0) return;
       for (const f of fields) {
         if (stored[f.id] === undefined && f.default_value) {
-          setProductField(productSlug, f.id, f.default_value);
+          setProductField(slug, f.id, f.default_value);
         }
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [fields.length]);
+    }, [fields.length, slug]);
 
     useImperativeHandle(ref, () => ({
       validate: () => {
+        if (fields.length === 0) return true;
         const errs = validateCheckoutFields(fields, stored as CheckoutFieldValues);
         setErrors(errs);
         return Object.keys(errs).length === 0;
       },
     }), [fields, stored]);
 
-    if (q.isLoading || fields.length === 0) return null;
+    if (!slug || q.isLoading || fields.length === 0) return null;
 
     return (
       <CheckoutCustomFields
@@ -50,10 +55,20 @@ export const ProductCustomFields = forwardRef<ProductCustomFieldsHandle, { produ
         values={stored as CheckoutFieldValues}
         errors={errors}
         onChange={(id, v) => {
-          setProductField(productSlug, id, v);
+          setProductField(slug, id, v);
           if (errors[id]) setErrors((e) => { const n = { ...e }; delete n[id]; return n; });
         }}
       />
+    );
+  }
+);
+
+export const ProductCustomFields = forwardRef<ProductCustomFieldsHandle, { productSlug: string }>(
+  function ProductCustomFields(props, ref) {
+    return (
+      <SilentBoundary>
+        <Inner {...props} ref={ref} />
+      </SilentBoundary>
     );
   }
 );
