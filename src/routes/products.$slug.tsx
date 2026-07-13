@@ -311,6 +311,8 @@ function LegacyProductPage() {
             <VariantSelector
               product={product}
               onVariantChange={setActiveVariant}
+              beforeAdd={validateCustomFields}
+              beforeButtons={<ProductCustomFields ref={customFieldsRef} productSlug={product.slug} />}
             />
           ) : (
             <>
@@ -336,6 +338,8 @@ function LegacyProductPage() {
                   </li>
                 ))}
               </ul>
+
+              <ProductCustomFields ref={customFieldsRef} productSlug={product.slug} />
 
               <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 sm:flex sm:flex-wrap sm:items-center">
                 <div className="inline-flex items-center rounded-xl border border-border bg-card">
