@@ -189,7 +189,7 @@ function CheckoutPage() {
                 {gateways.map((g) => (
                   <label key={g.slug} className={`flex min-w-0 items-center gap-3 p-4 rounded-xl border cursor-pointer transition-smooth ${gateway === g.slug ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
                     <input type="radio" name="gateway" checked={gateway === g.slug} onChange={() => setGateway(g.slug)} className="shrink-0 accent-[var(--primary)]" />
-                    <GatewayLogo src={g.logo_url} alt={g.name} />)
+                    <GatewayLogo src={g.logo_url} alt={g.name} />
                     <div className="min-w-0 flex-1">
                       <div className="font-semibold text-sm flex min-w-0 flex-wrap items-center gap-2">
                         {g.name}
