@@ -177,7 +177,7 @@ function LegacyProductPage() {
     queryFn: () => fetchAttrs({ data: { productId: product.id } }),
     staleTime: 60_000,
   });
-  const hasAttrs = (attrsProbe.data?.length ?? 0) > 0;
+  const hasAttrs = !!product.hasAttributes || (attrsProbe.data?.length ?? 0) > 0;
   const cart = useCart();
   const wish = useWishlist();
   const cmp = useCompare();
@@ -439,7 +439,12 @@ function LegacyProductPage() {
           )}
         </div>
 
-        <FrequentlyBoughtTogether current={product} candidates={related} />
+        <FrequentlyBoughtTogether
+          current={product}
+          candidates={related}
+          currentVariant={activeVariant}
+          currentHasAttributes={hasAttrs || !!product.hasAttributes}
+        />
 
         <section className="mt-12">
           <h2 className="text-2xl font-bold mb-5">Related products</h2>

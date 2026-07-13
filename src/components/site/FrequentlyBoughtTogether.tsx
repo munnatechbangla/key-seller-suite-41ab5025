@@ -4,19 +4,43 @@ import { Check, ShoppingCart, Plus } from "lucide-react";
 import { useCart } from "@/lib/stores";
 import type { Product } from "@/lib/catalog";
 import { resolveProductPrice } from "@/lib/product-price";
+import type { ProductVariant } from "@/lib/product-variants.functions";
+import { addProductSelectionToCart, getVariantCompareAt, getVariantUnitPrice, isVariantAvailable } from "@/lib/cart-product";
 
-function unitPrice(p: Product): { price: number; oldPrice: number | null; available: boolean } {
+function unitPrice(p: Product): { price: number; oldPrice: number | null; available: boolean; cartReady: boolean; image: string | null } {
   const r = resolveProductPrice(p);
-  if (r.unavailable || r.price == null) return { price: 0, oldPrice: null, available: false };
-  return { price: r.price, oldPrice: r.oldPrice, available: true };
+  if (r.unavailable || r.price == null) return { price: 0, oldPrice: null, available: false, cartReady: false, image: p.thumbnailUrl ?? null };
+  return { price: r.price, oldPrice: r.oldPrice, available: true, cartReady: !p.hasAttributes, image: p.thumbnailUrl ?? null };
+}
+
+function selectedVariantPrice(
+  product: Product,
+  variant: ProductVariant | null | undefined,
+  isVariable: boolean,
+): { price: number; oldPrice: number | null; available: boolean; cartReady: boolean; image: string | null } {
+  if (!isVariable) return unitPrice(product);
+  if (!variant || !isVariantAvailable(variant)) {
+    return { ...unitPrice(product), cartReady: false };
+  }
+  return {
+    price: getVariantUnitPrice(variant),
+    oldPrice: getVariantCompareAt(variant),
+    available: true,
+    cartReady: true,
+    image: variant.thumbnail_url ?? product.thumbnailUrl ?? null,
+  };
 }
 
 export function FrequentlyBoughtTogether({
   current,
   candidates,
+  currentVariant,
+  currentHasAttributes,
 }: {
   current: Product;
   candidates: Product[];
+  currentVariant?: ProductVariant | null;
+  currentHasAttributes?: boolean;
 }) {
   const cart = useCart();
   const items = useMemo(
@@ -33,8 +57,14 @@ export function FrequentlyBoughtTogether({
 
   const lineup: Product[] = [current, ...items];
   const isSelected = (slug: string) => slug === current.slug || !!selected[slug];
+  const currentIsVariable = currentHasAttributes ?? !!current.hasAttributes;
 
-  const prices = new Map(lineup.map((p) => [p.slug, unitPrice(p)]));
+  const prices = new Map(
+    lineup.map((p) => [
+      p.slug,
+      p.slug === current.slug ? selectedVariantPrice(current, currentVariant, currentIsVariable) : unitPrice(p),
+    ]),
+  );
   const total = lineup.reduce((s, p) => {
     if (!isSelected(p.slug)) return s;
     return s + (prices.get(p.slug)?.price ?? 0);
@@ -46,13 +76,23 @@ export function FrequentlyBoughtTogether({
   }, 0);
   const savings = Math.max(0, oldTotal - total);
   const picked = lineup.filter((p) => isSelected(p.slug));
+  const canAddBundle = picked.every((p) => {
+    const price = prices.get(p.slug);
+    return price?.available && price.cartReady;
+  });
 
   const addAll = () => {
-    if (picked.length === 0) {
-      toast.error("Select at least one item");
+    if (!canAddBundle) {
+      toast.error("Select an available variation before adding the bundle");
       return;
     }
-    picked.forEach((p) => cart.add(p, 1));
+    picked.forEach((p) => {
+      if (p.slug === current.slug) {
+        addProductSelectionToCart(cart, p, 1, currentIsVariable ? currentVariant : null);
+        return;
+      }
+      addProductSelectionToCart(cart, p, 1);
+    });
     toast.success(`Added ${picked.length} item${picked.length === 1 ? "" : "s"} to cart`);
   };
 
@@ -87,9 +127,9 @@ export function FrequentlyBoughtTogether({
                   <div
                     className={`h-16 w-16 sm:h-auto sm:w-full sm:aspect-square shrink-0 rounded-xl border-2 grid place-items-center text-4xl sm:text-5xl overflow-hidden transition-smooth ${checked ? "border-primary" : "border-border opacity-60"}`}
                   >
-                    {p.thumbnailUrl ? (
+                    {pr.image ? (
                       <img
-                        src={p.thumbnailUrl}
+                        src={pr.image}
                         alt={p.name}
                         className="h-full w-full object-cover"
                         loading="lazy"
@@ -154,7 +194,7 @@ export function FrequentlyBoughtTogether({
           </div>
           <button
             onClick={addAll}
-            disabled={picked.length === 0}
+            disabled={!canAddBundle}
             className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ShoppingCart className="h-4 w-4" /> Add Selected to Cart
