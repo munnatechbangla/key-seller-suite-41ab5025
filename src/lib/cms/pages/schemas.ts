@@ -7,7 +7,7 @@ export type Hero = { title: string; subtitle: string };
 export type AboutContent = {
   hero: Hero;
   stats?: Array<{ icon: string; value: string; label: string }>;
-  story?: { badge: string; heading: string; paragraphs: string[] };
+  story?: { badge: string; heading: string; paragraphs: string[]; image?: string };
 };
 
 export type ContactContent = {

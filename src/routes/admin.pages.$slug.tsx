@@ -16,6 +16,7 @@ import {
   type LegalRichContent,
 } from "@/lib/cms/pages/schemas";
 import { cmsGetBuiltInPageFn, cmsUpsertBuiltInPageFn } from "@/lib/cms.functions";
+import { MediaPicker } from "@/components/admin/MediaLibrary";
 
 export const Route = createFileRoute("/admin/pages/$slug")({
   component: PageEditor,
@@ -255,6 +256,11 @@ function AboutEditor({ value, onChange }: { value: AboutContent; onChange: (v: A
           empty="No paragraphs."
           onChange={(paragraphs) => onChange({ ...value, story: { ...value.story!, paragraphs: paragraphs as string[] } })}
           render={(p, i, update) => <TextArea label={`Paragraph ${i + 1}`} value={p as string} onChange={(v) => update(v as any)} rows={3} />}
+        />
+        <MediaPicker
+          label="Story image (optional)"
+          value={value.story?.image ?? ""}
+          onChange={(v) => onChange({ ...value, story: { ...value.story!, image: v || undefined } })}
         />
       </Section>
     </>

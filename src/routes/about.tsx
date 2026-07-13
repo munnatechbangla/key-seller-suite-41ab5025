@@ -6,6 +6,7 @@ import { Footer } from "@/components/site/Footer";
 import * as Icons from "lucide-react";
 import { usePage } from "@/lib/cms/pages/hooks";
 import { interpolate } from "@/lib/cms/pages/schemas";
+import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -30,6 +31,7 @@ function AboutPage() {
   const vars = { name };
   const stats = content.stats ?? [];
   const story = content.story;
+  const { url: storyImage } = useResolvedMediaUrl(story?.image);
 
   return (
     <div className="min-h-screen">
@@ -65,9 +67,15 @@ function AboutPage() {
             ))}
           </div>
           <div className="rounded-3xl bg-gradient-hero h-80 lg:h-96 shadow-premium relative overflow-hidden">
-            <div className="absolute inset-0 grid place-items-center text-8xl opacity-90">🚀</div>
-            <div className="absolute -top-10 -left-10 h-60 w-60 rounded-full bg-accent/30 blur-3xl" />
-            <div className="absolute -bottom-10 -right-10 h-60 w-60 rounded-full bg-primary/40 blur-3xl" />
+            {storyImage ? (
+              <img src={storyImage} alt={interpolate(story.heading, vars)} className="absolute inset-0 h-full w-full object-cover" />
+            ) : (
+              <>
+                <div className="absolute inset-0 grid place-items-center text-8xl opacity-90">🚀</div>
+                <div className="absolute -top-10 -left-10 h-60 w-60 rounded-full bg-accent/30 blur-3xl" />
+                <div className="absolute -bottom-10 -right-10 h-60 w-60 rounded-full bg-primary/40 blur-3xl" />
+              </>
+            )}
           </div>
         </section>
       )}
