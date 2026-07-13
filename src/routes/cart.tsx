@@ -107,7 +107,7 @@ function CartPage() {
                 )}
                 <div className="text-xs text-muted-foreground mt-1">{it.variant?.delivery_type ?? it.product.delivery} delivery</div>
                 {(() => {
-                  const stored = cart.productFieldValues[productSlug] ?? {};
+                  const stored = (cart.productFieldValues ?? {})[productSlug] ?? {};
                   const rows = allFields
                     .filter((f) => f.product_slug === productSlug && (stored[f.id] ?? "").trim() !== "")
                     .map((f) => ({ label: f.label, value: f.field_type === "password" ? "••••••••" : stored[f.id] }));
