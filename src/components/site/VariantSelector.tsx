@@ -31,7 +31,7 @@ type Props = {
   beforeAdd?: () => boolean;
 };
 
-export function VariantSelector({ product, onVariantChange, onHasAttributes }: Props) {
+export function VariantSelector({ product, onVariantChange, onHasAttributes, beforeAdd }: Props) {
   const listAttrs = useServerFn(listProductAttributesFn);
   const listVars = useServerFn(listProductVariantsFn);
   const cart = useCart();
