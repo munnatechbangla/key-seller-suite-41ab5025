@@ -11,7 +11,6 @@ export type ProductCustomFieldsHandle = {
   validate: () => boolean;
 };
 
-/** Isolate any render/runtime error so the product page stays alive. */
 class SilentBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   state = { hasError: false };
   static getDerivedStateFromError() { return { hasError: true }; }
@@ -19,12 +18,15 @@ class SilentBoundary extends Component<{ children: ReactNode }, { hasError: bool
   render() { return this.state.hasError ? null : this.props.children; }
 }
 
+const EMPTY: Record<string, string> = Object.freeze({}) as Record<string, string>;
+
 const Inner = forwardRef<ProductCustomFieldsHandle, { productSlug: string }>(
   function Inner({ productSlug }, ref) {
     const slug = (productSlug ?? "").trim();
     const q = useCheckoutFields(slug ? [slug] : []);
     const fields = Array.isArray(q.data) ? q.data : [];
-    const stored = useCart((s) => (s.productFieldValues ?? {})[slug] ?? {});
+    const allValues = useCart((s) => s.productFieldValues);
+    const stored = allValues?.[slug] ?? EMPTY;
     const setProductField = useCart((s) => s.setProductField);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -45,7 +47,7 @@ const Inner = forwardRef<ProductCustomFieldsHandle, { productSlug: string }>(
         setErrors(errs);
         return Object.keys(errs).length === 0;
       },
-    }), [fields, stored]);
+    }));
 
     if (!slug || q.isLoading || fields.length === 0) return null;
 
