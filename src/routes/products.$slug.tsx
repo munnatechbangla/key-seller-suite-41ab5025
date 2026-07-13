@@ -20,7 +20,7 @@ import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelate
 import { supabase } from "@/integrations/supabase/client";
 import { reviewsQuery } from "@/lib/reviews";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { VariantSelector } from "@/components/site/VariantSelector";
 import { ProductCustomFields, type ProductCustomFieldsHandle } from "@/components/site/ProductCustomFields";
 import type { ProductVariant } from "@/lib/product-variants.functions";
