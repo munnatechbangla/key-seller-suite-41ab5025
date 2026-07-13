@@ -6,6 +6,7 @@ import { Footer } from "@/components/site/Footer";
 import * as Icons from "lucide-react";
 import { usePage } from "@/lib/cms/pages/hooks";
 import { interpolate } from "@/lib/cms/pages/schemas";
+import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
