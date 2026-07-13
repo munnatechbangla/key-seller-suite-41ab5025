@@ -28,9 +28,11 @@ type Props = {
   product: Product;
   onVariantChange?: (v: ProductVariant | null) => void;
   onHasAttributes?: (has: boolean) => void;
+  beforeAdd?: () => boolean;
+  beforeButtons?: React.ReactNode;
 };
 
-export function VariantSelector({ product, onVariantChange, onHasAttributes }: Props) {
+export function VariantSelector({ product, onVariantChange, onHasAttributes, beforeAdd, beforeButtons }: Props) {
   const listAttrs = useServerFn(listProductAttributesFn);
   const listVars = useServerFn(listProductVariantsFn);
   const cart = useCart();
@@ -128,6 +130,7 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
 
   const handleAdd = (buy = false) => {
     if (!canBuy || !activeVariant) return;
+    if (beforeAdd && !beforeAdd()) { toast.error("Please complete the product details"); return; }
     addProductSelectionToCart(cart, product, qty, activeVariant);
     if (buy) navigate({ to: "/checkout" });
     else toast.success(`${product.name} — ${activeVariant.name} added to cart`);
@@ -340,8 +343,11 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
         </div>
       )}
 
+      {beforeButtons}
+
       {/* Qty + Buy */}
       <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 sm:flex sm:flex-wrap sm:items-center sticky bottom-0 sm:static bg-background/95 sm:bg-transparent backdrop-blur sm:backdrop-blur-none py-3 sm:py-0 -mx-4 px-4 sm:mx-0 sm:px-0 border-t sm:border-0 border-border z-10">
+
         <div className="inline-flex items-center rounded-xl border border-border bg-card">
           <button
             onClick={() => setQty(Math.max(1, qty - 1))}

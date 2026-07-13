@@ -20,8 +20,9 @@ import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelate
 import { supabase } from "@/integrations/supabase/client";
 import { reviewsQuery } from "@/lib/reviews";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { VariantSelector } from "@/components/site/VariantSelector";
+import { ProductCustomFields, type ProductCustomFieldsHandle } from "@/components/site/ProductCustomFields";
 import type { ProductVariant } from "@/lib/product-variants.functions";
 import { listProductAttributesFn } from "@/lib/product-variants.functions";
 import {
@@ -197,9 +198,15 @@ function LegacyProductPage() {
   const recentSlugs = recent.filter((s) => s !== product.slug).slice(0, 4);
   const recentProducts = useProductsBySlugs(recentSlugs);
 
-  const addToCart = () => { cart.add(product, qty); toast.success(`${product.name} added to cart`); };
+  const customFieldsRef = useRef<ProductCustomFieldsHandle | null>(null);
+  const validateCustomFields = () => customFieldsRef.current?.validate() ?? true;
+  const guardCustomFields = () => {
+    if (!validateCustomFields()) { toast.error("Please complete the product details"); return false; }
+    return true;
+  };
+  const addToCart = () => { if (!guardCustomFields()) return; cart.add(product, qty); toast.success(`${product.name} added to cart`); };
   const navigate = useNavigate();
-  const buyNow = () => { cart.add(product, qty); navigate({ to: "/checkout" }); };
+  const buyNow = () => { if (!guardCustomFields()) return; cart.add(product, qty); navigate({ to: "/checkout" }); };
 
   // Gallery images (public read on product_images)
   const galleryQuery = useQuery({
@@ -304,6 +311,8 @@ function LegacyProductPage() {
             <VariantSelector
               product={product}
               onVariantChange={setActiveVariant}
+              beforeAdd={validateCustomFields}
+              beforeButtons={<ProductCustomFields ref={customFieldsRef} productSlug={product.slug} />}
             />
           ) : (
             <>
@@ -329,6 +338,8 @@ function LegacyProductPage() {
                   </li>
                 ))}
               </ul>
+
+              <ProductCustomFields ref={customFieldsRef} productSlug={product.slug} />
 
               <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 sm:flex sm:flex-wrap sm:items-center">
                 <div className="inline-flex items-center rounded-xl border border-border bg-card">

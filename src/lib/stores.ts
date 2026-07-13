@@ -42,12 +42,15 @@ type CartState = {
   items: CartItem[];
   coupon: string | null;
   couponDiscount: number;
+  productFieldValues: Record<string, Record<string, string>>; // productSlug -> field_id -> value
   add: (p: Product, qty?: number, variant?: CartVariantMeta) => void;
   remove: (slug: string) => void;
   setQty: (slug: string, qty: number) => void;
   clear: () => void;
   setCoupon: (code: string, discount: number) => void;
   clearCoupon: () => void;
+  setProductField: (productSlug: string, fieldId: string, value: string) => void;
+  clearProductFields: (productSlugs?: string[]) => void;
   subtotal: () => number;
   discount: () => number;
   total: () => number;
@@ -60,6 +63,7 @@ export const useCart = create<CartState>()(
       items: [],
       coupon: null,
       couponDiscount: 0,
+      productFieldValues: {},
       add: (p, qty = 1, variant) =>
         set((s) => {
           const lineKey = variant ? `${p.slug}::${variant.variant_id}` : p.slug;
@@ -83,12 +87,26 @@ export const useCart = create<CartState>()(
       remove: (slug) => set((s) => ({ items: s.items.filter((i) => i.slug !== slug) })),
       setQty: (slug, qty) =>
         set((s) => ({ items: s.items.map((i) => (i.slug === slug ? { ...i, qty: Math.max(1, qty) } : i)) })),
-      clear: () => set({ items: [], coupon: null, couponDiscount: 0 }),
+      clear: () => set({ items: [], coupon: null, couponDiscount: 0, productFieldValues: {} }),
       setCoupon: (code, discount) => {
         track("coupon_applied", { coupon: code.trim().toUpperCase(), discount });
         set({ coupon: code.trim().toUpperCase(), couponDiscount: discount });
       },
       clearCoupon: () => set({ coupon: null, couponDiscount: 0 }),
+      setProductField: (productSlug, fieldId, value) =>
+        set((s) => ({
+          productFieldValues: {
+            ...s.productFieldValues,
+            [productSlug]: { ...(s.productFieldValues[productSlug] ?? {}), [fieldId]: value },
+          },
+        })),
+      clearProductFields: (productSlugs) =>
+        set((s) => {
+          if (!productSlugs || productSlugs.length === 0) return { productFieldValues: {} };
+          const next = { ...s.productFieldValues };
+          for (const sl of productSlugs) delete next[sl];
+          return { productFieldValues: next };
+        }),
       subtotal: () => get().items.reduce((s, i) => s + effectiveUnitPrice(i) * i.qty, 0),
       discount: () => {
         const sub = get().subtotal();

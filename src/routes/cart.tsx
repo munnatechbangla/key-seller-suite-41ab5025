@@ -6,6 +6,7 @@ import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { PageHero } from "@/components/site/PageHero";
 import { useCart } from "@/lib/stores";
+import { useCheckoutFields } from "@/components/checkout/CheckoutCustomFields";
 import { resolveLineImage } from "@/lib/cart-image";
 import { useFeatured, featuredQuery } from "@/lib/catalog";
 import { validateCouponFn } from "@/lib/coupons.functions";
@@ -27,6 +28,9 @@ function CartPage() {
   const [applying, setApplying] = useState(false);
   const validate = useServerFn(validateCouponFn);
   const crossSell = useFeatured().slice(0, 4);
+  const cartSlugs = cart.items.map((i) => i.productSlug ?? i.slug);
+  const fieldsQuery = useCheckoutFields(cartSlugs);
+  const allFields = fieldsQuery.data ?? [];
 
   const apply = async () => {
     if (!code.trim()) return;
@@ -102,6 +106,20 @@ function CartPage() {
                   </div>
                 )}
                 <div className="text-xs text-muted-foreground mt-1">{it.variant?.delivery_type ?? it.product.delivery} delivery</div>
+                {(() => {
+                  const stored = cart.productFieldValues[productSlug] ?? {};
+                  const rows = allFields
+                    .filter((f) => f.product_slug === productSlug && (stored[f.id] ?? "").trim() !== "")
+                    .map((f) => ({ label: f.label, value: f.field_type === "password" ? "••••••••" : stored[f.id] }));
+                  if (rows.length === 0) return null;
+                  return (
+                    <div className="mt-2 text-xs text-muted-foreground space-y-0.5">
+                      {rows.map((r) => (
+                        <div key={r.label} className="truncate"><span className="font-medium text-foreground/80">{r.label}:</span> {r.value}</div>
+                      ))}
+                    </div>
+                  );
+                })()}
                 <div className="flex items-center gap-3 mt-2">
                   <div className="inline-flex items-center rounded-lg border border-border">
                     <button onClick={() => cart.setQty(it.slug, it.qty - 1)} className="w-8 h-8 grid place-items-center hover:bg-muted">−</button>
