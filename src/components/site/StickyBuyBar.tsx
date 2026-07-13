@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ShoppingCart, Zap } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import type { Product } from "@/lib/catalog";
-import { useCart, type CartVariantMeta } from "@/lib/stores";
+import { useCart } from "@/lib/stores";
 import { useMarketplace } from "@/lib/cms/marketplace";
 import { toast } from "sonner";
 import type { ProductVariant } from "@/lib/product-variants.functions";
