@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { Loader2, Plus, Trash2, CheckCircle2, XCircle, Image as ImageIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Loader2, Plus, Trash2, CheckCircle2, XCircle, Image as ImageIcon, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,12 +16,21 @@ import { MediaPicker } from "@/components/admin/MediaLibrary";
 import { GatewayLogo } from "@/components/site/GatewayLogo";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  listAllGatewaysFn, upsertGatewayFn, deleteGatewayFn, toggleGatewayFn,
+  listAllGatewaysFn, upsertGatewayFn, deleteGatewayFn, toggleGatewayFn, reorderGatewaysFn,
   listSubmissionsFn, reviewSubmissionFn,
   type GatewayRow, type GatewayType, type JsonValue,
 } from "@/lib/payments/gateways.functions";
 import { testGatewayConnectionFn, getGatewayHealthFn } from "@/lib/payments/admin.functions";
 import { Activity, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  DndContext, closestCenter, PointerSensor, TouchSensor, KeyboardSensor,
+  useSensor, useSensors, type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext, arrayMove, useSortable, verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export const Route = createFileRoute("/admin/gateways")({
   component: GatewaysPage,
