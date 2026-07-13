@@ -343,8 +343,11 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes, bef
         </div>
       )}
 
+      {beforeButtons}
+
       {/* Qty + Buy */}
       <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 sm:flex sm:flex-wrap sm:items-center sticky bottom-0 sm:static bg-background/95 sm:bg-transparent backdrop-blur sm:backdrop-blur-none py-3 sm:py-0 -mx-4 px-4 sm:mx-0 sm:px-0 border-t sm:border-0 border-border z-10">
+
         <div className="inline-flex items-center rounded-xl border border-border bg-card">
           <button
             onClick={() => setQty(Math.max(1, qty - 1))}
