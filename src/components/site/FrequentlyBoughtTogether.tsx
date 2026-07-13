@@ -20,7 +20,7 @@ function selectedVariantPrice(
 ): { price: number; oldPrice: number | null; available: boolean; cartReady: boolean; image: string | null } {
   if (!isVariable) return unitPrice(product);
   if (!variant || !isVariantAvailable(variant)) {
-    return { price: 0, oldPrice: null, available: false, cartReady: false, image: product.thumbnailUrl ?? null };
+    return { ...unitPrice(product), cartReady: false };
   }
   return {
     price: getVariantUnitPrice(variant),

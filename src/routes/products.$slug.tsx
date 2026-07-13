@@ -177,7 +177,7 @@ function LegacyProductPage() {
     queryFn: () => fetchAttrs({ data: { productId: product.id } }),
     staleTime: 60_000,
   });
-  const hasAttrs = (attrsProbe.data?.length ?? 0) > 0;
+  const hasAttrs = !!product.hasAttributes || (attrsProbe.data?.length ?? 0) > 0;
   const cart = useCart();
   const wish = useWishlist();
   const cmp = useCompare();
