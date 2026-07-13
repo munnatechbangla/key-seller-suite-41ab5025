@@ -31,6 +31,7 @@ function AboutPage() {
   const vars = { name };
   const stats = content.stats ?? [];
   const story = content.story;
+  const { url: storyImage } = useResolvedMediaUrl(story?.image);
 
   return (
     <div className="min-h-screen">
