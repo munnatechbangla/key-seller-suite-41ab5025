@@ -28,6 +28,9 @@ function CartPage() {
   const [applying, setApplying] = useState(false);
   const validate = useServerFn(validateCouponFn);
   const crossSell = useFeatured().slice(0, 4);
+  const cartSlugs = cart.items.map((i) => i.productSlug ?? i.slug);
+  const fieldsQuery = useCheckoutFields(cartSlugs);
+  const allFields = fieldsQuery.data ?? [];
 
   const apply = async () => {
     if (!code.trim()) return;
