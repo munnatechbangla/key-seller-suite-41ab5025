@@ -44,13 +44,30 @@ function CheckoutPage() {
   const saveFieldsAuth = useServerFn(saveOrderCustomFieldsAuthFn);
   const saveFieldsGuest = useServerFn(saveOrderCustomFieldsGuestFn);
 
-  const cartSlugs = cart.items.map((i) => i.slug);
+  const cartSlugs = cart.items.map((i) => i.productSlug ?? i.slug);
   const fieldsQuery = useCheckoutFields(cartSlugs);
   const customFields = fieldsQuery.data ?? [];
+  const storedFieldValues = useCart((s) => s.productFieldValues);
   const [fieldValues, setFieldValues] = useState<CheckoutFieldValues>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  // Hydrate field values from the product-page selections whenever fields load.
+  useEffect(() => {
+    if (customFields.length === 0) return;
+    setFieldValues((prev) => {
+      const next = { ...prev };
+      for (const f of customFields) {
+        const fromStore = storedFieldValues[f.product_slug]?.[f.id];
+        if (fromStore !== undefined && next[f.id] === undefined) next[f.id] = fromStore;
+      }
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customFields.length]);
   const setFieldValue = (id: string, v: string) => {
     setFieldValues((s) => ({ ...s, [id]: v }));
+    // mirror back to product-scoped store so cart display stays in sync
+    const f = customFields.find((x) => x.id === id);
+    if (f) cart.setProductField(f.product_slug, id, v);
     if (fieldErrors[id]) setFieldErrors((e) => { const n = { ...e }; delete n[id]; return n; });
   };
 
