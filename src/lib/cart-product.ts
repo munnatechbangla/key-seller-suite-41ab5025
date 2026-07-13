@@ -44,5 +44,19 @@ export function addProductSelectionToCart(
   qty = 1,
   variant?: ProductVariant | null,
 ) {
-  cart.add(product, qty, variant ? toCartVariantMeta(variant) : undefined);
+  if (!variant) {
+    cart.add(product, qty);
+    return;
+  }
+  const compareAt = getVariantCompareAt(variant);
+  cart.add(
+    {
+      ...product,
+      price: getVariantUnitPrice(variant),
+      oldPrice: compareAt ?? undefined,
+      thumbnailUrl: variant.thumbnail_url ?? product.thumbnailUrl,
+    },
+    qty,
+    toCartVariantMeta(variant),
+  );
 }
