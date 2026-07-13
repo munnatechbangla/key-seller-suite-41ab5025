@@ -22,24 +22,13 @@ import {
 } from "@/lib/product-variants.functions";
 import { useCart } from "@/lib/stores";
 import type { Product } from "@/lib/catalog";
+import { addProductSelectionToCart, getVariantCompareAt, getVariantUnitPrice, isVariantAvailable } from "@/lib/cart-product";
 
 type Props = {
   product: Product;
   onVariantChange?: (v: ProductVariant | null) => void;
   onHasAttributes?: (has: boolean) => void;
 };
-
-function variantAvailable(v: ProductVariant) {
-  if (v.status !== "active") return false;
-  if (v.visibility && v.visibility !== "public") return false;
-  if (v.stock != null && v.stock <= 0) return false;
-  if (v.stock_status && v.stock_status === "out_of_stock") return false;
-  return true;
-}
-
-function variantEffectivePrice(v: ProductVariant) {
-  return v.sale_price != null && v.sale_price > 0 ? v.sale_price : v.price;
-}
 
 export function VariantSelector({ product, onVariantChange, onHasAttributes }: Props) {
   const listAttrs = useServerFn(listProductAttributesFn);
@@ -78,7 +67,7 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
     const urlVariantId = search?.variant;
     const target =
       (urlVariantId && variants.find((v) => v.id === urlVariantId)) ||
-      variants.find(variantAvailable) ||
+      variants.find(isVariantAvailable) ||
       variants[0];
     if (!target) return;
     const map: Record<string, string> = {};
@@ -120,7 +109,7 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
   function isOptionEnabled(attrId: string, optId: string) {
     const trial = { ...selection, [attrId]: optId };
     return variants.some((v) => {
-      if (!variantAvailable(v)) return false;
+      if (!isVariantAvailable(v)) return false;
       const set = new Set(v.attribute_option_ids ?? []);
       return Object.values(trial).every((id) => set.has(id));
     });
@@ -132,29 +121,14 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes }: P
   if (!attributes.length) return null;
 
   const fullySelected = Object.keys(selection).length === attributes.length;
-  const outOfStock = activeVariant ? !variantAvailable(activeVariant) : false;
+  const outOfStock = activeVariant ? !isVariantAvailable(activeVariant) : false;
   const canBuy = !!activeVariant && !outOfStock;
-  const price = activeVariant ? variantEffectivePrice(activeVariant) : product.price;
-  const compareAt =
-    activeVariant?.sale_price != null && activeVariant.sale_price > 0
-      ? activeVariant.price
-      : product.oldPrice;
+  const price = activeVariant ? getVariantUnitPrice(activeVariant) : product.price;
+  const compareAt = activeVariant ? getVariantCompareAt(activeVariant) : product.oldPrice;
 
   const handleAdd = (buy = false) => {
     if (!canBuy || !activeVariant) return;
-    cart.add(product, qty, {
-      variant_id: activeVariant.id,
-      variant_name: activeVariant.name,
-      sku: activeVariant.sku,
-      price: activeVariant.price,
-      sale_price: activeVariant.sale_price,
-      thumbnail_url: activeVariant.thumbnail_url,
-      selected_attributes: activeVariant.attributes ?? {},
-      delivery_type: activeVariant.delivery_type,
-      inventory_pool_id: activeVariant.inventory_pool_id,
-      subscription_pool_id: activeVariant.subscription_pool_id,
-      license_pool_id: activeVariant.license_pool_id,
-    });
+    addProductSelectionToCart(cart, product, qty, activeVariant);
     if (buy) navigate({ to: "/checkout" });
     else toast.success(`${product.name} — ${activeVariant.name} added to cart`);
   };

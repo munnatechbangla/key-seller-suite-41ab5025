@@ -6,6 +6,7 @@ import { useCart, type CartVariantMeta } from "@/lib/stores";
 import { useMarketplace } from "@/lib/cms/marketplace";
 import { toast } from "sonner";
 import type { ProductVariant } from "@/lib/product-variants.functions";
+import { addProductSelectionToCart, getVariantCompareAt, getVariantUnitPrice, isVariantAvailable } from "@/lib/cart-product";
 
 type Props = {
   product: Product;
@@ -21,15 +22,8 @@ export function StickyBuyBar({ product, threshold = 480, variant, hasAttributes 
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
 
-  const variantAvailable = variant
-    ? variant.status === "active" &&
-      (!variant.visibility || variant.visibility === "public") &&
-      (variant.stock == null || variant.stock > 0) &&
-      (!variant.stock_status || variant.stock_status !== "out_of_stock")
-    : true;
-
   const inStock = hasAttributes
-    ? !!variant && variantAvailable
+    ? !!variant && isVariantAvailable(variant)
     : (product.stock ?? 1) > 0;
 
   useEffect(() => {
@@ -45,35 +39,14 @@ export function StickyBuyBar({ product, threshold = 480, variant, hasAttributes 
   if (!inStock) return null;
 
   // Variable products must NEVER fall back to product.price.
-  const unitPrice = variant
-    ? (variant.sale_price != null && variant.sale_price > 0 ? variant.sale_price : variant.price)
-    : product.price;
-  const compareAt = variant
-    ? (variant.sale_price != null && variant.sale_price > 0 ? variant.price : null)
-    : (product.oldPrice ?? null);
+  const unitPrice = variant ? getVariantUnitPrice(variant) : product.price;
+  const compareAt = variant ? getVariantCompareAt(variant) : (product.oldPrice ?? null);
   const off = compareAt && compareAt > unitPrice ? Math.round((1 - unitPrice / compareAt) * 100) : 0;
   const thumb = variant?.thumbnail_url ?? product.thumbnailUrl ?? null;
   const label = variant ? `${product.name} — ${variant.name}` : product.name;
 
-  const variantMeta = (): CartVariantMeta | undefined =>
-    variant
-      ? {
-          variant_id: variant.id,
-          variant_name: variant.name,
-          sku: variant.sku,
-          price: variant.price,
-          sale_price: variant.sale_price,
-          thumbnail_url: variant.thumbnail_url,
-          selected_attributes: variant.attributes ?? {},
-          delivery_type: variant.delivery_type,
-          inventory_pool_id: variant.inventory_pool_id,
-          subscription_pool_id: variant.subscription_pool_id,
-          license_pool_id: variant.license_pool_id,
-        }
-      : undefined;
-
-  const onAdd = () => { cart.add(product, 1, variantMeta()); toast.success(`${label} added to cart`); };
-  const onBuy = () => { cart.add(product, 1, variantMeta()); navigate({ to: "/checkout" }); };
+  const onAdd = () => { addProductSelectionToCart(cart, product, 1, variant); toast.success(`${label} added to cart`); };
+  const onBuy = () => { addProductSelectionToCart(cart, product, 1, variant); navigate({ to: "/checkout" }); };
 
   return (
     <div
