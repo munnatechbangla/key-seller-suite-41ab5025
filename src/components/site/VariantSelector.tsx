@@ -32,7 +32,7 @@ type Props = {
   beforeButtons?: React.ReactNode;
 };
 
-export function VariantSelector({ product, onVariantChange, onHasAttributes, beforeAdd }: Props) {
+export function VariantSelector({ product, onVariantChange, onHasAttributes, beforeAdd, beforeButtons }: Props) {
   const listAttrs = useServerFn(listProductAttributesFn);
   const listVars = useServerFn(listProductVariantsFn);
   const cart = useCart();
