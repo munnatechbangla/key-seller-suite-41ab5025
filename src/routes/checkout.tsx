@@ -81,13 +81,8 @@ function CheckoutPage() {
     if (!gateway) { toast.error("Select a payment method"); return; }
     if (submitting) return;
 
-    // Validate custom fields client-side
-    const errs = validateCheckoutFields(customFields, fieldValues);
-    if (Object.keys(errs).length > 0) {
-      setFieldErrors(errs);
-      toast.error("Please complete the product details");
-      return;
-    }
+    // Custom field values were captured & validated on the product page.
+
 
     setSubmitting(true);
     track("begin_checkout", {
