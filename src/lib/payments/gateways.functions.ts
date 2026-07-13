@@ -120,6 +120,22 @@ export const toggleGatewayFn = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const reorderGatewaysFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { items: { id: string; sort_order: number }[] }) => d)
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context as never);
+    // Update each row's sort_order. Small set (typically <20), sequential is fine.
+    for (const it of data.items) {
+      const { error } = await context.supabase
+        .from("payment_gateways")
+        .update({ sort_order: it.sort_order })
+        .eq("id", it.id);
+      if (error) throw new Error(error.message);
+    }
+    return { ok: true };
+  });
+
 // ---------------- Manual submissions ----------------
 
 export const submitManualPaymentFn = createServerFn({ method: "POST" })
