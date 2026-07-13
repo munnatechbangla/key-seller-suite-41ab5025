@@ -7,25 +7,26 @@ import { resolveProductPrice } from "@/lib/product-price";
 import type { ProductVariant } from "@/lib/product-variants.functions";
 import { addProductSelectionToCart, getVariantCompareAt, getVariantUnitPrice, isVariantAvailable } from "@/lib/cart-product";
 
-function unitPrice(p: Product): { price: number; oldPrice: number | null; available: boolean; image: string | null } {
+function unitPrice(p: Product): { price: number; oldPrice: number | null; available: boolean; cartReady: boolean; image: string | null } {
   const r = resolveProductPrice(p);
-  if (r.unavailable || r.price == null) return { price: 0, oldPrice: null, available: false, image: p.thumbnailUrl ?? null };
-  return { price: r.price, oldPrice: r.oldPrice, available: true, image: p.thumbnailUrl ?? null };
+  if (r.unavailable || r.price == null) return { price: 0, oldPrice: null, available: false, cartReady: false, image: p.thumbnailUrl ?? null };
+  return { price: r.price, oldPrice: r.oldPrice, available: true, cartReady: !p.hasAttributes, image: p.thumbnailUrl ?? null };
 }
 
 function selectedVariantPrice(
   product: Product,
   variant: ProductVariant | null | undefined,
   isVariable: boolean,
-): { price: number; oldPrice: number | null; available: boolean; image: string | null } {
+): { price: number; oldPrice: number | null; available: boolean; cartReady: boolean; image: string | null } {
   if (!isVariable) return unitPrice(product);
   if (!variant || !isVariantAvailable(variant)) {
-    return { price: 0, oldPrice: null, available: false, image: product.thumbnailUrl ?? null };
+    return { price: 0, oldPrice: null, available: false, cartReady: false, image: product.thumbnailUrl ?? null };
   }
   return {
     price: getVariantUnitPrice(variant),
     oldPrice: getVariantCompareAt(variant),
     available: true,
+    cartReady: true,
     image: variant.thumbnail_url ?? product.thumbnailUrl ?? null,
   };
 }
@@ -75,7 +76,10 @@ export function FrequentlyBoughtTogether({
   }, 0);
   const savings = Math.max(0, oldTotal - total);
   const picked = lineup.filter((p) => isSelected(p.slug));
-  const canAddBundle = picked.every((p) => prices.get(p.slug)?.available);
+  const canAddBundle = picked.every((p) => {
+    const price = prices.get(p.slug);
+    return price?.available && price.cartReady;
+  });
 
   const addAll = () => {
     if (!canAddBundle) {
