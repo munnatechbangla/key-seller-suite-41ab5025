@@ -1,8 +1,15 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, Fragment } from "react";
 import { toast } from "sonner";
 import { Check, ShoppingCart, Plus } from "lucide-react";
 import { useCart } from "@/lib/stores";
 import type { Product } from "@/lib/catalog";
+import { resolveProductPrice } from "@/lib/product-price";
+
+function unitPrice(p: Product): { price: number; oldPrice: number | null; available: boolean } {
+  const r = resolveProductPrice(p);
+  if (r.unavailable || r.price == null) return { price: 0, oldPrice: null, available: false };
+  return { price: r.price, oldPrice: r.oldPrice, available: true };
+}
 
 export function FrequentlyBoughtTogether({
   current,
@@ -26,11 +33,17 @@ export function FrequentlyBoughtTogether({
 
   const lineup: Product[] = [current, ...items];
   const isSelected = (slug: string) => slug === current.slug || !!selected[slug];
-  const total = lineup.reduce((s, p) => (isSelected(p.slug) ? s + p.price : s), 0);
-  const oldTotal = lineup.reduce(
-    (s, p) => (isSelected(p.slug) ? s + (p.oldPrice ?? p.price) : s),
-    0,
-  );
+
+  const prices = new Map(lineup.map((p) => [p.slug, unitPrice(p)]));
+  const total = lineup.reduce((s, p) => {
+    if (!isSelected(p.slug)) return s;
+    return s + (prices.get(p.slug)?.price ?? 0);
+  }, 0);
+  const oldTotal = lineup.reduce((s, p) => {
+    if (!isSelected(p.slug)) return s;
+    const pr = prices.get(p.slug)!;
+    return s + (pr.oldPrice ?? pr.price);
+  }, 0);
   const savings = Math.max(0, oldTotal - total);
   const picked = lineup.filter((p) => isSelected(p.slug));
 
@@ -57,13 +70,11 @@ export function FrequentlyBoughtTogether({
           {lineup.map((p, i) => {
             const checked = isSelected(p.slug);
             const locked = p.slug === current.slug;
+            const pr = prices.get(p.slug)!;
             return (
-              <div
-                key={p.slug}
-                className="flex sm:flex-row items-stretch gap-3 w-full sm:w-auto"
-              >
+              <Fragment key={p.slug}>
                 <label
-                  className={`relative flex flex-row sm:flex-col items-center gap-3 sm:gap-2 w-full sm:w-36 rounded-xl sm:rounded-none border sm:border-0 border-border p-3 sm:p-0 ${locked ? "cursor-default" : "cursor-pointer"}`}
+                  className={`relative flex flex-row sm:flex-col items-center gap-3 sm:gap-2 w-full sm:w-36 min-h-[6rem] sm:min-h-0 rounded-xl sm:rounded-none border sm:border-0 border-border p-3 sm:p-0 ${locked ? "cursor-default" : "cursor-pointer"}`}
                 >
                   <input
                     type="checkbox"
@@ -74,7 +85,7 @@ export function FrequentlyBoughtTogether({
                     aria-label={locked ? `${p.name} (this product)` : `Include ${p.name}`}
                   />
                   <div
-                    className={`h-20 w-20 sm:h-auto sm:w-full sm:aspect-square shrink-0 rounded-xl border-2 grid place-items-center text-4xl sm:text-5xl overflow-hidden transition-smooth ${checked ? "border-primary" : "border-border opacity-60"}`}
+                    className={`h-16 w-16 sm:h-auto sm:w-full sm:aspect-square shrink-0 rounded-xl border-2 grid place-items-center text-4xl sm:text-5xl overflow-hidden transition-smooth ${checked ? "border-primary" : "border-border opacity-60"}`}
                   >
                     {p.thumbnailUrl ? (
                       <img
@@ -97,28 +108,34 @@ export function FrequentlyBoughtTogether({
                       )}
                     </div>
                     <div className="text-xs mt-1">
-                      <span className="font-bold text-primary">${p.price.toFixed(2)}</span>
-                      {p.oldPrice && p.oldPrice > p.price && (
-                        <span className="ml-1 line-through text-muted-foreground">
-                          ${p.oldPrice.toFixed(2)}
-                        </span>
+                      {pr.available ? (
+                        <>
+                          <span className="font-bold text-primary">${pr.price.toFixed(2)}</span>
+                          {pr.oldPrice && pr.oldPrice > pr.price && (
+                            <span className="ml-1 line-through text-muted-foreground">
+                              ${pr.oldPrice.toFixed(2)}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">Unavailable</span>
                       )}
                     </div>
                   </div>
                 </label>
                 {i < lineup.length - 1 && (
-                  <div className="hidden sm:flex self-center text-2xl text-muted-foreground font-light">
-                    +
-                  </div>
-                )}
-                {i < lineup.length - 1 && (
-                  <div className="flex sm:hidden justify-center">
-                    <div className="h-8 w-8 grid place-items-center rounded-full bg-muted text-muted-foreground">
-                      <Plus className="h-4 w-4" />
+                  <>
+                    <div className="hidden sm:flex self-center text-2xl text-muted-foreground font-light shrink-0">
+                      +
                     </div>
-                  </div>
+                    <div className="flex sm:hidden justify-center w-full">
+                      <div className="h-8 w-8 grid place-items-center rounded-full bg-muted text-muted-foreground">
+                        <Plus className="h-4 w-4" />
+                      </div>
+                    </div>
+                  </>
                 )}
-              </div>
+              </Fragment>
             );
           })}
         </div>
