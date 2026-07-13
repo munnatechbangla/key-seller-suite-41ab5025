@@ -443,7 +443,7 @@ function LegacyProductPage() {
           current={product}
           candidates={related}
           currentVariant={activeVariant}
-          currentHasAttributes={hasAttrs}
+          currentHasAttributes={hasAttrs || !!product.hasAttributes}
         />
 
         <section className="mt-12">
