@@ -12,6 +12,7 @@ import { placeOrderAuthFn, placeOrderGuestFn } from "@/lib/orders.functions";
 import { validateCouponFn } from "@/lib/coupons.functions";
 import { couponReason } from "@/routes/cart";
 import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
+import { GatewayLogo } from "@/components/site/GatewayLogo";
 import { seoMeta } from "@/lib/cms/seo";
 import { track } from "@/lib/analytics/track";
 import { useCheckoutFields } from "@/components/checkout/CheckoutCustomFields";
