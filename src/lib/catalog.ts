@@ -265,6 +265,7 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
   if (error) throw error;
   if (!data) return null;
   const product = mapProduct(data as unknown as ProductRow);
+  await augmentWithVariantPricing([product]);
   const { data: faqs } = await supabase
     .from("product_faqs")
     .select("question, answer")
