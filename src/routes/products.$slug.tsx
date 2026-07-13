@@ -22,6 +22,7 @@ import { reviewsQuery } from "@/lib/reviews";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
 import { useEffect, useState } from "react";
 import { VariantSelector } from "@/components/site/VariantSelector";
+import { ProductCustomFields, type ProductCustomFieldsHandle } from "@/components/site/ProductCustomFields";
 import type { ProductVariant } from "@/lib/product-variants.functions";
 import { listProductAttributesFn } from "@/lib/product-variants.functions";
 import {
