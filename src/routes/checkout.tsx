@@ -14,7 +14,7 @@ import { couponReason } from "@/routes/cart";
 import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
 import { seoMeta } from "@/lib/cms/seo";
 import { track } from "@/lib/analytics/track";
-import { CheckoutCustomFields, useCheckoutFields, validateCheckoutFields, type CheckoutFieldValues } from "@/components/checkout/CheckoutCustomFields";
+import { useCheckoutFields } from "@/components/checkout/CheckoutCustomFields";
 import { saveOrderCustomFieldsAuthFn, saveOrderCustomFieldsGuestFn } from "@/lib/order-custom-fields.functions";
 import { resolveLineImage } from "@/lib/cart-image";
 
@@ -48,28 +48,7 @@ function CheckoutPage() {
   const fieldsQuery = useCheckoutFields(cartSlugs);
   const customFields = fieldsQuery.data ?? [];
   const storedFieldValues = useCart((s) => s.productFieldValues ?? {});
-  const [fieldValues, setFieldValues] = useState<CheckoutFieldValues>({});
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  // Hydrate field values from the product-page selections whenever fields load.
-  useEffect(() => {
-    if (customFields.length === 0) return;
-    setFieldValues((prev) => {
-      const next = { ...prev };
-      for (const f of customFields) {
-        const fromStore = storedFieldValues[f.product_slug]?.[f.id];
-        if (fromStore !== undefined && next[f.id] === undefined) next[f.id] = fromStore;
-      }
-      return next;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customFields.length]);
-  const setFieldValue = (id: string, v: string) => {
-    setFieldValues((s) => ({ ...s, [id]: v }));
-    // mirror back to product-scoped store so cart display stays in sync
-    const f = customFields.find((x) => x.id === id);
-    if (f) cart.setProductField(f.product_slug, id, v);
-    if (fieldErrors[id]) setFieldErrors((e) => { const n = { ...e }; delete n[id]; return n; });
-  };
+
 
   const applyCoupon = async () => {
     if (!code.trim()) return;
@@ -102,13 +81,8 @@ function CheckoutPage() {
     if (!gateway) { toast.error("Select a payment method"); return; }
     if (submitting) return;
 
-    // Validate custom fields client-side
-    const errs = validateCheckoutFields(customFields, fieldValues);
-    if (Object.keys(errs).length > 0) {
-      setFieldErrors(errs);
-      toast.error("Please complete the product details");
-      return;
-    }
+    // Custom field values were captured & validated on the product page.
+
 
     setSubmitting(true);
     track("begin_checkout", {
@@ -146,7 +120,7 @@ function CheckoutPage() {
       // Persist custom field values (best-effort; server re-validates)
       if (customFields.length > 0) {
         const values = customFields
-          .map((f) => ({ field_id: f.id, value: fieldValues[f.id] ?? "" }));
+          .map((f) => ({ field_id: f.id, value: storedFieldValues[f.product_slug]?.[f.id] ?? "" }));
         try {
           const saveArgs = { data: { orderId: result.orderId, email: customer.email, values } };
           if (user) await saveFieldsAuth(saveArgs);
@@ -196,12 +170,8 @@ function CheckoutPage() {
             </div>
           </Section>
 
-          <CheckoutCustomFields
-            fields={customFields}
-            values={fieldValues}
-            errors={fieldErrors}
-            onChange={setFieldValue}
-          />
+
+
 
 
 
