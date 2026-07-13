@@ -106,6 +106,20 @@ function CartPage() {
                   </div>
                 )}
                 <div className="text-xs text-muted-foreground mt-1">{it.variant?.delivery_type ?? it.product.delivery} delivery</div>
+                {(() => {
+                  const stored = cart.productFieldValues[productSlug] ?? {};
+                  const rows = allFields
+                    .filter((f) => f.product_slug === productSlug && (stored[f.id] ?? "").trim() !== "")
+                    .map((f) => ({ label: f.label, value: f.field_type === "password" ? "••••••••" : stored[f.id] }));
+                  if (rows.length === 0) return null;
+                  return (
+                    <div className="mt-2 text-xs text-muted-foreground space-y-0.5">
+                      {rows.map((r) => (
+                        <div key={r.label} className="truncate"><span className="font-medium text-foreground/80">{r.label}:</span> {r.value}</div>
+                      ))}
+                    </div>
+                  );
+                })()}
                 <div className="flex items-center gap-3 mt-2">
                   <div className="inline-flex items-center rounded-lg border border-border">
                     <button onClick={() => cart.setQty(it.slug, it.qty - 1)} className="w-8 h-8 grid place-items-center hover:bg-muted">−</button>
