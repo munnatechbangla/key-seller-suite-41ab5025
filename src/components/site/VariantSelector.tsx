@@ -29,6 +29,7 @@ type Props = {
   onVariantChange?: (v: ProductVariant | null) => void;
   onHasAttributes?: (has: boolean) => void;
   beforeAdd?: () => boolean;
+  beforeButtons?: React.ReactNode;
 };
 
 export function VariantSelector({ product, onVariantChange, onHasAttributes, beforeAdd }: Props) {
