@@ -28,6 +28,7 @@ type Props = {
   product: Product;
   onVariantChange?: (v: ProductVariant | null) => void;
   onHasAttributes?: (has: boolean) => void;
+  beforeAdd?: () => boolean;
 };
 
 export function VariantSelector({ product, onVariantChange, onHasAttributes }: Props) {
