@@ -156,7 +156,23 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
             <div><Label>Name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
             <div><Label>Slug</Label><Input value={form.slug} disabled={!!gateway && gateway.type === "builtin"} onChange={(e) => setForm({ ...form, slug: e.target.value })} /></div>
           </div>
-          <div><Label>Logo URL</Label><Input value={form.logo_url} onChange={(e) => setForm({ ...form, logo_url: e.target.value })} placeholder="https://…" /></div>
+          <div className="space-y-2">
+            <Label>Gateway Logo</Label>
+            <div className="flex items-start gap-4">
+              <div className="h-16 w-16 shrink-0 rounded-lg border bg-slate-900 flex items-center justify-center overflow-hidden">
+                <GatewayLogo src={form.logo_url} alt={form.name} className="h-16 w-16 flex items-center justify-center" />
+              </div>
+              <div className="flex-1">
+                <MediaPicker
+                  label=""
+                  accept="image"
+                  value={form.logo_url}
+                  onChange={(v) => setForm({ ...form, logo_url: v })}
+                />
+                <p className="text-xs text-muted-foreground mt-1">Stored as media:// reference. Preview is a live checkout render.</p>
+              </div>
+            </div>
+          </div>
           <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} /></div>
           <div className="grid grid-cols-3 gap-3">
             <div>
