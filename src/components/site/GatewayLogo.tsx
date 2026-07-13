@@ -2,7 +2,15 @@ import { useEffect, useState } from "react";
 import { Wallet } from "lucide-react";
 import { resolveStoredUrlAsync } from "@/lib/media/resolve";
 
-export function GatewayLogo({ src, alt = "", className = "h-6 w-6 shrink-0 object-contain" }: { src?: string | null; alt?: string; className?: string }) {
+export function GatewayLogo({
+  src,
+  alt = "",
+  className,
+}: {
+  src?: string | null;
+  alt?: string;
+  className?: string;
+}) {
   const [url, setUrl] = useState<string>(() => (src && !src.startsWith("media://") ? src : ""));
   const [failed, setFailed] = useState(false);
 
@@ -19,6 +27,24 @@ export function GatewayLogo({ src, alt = "", className = "h-6 w-6 shrink-0 objec
     return () => { cancelled = true; };
   }, [src]);
 
-  if (!url || failed) return <Wallet className="h-5 w-5 shrink-0 text-primary" />;
-  return <img src={url} alt={alt} className={className} onError={() => setFailed(true)} />;
+  // Consistent sizing: mobile 48x48, desktop 56x56. Never stretch.
+  const boxClass = "shrink-0 h-12 w-12 md:h-14 md:w-14 rounded-lg bg-muted/40 border flex items-center justify-center overflow-hidden";
+
+  if (!url || failed) {
+    return (
+      <div className={className ?? boxClass}>
+        <Wallet className="h-5 w-5 text-primary" />
+      </div>
+    );
+  }
+  return (
+    <div className={className ?? boxClass}>
+      <img
+        src={url}
+        alt={alt}
+        className="h-full w-full object-contain p-1.5"
+        onError={() => setFailed(true)}
+      />
+    </div>
+  );
 }

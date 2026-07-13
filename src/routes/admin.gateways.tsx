@@ -12,6 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { MediaPicker } from "@/components/admin/MediaLibrary";
+import { GatewayLogo } from "@/components/site/GatewayLogo";
 import { supabase } from "@/integrations/supabase/client";
 import {
   listAllGatewaysFn, upsertGatewayFn, deleteGatewayFn, toggleGatewayFn,
@@ -78,7 +80,7 @@ function GatewayList({ type }: { type: GatewayType }) {
           <div key={g.id} className="rounded-xl border bg-card p-4">
             <div className="flex items-start gap-3">
               <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
-                {g.logo_url ? <img src={g.logo_url} alt={g.name} className="h-full w-full object-contain" /> : <ImageIcon className="h-5 w-5 text-muted-foreground" />}
+                {g.logo_url ? <GatewayLogo src={g.logo_url} alt={g.name} className="h-10 w-10 flex items-center justify-center" /> : <ImageIcon className="h-5 w-5 text-muted-foreground" />}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
@@ -154,7 +156,23 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
             <div><Label>Name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
             <div><Label>Slug</Label><Input value={form.slug} disabled={!!gateway && gateway.type === "builtin"} onChange={(e) => setForm({ ...form, slug: e.target.value })} /></div>
           </div>
-          <div><Label>Logo URL</Label><Input value={form.logo_url} onChange={(e) => setForm({ ...form, logo_url: e.target.value })} placeholder="https://…" /></div>
+          <div className="space-y-2">
+            <Label>Gateway Logo</Label>
+            <div className="flex items-start gap-4">
+              <div className="h-16 w-16 shrink-0 rounded-lg border bg-slate-900 flex items-center justify-center overflow-hidden">
+                <GatewayLogo src={form.logo_url} alt={form.name} className="h-16 w-16 flex items-center justify-center" />
+              </div>
+              <div className="flex-1">
+                <MediaPicker
+                  label=""
+                  accept="image"
+                  value={form.logo_url}
+                  onChange={(v) => setForm({ ...form, logo_url: v })}
+                />
+                <p className="text-xs text-muted-foreground mt-1">Stored as media:// reference. Preview is a live checkout render.</p>
+              </div>
+            </div>
+          </div>
           <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} /></div>
           <div className="grid grid-cols-3 gap-3">
             <div>
