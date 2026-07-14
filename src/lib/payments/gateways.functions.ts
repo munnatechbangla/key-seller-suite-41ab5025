@@ -155,10 +155,6 @@ export const submitManualPaymentFn = createServerFn({ method: "POST" })
     order_number: string;
     gateway_slug: string;
     field_values?: Record<string, string>;
-    transaction_id?: string;
-    sender_name?: string;
-    sender_account?: string;
-    screenshot_url?: string;
     note?: string;
     email?: string;
   }) => d)
@@ -188,10 +184,6 @@ export const submitManualPaymentFn = createServerFn({ method: "POST" })
     const { data: result, error } = await (sb as any).rpc("submit_manual_payment_proof", {
       _order_number: data.order_number,
       _gateway_slug: data.gateway_slug,
-      _transaction_id: data.transaction_id,
-      _sender_name: data.sender_name,
-      _sender_account: data.sender_account,
-      _screenshot_url: data.screenshot_url,
       _note: data.note,
       _email: data.email,
       _field_values: data.field_values ?? {},
