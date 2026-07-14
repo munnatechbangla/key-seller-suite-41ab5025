@@ -4140,6 +4140,10 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_mark_subscription_delivered: {
+        Args: { _fulfillment_id: string; _note?: string }
+        Returns: Json
+      }
       admin_mark_subscription_expired: {
         Args: { _assignment_id: string }
         Returns: Json
