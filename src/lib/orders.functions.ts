@@ -99,9 +99,25 @@ async function runOrderSummary(sb: any, orderNumber: string, email?: string) {
     assignments: any[];
     paymentStatus: string;
   };
+  const itemsWithProductTypes = [...(r.items ?? [])];
+  const productIds = Array.from(new Set(itemsWithProductTypes.map((it: any) => it.product_id).filter(Boolean)));
+  if (productIds.length > 0) {
+    const { data: products } = await sb
+      .from("products")
+      .select("id, product_type, delivery_type")
+      .in("id", productIds);
+    const productMap = new Map((products ?? []).map((p: any) => [p.id, p]));
+    for (const item of itemsWithProductTypes as any[]) {
+      const p = productMap.get(item.product_id) as any;
+      if (!p) continue;
+      item.product_type = p.product_type ?? null;
+      item.delivery_type = p.delivery_type ?? null;
+    }
+  }
+
   return {
     order: r.order,
-    items: r.items ?? [],
+    items: itemsWithProductTypes,
     payments: r.payments ?? [],
     assignments: r.assignments ?? [],
     paymentStatus: r.paymentStatus ?? "pending",

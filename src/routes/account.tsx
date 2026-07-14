@@ -19,19 +19,6 @@ import { MyReviewsTab } from "@/components/site/MyReviewsTab";
 import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
 import { DeliveryPanel } from "@/components/delivery/DeliveryPanel";
 import { getMyDeliveriesFn } from "@/lib/delivery.functions";
-import { SubscriptionDeliveryPanel, type SubscriptionDeliveryItem } from "@/components/subscriptions/SubscriptionDeliveryPanel";
-import { SubscriptionLifecycleCard, type LifecycleSubscription } from "@/components/subscriptions/SubscriptionLifecycleCard";
-import { getOrderSubscriptionDeliveryAuthedFn, getMySubscriptionsFn } from "@/lib/subscriptions.functions";
-
-function OrderSubscriptionSection({ orderId }: { orderId: string }) {
-  const fn = useServerFn(getOrderSubscriptionDeliveryAuthedFn);
-  const { data } = useQuery({
-    queryKey: ["sub-delivery", orderId],
-    queryFn: () => fn({ data: { orderId } }) as Promise<SubscriptionDeliveryItem[]>,
-  });
-  if (!data || data.length === 0) return null;
-  return <SubscriptionDeliveryPanel items={data} />;
-}
 
 export const Route = createFileRoute("/account")({
   head: () => ({ meta: [{ title: `My Account — ${siteName()}` }] }),
@@ -44,7 +31,7 @@ export const Route = createFileRoute("/account")({
 const tabs = [
   { id: "dashboard", label: "Dashboard", Icon: LayoutDashboard },
   { id: "orders", label: "My Orders", Icon: ShoppingBag },
-  { id: "subscriptions", label: "Subscriptions", Icon: KeyRound },
+  { id: "subscriptions", label: "Subscriptions", Icon: Package },
   { id: "downloads", label: "My Downloads", Icon: Download },
   { id: "licenses", label: "My Licenses", Icon: KeyRound },
   { id: "submissions", label: "Manual Payments", Icon: Receipt },
@@ -166,6 +153,14 @@ function DashboardTab() {
 type OrderRow = NonNullable<ReturnType<typeof useMyOrders>["data"]>[number];
 
 function OrdersList({ orders }: { orders: OrderRow[] }) {
+  const deliveriesFn = useServerFn(getMyDeliveriesFn);
+  const deliveriesQ = useQuery({ queryKey: ["my-deliveries"], queryFn: () => deliveriesFn({}) });
+  const deliveriesByOrder = new Map<string, NonNullable<typeof deliveriesQ.data>>();
+  for (const item of deliveriesQ.data ?? []) {
+    const arr = deliveriesByOrder.get(item.order_id) ?? [];
+    arr.push(item);
+    deliveriesByOrder.set(item.order_id, arr as NonNullable<typeof deliveriesQ.data>);
+  }
   if (orders.length === 0) return <p className="text-sm text-muted-foreground">No orders yet. <Link to="/products" className="text-primary">Browse products</Link></p>;
   const palette: Record<string, string> = {
     paid: "text-emerald-600 bg-emerald-500/10",
@@ -182,6 +177,7 @@ function OrdersList({ orders }: { orders: OrderRow[] }) {
         const itemCount = o.order_items?.length ?? 0;
         const date = new Date(o.created_at).toLocaleDateString();
         const payStatus = (o as { payments?: { status: string }[] }).payments?.[0]?.status ?? "pending";
+        const deliveryItems = deliveriesByOrder.get(o.id) ?? [];
         return (
           <details key={o.id} className="rounded-xl border border-border hover:bg-muted/40 transition-smooth group">
             <summary className="flex items-center gap-3 p-3 cursor-pointer list-none">
@@ -200,7 +196,7 @@ function OrdersList({ orders }: { orders: OrderRow[] }) {
             </summary>
             <div className="border-t border-border p-3 space-y-3">
               <OrderCustomFieldValues orderId={o.id} authed={true} compact />
-              <OrderSubscriptionSection orderId={o.id} />
+              {deliveryItems.length > 0 && <DeliveryPanel items={deliveryItems} showHeader={false} showInvoice={false} />}
             </div>
           </details>
         );
@@ -422,19 +418,13 @@ function Field({ label, type = "text", defaultValue, placeholder }: { label: str
 }
 
 function SubscriptionsTab() {
-  const fn = useServerFn(getMySubscriptionsFn);
-  const { data = [], isLoading } = useQuery({
-    queryKey: ["my-subscriptions"],
-    queryFn: () => fn() as Promise<LifecycleSubscription[]>,
-  });
+  const fn = useServerFn(getMyDeliveriesFn);
+  const { data = [], isLoading } = useQuery({ queryKey: ["my-deliveries"], queryFn: () => fn({}) });
+  const subscriptions = data.filter((it) => it.product.product_type === "subscription" || it.product.delivery_type === "subscription");
   if (isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
-  if (data.length === 0)
+  if (subscriptions.length === 0)
     return <div className="text-sm text-muted-foreground">No subscriptions yet.</div>;
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      {data.map((s) => (
-        <SubscriptionLifecycleCard key={s.assignment_id} item={s} />
-      ))}
-    </div>
+    <DeliveryPanel items={subscriptions} showHeader={false} />
   );
 }

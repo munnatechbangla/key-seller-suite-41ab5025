@@ -4217,6 +4217,10 @@ export type Database = {
         Args: { _event_id: string; _gateway: string; _order_id?: string }
         Returns: boolean
       }
+      debug_create_subscription_flow_order: {
+        Args: { _deliver?: boolean; _email: string }
+        Returns: Json
+      }
       enqueue_email_log: { Args: { _row: Json }; Returns: string }
       enqueue_event: {
         Args: { _event_key: string; _payload: Json; _recipient: string }

@@ -35,6 +35,13 @@ export type DeliveryItem = {
   downloads: DeliveryDownload[];
   license_keys: string[];
   custom_fields: DeliveryCustomField[];
+  fulfillment?: {
+    id: string;
+    fulfillment_status: string;
+    delivery_type: string | null;
+    completed_at: string | null;
+    metadata: Record<string, any> | null;
+  } | null;
 };
 
 async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: string; onlyPaid: boolean }) {
@@ -83,6 +90,24 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
   }
 
   const itemIds = itemRows.map((i) => i.id);
+  const { data: fulfillments } = itemIds.length
+    ? await sb
+        .from("order_fulfillments")
+        .select("id, order_item_id, fulfillment_status, delivery_type, completed_at, metadata")
+        .in("order_item_id", itemIds)
+    : { data: [] };
+  const fulfillmentByItem = new Map<string, DeliveryItem["fulfillment"]>();
+  for (const f of (fulfillments ?? []) as any[]) {
+    if (!f.order_item_id) continue;
+    fulfillmentByItem.set(f.order_item_id, {
+      id: f.id,
+      fulfillment_status: f.fulfillment_status,
+      delivery_type: f.delivery_type ?? null,
+      completed_at: f.completed_at ?? null,
+      metadata: f.metadata ?? null,
+    });
+  }
+
   const { data: assignments } = itemIds.length
     ? await sb
         .from("license_assignments")
@@ -133,6 +158,7 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
       downloads: downloadsByProduct.get(it.product_id) ?? [],
       license_keys: keysByItem.get(it.id) ?? [],
       custom_fields: fieldsByKey.get(`${it.order_id}::${it.product_id}`) ?? [],
+      fulfillment: fulfillmentByItem.get(it.id) ?? null,
     } as DeliveryItem;
   });
 }
