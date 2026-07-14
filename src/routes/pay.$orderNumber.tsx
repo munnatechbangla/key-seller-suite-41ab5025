@@ -564,6 +564,79 @@ function ActionButtons({
   );
 }
 
+type CustomerField = {
+  key: string;
+  label: string;
+  type?: string;
+  placeholder?: string;
+  required?: boolean;
+};
+type GatewayInfoRow = { label: string; value: string };
+
+function normalizeCustomerFields(cfg: Record<string, unknown>): CustomerField[] {
+  const raw = cfg.customer_fields;
+  if (Array.isArray(raw)) {
+    return raw
+      .map((f, i) => {
+        if (!f || typeof f !== "object") return null;
+        const r = f as Record<string, unknown>;
+        const label = String(r.label ?? "").trim();
+        if (!label) return null;
+        const key = String(r.key ?? label).trim().toLowerCase().replace(/[^a-z0-9]+/g, "_") || `field_${i}`;
+        return {
+          key,
+          label,
+          type: typeof r.type === "string" ? r.type : "text",
+          placeholder: typeof r.placeholder === "string" ? r.placeholder : undefined,
+          required: Boolean(r.required),
+        } as CustomerField;
+      })
+      .filter((x): x is CustomerField => !!x);
+  }
+  // Legacy fallback
+  const requireTxn = cfg.require_transaction_id !== false;
+  return [
+    { key: "transaction_id", label: "Transaction ID", type: "text", placeholder: "e.g. 8A7B6C5D", required: requireTxn },
+    { key: "sender_name", label: "Sender Name", type: "text" },
+    { key: "sender_account", label: "Sender Account", type: "text" },
+  ];
+}
+
+function normalizeGatewayInfo(cfg: Record<string, unknown>): GatewayInfoRow[] {
+  const raw = cfg.gateway_info;
+  if (Array.isArray(raw)) {
+    return raw
+      .map((r) => {
+        if (!r || typeof r !== "object") return null;
+        const o = r as Record<string, unknown>;
+        const label = String(o.label ?? "").trim();
+        const value = String(o.value ?? "").trim();
+        if (!label || !value) return null;
+        return { label, value };
+      })
+      .filter((x): x is GatewayInfoRow => !!x);
+  }
+  // Legacy fallback
+  const out: GatewayInfoRow[] = [];
+  const at = (cfg.account_type as string) || "";
+  const an = (cfg.account_name as string) || "";
+  const ann = (cfg.account_number as string) || "";
+  if (at) out.push({ label: "Account Type", value: at });
+  if (an) out.push({ label: "Account Name", value: an });
+  if (ann) out.push({ label: "Account Number", value: ann });
+  return out;
+}
+
+function normalizeQr(cfg: Record<string, unknown>): { enabled: boolean; url: string } {
+  const raw = cfg.qr;
+  if (raw && typeof raw === "object") {
+    const o = raw as Record<string, unknown>;
+    return { enabled: o.enabled !== false, url: String(o.url ?? "") };
+  }
+  const legacy = String(cfg.qr_url ?? cfg.qr_code_url ?? "");
+  return { enabled: !!legacy, url: legacy };
+}
+
 function ManualForm({
   gateway,
   orderNumber,
@@ -578,24 +651,43 @@ function ManualForm({
   onSubmitted: () => void;
 }) {
   const submit = useServerFn(submitManualPaymentFn);
-  const cfg = gateway.config as Record<string, unknown>;
+  const cfg = (gateway.config as Record<string, unknown>) ?? {};
   const instructions = (cfg.instructions as string) || "";
-  const accountName = (cfg.account_name as string) || "";
-  const accountNumber = (cfg.account_number as string) || "";
-  const qrUrl = (cfg.qr_url as string) || "";
-  const requireTxn = cfg.require_transaction_id !== false;
+  const gatewayInfo = useMemo(() => normalizeGatewayInfo(cfg), [cfg]);
+  const customerFields = useMemo(() => normalizeCustomerFields(cfg), [cfg]);
+  const qr = useMemo(() => normalizeQr(cfg), [cfg]);
   const requireScreenshot = cfg.require_screenshot === true;
-  const [txn, setTxn] = useState("");
-  const [senderName, setSenderName] = useState("");
-  const [senderAccount, setSenderAccount] = useState("");
+
+  const [values, setValues] = useState<Record<string, string>>({});
   const [note, setNote] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [qrUrl, setQrUrl] = useState<string>(() => (qr.url && !qr.url.startsWith("media://") ? qr.url : ""));
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!qr.enabled || !qr.url) { setQrUrl(""); return; }
+    if (qr.url.startsWith("media://")) {
+      setQrUrl("");
+      import("@/lib/media/resolve").then(({ resolveStoredUrlAsync }) => {
+        resolveStoredUrlAsync(qr.url).then((u) => { if (!cancelled) setQrUrl(u); }).catch(() => {});
+      });
+    } else {
+      setQrUrl(qr.url);
+    }
+    return () => { cancelled = true; };
+  }, [qr.enabled, qr.url]);
+
+  const setVal = (k: string, v: string) => setValues((prev) => ({ ...prev, [k]: v }));
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (working) return;
-    if (requireTxn && !txn.trim()) return toast.error("Transaction ID is required");
+    for (const f of customerFields) {
+      if (f.required && !(values[f.key] ?? "").trim()) {
+        return toast.error(`${f.label} is required`);
+      }
+    }
     if (requireScreenshot && !file) return toast.error("Screenshot is required");
     onSubmitting(true);
     try {
@@ -611,15 +703,26 @@ function ManualForm({
         screenshot_url = path;
         setUploading(false);
       }
+
+      // Map dynamic values → known server fields, remainder into note.
+      const known = new Set(["transaction_id", "sender_name", "sender_account"]);
+      const extras: string[] = [];
+      for (const f of customerFields) {
+        const v = (values[f.key] ?? "").trim();
+        if (!v || known.has(f.key)) continue;
+        extras.push(`${f.label}: ${v}`);
+      }
+      const composedNote = [note.trim(), ...extras].filter(Boolean).join("\n");
+
       await submit({
         data: {
           order_number: orderNumber,
           gateway_slug: gateway.slug,
-          transaction_id: txn.trim() || undefined,
-          sender_name: senderName.trim() || undefined,
-          sender_account: senderAccount.trim() || undefined,
+          transaction_id: (values.transaction_id ?? "").trim() || undefined,
+          sender_name: (values.sender_name ?? "").trim() || undefined,
+          sender_account: (values.sender_account ?? "").trim() || undefined,
           screenshot_url,
-          note: note.trim() || undefined,
+          note: composedNote || undefined,
         },
       });
       toast.success("Payment submitted — awaiting admin verification");
@@ -631,18 +734,22 @@ function ManualForm({
     }
   };
 
+  const showQr = qr.enabled && !!qrUrl;
+  const hasGatewayBlock = instructions || gatewayInfo.length > 0 || showQr;
+
   return (
     <form onSubmit={onSubmit} className="space-y-4 animate-in fade-in duration-300">
-      {(instructions || accountName || accountNumber || qrUrl) && (
-        <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-2 text-sm">
+      {hasGatewayBlock && (
+        <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-3 text-sm">
           {instructions && <p className="whitespace-pre-line">{instructions}</p>}
-          {(accountName || accountNumber) && (
-            <div className="grid grid-cols-2 gap-2 pt-2">
-              {accountName && <SummaryRow label="Account name" value={accountName} />}
-              {accountNumber && <SummaryRow label="Account number" value={accountNumber} />}
+          {gatewayInfo.length > 0 && (
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              {gatewayInfo.map((r, i) => (
+                <SummaryRow key={`${r.label}-${i}`} label={r.label} value={r.value} />
+              ))}
             </div>
           )}
-          {qrUrl && (
+          {showQr && (
             <div className="pt-2">
               <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">Scan QR</div>
               <img src={qrUrl} alt="Payment QR" className="h-40 w-40 rounded-lg border border-border bg-white object-contain" />
@@ -651,11 +758,17 @@ function ManualForm({
         </div>
       )}
 
-      <FieldInput label={`Transaction ID${requireTxn ? " *" : ""}`} value={txn} onChange={setTxn} placeholder="e.g. 8A7B6C5D" />
-      <div className="grid grid-cols-2 gap-3">
-        <FieldInput label="Sender name" value={senderName} onChange={setSenderName} />
-        <FieldInput label="Sender account" value={senderAccount} onChange={setSenderAccount} />
-      </div>
+      {customerFields.map((f) => (
+        <FieldInput
+          key={f.key}
+          label={`${f.label}${f.required ? " *" : ""}`}
+          type={f.type}
+          value={values[f.key] ?? ""}
+          onChange={(v) => setVal(f.key, v)}
+          placeholder={f.placeholder}
+        />
+      ))}
+
       <div>
         <label className="text-xs font-semibold block mb-1.5">
           Payment screenshot{requireScreenshot ? " *" : " (optional)"}
@@ -690,11 +803,11 @@ function ManualForm({
   );
 }
 
-function FieldInput({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
+function FieldInput({ label, value, onChange, placeholder, type }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) {
   return (
     <div>
       <label className="text-xs font-semibold block mb-1.5">{label}</label>
-      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full px-3 py-2 rounded-xl bg-card border border-border text-sm outline-none focus:border-primary" />
+      <input type={type || "text"} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full px-3 py-2 rounded-xl bg-card border border-border text-sm outline-none focus:border-primary" />
     </div>
   );
 }
