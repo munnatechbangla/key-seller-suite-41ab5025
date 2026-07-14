@@ -376,11 +376,18 @@ function GatewayHealthPanel({ id, slug }: { id: string; slug: string }) {
 function defaultConfig(type: GatewayType): { [k: string]: JsonValue } {
   if (type === "manual") {
     return {
-      instructions: "Send payment to the account below and submit your transaction ID.",
-      account_name: "",
-      account_number: "",
-      qr_code_url: "",
-      require_transaction_id: true,
+      instructions: "Send payment to the account below and submit the required details.",
+      gateway_info: [
+        { label: "Account Type", value: "Personal" },
+        { label: "Account Name", value: "" },
+        { label: "Account Number", value: "" },
+      ],
+      qr: { enabled: false, url: "" },
+      customer_fields: [
+        { key: "transaction_id", label: "Transaction ID", type: "text", placeholder: "e.g. 8A7B6C5D", required: true },
+        { key: "sender_name", label: "Sender Name", type: "text", required: false },
+        { key: "sender_account", label: "Sender Account", type: "text", required: false },
+      ],
       require_screenshot: false,
     };
   }
