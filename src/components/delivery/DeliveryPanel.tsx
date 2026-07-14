@@ -64,7 +64,9 @@ export function DeliveryPanel({
 
 function DeliveryCard({ item, showInvoice }: { item: DeliveryItem; showInvoice: boolean }) {
   // Subscription products must never fall through to manual/license/download renderers.
-  const type = item.product.product_type === "subscription" ? "subscription" : (item.product.delivery_type || item.product.product_type);
+  const type = item.product.product_type === "subscription" || item.product.delivery_type === "subscription" || item.fulfillment?.delivery_type === "subscription"
+    ? "subscription"
+    : (item.product.delivery_type || item.product.product_type || "manual");
   const purchased = useMemo(
     () => (item.order_created_at ? new Date(item.order_created_at).toLocaleDateString() : ""),
     [item.order_created_at],
@@ -124,7 +126,7 @@ function renderBody(item: DeliveryItem, type: string) {
     case "manual":
       return <ManualBody item={item} />;
     default:
-      return <DownloadBody item={item} />;
+      return <ManualBody item={item} />;
   }
 }
 

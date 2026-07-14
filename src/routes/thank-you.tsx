@@ -37,7 +37,8 @@ function ThankYou() {
     // Poll while waiting for webhook to mark payment paid.
     refetchInterval: (query) => {
       const s = query.state.data?.paymentStatus;
-      return s === "paid" || s === "failed" || s === "refunded" ? false : 4000;
+      const status = query.state.data?.order?.status;
+      return s === "paid" || s === "failed" || s === "refunded" || status === "completed" ? false : 4000;
     },
   });
 
@@ -47,11 +48,13 @@ function ThankYou() {
   const deliveryQ = useQuery({
     queryKey: ["delivery", order, email, user?.id ?? "guest"],
     queryFn: () => fetchDelivery({ data: { orderNumber: order!, email } }),
-    enabled: !!order && q.data?.paymentStatus === "paid",
+    enabled: !!order && (q.data?.paymentStatus === "paid" || q.data?.order?.status === "completed"),
   });
 
-  const paymentStatus = q.data?.paymentStatus ?? "pending";
-  const isPaid = paymentStatus === "paid";
+  const rawPaymentStatus = q.data?.paymentStatus ?? "pending";
+  const orderStatus = q.data?.order?.status ?? "pending";
+  const paymentStatus = orderStatus === "completed" && rawPaymentStatus !== "failed" ? "paid" : rawPaymentStatus;
+  const isPaid = paymentStatus === "paid" || orderStatus === "completed";
   const isFailed = paymentStatus === "failed";
   const isPending = !isPaid && !isFailed;
 
