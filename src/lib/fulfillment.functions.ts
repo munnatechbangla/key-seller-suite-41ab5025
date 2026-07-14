@@ -189,7 +189,7 @@ export const adminMarkSubscriptionDeliveredFn = createServerFn({ method: "POST" 
     await assertAdmin(context);
     const { data: res, error } = await context.supabase.rpc("admin_mark_subscription_delivered", {
       _fulfillment_id: data.fulfillmentId,
-      _note: data.note ?? null,
+      _note: data.note ?? undefined,
     });
     if (error) throw new Error(error.message);
     return res as { ok: boolean; order_completed: boolean };
