@@ -4399,6 +4399,7 @@ export type Database = {
           _gateway_slug: string
           _note?: string
           _order_number: string
+          _screenshot_url?: string
         }
         Returns: Json
       }
