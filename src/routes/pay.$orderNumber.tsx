@@ -582,8 +582,8 @@ function normalizeCustomerFields(cfg: Record<string, unknown>): CustomerField[] 
     .map((f) => {
       if (!f || typeof f !== "object") return null;
       const r = f as Record<string, unknown>;
-      const key = typeof r.key === "string" ? r.key.trim() : "";
-      const label = typeof r.label === "string" ? r.label.trim() : "";
+      const key = String(r.key ?? "").trim();
+      const label = String(r.label ?? "").trim();
       if (!key || !label) return null;
       let options: { label: string; value: string }[] | undefined;
       if (Array.isArray(r.options)) {
@@ -604,10 +604,10 @@ function normalizeCustomerFields(cfg: Record<string, unknown>): CustomerField[] 
       return {
         key,
         label,
-        type: typeof r.type === "string" ? r.type.trim().toLowerCase() : "text",
-        placeholder: typeof r.placeholder === "string" ? r.placeholder : undefined,
+        type: String(r.type ?? "text").trim().toLowerCase(),
+        placeholder: r.placeholder == null ? undefined : String(r.placeholder),
         required: Boolean(r.required),
-        helpText: typeof r.help_text === "string" ? r.help_text : undefined,
+        helpText: r.help_text == null && r.help == null ? undefined : String(r.help_text ?? r.help),
         options,
       } as CustomerField;
     })
@@ -621,8 +621,8 @@ function normalizeGatewayInfo(cfg: Record<string, unknown>): GatewayInfoRow[] {
     .map((r) => {
       if (!r || typeof r !== "object") return null;
       const o = r as Record<string, unknown>;
-      const label = typeof o.label === "string" ? o.label.trim() : "";
-      const value = typeof o.value === "string" ? o.value.trim() : "";
+      const label = String(o.label ?? "").trim();
+      const value = String(o.value ?? "").trim();
       if (!label || !value) return null;
       return { label, value };
     })
