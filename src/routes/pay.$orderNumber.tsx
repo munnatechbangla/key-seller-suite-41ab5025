@@ -787,13 +787,12 @@ function ManualForm({
       {customerFields.map((f) => (
         <FieldInput
           key={f.key}
-          label={`${f.label}${f.required ? " *" : ""}`}
-          type={f.type}
+          field={f}
           value={values[f.key] ?? ""}
           onChange={(v) => setVal(f.key, v)}
-          placeholder={f.placeholder}
         />
       ))}
+
 
       <div>
         <label className="text-xs font-semibold block mb-1.5">
