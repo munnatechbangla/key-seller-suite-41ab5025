@@ -706,11 +706,16 @@ function ManualForm({
         return toast.error(`${f.label} is required`);
       }
     }
+    if (requireScreenshot && !screenshotFile) {
+      return toast.error("Payment Screenshot is required");
+    }
     onSubmitting(true);
     try {
       const fileFields = customerFields.filter((f) => normalizedFieldType(f) === "file" && files[f.key]);
       const uploadedFiles: Record<string, string> = {};
-      if (fileFields.length > 0) {
+      let screenshotPath: string | null = null;
+      const hasAnyUpload = fileFields.length > 0 || (requireScreenshot && screenshotFile);
+      if (hasAnyUpload) {
         setUploading(true);
         const { data: sess } = await supabase.auth.getSession();
         const ownerSegment = sess.session?.user?.id ?? "guest";
@@ -723,6 +728,13 @@ function ManualForm({
           const uploadRes = await supabase.storage.from("payments").upload(path, selected, { upsert: false, contentType: selected.type });
           if (uploadRes.error) throw new Error(uploadRes.error.message);
           uploadedFiles[f.key] = path;
+        }
+        if (requireScreenshot && screenshotFile) {
+          const ext = screenshotFile.name.split(".").pop() || "bin";
+          const path = `submissions/${ownerSegment}/${orderNumber}/screenshot-${Date.now()}.${ext}`;
+          const uploadRes = await supabase.storage.from("payments").upload(path, screenshotFile, { upsert: false, contentType: screenshotFile.type });
+          if (uploadRes.error) throw new Error(uploadRes.error.message);
+          screenshotPath = path;
         }
         setUploading(false);
       }
@@ -744,6 +756,7 @@ function ManualForm({
           gateway_slug: gateway.slug,
           field_values: payload,
           note: composedNote || undefined,
+          screenshot_url: screenshotPath ?? undefined,
         },
       });
 
