@@ -157,6 +157,7 @@ export const submitManualPaymentFn = createServerFn({ method: "POST" })
     field_values?: Record<string, string>;
     note?: string;
     email?: string;
+    screenshot_url?: string;
   }) => d)
   .handler(async ({ data }) => {
     const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
