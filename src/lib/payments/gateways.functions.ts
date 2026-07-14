@@ -154,10 +154,7 @@ export const submitManualPaymentFn = createServerFn({ method: "POST" })
   .inputValidator((d: {
     order_number: string;
     gateway_slug: string;
-    transaction_id?: string;
-    sender_name?: string;
-    sender_account?: string;
-    screenshot_url?: string;
+    field_values?: Record<string, string>;
     note?: string;
     email?: string;
   }) => d)
@@ -184,15 +181,12 @@ export const submitManualPaymentFn = createServerFn({ method: "POST" })
 
     const sb = createServerSupabaseClient(accessToken);
 
-    const { data: result, error } = await sb.rpc("submit_manual_payment_proof", {
+    const { data: result, error } = await (sb as any).rpc("submit_manual_payment_proof", {
       _order_number: data.order_number,
       _gateway_slug: data.gateway_slug,
-      _transaction_id: data.transaction_id,
-      _sender_name: data.sender_name,
-      _sender_account: data.sender_account,
-      _screenshot_url: data.screenshot_url,
       _note: data.note,
       _email: data.email,
+      _field_values: data.field_values ?? {},
     });
     if (error) throw new Error(error.message);
     if (result && typeof result === "object" && "ok" in result && !(result as { ok?: boolean }).ok) {

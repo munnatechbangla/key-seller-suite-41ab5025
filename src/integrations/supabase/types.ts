@@ -1714,6 +1714,7 @@ export type Database = {
           created_at: string
           currency: string | null
           email: string | null
+          field_values: Json
           gateway_id: string | null
           gateway_slug: string
           id: string
@@ -1736,6 +1737,7 @@ export type Database = {
           created_at?: string
           currency?: string | null
           email?: string | null
+          field_values?: Json
           gateway_id?: string | null
           gateway_slug: string
           id?: string
@@ -1758,6 +1760,7 @@ export type Database = {
           created_at?: string
           currency?: string | null
           email?: string | null
+          field_values?: Json
           gateway_id?: string | null
           gateway_slug?: string
           id?: string
@@ -4392,13 +4395,10 @@ export type Database = {
       submit_manual_payment_proof: {
         Args: {
           _email?: string
+          _field_values?: Json
           _gateway_slug: string
           _note?: string
           _order_number: string
-          _screenshot_url?: string
-          _sender_account?: string
-          _sender_name?: string
-          _transaction_id?: string
         }
         Returns: Json
       }

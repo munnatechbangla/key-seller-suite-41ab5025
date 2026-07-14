@@ -570,92 +570,77 @@ type CustomerField = {
   type?: string;
   placeholder?: string;
   required?: boolean;
-  help?: string;
+  helpText?: string;
   options?: { label: string; value: string }[];
 };
 type GatewayInfoRow = { label: string; value: string };
 
 function normalizeCustomerFields(cfg: Record<string, unknown>): CustomerField[] {
   const raw = cfg.customer_fields;
-  if (Array.isArray(raw)) {
-    return raw
-      .map((f, i) => {
-        if (!f || typeof f !== "object") return null;
-        const r = f as Record<string, unknown>;
-        const label = String(r.label ?? "").trim();
-        if (!label) return null;
-        const key = String(r.key ?? label).trim().toLowerCase().replace(/[^a-z0-9]+/g, "_") || `field_${i}`;
-        let options: { label: string; value: string }[] | undefined;
-        if (Array.isArray(r.options)) {
-          options = r.options
-            .map((o) => {
-              if (typeof o === "string") return { label: o, value: o };
-              if (o && typeof o === "object") {
-                const oo = o as Record<string, unknown>;
-                const l = String(oo.label ?? oo.value ?? "").trim();
-                const v = String(oo.value ?? oo.label ?? "").trim();
-                if (!l) return null;
-                return { label: l, value: v };
-              }
-              return null;
-            })
-            .filter((x): x is { label: string; value: string } => !!x);
-        }
-        const helpVal = typeof r.help === "string" ? r.help : (typeof r.help_text === "string" ? (r.help_text as string) : undefined);
-        return {
-          key,
-          label,
-          type: typeof r.type === "string" ? r.type : "text",
-          placeholder: typeof r.placeholder === "string" ? r.placeholder : undefined,
-          required: Boolean(r.required),
-          help: helpVal,
-          options,
-        } as CustomerField;
-      })
-      .filter((x): x is CustomerField => !!x);
-  }
-  // Legacy fallback
-  const requireTxn = cfg.require_transaction_id !== false;
-  return [
-    { key: "transaction_id", label: "Transaction ID", type: "text", placeholder: "e.g. 8A7B6C5D", required: requireTxn },
-    { key: "sender_name", label: "Sender Name", type: "text" },
-    { key: "sender_account", label: "Sender Account", type: "text" },
-  ];
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((f) => {
+      if (!f || typeof f !== "object") return null;
+      const r = f as Record<string, unknown>;
+      const key = String(r.key ?? "").trim();
+      const label = String(r.label ?? "").trim();
+      if (!key || !label) return null;
+      let options: { label: string; value: string }[] | undefined;
+      if (Array.isArray(r.options)) {
+        options = r.options
+          .map((o) => {
+            if (typeof o === "string") return { label: o, value: o };
+            if (o && typeof o === "object") {
+              const oo = o as Record<string, unknown>;
+              const l = String(oo.label ?? oo.value ?? "").trim();
+              const v = String(oo.value ?? oo.label ?? "").trim();
+              if (!l) return null;
+              return { label: l, value: v || l };
+            }
+            return null;
+          })
+          .filter((x): x is { label: string; value: string } => !!x);
+      }
+      return {
+        key,
+        label,
+        type: String(r.type ?? "text").trim().toLowerCase(),
+        placeholder: r.placeholder == null ? undefined : String(r.placeholder),
+        required: Boolean(r.required),
+        helpText: r.help_text == null && r.help == null ? undefined : String(r.help_text ?? r.help),
+        options,
+      } as CustomerField;
+    })
+    .filter((x): x is CustomerField => !!x);
 }
 
 function normalizeGatewayInfo(cfg: Record<string, unknown>): GatewayInfoRow[] {
   const raw = cfg.gateway_info;
-  if (Array.isArray(raw)) {
-    return raw
-      .map((r) => {
-        if (!r || typeof r !== "object") return null;
-        const o = r as Record<string, unknown>;
-        const label = String(o.label ?? "").trim();
-        const value = String(o.value ?? "").trim();
-        if (!label || !value) return null;
-        return { label, value };
-      })
-      .filter((x): x is GatewayInfoRow => !!x);
-  }
-  // Legacy fallback
-  const out: GatewayInfoRow[] = [];
-  const at = (cfg.account_type as string) || "";
-  const an = (cfg.account_name as string) || "";
-  const ann = (cfg.account_number as string) || "";
-  if (at) out.push({ label: "Account Type", value: at });
-  if (an) out.push({ label: "Account Name", value: an });
-  if (ann) out.push({ label: "Account Number", value: ann });
-  return out;
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((r) => {
+      if (!r || typeof r !== "object") return null;
+      const o = r as Record<string, unknown>;
+      const label = String(o.label ?? "").trim();
+      const value = String(o.value ?? "").trim();
+      if (!label || !value) return null;
+      return { label, value };
+    })
+    .filter((x): x is GatewayInfoRow => !!x);
 }
 
 function normalizeQr(cfg: Record<string, unknown>): { enabled: boolean; url: string } {
   const raw = cfg.qr;
   if (raw && typeof raw === "object") {
     const o = raw as Record<string, unknown>;
-    return { enabled: o.enabled !== false, url: String(o.url ?? "") };
+    return { enabled: o.enabled === true, url: String(o.url ?? "") };
   }
-  const legacy = String(cfg.qr_url ?? cfg.qr_code_url ?? "");
-  return { enabled: !!legacy, url: legacy };
+  return { enabled: false, url: "" };
+}
+
+function normalizedFieldType(field: CustomerField) {
+  const type = (field.type || "text").toLowerCase();
+  return type === "phone" ? "tel" : type;
 }
 
 function ManualForm({
@@ -673,15 +658,13 @@ function ManualForm({
 }) {
   const submit = useServerFn(submitManualPaymentFn);
   const cfg = (gateway.config as Record<string, unknown>) ?? {};
-  const instructions = (cfg.instructions as string) || "";
+  const instructions = cfg.instructions == null ? "" : String(cfg.instructions);
   const gatewayInfo = useMemo(() => normalizeGatewayInfo(cfg), [cfg]);
   const customerFields = useMemo(() => normalizeCustomerFields(cfg), [cfg]);
   const qr = useMemo(() => normalizeQr(cfg), [cfg]);
-  const requireScreenshot = cfg.require_screenshot === true;
 
   const [values, setValues] = useState<Record<string, string>>({});
-  const [note, setNote] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<Record<string, File | null>>({});
   const [uploading, setUploading] = useState(false);
   const [qrUrl, setQrUrl] = useState<string>(() => (qr.url && !qr.url.startsWith("media://") ? qr.url : ""));
 
@@ -700,53 +683,57 @@ function ManualForm({
   }, [qr.enabled, qr.url]);
 
   const setVal = (k: string, v: string) => setValues((prev) => ({ ...prev, [k]: v }));
+  const setFieldFile = (k: string, f: File | null) => setFiles((prev) => ({ ...prev, [k]: f }));
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (working) return;
     for (const f of customerFields) {
-      if (f.required && !(values[f.key] ?? "").trim()) {
+      const isFile = normalizedFieldType(f) === "file";
+      if (f.required && isFile && !files[f.key]) {
+        return toast.error(`${f.label} is required`);
+      }
+      if (f.required && !isFile && !(values[f.key] ?? "").trim()) {
         return toast.error(`${f.label} is required`);
       }
     }
-    if (requireScreenshot && !file) return toast.error("Screenshot is required");
     onSubmitting(true);
     try {
-      let screenshot_url: string | undefined;
-      if (file) {
+      const fileFields = customerFields.filter((f) => normalizedFieldType(f) === "file" && files[f.key]);
+      const uploadedFiles: Record<string, string> = {};
+      if (fileFields.length > 0) {
         setUploading(true);
-        const ext = file.name.split(".").pop() || "png";
         const { data: sess } = await supabase.auth.getSession();
         const ownerSegment = sess.session?.user?.id ?? "guest";
-        const path = `submissions/${ownerSegment}/${orderNumber}/${Date.now()}.${ext}`;
-        const uploadRes = await supabase.storage.from("payments").upload(path, file, { upsert: false, contentType: file.type });
-        if (uploadRes.error) throw new Error(uploadRes.error.message);
-        screenshot_url = path;
+        for (const f of fileFields) {
+          const selected = files[f.key];
+          if (!selected) continue;
+          const ext = selected.name.split(".").pop() || "bin";
+          const safeKey = f.key.replace(/[^a-zA-Z0-9_-]/g, "_");
+          const path = `submissions/${ownerSegment}/${orderNumber}/${safeKey}-${Date.now()}.${ext}`;
+          const uploadRes = await supabase.storage.from("payments").upload(path, selected, { upsert: false, contentType: selected.type });
+          if (uploadRes.error) throw new Error(uploadRes.error.message);
+          uploadedFiles[f.key] = path;
+        }
         setUploading(false);
       }
 
-      // Persist every customer field value by key. Recognized keys are also
-      // mapped to legacy server columns; every field (including recognized
-      // ones) is echoed into the note so admins see the full submission.
       const allLines: string[] = [];
       const payload: Record<string, string> = {};
       for (const f of customerFields) {
-        const v = (values[f.key] ?? "").trim();
+        const v = normalizedFieldType(f) === "file" ? (uploadedFiles[f.key] ?? "") : (values[f.key] ?? "").trim();
         if (!v) continue;
         payload[f.key] = v;
         allLines.push(`${f.label}: ${v}`);
       }
-      const composedNote = [note.trim(), ...allLines].filter(Boolean).join("\n");
+      const composedNote = allLines.join("\n");
 
 
       await submit({
         data: {
           order_number: orderNumber,
           gateway_slug: gateway.slug,
-          transaction_id: payload.transaction_id || payload.trxid || payload.txn_id || undefined,
-          sender_name: payload.sender_name || undefined,
-          sender_account: payload.sender_account || undefined,
-          screenshot_url,
+          field_values: payload,
           note: composedNote || undefined,
         },
       });
@@ -790,29 +777,10 @@ function ManualForm({
           field={f}
           value={values[f.key] ?? ""}
           onChange={(v) => setVal(f.key, v)}
+          file={files[f.key] ?? null}
+          onFileChange={(file) => setFieldFile(f.key, file)}
         />
       ))}
-
-
-      <div>
-        <label className="text-xs font-semibold block mb-1.5">
-          Payment screenshot{requireScreenshot ? " *" : " (optional)"}
-        </label>
-        <label className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-card border border-dashed border-border cursor-pointer hover:border-primary text-sm transition-colors">
-          <Upload className="h-4 w-4 text-muted-foreground" />
-          <span className="truncate">{file ? file.name : "Choose image…"}</span>
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          />
-        </label>
-      </div>
-      <div>
-        <label className="text-xs font-semibold block mb-1.5">Note (optional)</label>
-        <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className="w-full px-3 py-2 rounded-xl bg-card border border-border text-sm outline-none focus:border-primary" />
-      </div>
       <button
         type="submit"
         disabled={working || uploading}
@@ -828,29 +796,44 @@ function ManualForm({
   );
 }
 
-function FieldInput({ field, value, onChange }: { field: CustomerField; value: string; onChange: (v: string) => void }) {
-  const { label, type = "text", placeholder, required, help, options } = field;
+function FieldInput({ field, value, onChange, file, onFileChange }: { field: CustomerField; value: string; onChange: (v: string) => void; file: File | null; onFileChange: (file: File | null) => void }) {
+  const { key, label, placeholder, required, helpText, options } = field;
+  const type = normalizedFieldType(field);
   const baseCls = "w-full px-3 py-2 rounded-xl bg-card border border-border text-sm outline-none focus:border-primary";
   const labelNode = (
     <label className="text-xs font-semibold block mb-1.5">
       {label}{required && <span className="text-destructive"> *</span>}
     </label>
   );
-  const helpNode = help ? <p className="text-[11px] text-muted-foreground mt-1">{help}</p> : null;
+  const helpNode = helpText ? <p className="text-[11px] text-muted-foreground mt-1">{helpText}</p> : null;
 
   let control: React.ReactNode;
   if (type === "textarea") {
-    control = <textarea value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} rows={3} className={baseCls} />;
+    control = <textarea name={key} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} rows={3} className={baseCls} />;
   } else if (type === "select") {
     control = (
-      <select value={value} onChange={(e) => onChange(e.target.value)} required={required} className={baseCls}>
-        <option value="">{placeholder || "Select…"}</option>
+      <select name={key} value={value} onChange={(e) => onChange(e.target.value)} required={required} className={baseCls}>
+        {placeholder && <option value="">{placeholder}</option>}
         {(options ?? []).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     );
+  } else if (type === "file") {
+    control = (
+      <label className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-card border border-dashed border-border cursor-pointer hover:border-primary text-sm transition-colors">
+        <Upload className="h-4 w-4 text-muted-foreground" />
+        <span className="truncate">{file ? file.name : (placeholder ?? label)}</span>
+        <input
+          name={key}
+          type="file"
+          required={required}
+          className="hidden"
+          onChange={(e) => onFileChange(e.target.files?.[0] ?? null)}
+        />
+      </label>
+    );
   } else {
-    const inputType = ["email", "number", "date", "tel", "url", "text"].includes(type) ? type : "text";
-    control = <input type={inputType} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} className={baseCls} />;
+    const inputType = ["email", "number", "tel", "text", "date"].includes(type) ? type : "text";
+    control = <input name={key} type={inputType} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} className={baseCls} />;
   }
   return <div>{labelNode}{control}{helpNode}</div>;
 }

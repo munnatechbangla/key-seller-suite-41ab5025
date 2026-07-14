@@ -326,7 +326,7 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
 type ManualField = {
   key: string;
   label: string;
-  type: "text" | "textarea" | "number" | "email" | "tel" | "url" | "select";
+  type: "text" | "textarea" | "number" | "email" | "tel" | "date" | "select";
   placeholder?: string;
   required?: boolean;
   options?: string[];
@@ -341,7 +341,7 @@ type ManualConfig = {
   [k: string]: JsonValue | undefined;
 };
 
-const FIELD_TYPES: ManualField["type"][] = ["text", "textarea", "number", "email", "tel", "url", "select"];
+const FIELD_TYPES: ManualField["type"][] = ["text", "textarea", "number", "email", "tel", "date", "select"];
 
 function slugKey(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || `field_${Math.random().toString(36).slice(2, 6)}`;
