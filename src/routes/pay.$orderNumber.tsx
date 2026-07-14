@@ -570,6 +570,8 @@ type CustomerField = {
   type?: string;
   placeholder?: string;
   required?: boolean;
+  help?: string;
+  options?: { label: string; value: string }[];
 };
 type GatewayInfoRow = { label: string; value: string };
 
@@ -583,12 +585,31 @@ function normalizeCustomerFields(cfg: Record<string, unknown>): CustomerField[] 
         const label = String(r.label ?? "").trim();
         if (!label) return null;
         const key = String(r.key ?? label).trim().toLowerCase().replace(/[^a-z0-9]+/g, "_") || `field_${i}`;
+        let options: { label: string; value: string }[] | undefined;
+        if (Array.isArray(r.options)) {
+          options = r.options
+            .map((o) => {
+              if (typeof o === "string") return { label: o, value: o };
+              if (o && typeof o === "object") {
+                const oo = o as Record<string, unknown>;
+                const l = String(oo.label ?? oo.value ?? "").trim();
+                const v = String(oo.value ?? oo.label ?? "").trim();
+                if (!l) return null;
+                return { label: l, value: v };
+              }
+              return null;
+            })
+            .filter((x): x is { label: string; value: string } => !!x);
+        }
+        const helpVal = typeof r.help === "string" ? r.help : (typeof r.help_text === "string" ? (r.help_text as string) : undefined);
         return {
           key,
           label,
           type: typeof r.type === "string" ? r.type : "text",
           placeholder: typeof r.placeholder === "string" ? r.placeholder : undefined,
           required: Boolean(r.required),
+          help: helpVal,
+          options,
         } as CustomerField;
       })
       .filter((x): x is CustomerField => !!x);
