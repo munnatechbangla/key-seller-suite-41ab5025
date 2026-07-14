@@ -224,6 +224,7 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
   gateway: GatewayRow | null; defaultType: GatewayType; onClose: () => void; onSaved: () => void;
 }) {
   const save = useServerFn(upsertGatewayFn);
+  const initialConfig = (gateway?.config ?? defaultConfig(defaultType)) as Record<string, JsonValue>;
   const [form, setForm] = useState({
     id: gateway?.id,
     name: gateway?.name ?? "",
@@ -234,9 +235,11 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
     is_enabled: gateway?.is_enabled ?? false,
     mode: gateway?.mode ?? "sandbox" as const,
     sort_order: gateway?.sort_order as number | undefined,
-    configText: JSON.stringify(gateway?.config ?? defaultConfig(defaultType), null, 2),
+    config: initialConfig,
+    configText: JSON.stringify(initialConfig, null, 2),
   });
   const [saving, setSaving] = useState(false);
+  const isManual = form.type === "manual";
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
@@ -276,18 +279,27 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
             <div className="flex items-end gap-2"><Switch checked={form.is_enabled} onCheckedChange={(v) => setForm({ ...form, is_enabled: v })} /><Label>Enabled</Label></div>
           </div>
           <p className="text-xs text-muted-foreground -mt-2">Display order is controlled by drag-and-drop on the gateway list.</p>
-          <div>
-            <Label>Config (JSON)</Label>
-            <Textarea value={form.configText} onChange={(e) => setForm({ ...form, configText: e.target.value })} rows={12} className="font-mono text-xs" />
-            <p className="text-xs text-muted-foreground mt-1">{configHelp(form.type)}</p>
-          </div>
+          {isManual ? (
+            <ManualConfigEditor
+              config={form.config}
+              onChange={(next) => setForm({ ...form, config: next, configText: JSON.stringify(next, null, 2) })}
+            />
+          ) : (
+            <div>
+              <Label>Config (JSON)</Label>
+              <Textarea value={form.configText} onChange={(e) => setForm({ ...form, configText: e.target.value })} rows={12} className="font-mono text-xs" />
+              <p className="text-xs text-muted-foreground mt-1">{configHelp(form.type)}</p>
+            </div>
+          )}
           {gateway && form.type === "custom_auto" && <GatewayHealthPanel id={gateway.id} slug={gateway.slug} />}
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button disabled={saving} onClick={async () => {
             try {
-              const parsed = JSON.parse(form.configText) as { [k: string]: JsonValue };
+              const parsed = isManual
+                ? form.config
+                : (JSON.parse(form.configText) as { [k: string]: JsonValue });
               setSaving(true);
               await save({
                 data: {
@@ -306,6 +318,216 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// ---------- Manual Gateway Visual Editor ----------
+
+type ManualField = {
+  key: string;
+  label: string;
+  type: "text" | "textarea" | "number" | "email" | "tel" | "url" | "select";
+  placeholder?: string;
+  required?: boolean;
+  options?: string[];
+};
+type ManualInfoRow = { label: string; value: string };
+type ManualConfig = {
+  instructions?: string;
+  gateway_info?: ManualInfoRow[];
+  qr?: { enabled?: boolean; url?: string };
+  customer_fields?: ManualField[];
+  require_screenshot?: boolean;
+  [k: string]: JsonValue | undefined;
+};
+
+const FIELD_TYPES: ManualField["type"][] = ["text", "textarea", "number", "email", "tel", "url", "select"];
+
+function slugKey(s: string) {
+  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || `field_${Math.random().toString(36).slice(2, 6)}`;
+}
+
+function ManualConfigEditor({ config, onChange }: {
+  config: Record<string, JsonValue>;
+  onChange: (next: Record<string, JsonValue>) => void;
+}) {
+  const cfg = config as ManualConfig;
+  const info: ManualInfoRow[] = Array.isArray(cfg.gateway_info) ? (cfg.gateway_info as ManualInfoRow[]) : [];
+  const fields: ManualField[] = Array.isArray(cfg.customer_fields) ? (cfg.customer_fields as ManualField[]) : [];
+  const qr = (cfg.qr as { enabled?: boolean; url?: string } | undefined) ?? { enabled: false, url: "" };
+
+  const patch = (part: Partial<ManualConfig>) => onChange({ ...(config as Record<string, JsonValue>), ...(part as Record<string, JsonValue>) });
+
+  const getInfo = (label: string) => info.find((r) => r.label?.toLowerCase() === label.toLowerCase())?.value ?? "";
+  const setInfo = (label: string, value: string) => {
+    const idx = info.findIndex((r) => r.label?.toLowerCase() === label.toLowerCase());
+    const next = idx >= 0 ? info.map((r, i) => i === idx ? { ...r, value } : r) : [...info, { label, value }];
+    patch({ gateway_info: next });
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const onFieldDragEnd = (e: DragEndEvent) => {
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    const oldIndex = fields.findIndex((f) => f.key === active.id);
+    const newIndex = fields.findIndex((f) => f.key === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    patch({ customer_fields: arrayMove(fields, oldIndex, newIndex) });
+  };
+
+  const updateField = (i: number, part: Partial<ManualField>) => {
+    patch({ customer_fields: fields.map((f, idx) => idx === i ? { ...f, ...part } : f) });
+  };
+  const removeField = (i: number) => patch({ customer_fields: fields.filter((_, idx) => idx !== i) });
+  const addField = () => {
+    const key = slugKey(`field_${fields.length + 1}`);
+    patch({ customer_fields: [...fields, { key, label: "New Field", type: "text", required: false }] });
+  };
+
+  return (
+    <div className="space-y-6">
+      <section className="space-y-3 rounded-lg border p-4">
+        <div className="text-sm font-semibold">Gateway Information</div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <Label className="text-xs">Account Type</Label>
+            <Input value={getInfo("Account Type")} onChange={(e) => setInfo("Account Type", e.target.value)} placeholder="Personal / Merchant" />
+          </div>
+          <div>
+            <Label className="text-xs">Account Name</Label>
+            <Input value={getInfo("Account Name")} onChange={(e) => setInfo("Account Name", e.target.value)} />
+          </div>
+          <div>
+            <Label className="text-xs">Account Number</Label>
+            <Input value={getInfo("Account Number")} onChange={(e) => setInfo("Account Number", e.target.value)} />
+          </div>
+        </div>
+        <div>
+          <Label className="text-xs">Instructions</Label>
+          <Textarea value={cfg.instructions ?? ""} onChange={(e) => patch({ instructions: e.target.value })} rows={3} placeholder="Shown to customers at checkout." />
+        </div>
+      </section>
+
+      <section className="space-y-3 rounded-lg border p-4">
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-semibold">QR Code</div>
+          <div className="flex items-center gap-2">
+            <Switch checked={!!qr.enabled} onCheckedChange={(v) => patch({ qr: { ...qr, enabled: v } })} />
+            <Label className="text-xs">Show at checkout</Label>
+          </div>
+        </div>
+        <div className="flex items-start gap-4">
+          <div className="h-24 w-24 shrink-0 rounded-md border bg-muted/30 flex items-center justify-center overflow-hidden">
+            {qr.url ? <GatewayLogo src={qr.url} alt="QR" className="h-24 w-24 flex items-center justify-center" /> : <ImageIcon className="h-6 w-6 text-muted-foreground" />}
+          </div>
+          <div className="flex-1">
+            <MediaPicker label="" accept="image" value={qr.url ?? ""} onChange={(v) => patch({ qr: { ...qr, url: v } })} />
+            {qr.url && (
+              <Button type="button" size="sm" variant="ghost" className="mt-1 text-destructive" onClick={() => patch({ qr: { ...qr, url: "" } })}>
+                <Trash2 className="h-3 w-3 mr-1" />Remove image
+              </Button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-3 rounded-lg border p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-sm font-semibold">Customer Fields</div>
+            <div className="text-xs text-muted-foreground">Data collected from customers after they pay. Drag to reorder.</div>
+          </div>
+          <Button type="button" size="sm" variant="outline" onClick={addField}><Plus className="h-3 w-3 mr-1" />Add Field</Button>
+        </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onFieldDragEnd}>
+          <SortableContext items={fields.map((f) => f.key)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-2">
+              {fields.map((f, i) => (
+                <SortableFieldRow
+                  key={f.key}
+                  field={f}
+                  onChange={(part) => updateField(i, part)}
+                  onRemove={() => removeField(i)}
+                />
+              ))}
+              {fields.length === 0 && (
+                <div className="text-xs text-muted-foreground text-center border border-dashed rounded p-4">No customer fields.</div>
+              )}
+            </div>
+          </SortableContext>
+        </DndContext>
+        <div className="flex items-center gap-2 pt-2">
+          <Switch checked={!!cfg.require_screenshot} onCheckedChange={(v) => patch({ require_screenshot: v })} />
+          <Label className="text-xs">Require payment screenshot upload</Label>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function SortableFieldRow({ field, onChange, onRemove }: {
+  field: ManualField;
+  onChange: (part: Partial<ManualField>) => void;
+  onRemove: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: field.key });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 30 : undefined,
+    boxShadow: isDragging ? "0 8px 24px rgba(0,0,0,0.15)" : undefined,
+  };
+  return (
+    <div ref={setNodeRef} style={style} className={cn("rounded-md border bg-card p-3", isDragging && "ring-2 ring-primary/40")}>
+      <div className="flex items-start gap-2">
+        <button type="button" aria-label="Drag" className="mt-2 text-muted-foreground hover:text-foreground touch-none cursor-grab active:cursor-grabbing" {...attributes} {...listeners}>
+          <GripVertical className="h-4 w-4" />
+        </button>
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-2">
+          <div className="md:col-span-4">
+            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Label</Label>
+            <Input value={field.label} onChange={(e) => onChange({ label: e.target.value })} />
+          </div>
+          <div className="md:col-span-4">
+            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Placeholder</Label>
+            <Input value={field.placeholder ?? ""} onChange={(e) => onChange({ placeholder: e.target.value })} />
+          </div>
+          <div className="md:col-span-2">
+            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Type</Label>
+            <select value={field.type} onChange={(e) => onChange({ type: e.target.value as ManualField["type"] })}
+              className="w-full h-10 px-2 rounded-md border bg-background text-sm">
+              {FIELD_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div className="md:col-span-2 flex items-end">
+            <div className="flex items-center gap-2 h-10">
+              <Switch checked={!!field.required} onCheckedChange={(v) => onChange({ required: v })} />
+              <Label className="text-xs">Required</Label>
+            </div>
+          </div>
+          <div className="md:col-span-12 flex items-center gap-2">
+            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground w-10">Key</Label>
+            <Input value={field.key} onChange={(e) => onChange({ key: slugKey(e.target.value) })} className="font-mono text-xs h-8" />
+            {field.type === "select" && (
+              <Input
+                placeholder="Options (comma separated)"
+                value={(field.options ?? []).join(", ")}
+                onChange={(e) => onChange({ options: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })}
+                className="h-8 text-xs"
+              />
+            )}
+            <Button type="button" size="icon" variant="ghost" className="h-8 w-8 text-destructive ml-auto" onClick={onRemove}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
