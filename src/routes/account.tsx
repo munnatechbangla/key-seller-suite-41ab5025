@@ -419,8 +419,19 @@ function Field({ label, type = "text", defaultValue, placeholder }: { label: str
 
 function SubscriptionsTab() {
   const fn = useServerFn(getMyDeliveriesFn);
-  const { data = [], isLoading } = useQuery({ queryKey: ["my-deliveries"], queryFn: () => fn({}) });
-  const subscriptions = data.filter((it) => it.product.product_type === "subscription" || it.product.delivery_type === "subscription");
+  const { data = [], isLoading } = useQuery({
+    queryKey: ["my-deliveries"],
+    queryFn: () => fn({}),
+    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+    refetchInterval: (q) => {
+      const rows = (q.state.data as any[] | undefined) ?? [];
+      const subs = rows.filter((it: any) => it.product?.product_type === "subscription" || it.product?.delivery_type === "subscription" || it.fulfillment?.delivery_type === "subscription");
+      const pending = subs.some((it: any) => (it.fulfillment?.fulfillment_status ?? "pending") !== "delivered");
+      return pending ? 8000 : false;
+    },
+  });
+  const subscriptions = data.filter((it) => it.product.product_type === "subscription" || it.product.delivery_type === "subscription" || (it as any).fulfillment?.delivery_type === "subscription");
   if (isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
   if (subscriptions.length === 0)
     return <div className="text-sm text-muted-foreground">No subscriptions yet.</div>;
