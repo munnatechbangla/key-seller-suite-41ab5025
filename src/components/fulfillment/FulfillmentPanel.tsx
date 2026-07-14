@@ -334,6 +334,3 @@ function SubscriptionCard({
     </div>
   );
 }
-    </div>
-  );
-}
