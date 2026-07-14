@@ -725,15 +725,19 @@ function ManualForm({
         setUploading(false);
       }
 
-      // Map dynamic values → known server fields, remainder into note.
-      const known = new Set(["transaction_id", "sender_name", "sender_account"]);
-      const extras: string[] = [];
+      // Persist every customer field value by key. Recognized keys are also
+      // mapped to legacy server columns; every field (including recognized
+      // ones) is echoed into the note so admins see the full submission.
+      const allLines: string[] = [];
+      const payload: Record<string, string> = {};
       for (const f of customerFields) {
         const v = (values[f.key] ?? "").trim();
-        if (!v || known.has(f.key)) continue;
-        extras.push(`${f.label}: ${v}`);
+        if (!v) continue;
+        payload[f.key] = v;
+        allLines.push(`${f.label}: ${v}`);
       }
-      const composedNote = [note.trim(), ...extras].filter(Boolean).join("\n");
+      const composedNote = [note.trim(), ...allLines].filter(Boolean).join("\n");
+
 
       await submit({
         data: {
