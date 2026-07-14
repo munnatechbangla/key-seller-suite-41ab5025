@@ -803,6 +803,25 @@ function ManualForm({
           onFileChange={(file) => setFieldFile(f.key, file)}
         />
       ))}
+      {requireScreenshot && (
+        <div>
+          <label className="block text-xs font-medium mb-1.5">
+            Payment Screenshot <span className="text-destructive">*</span>
+          </label>
+          <label className="flex items-center gap-2 rounded-xl border border-dashed border-border bg-background px-3 py-2.5 text-sm cursor-pointer hover:border-primary/60">
+            <Upload className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="truncate">
+              {screenshotFile ? screenshotFile.name : "Upload payment screenshot (jpg, png, webp, pdf)"}
+            </span>
+            <input
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
+              className="hidden"
+              onChange={(e) => setScreenshotFile(e.target.files?.[0] ?? null)}
+            />
+          </label>
+        </div>
+      )}
       <button
         type="submit"
         disabled={working || uploading}
