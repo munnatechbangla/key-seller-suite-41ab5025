@@ -662,9 +662,18 @@ function ManualForm({
   const gatewayInfo = useMemo(() => normalizeGatewayInfo(cfg), [cfg]);
   const customerFields = useMemo(() => normalizeCustomerFields(cfg), [cfg]);
   const qr = useMemo(() => normalizeQr(cfg), [cfg]);
+  const requireScreenshot = useMemo(() => {
+    const direct = cfg.require_screenshot;
+    if (typeof direct === "boolean") return direct;
+    if (typeof direct === "string") return direct === "true";
+    const ps = cfg.payment_screenshot;
+    if (ps && typeof ps === "object" && (ps as Record<string, unknown>).required === true) return true;
+    return false;
+  }, [cfg]);
 
   const [values, setValues] = useState<Record<string, string>>({});
   const [files, setFiles] = useState<Record<string, File | null>>({});
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [qrUrl, setQrUrl] = useState<string>(() => (qr.url && !qr.url.startsWith("media://") ? qr.url : ""));
 
@@ -697,11 +706,16 @@ function ManualForm({
         return toast.error(`${f.label} is required`);
       }
     }
+    if (requireScreenshot && !screenshotFile) {
+      return toast.error("Payment Screenshot is required");
+    }
     onSubmitting(true);
     try {
       const fileFields = customerFields.filter((f) => normalizedFieldType(f) === "file" && files[f.key]);
       const uploadedFiles: Record<string, string> = {};
-      if (fileFields.length > 0) {
+      let screenshotPath: string | null = null;
+      const hasAnyUpload = fileFields.length > 0 || (requireScreenshot && screenshotFile);
+      if (hasAnyUpload) {
         setUploading(true);
         const { data: sess } = await supabase.auth.getSession();
         const ownerSegment = sess.session?.user?.id ?? "guest";
@@ -714,6 +728,13 @@ function ManualForm({
           const uploadRes = await supabase.storage.from("payments").upload(path, selected, { upsert: false, contentType: selected.type });
           if (uploadRes.error) throw new Error(uploadRes.error.message);
           uploadedFiles[f.key] = path;
+        }
+        if (requireScreenshot && screenshotFile) {
+          const ext = screenshotFile.name.split(".").pop() || "bin";
+          const path = `submissions/${ownerSegment}/${orderNumber}/screenshot-${Date.now()}.${ext}`;
+          const uploadRes = await supabase.storage.from("payments").upload(path, screenshotFile, { upsert: false, contentType: screenshotFile.type });
+          if (uploadRes.error) throw new Error(uploadRes.error.message);
+          screenshotPath = path;
         }
         setUploading(false);
       }
@@ -735,6 +756,7 @@ function ManualForm({
           gateway_slug: gateway.slug,
           field_values: payload,
           note: composedNote || undefined,
+          screenshot_url: screenshotPath ?? undefined,
         },
       });
 
@@ -781,6 +803,25 @@ function ManualForm({
           onFileChange={(file) => setFieldFile(f.key, file)}
         />
       ))}
+      {requireScreenshot && (
+        <div>
+          <label className="block text-xs font-medium mb-1.5">
+            Payment Screenshot <span className="text-destructive">*</span>
+          </label>
+          <label className="flex items-center gap-2 rounded-xl border border-dashed border-border bg-background px-3 py-2.5 text-sm cursor-pointer hover:border-primary/60">
+            <Upload className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="truncate">
+              {screenshotFile ? screenshotFile.name : "Upload payment screenshot (jpg, png, webp, pdf)"}
+            </span>
+            <input
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
+              className="hidden"
+              onChange={(e) => setScreenshotFile(e.target.files?.[0] ?? null)}
+            />
+          </label>
+        </div>
+      )}
       <button
         type="submit"
         disabled={working || uploading}

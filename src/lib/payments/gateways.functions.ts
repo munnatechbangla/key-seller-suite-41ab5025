@@ -157,6 +157,7 @@ export const submitManualPaymentFn = createServerFn({ method: "POST" })
     field_values?: Record<string, string>;
     note?: string;
     email?: string;
+    screenshot_url?: string;
   }) => d)
   .handler(async ({ data }) => {
     const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
@@ -187,6 +188,7 @@ export const submitManualPaymentFn = createServerFn({ method: "POST" })
       _note: data.note,
       _email: data.email,
       _field_values: data.field_values ?? {},
+      _screenshot_url: data.screenshot_url ?? null,
     });
     if (error) throw new Error(error.message);
     if (result && typeof result === "object" && "ok" in result && !(result as { ok?: boolean }).ok) {
