@@ -179,21 +179,33 @@ function LicenseBody({ item }: { item: DeliveryItem }) {
 }
 
 function SubscriptionBody({ item }: { item: DeliveryItem }) {
-  // Placeholder — real data will come from a future subscriptions table.
-  const start = item.order_created_at ? new Date(item.order_created_at) : new Date();
-  const end = new Date(start); end.setDate(end.getDate() + 30);
-  const remaining = Math.max(0, Math.ceil((end.getTime() - Date.now()) / 86400000));
-  return (
-    <div className="grid sm:grid-cols-2 gap-3 text-sm">
-      <InfoTile icon={Calendar} label="Started" value={start.toLocaleDateString()} />
-      <InfoTile icon={Clock} label="Expires" value={end.toLocaleDateString()} />
-      <InfoTile icon={RefreshCw} label="Status" value="Active" />
-      <InfoTile icon={Clock} label="Remaining" value={`${remaining} days`} />
-      <div className="sm:col-span-2">
-        <button type="button" disabled className="w-full py-2.5 rounded-lg bg-muted text-muted-foreground text-xs font-semibold cursor-not-allowed">
-          Renew (coming soon)
-        </button>
+  // Manual delivery workflow: show delivered state if fulfillment marked it so.
+  const f: any = (item as any).fulfillment;
+  const delivered = f?.fulfillment_status === "delivered";
+  const deliveredAt = f?.metadata?.delivered_at ?? f?.completed_at;
+  if (delivered) {
+    return (
+      <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 space-y-1">
+        <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-semibold">
+          <div className="h-2 w-2 rounded-full bg-emerald-500" /> Subscription Delivered
+        </div>
+        <p className="text-sm text-muted-foreground">Delivered successfully.</p>
+        {deliveredAt && (
+          <p className="text-xs text-muted-foreground">
+            {new Date(deliveredAt).toLocaleString()}
+          </p>
+        )}
       </div>
+    );
+  }
+  return (
+    <div className="rounded-xl border border-border p-4 space-y-1">
+      <div className="flex items-center gap-2 text-amber-600 font-semibold">
+        <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" /> Awaiting delivery
+      </div>
+      <p className="text-sm text-muted-foreground">
+        Your subscription is being prepared. You will be notified once it is delivered.
+      </p>
     </div>
   );
 }

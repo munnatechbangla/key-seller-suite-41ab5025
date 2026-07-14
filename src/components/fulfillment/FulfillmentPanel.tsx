@@ -1,9 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
   Loader2, RefreshCw, RotateCcw, XCircle, CheckCircle2, Clock, AlertTriangle,
-  PackageSearch, PackageCheck, ShieldAlert,
+  PackageSearch, PackageCheck, ShieldAlert, Circle, Send,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -15,6 +15,7 @@ import {
   adminRestartFulfillmentFn,
   adminCancelFulfillmentFn,
   adminStartFulfillmentForOrderFn,
+  adminMarkSubscriptionDeliveredFn,
   type FulfillmentRow,
   type FulfillmentStatus,
 } from "@/lib/fulfillment.functions";
@@ -154,7 +155,21 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
           <h4 className="font-semibold text-sm">Fulfillment</h4>
         </div>
       )}
-      {rows.map((f) => (
+      {rows.map((f) => {
+        if (f.delivery_type === "subscription") {
+          return (
+            <SubscriptionCard
+              key={f.id}
+              f={f}
+              isAdmin={isAdmin}
+              onDelivered={() => {
+                invalidate();
+                qc.invalidateQueries({ queryKey: ["fulfillment-timeline"] });
+              }}
+            />
+          );
+        }
+        return (
         <div key={f.id} className="rounded-xl border border-border p-3 space-y-2 bg-card">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div>
@@ -206,7 +221,116 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
             </details>
           )}
         </div>
-      ))}
+        );
+      })}
+    </div>
+  );
+}
+
+// ============================================================
+// Subscription-only card: fixed 5-step checklist + admin deliver
+// ============================================================
+function SubscriptionCard({
+  f,
+  isAdmin,
+  onDelivered,
+}: {
+  f: FulfillmentRow;
+  isAdmin: boolean;
+  onDelivered: () => void;
+}) {
+  const markDelivered = useServerFn(adminMarkSubscriptionDeliveredFn);
+  const [note, setNote] = useState("");
+  const mut = useMutation({
+    mutationFn: () => markDelivered({ data: { fulfillmentId: f.id, note: note || undefined } }),
+    onSuccess: () => {
+      toast.success("Subscription marked delivered");
+      setNote("");
+      onDelivered();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Failed to mark delivered"),
+  });
+
+  const delivered = f.fulfillment_status === "delivered";
+  const paymentApproved = delivered || ["processing", "manual_review", "waiting_inventory"].includes(f.fulfillment_status);
+  const underVerification = paymentApproved || f.fulfillment_status === "pending";
+
+  const steps: { label: string; done: boolean }[] = [
+    { label: "Order Created", done: true },
+    { label: "Payment Submitted", done: true },
+    { label: "Under Verification", done: underVerification },
+    { label: "Payment Approved", done: paymentApproved },
+    { label: "Subscription Delivered", done: delivered },
+  ];
+
+  const deliveredAt = (f.metadata as any)?.delivered_at ?? f.completed_at;
+  const deliveryNote = (f.metadata as any)?.delivery_note as string | undefined;
+
+  return (
+    <div className="rounded-xl border border-border p-4 space-y-3 bg-card">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <div className="text-sm font-semibold">{f.product_title ?? "Subscription"}</div>
+          <div className="text-[11px] text-muted-foreground">Subscription product</div>
+        </div>
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+            delivered
+              ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+              : "bg-amber-500/15 text-amber-700 dark:text-amber-300"
+          }`}
+        >
+          {delivered ? <PackageCheck className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
+          {delivered ? "Subscription Delivered" : "Payment Approved"}
+        </span>
+      </div>
+
+      <ol className="space-y-1.5">
+        {steps.map((s) => (
+          <li key={s.label} className="flex items-center gap-2 text-xs">
+            {s.done ? (
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            ) : (
+              <Circle className="h-4 w-4 text-muted-foreground/50" />
+            )}
+            <span className={s.done ? "font-medium text-foreground" : "text-muted-foreground"}>
+              {s.label}
+            </span>
+          </li>
+        ))}
+      </ol>
+
+      {delivered && (
+        <div className="rounded-lg bg-emerald-500/10 p-3 text-xs space-y-1">
+          <div className="font-semibold text-emerald-700 dark:text-emerald-300">Delivered successfully</div>
+          {deliveredAt && (
+            <div className="text-muted-foreground">
+              {new Date(deliveredAt).toLocaleString()}
+            </div>
+          )}
+          {deliveryNote && <div className="text-muted-foreground">Note: {deliveryNote}</div>}
+        </div>
+      )}
+
+      {isAdmin && !delivered && (
+        <div className="space-y-2 pt-1 border-t border-border">
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Delivery note (optional) — e.g. account details sent via email"
+            className="w-full min-h-[60px] rounded-md border border-border bg-background p-2 text-xs"
+          />
+          <button
+            type="button"
+            onClick={() => mut.mutate()}
+            disabled={mut.isPending}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
+          >
+            {mut.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+            Mark Subscription Delivered
+          </button>
+        </div>
+      )}
     </div>
   );
 }
