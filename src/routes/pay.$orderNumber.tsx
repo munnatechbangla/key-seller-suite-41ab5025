@@ -828,11 +828,30 @@ function ManualForm({
   );
 }
 
-function FieldInput({ label, value, onChange, placeholder, type }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) {
-  return (
-    <div>
-      <label className="text-xs font-semibold block mb-1.5">{label}</label>
-      <input type={type || "text"} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full px-3 py-2 rounded-xl bg-card border border-border text-sm outline-none focus:border-primary" />
-    </div>
+function FieldInput({ field, value, onChange }: { field: CustomerField; value: string; onChange: (v: string) => void }) {
+  const { label, type = "text", placeholder, required, help, options } = field;
+  const baseCls = "w-full px-3 py-2 rounded-xl bg-card border border-border text-sm outline-none focus:border-primary";
+  const labelNode = (
+    <label className="text-xs font-semibold block mb-1.5">
+      {label}{required && <span className="text-destructive"> *</span>}
+    </label>
   );
+  const helpNode = help ? <p className="text-[11px] text-muted-foreground mt-1">{help}</p> : null;
+
+  let control: React.ReactNode;
+  if (type === "textarea") {
+    control = <textarea value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} rows={3} className={baseCls} />;
+  } else if (type === "select") {
+    control = (
+      <select value={value} onChange={(e) => onChange(e.target.value)} required={required} className={baseCls}>
+        <option value="">{placeholder || "Select…"}</option>
+        {(options ?? []).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    );
+  } else {
+    const inputType = ["email", "number", "date", "tel", "url", "text"].includes(type) ? type : "text";
+    control = <input type={inputType} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} className={baseCls} />;
+  }
+  return <div>{labelNode}{control}{helpNode}</div>;
 }
+
