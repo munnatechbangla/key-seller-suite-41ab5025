@@ -570,6 +570,8 @@ type CustomerField = {
   type?: string;
   placeholder?: string;
   required?: boolean;
+  help?: string;
+  options?: { label: string; value: string }[];
 };
 type GatewayInfoRow = { label: string; value: string };
 
@@ -583,12 +585,31 @@ function normalizeCustomerFields(cfg: Record<string, unknown>): CustomerField[] 
         const label = String(r.label ?? "").trim();
         if (!label) return null;
         const key = String(r.key ?? label).trim().toLowerCase().replace(/[^a-z0-9]+/g, "_") || `field_${i}`;
+        let options: { label: string; value: string }[] | undefined;
+        if (Array.isArray(r.options)) {
+          options = r.options
+            .map((o) => {
+              if (typeof o === "string") return { label: o, value: o };
+              if (o && typeof o === "object") {
+                const oo = o as Record<string, unknown>;
+                const l = String(oo.label ?? oo.value ?? "").trim();
+                const v = String(oo.value ?? oo.label ?? "").trim();
+                if (!l) return null;
+                return { label: l, value: v };
+              }
+              return null;
+            })
+            .filter((x): x is { label: string; value: string } => !!x);
+        }
+        const helpVal = typeof r.help === "string" ? r.help : (typeof r.help_text === "string" ? (r.help_text as string) : undefined);
         return {
           key,
           label,
           type: typeof r.type === "string" ? r.type : "text",
           placeholder: typeof r.placeholder === "string" ? r.placeholder : undefined,
           required: Boolean(r.required),
+          help: helpVal,
+          options,
         } as CustomerField;
       })
       .filter((x): x is CustomerField => !!x);
@@ -704,27 +725,32 @@ function ManualForm({
         setUploading(false);
       }
 
-      // Map dynamic values → known server fields, remainder into note.
-      const known = new Set(["transaction_id", "sender_name", "sender_account"]);
-      const extras: string[] = [];
+      // Persist every customer field value by key. Recognized keys are also
+      // mapped to legacy server columns; every field (including recognized
+      // ones) is echoed into the note so admins see the full submission.
+      const allLines: string[] = [];
+      const payload: Record<string, string> = {};
       for (const f of customerFields) {
         const v = (values[f.key] ?? "").trim();
-        if (!v || known.has(f.key)) continue;
-        extras.push(`${f.label}: ${v}`);
+        if (!v) continue;
+        payload[f.key] = v;
+        allLines.push(`${f.label}: ${v}`);
       }
-      const composedNote = [note.trim(), ...extras].filter(Boolean).join("\n");
+      const composedNote = [note.trim(), ...allLines].filter(Boolean).join("\n");
+
 
       await submit({
         data: {
           order_number: orderNumber,
           gateway_slug: gateway.slug,
-          transaction_id: (values.transaction_id ?? "").trim() || undefined,
-          sender_name: (values.sender_name ?? "").trim() || undefined,
-          sender_account: (values.sender_account ?? "").trim() || undefined,
+          transaction_id: payload.transaction_id || payload.trxid || payload.txn_id || undefined,
+          sender_name: payload.sender_name || undefined,
+          sender_account: payload.sender_account || undefined,
           screenshot_url,
           note: composedNote || undefined,
         },
       });
+
       toast.success("Payment submitted — awaiting admin verification");
       onSubmitted();
     } catch (err) {
@@ -761,13 +787,12 @@ function ManualForm({
       {customerFields.map((f) => (
         <FieldInput
           key={f.key}
-          label={`${f.label}${f.required ? " *" : ""}`}
-          type={f.type}
+          field={f}
           value={values[f.key] ?? ""}
           onChange={(v) => setVal(f.key, v)}
-          placeholder={f.placeholder}
         />
       ))}
+
 
       <div>
         <label className="text-xs font-semibold block mb-1.5">
@@ -803,11 +828,30 @@ function ManualForm({
   );
 }
 
-function FieldInput({ label, value, onChange, placeholder, type }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) {
-  return (
-    <div>
-      <label className="text-xs font-semibold block mb-1.5">{label}</label>
-      <input type={type || "text"} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full px-3 py-2 rounded-xl bg-card border border-border text-sm outline-none focus:border-primary" />
-    </div>
+function FieldInput({ field, value, onChange }: { field: CustomerField; value: string; onChange: (v: string) => void }) {
+  const { label, type = "text", placeholder, required, help, options } = field;
+  const baseCls = "w-full px-3 py-2 rounded-xl bg-card border border-border text-sm outline-none focus:border-primary";
+  const labelNode = (
+    <label className="text-xs font-semibold block mb-1.5">
+      {label}{required && <span className="text-destructive"> *</span>}
+    </label>
   );
+  const helpNode = help ? <p className="text-[11px] text-muted-foreground mt-1">{help}</p> : null;
+
+  let control: React.ReactNode;
+  if (type === "textarea") {
+    control = <textarea value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} rows={3} className={baseCls} />;
+  } else if (type === "select") {
+    control = (
+      <select value={value} onChange={(e) => onChange(e.target.value)} required={required} className={baseCls}>
+        <option value="">{placeholder || "Select…"}</option>
+        {(options ?? []).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    );
+  } else {
+    const inputType = ["email", "number", "date", "tel", "url", "text"].includes(type) ? type : "text";
+    control = <input type={inputType} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} className={baseCls} />;
+  }
+  return <div>{labelNode}{control}{helpNode}</div>;
 }
+
