@@ -1,46 +1,60 @@
-# Pages CMS — Per-Page Editors (Blog-style)
+# Subscription Product Workflow — Independent Track
 
-Frontend layouts stay locked. Only content becomes CMS-editable, stored in existing `legal_pages.content` JSONB (already exists, no schema change needed).
+Goal: Subscription products get a manual-delivery workflow. License and Download workflows stay exactly as they are. Product Type == `subscription` is the switch.
 
-## Storage (no migration)
+## Scope
 
-Use the existing `legal_pages` table for all 8 pages. Each page uses one row keyed by slug (`about`, `contact`, `faq`, `support`, `track-order`, `privacy-policy`, `terms`, `refund-policy`). Structured fields go in `content` JSONB. SEO uses existing `seo_title` / `seo_description` / `canonical_url` columns.
+Only touched code paths:
+- Fulfillment DB functions — branch on `products.product_type = 'subscription'`
+- New admin action: **Mark Subscription Delivered**
+- Storefront timeline + delivery card for subscription orders
+- Admin order row — show subscription info + delivery button
 
-Per-page JSON shapes (typed in `src/lib/cms/pages/schemas.ts`):
+Untouched: license_keys, license_assignments, license_pools, downloads, product_downloads, and every `delivery_type in ('license_key','download','downloadable','external','account','manual')` renderer.
 
-- **about**: `hero{title,subtitle,image}`, `mission`, `vision`, `team[]{name,role,avatar,bio}`, `cta{title,subtitle,button_label,button_url}`
-- **contact**: `hero`, `form{title,subtitle,submit_label,success_message}`, `email`, `phone`, `whatsapp`, `address`, `map_embed`, `hours[]{day,hours}`
-- **faq**: `hero`, `search_placeholder`, `categories[]{id,name}`, `items[]{category_id,q,a}`, `cta`
-- **support**: `hero`, `cards[]{icon,title,body,link}`, `contact_methods[]{icon,label,value,href}`, `cta`
-- **track-order**: `hero`, `tracker{heading,placeholder,button_label,help_text}`, `faq[]{q,a}`
-- **privacy / terms / refund**: `hero{title,subtitle}`, `sections[]{h,p}`, plus existing SEO columns
+## Database changes (single migration)
 
-Defaults live next to each schema so pages render pixel-identically before any editing.
+1. Update `public.start_fulfillment_for_order(_order_id)`:
+   - When the row's product is `product_type = 'subscription'`, insert the fulfillment with `delivery_type = 'subscription'` and `fulfillment_status = 'manual_review'` (waiting for admin), and **skip** all license/download provisioning branches.
+   - All other product types keep their current path unchanged.
 
-## Server functions (`src/lib/pages.functions.ts`)
+2. New RPC `public.admin_mark_subscription_delivered(_fulfillment_id uuid, _note text)`:
+   - Admin-only (checks `has_role`).
+   - Guards: the fulfillment's product must be `subscription`.
+   - Sets `fulfillment_status = 'delivered'`, `completed_at = now()`, appends `metadata.delivery_note`, writes a `fulfillment_logs` entry `event = 'subscription_delivered'`, and marks parent `orders.status = 'completed'` when all items are delivered.
 
-- `pageGetPublicFn({slug})` — anon read of `legal_pages` by slug
-- `pageAdminGetFn({slug})` — admin read (auto-creates row from defaults on first open)
-- `pageAdminUpsertFn({slug, patch})` — merges patch into `content`, updates SEO columns
-- `pagesAdminListFn()` — lists the 8 fixed pages with last-updated timestamps
+3. `get_order_fulfillments` — no schema change; already returns `delivery_type`. Front-end uses that to branch.
 
-## Admin UI
+## Server functions
 
-- Sidebar item **Pages** in `src/routes/admin.tsx` (between Blog and Categories)
-- `src/routes/admin.pages.tsx` — index list of the 8 pages (Blog-style card grid)
-- `src/routes/admin.pages.$slug.tsx` — dispatches to per-page editor by slug
-- `src/components/admin/pages/` — one editor per page (`AboutEditor.tsx`, `ContactEditor.tsx`, etc.). Each renders only its own fields with repeaters for arrays (team, hours, FAQ, categories, cards). Uses existing `MediaPicker`, `RichTextEditor`, `IconPicker`, save/publish toolbar mirroring blog editor.
-- Shared SEO panel component reused across all editors.
+`src/lib/fulfillment.functions.ts`
+- Add `adminMarkSubscriptionDeliveredFn` calling the new RPC.
 
-## Frontend wiring (no layout changes)
+## Frontend
 
-Each existing route file swaps its hardcoded strings for values from `usePage(slug)` with defaults as fallback. Zero JSX structure changes:
+`src/components/fulfillment/FulfillmentPanel.tsx`
+- When `f.delivery_type === 'subscription'`:
+  - Hide Retry/Restart/Cancel license buttons.
+  - Show a single admin **Mark Subscription Delivered** button (disabled once `delivered`).
+  - Replace timeline UI with the fixed 5-step subscription checklist:
+    Order Created → Payment Submitted → Under Verification → Payment Approved → Subscription Delivered.
+    Steps derive from: order exists, manual_payment_submissions row, submission status, order.status = 'paid', fulfillment.status = 'delivered'.
+- Other delivery types: existing UI unchanged.
 
-- `about.tsx`, `contact.tsx`, `faq.tsx`, `support.tsx`, `track-order.tsx` — read structured content
-- `privacy.tsx`, `terms.tsx`, `refund.tsx` — already use `useLegalPage`; just ensure defaults + hero fields are honored
+`src/components/delivery/DeliveryPanel.tsx`
+- Rewrite only the `SubscriptionBody` renderer:
+  - Before delivery: "Subscription pending — awaiting delivery".
+  - After delivery (fulfillment delivered): green "Subscription Delivered — Delivered successfully" + delivery date.
+  - No Download button, no license UI.
 
-Shared `src/lib/cms/pages/usePage.ts` hook (React Query, 60s stale) returns typed content with defaults merged in — guarantees backward compatibility when a page has never been edited.
+`src/routes/admin.orders.tsx`
+- Existing expanded row already shows `FulfillmentPanel` + `OrderCustomFieldValues`. Add customer email + subscription delivery note field beside the new button (rendered inside the panel).
 
-## Out of scope
+`src/routes/thank-you.tsx`
+- Remove the "No license keys were issued" message when the item is a subscription; rely on `DeliveryPanel`'s subscription renderer.
 
-No database migration. No layout/design changes. No new route paths. `CmsPageView` stays unused for these 8 routes.
+## Verification checklist (delivered at end)
+
+- ✅ Subscription workflow: manual approve → Mark Delivered → customer sees Delivered
+- ✅ License workflow untouched (same RPCs, same UI branches)
+- ✅ Download workflow untouched
