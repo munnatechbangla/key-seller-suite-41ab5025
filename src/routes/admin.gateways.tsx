@@ -672,12 +672,16 @@ function SubmissionsList() {
           <tbody>
             {q.data?.submissions.map((s) => {
               const ord = s.orders as { order_number: string; total: number; currency: string } | null;
+              const fv = (s.field_values ?? {}) as Record<string, string>;
+              const txn = s.transaction_id ?? fv.transaction_id ?? fv.txn_id ?? fv.trxid ?? fv.trx_id ?? null;
+              const sname = s.sender_name ?? fv.sender_name ?? fv.name ?? null;
+              const sacct = s.sender_account ?? fv.sender_account ?? fv.account ?? fv.sender_number ?? fv.phone ?? null;
               return (
                 <tr key={s.id} className="border-t">
                   <td className="p-3 font-mono text-xs">{ord?.order_number ?? "—"}</td>
                   <td className="p-3">{s.gateway_slug}</td>
-                  <td className="p-3 font-mono text-xs">{s.transaction_id ?? "—"}</td>
-                  <td className="p-3 text-xs">{s.sender_name ?? "—"}<br /><span className="text-muted-foreground">{s.sender_account ?? ""}</span></td>
+                  <td className="p-3 font-mono text-xs">{txn ?? "—"}</td>
+                  <td className="p-3 text-xs">{sname ?? "—"}<br /><span className="text-muted-foreground">{sacct ?? ""}</span></td>
                   <td className="p-3 text-right">{ord ? `${Number(ord.total).toFixed(2)} ${ord.currency}` : "—"}</td>
                   <td className="p-3"><span className={cn("text-xs px-2 py-0.5 rounded",
                     s.status === "approved" ? "bg-emerald-500/15 text-emerald-600" :
