@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
-import { CheckCircle2, Download, Mail, MessageCircle, KeyRound, Loader2, Clock, XCircle } from "lucide-react";
+import { CheckCircle2, Package, Mail, MessageCircle, Loader2, Clock, XCircle } from "lucide-react";
 import { z } from "zod";
 import { getOrderByNumberFn, getMyOrderByNumberFn } from "@/lib/orders.functions";
 import { useAuth } from "@/lib/stores";
@@ -15,11 +15,6 @@ import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValu
 import { DeliveryPanel } from "@/components/delivery/DeliveryPanel";
 import { getOrderDeliveryAuthFn, getOrderDeliveryGuestFn } from "@/lib/delivery.functions";
 import { FulfillmentPanel } from "@/components/fulfillment/FulfillmentPanel";
-import { SubscriptionDeliveryPanel, type SubscriptionDeliveryItem } from "@/components/subscriptions/SubscriptionDeliveryPanel";
-import {
-  getOrderSubscriptionDeliveryAuthedFn,
-  getOrderSubscriptionDeliveryGuestFn,
-} from "@/lib/subscriptions.functions";
 
 export const Route = createFileRoute("/thank-you")({
   validateSearch: z.object({ order: z.string().optional(), email: z.string().optional() }),
@@ -42,21 +37,10 @@ function ThankYou() {
     // Poll while waiting for webhook to mark payment paid.
     refetchInterval: (query) => {
       const s = query.state.data?.paymentStatus;
-      return s === "paid" || s === "failed" || s === "refunded" ? false : 4000;
+      const status = query.state.data?.order?.status;
+      return s === "paid" || s === "failed" || s === "refunded" || status === "completed" ? false : 4000;
     },
   });
-
-  const fetchSubAuth = useServerFn(getOrderSubscriptionDeliveryAuthedFn);
-  const fetchSubGuest = useServerFn(getOrderSubscriptionDeliveryGuestFn);
-  const fetchSub = user ? fetchSubAuth : fetchSubGuest;
-  const subQ = useQuery({
-    queryKey: ["sub-delivery", order, email, user?.id ?? "guest"],
-    queryFn: () =>
-      fetchSub({ data: { orderNumber: order!, email } }) as Promise<SubscriptionDeliveryItem[]>,
-    enabled: !!order && q.data?.paymentStatus === "paid",
-  });
-
-
 
   const fetchDeliveryAuth = useServerFn(getOrderDeliveryAuthFn);
   const fetchDeliveryGuest = useServerFn(getOrderDeliveryGuestFn);
@@ -64,11 +48,13 @@ function ThankYou() {
   const deliveryQ = useQuery({
     queryKey: ["delivery", order, email, user?.id ?? "guest"],
     queryFn: () => fetchDelivery({ data: { orderNumber: order!, email } }),
-    enabled: !!order && q.data?.paymentStatus === "paid",
+    enabled: !!order && (q.data?.paymentStatus === "paid" || q.data?.order?.status === "completed"),
   });
 
-  const paymentStatus = q.data?.paymentStatus ?? "pending";
-  const isPaid = paymentStatus === "paid";
+  const rawPaymentStatus = q.data?.paymentStatus ?? "pending";
+  const orderStatus = q.data?.order?.status ?? "pending";
+  const paymentStatus = orderStatus === "completed" && rawPaymentStatus !== "failed" ? "paid" : rawPaymentStatus;
+  const isPaid = paymentStatus === "paid" || orderStatus === "completed";
   const isFailed = paymentStatus === "failed";
   const isPending = !isPaid && !isFailed;
 
@@ -141,7 +127,7 @@ function ThankYou() {
               <Mail className="h-5 w-5 text-primary mt-0.5" />
               <div className="text-sm">
                 <div className="font-semibold">Confirmation email sent</div>
-                <p className="text-muted-foreground">Check your inbox for download links and activation instructions.</p>
+                <p className="text-muted-foreground">Check your inbox for your order confirmation and delivery updates.</p>
               </div>
             </div>
           )}
@@ -151,7 +137,7 @@ function ThankYou() {
               <Loader2 className="h-5 w-5 text-amber-600 mt-0.5 animate-spin" />
               <div className="text-sm">
                 <div className="font-semibold">Waiting for the payment gateway to confirm your transaction…</div>
-                <p className="text-muted-foreground">License keys and downloads will appear here automatically as soon as payment is verified.</p>
+                <p className="text-muted-foreground">Your delivery status will update automatically as soon as payment is verified.</p>
               </div>
             </div>
           )}
@@ -161,7 +147,7 @@ function ThankYou() {
               <XCircle className="h-5 w-5 text-destructive mt-0.5" />
               <div className="text-sm">
                 <div className="font-semibold">We couldn't verify this payment.</div>
-                <p className="text-muted-foreground">No license keys were issued. Please retry payment or contact support.</p>
+                <p className="text-muted-foreground">No delivery was issued. Please retry payment or contact support.</p>
               </div>
             </div>
           )}
@@ -175,7 +161,7 @@ function ThankYou() {
           {q.data && (
             <>
               <div>
-                <h3 className="font-bold mb-3 flex items-center gap-2"><Download className="h-4 w-4 text-primary" /> Your items</h3>
+                <h3 className="font-bold mb-3 flex items-center gap-2"><Package className="h-4 w-4 text-primary" /> Your items</h3>
                 <div className="space-y-2">
                   {q.data.items.map((it) => (
                     <div key={it.id} className="flex items-center gap-3 p-3 rounded-xl border border-border">
@@ -191,10 +177,6 @@ function ThankYou() {
 
               {isPaid && deliveryQ.data && deliveryQ.data.length > 0 && (
                 <DeliveryPanel items={deliveryQ.data} />
-              )}
-
-              {isPaid && subQ.data && subQ.data.length > 0 && (
-                <SubscriptionDeliveryPanel items={subQ.data} />
               )}
 
               {isPaid && q.data.order?.id && (

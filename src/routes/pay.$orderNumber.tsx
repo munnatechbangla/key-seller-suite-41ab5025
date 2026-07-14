@@ -16,7 +16,6 @@ import {
   Clock,
   MessageCircle,
   RefreshCw,
-  Download,
   AlertTriangle,
 } from "lucide-react";
 import { getOrderByNumberFn, getMyOrderByNumberFn, simulateGatewayPaymentFn } from "@/lib/orders.functions";
@@ -51,8 +50,10 @@ function buildTimeline(opts: {
   rejected: boolean;
   approved: boolean;
   hasLicense: boolean;
+  isSubscription: boolean;
+  subscriptionDelivered: boolean;
 }): TimelineStep[] {
-  const { submitted, underReview, rejected, approved, hasLicense } = opts;
+  const { submitted, underReview, rejected, approved, hasLicense, isSubscription, subscriptionDelivered } = opts;
   const s = (cond: "done" | "current" | "todo" | "error"): "done" | "current" | "todo" | "error" => cond;
   return [
     { key: "created", label: "Order Created", state: s("done") },
@@ -73,8 +74,10 @@ function buildTimeline(opts: {
     },
     {
       key: "delivered",
-      label: "License Delivered",
-      state: approved && hasLicense ? "done" : approved ? "current" : "todo",
+      label: isSubscription ? "Subscription Delivered" : "License Delivered",
+      state: isSubscription
+        ? subscriptionDelivered ? "done" : approved ? "current" : "todo"
+        : approved && hasLicense ? "done" : approved ? "current" : "todo",
     },
   ];
 }
@@ -142,6 +145,8 @@ function PayPage() {
   const isBuiltinAuto = gateway?.type === "builtin" && BUILTIN_AUTO.has(slug);
 
   const orderStatus = order?.status ?? "pending";
+  const orderItems = (q.data?.items as any[]) ?? [];
+  const isSubscriptionOrder = orderItems.some((it) => it.product_type === "subscription" || it.delivery_type === "subscription");
   const approved = orderStatus === "paid" || orderStatus === "completed";
   const rejected = submission?.status === "rejected";
   const pendingSubmission = submission?.status === "pending" || submission?.status === "under_review";
@@ -163,6 +168,8 @@ function PayPage() {
     rejected,
     approved,
     hasLicense: assignments.length > 0,
+    isSubscription: isSubscriptionOrder,
+    subscriptionDelivered: isSubscriptionOrder && orderStatus === "completed",
   });
 
   const redirectToGateway = async () => {
@@ -258,7 +265,7 @@ function PayPage() {
               <Timeline steps={timeline} />
 
               {approved ? (
-                <ApprovedPanel orderNumber={orderNumber} />
+                <ApprovedPanel orderNumber={orderNumber} isSubscription={isSubscriptionOrder} subscriptionDelivered={orderStatus === "completed"} />
               ) : rejected && !resubmit ? (
                 <RejectedPanel
                   reason={submission?.admin_note ?? null}
@@ -488,7 +495,15 @@ function RejectedPanel({
   );
 }
 
-function ApprovedPanel({ orderNumber }: { orderNumber: string }) {
+function ApprovedPanel({
+  orderNumber,
+  isSubscription,
+  subscriptionDelivered,
+}: {
+  orderNumber: string;
+  isSubscription: boolean;
+  subscriptionDelivered: boolean;
+}) {
   return (
     <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent p-5 sm:p-6 space-y-6 animate-in fade-in zoom-in-95 duration-500">
       <div className="flex flex-col items-center text-center gap-3">
@@ -498,7 +513,11 @@ function ApprovedPanel({ orderNumber }: { orderNumber: string }) {
         <div className="space-y-1">
           <div className="font-bold text-xl">Payment Approved</div>
           <div className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Order Verified Successfully</div>
-          <p className="text-xs text-muted-foreground">License delivery completed.</p>
+          <p className="text-xs text-muted-foreground">
+            {isSubscription
+              ? subscriptionDelivered ? "Subscription delivered." : "Your subscription is awaiting admin delivery."
+              : "License delivery completed."}
+          </p>
         </div>
       </div>
       <Link
@@ -507,7 +526,7 @@ function ApprovedPanel({ orderNumber }: { orderNumber: string }) {
         className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 active:scale-[.98] whitespace-nowrap"
         style={{ minHeight: 54 }}
       >
-        <Download className="h-5 w-5 shrink-0" /> Download Product
+        <ClipboardCheck className="h-5 w-5 shrink-0" /> {isSubscription ? "View Subscription Status" : "View Delivery"}
       </Link>
     </div>
   );

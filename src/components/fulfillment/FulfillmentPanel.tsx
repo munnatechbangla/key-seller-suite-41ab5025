@@ -156,7 +156,7 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
         </div>
       )}
       {rows.map((f) => {
-        if (f.delivery_type === "subscription") {
+        if (f.delivery_type === "subscription" || f.product_type === "subscription" || f.product_delivery_type === "subscription") {
           return (
             <SubscriptionCard
               key={f.id}

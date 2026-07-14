@@ -34,6 +34,8 @@ export type FulfillmentRow = {
   updated_at: string;
   product_title?: string | null;
   product_slug?: string | null;
+  product_type?: string | null;
+  product_delivery_type?: string | null;
 };
 
 export type FulfillmentLog = {
