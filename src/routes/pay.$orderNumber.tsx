@@ -662,9 +662,18 @@ function ManualForm({
   const gatewayInfo = useMemo(() => normalizeGatewayInfo(cfg), [cfg]);
   const customerFields = useMemo(() => normalizeCustomerFields(cfg), [cfg]);
   const qr = useMemo(() => normalizeQr(cfg), [cfg]);
+  const requireScreenshot = useMemo(() => {
+    const direct = cfg.require_screenshot;
+    if (typeof direct === "boolean") return direct;
+    if (typeof direct === "string") return direct === "true";
+    const ps = cfg.payment_screenshot;
+    if (ps && typeof ps === "object" && (ps as Record<string, unknown>).required === true) return true;
+    return false;
+  }, [cfg]);
 
   const [values, setValues] = useState<Record<string, string>>({});
   const [files, setFiles] = useState<Record<string, File | null>>({});
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [qrUrl, setQrUrl] = useState<string>(() => (qr.url && !qr.url.startsWith("media://") ? qr.url : ""));
 
