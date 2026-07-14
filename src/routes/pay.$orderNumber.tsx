@@ -832,7 +832,7 @@ function FieldInput({ field, value, onChange, file, onFileChange }: { field: Cus
       </label>
     );
   } else {
-    const inputType = ["email", "number", "tel", "text"].includes(type) ? type : "text";
+    const inputType = ["email", "number", "tel", "text", "date"].includes(type) ? type : "text";
     control = <input name={key} type={inputType} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} required={required} className={baseCls} />;
   }
   return <div>{labelNode}{control}{helpNode}</div>;
