@@ -743,13 +743,14 @@ function ManualForm({
         data: {
           order_number: orderNumber,
           gateway_slug: gateway.slug,
-          transaction_id: (values.transaction_id ?? "").trim() || undefined,
-          sender_name: (values.sender_name ?? "").trim() || undefined,
-          sender_account: (values.sender_account ?? "").trim() || undefined,
+          transaction_id: payload.transaction_id || payload.trxid || payload.txn_id || undefined,
+          sender_name: payload.sender_name || undefined,
+          sender_account: payload.sender_account || undefined,
           screenshot_url,
           note: composedNote || undefined,
         },
       });
+
       toast.success("Payment submitted — awaiting admin verification");
       onSubmitted();
     } catch (err) {
