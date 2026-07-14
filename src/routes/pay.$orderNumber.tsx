@@ -658,7 +658,7 @@ function ManualForm({
 }) {
   const submit = useServerFn(submitManualPaymentFn);
   const cfg = (gateway.config as Record<string, unknown>) ?? {};
-  const instructions = (cfg.instructions as string) || "";
+  const instructions = cfg.instructions == null ? "" : String(cfg.instructions);
   const gatewayInfo = useMemo(() => normalizeGatewayInfo(cfg), [cfg]);
   const customerFields = useMemo(() => normalizeCustomerFields(cfg), [cfg]);
   const qr = useMemo(() => normalizeQr(cfg), [cfg]);
