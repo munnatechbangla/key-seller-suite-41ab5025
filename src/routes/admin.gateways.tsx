@@ -326,7 +326,7 @@ function GatewayEditor({ gateway, defaultType, onClose, onSaved }: {
 type ManualField = {
   key: string;
   label: string;
-  type: "text" | "textarea" | "number" | "email" | "tel" | "url" | "select";
+  type: "text" | "textarea" | "number" | "email" | "tel" | "date" | "select";
   placeholder?: string;
   required?: boolean;
   options?: string[];
