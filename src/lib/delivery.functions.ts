@@ -190,6 +190,8 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
       },
       downloads: downloadsByProduct.get(it.product_id) ?? [],
       license_keys: keysByItem.get(it.id) ?? [],
+      manual_license: mldByItem.get(it.id) ?? null,
+
       custom_fields: fieldsByKey.get(`${it.order_id}::${it.product_id}`) ?? [],
       fulfillment,
     } as DeliveryItem;
