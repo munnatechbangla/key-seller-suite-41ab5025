@@ -104,8 +104,10 @@ function OrderRow({ order: o, onStatusChange }: { order: any; onStatusChange: (s
         <TableRow>
           <TableCell colSpan={6} className="bg-muted/30 space-y-4">
             <FulfillmentPanel orderId={o.id} authed isAdmin />
+            <ManualLicenseDeliveryPanel orderId={o.id} />
             <LicenseAssignmentPanel orderId={o.id} />
             <OrderCustomFieldValues orderId={o.id} authed compact />
+
           </TableCell>
         </TableRow>
       )}
