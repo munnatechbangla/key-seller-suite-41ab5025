@@ -408,3 +408,218 @@ export const adminDeleteProductImageFn = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ---------- Manual License Assignment ----------
+// Phase 1.1 — lets admins hand-pick a license key for an order item that
+// was not (or could not be) auto-assigned. Extends the existing workflow;
+// does not modify subscriptions or auto-assignment.
+
+const LICENSE_ASSIGNABLE_ORDER_STATUSES = ["paid", "processing", "completed"] as const;
+
+function isLicenseProduct(p: { product_type?: string | null; delivery_type?: string | null; is_license_key?: boolean | null } | null | undefined) {
+  if (!p) return false;
+  return (
+    p.product_type === "license_key" ||
+    p.delivery_type === "license_key" ||
+    !!p.is_license_key
+  );
+}
+
+export const adminListAssignableLicenseItemsFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ orderId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const sb = context.supabase as any;
+
+    const { data: order, error: oErr } = await sb
+      .from("orders")
+      .select("id, order_number, status, user_id, email")
+      .eq("id", data.orderId)
+      .maybeSingle();
+    if (oErr) throw new Error(oErr.message);
+    if (!order) throw new Error("Order not found");
+
+    const paid = (LICENSE_ASSIGNABLE_ORDER_STATUSES as readonly string[]).includes(order.status);
+
+    const { data: items, error: iErr } = await sb
+      .from("order_items")
+      .select("id, product_id, variation_id, product_name, quantity, license_pool_id_snapshot, products(product_type, delivery_type, is_license_key)")
+      .eq("order_id", data.orderId);
+    if (iErr) throw new Error(iErr.message);
+
+    const licenseItems = (items ?? []).filter((it: any) => isLicenseProduct(it.products));
+    const itemIds = licenseItems.map((i: any) => i.id);
+    const assignmentsById: Record<string, any[]> = {};
+    if (itemIds.length) {
+      const { data: existing, error: aErr } = await sb
+        .from("license_assignments")
+        .select("id, order_item_id, revoked_at, assigned_at, license_key_id, license_keys(key_value)")
+        .in("order_item_id", itemIds);
+      if (aErr) throw new Error(aErr.message);
+      for (const a of existing ?? []) {
+        (assignmentsById[a.order_item_id] ||= []).push(a);
+      }
+    }
+
+    return {
+      order: { id: order.id, order_number: order.order_number, status: order.status, paid },
+      items: licenseItems.map((it: any) => {
+        const all = assignmentsById[it.id] ?? [];
+        const active = all.filter((a) => !a.revoked_at);
+        const qty = Number(it.quantity ?? 1);
+        return {
+          order_item_id: it.id,
+          product_id: it.product_id,
+          variation_id: it.variation_id,
+          product_name: it.product_name,
+          quantity: qty,
+          license_pool_id_snapshot: it.license_pool_id_snapshot ?? null,
+          assigned_count: active.length,
+          remaining: Math.max(0, qty - active.length),
+          assignments: all,
+          can_assign: paid && active.length < qty,
+        };
+      }),
+    };
+  });
+
+export const adminListAvailableLicenseKeysFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      productId: z.string().uuid(),
+      poolId: z.string().uuid().nullable().optional(),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    let q = (context.supabase as any)
+      .from("license_keys")
+      .select("id, key_value, pool_id, product_id, status, created_at, license_pools(name)")
+      .eq("status", "available")
+      .eq("product_id", data.productId)
+      .order("created_at", { ascending: true })
+      .limit(500);
+    if (data.poolId) q = q.eq("pool_id", data.poolId);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+export const adminAssignLicenseKeyFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      orderItemId: z.string().uuid(),
+      licenseKeyId: z.string().uuid(),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const sb = context.supabase as any;
+
+    // 1) Load order item + parent order.
+    const { data: item, error: iErr } = await sb
+      .from("order_items")
+      .select("id, order_id, product_id, quantity, license_pool_id_snapshot, orders(status, user_id, email), products(product_type, delivery_type, is_license_key)")
+      .eq("id", data.orderItemId)
+      .maybeSingle();
+    if (iErr) throw new Error(iErr.message);
+    if (!item) throw new Error("Order item not found");
+    if (!isLicenseProduct(item.products)) throw new Error("Item is not a license product");
+
+    const orderStatus = item.orders?.status;
+    if (!(LICENSE_ASSIGNABLE_ORDER_STATUSES as readonly string[]).includes(orderStatus)) {
+      throw new Error("Order must be paid before a license can be assigned");
+    }
+
+    // 2) Enforce quantity cap using existing active assignments.
+    const { count: existingCount, error: cErr } = await sb
+      .from("license_assignments")
+      .select("id", { count: "exact", head: true })
+      .eq("order_item_id", data.orderItemId)
+      .is("revoked_at", null);
+    if (cErr) throw new Error(cErr.message);
+    const qty = Number(item.quantity ?? 1);
+    if ((existingCount ?? 0) >= qty) {
+      throw new Error("This order item already has all licenses assigned");
+    }
+
+    // 3) Validate the license key.
+    const { data: key, error: kErr } = await sb
+      .from("license_keys")
+      .select("id, product_id, pool_id, status")
+      .eq("id", data.licenseKeyId)
+      .maybeSingle();
+    if (kErr) throw new Error(kErr.message);
+    if (!key) throw new Error("License key not found");
+    if (key.status === "revoked") throw new Error("Cannot assign a revoked key");
+    if (key.status === "assigned") throw new Error("Key is already assigned");
+    if (key.status !== "available") throw new Error("Key is not available");
+    if (key.product_id !== item.product_id) {
+      throw new Error("Key belongs to a different product");
+    }
+    if (item.license_pool_id_snapshot && key.pool_id !== item.license_pool_id_snapshot) {
+      throw new Error("Key belongs to a different pool than this order item");
+    }
+
+    // 4) Claim the key + write the assignment via the privileged client
+    //    (license_assignments has no admin INSERT policy).
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: claimed, error: uErr } = await supabaseAdmin
+      .from("license_keys")
+      .update({ status: "assigned" })
+      .eq("id", key.id)
+      .eq("status", "available")
+      .select("id")
+      .maybeSingle();
+    if (uErr) throw new Error(uErr.message);
+    if (!claimed) throw new Error("Key was just claimed by another process");
+
+    const { error: aErr } = await supabaseAdmin.from("license_assignments").insert({
+      order_item_id: data.orderItemId,
+      order_id: item.order_id,
+      license_key_id: key.id,
+      user_id: item.orders?.user_id ?? null,
+    });
+    if (aErr) {
+      // Roll the key back so it stays available.
+      await supabaseAdmin.from("license_keys").update({ status: "available" }).eq("id", key.id);
+      throw new Error(aErr.message);
+    }
+
+    // 5) Trigger existing fulfillment / email flow (best-effort).
+    try {
+      await supabaseAdmin.rpc("start_fulfillment_for_order", { _order_id: item.order_id });
+    } catch (e) {
+      console.error("[assign-license] start_fulfillment_for_order failed", e);
+    }
+    try {
+      const { enqueueEmail } = await import("@/lib/emails/service.server");
+      const { data: order } = await supabaseAdmin
+        .from("orders")
+        .select("order_number, email, currency")
+        .eq("id", item.order_id)
+        .maybeSingle();
+      const { data: assignments } = await supabaseAdmin
+        .from("license_assignments")
+        .select("license_keys(key_value), order_items(product_name)")
+        .eq("order_id", item.order_id);
+      if (order?.email && assignments?.length) {
+        const block = assignments
+          .map((a: any) => `${a.order_items?.product_name ?? "Product"}: ${a.license_keys?.key_value ?? ""}`)
+          .join("\n");
+        await enqueueEmail({
+          templateKey: "license_delivery",
+          recipient: order.email,
+          vars: { order_number: order.order_number, license_block: block },
+        });
+      }
+    } catch (e) {
+      console.error("[assign-license] email dispatch failed", e);
+    }
+
+    return { ok: true };
+  });
