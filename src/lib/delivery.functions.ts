@@ -34,6 +34,14 @@ export type DeliveryItem = {
   };
   downloads: DeliveryDownload[];
   license_keys: string[];
+  manual_license?: {
+    license_name: string;
+    license_key: string;
+    expiry_date: string | null;
+    platform: string | null;
+    instructions: string | null;
+    delivered_at: string;
+  } | null;
   custom_fields: DeliveryCustomField[];
   fulfillment?: {
     id: string;
@@ -43,6 +51,7 @@ export type DeliveryItem = {
     metadata: Record<string, any> | null;
   } | null;
 };
+
 
 async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: string; onlyPaid: boolean }) {
   // Resolve order(s)
@@ -135,6 +144,25 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
     fieldsByKey.set(key, arr);
   }
 
+  const { data: mlds } = itemIds.length
+    ? await sb
+        .from("manual_license_deliveries")
+        .select("order_item_id, license_name, license_key, expiry_date, platform, instructions, delivered_at")
+        .in("order_item_id", itemIds)
+    : { data: [] };
+  const mldByItem = new Map<string, DeliveryItem["manual_license"]>();
+  for (const m of (mlds ?? []) as any[]) {
+    mldByItem.set(m.order_item_id, {
+      license_name: m.license_name,
+      license_key: m.license_key,
+      expiry_date: m.expiry_date,
+      platform: m.platform,
+      instructions: m.instructions,
+      delivered_at: m.delivered_at,
+    });
+  }
+
+
   const orderMap = new Map(orderRows.map((o) => [o.id, o]));
 
   return itemRows.map((it) => {
@@ -162,6 +190,8 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
       },
       downloads: downloadsByProduct.get(it.product_id) ?? [],
       license_keys: keysByItem.get(it.id) ?? [],
+      manual_license: mldByItem.get(it.id) ?? null,
+
       custom_fields: fieldsByKey.get(`${it.order_id}::${it.product_id}`) ?? [],
       fulfillment,
     } as DeliveryItem;

@@ -1707,6 +1707,79 @@ export type Database = {
           },
         ]
       }
+      manual_license_deliveries: {
+        Row: {
+          created_at: string
+          customer_id: string | null
+          delivered_at: string
+          delivered_by: string | null
+          expiry_date: string | null
+          id: string
+          instructions: string | null
+          license_key: string
+          license_name: string
+          order_id: string
+          order_item_id: string
+          platform: string | null
+          product_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id?: string | null
+          delivered_at?: string
+          delivered_by?: string | null
+          expiry_date?: string | null
+          id?: string
+          instructions?: string | null
+          license_key: string
+          license_name: string
+          order_id: string
+          order_item_id: string
+          platform?: string | null
+          product_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string | null
+          delivered_at?: string
+          delivered_by?: string | null
+          expiry_date?: string | null
+          id?: string
+          instructions?: string | null
+          license_key?: string
+          license_name?: string
+          order_id?: string
+          order_item_id?: string
+          platform?: string | null
+          product_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_license_deliveries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_license_deliveries_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: true
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_license_deliveries_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manual_payment_submissions: {
         Row: {
           admin_note: string | null

@@ -161,6 +161,37 @@ function DownloadBody({ item }: { item: DeliveryItem }) {
 }
 
 function LicenseBody({ item }: { item: DeliveryItem }) {
+  const ml = item.manual_license;
+  if (ml) {
+    return (
+      <div className="space-y-3">
+        <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 space-y-2">
+          <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-semibold text-sm">
+            <div className="h-2 w-2 rounded-full bg-emerald-500" /> Delivered
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+            <div><div className="text-[11px] text-muted-foreground">License Name</div><div className="font-medium">{ml.license_name}</div></div>
+            {ml.platform && <div><div className="text-[11px] text-muted-foreground">Platform</div><div className="font-medium">{ml.platform}</div></div>}
+            {ml.expiry_date && <div><div className="text-[11px] text-muted-foreground">Expiry Date</div><div className="font-medium">{ml.expiry_date}</div></div>}
+            <div><div className="text-[11px] text-muted-foreground">Delivered</div><div className="font-medium">{new Date(ml.delivered_at).toLocaleString()}</div></div>
+          </div>
+          <div className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card">
+            <KeyRound className="h-5 w-5 text-primary shrink-0" />
+            <code className="flex-1 font-mono text-sm break-all">{ml.license_key}</code>
+            <button type="button" onClick={() => copyText(ml.license_key, "License copied")} className="px-3 py-2 rounded-lg bg-card border border-border text-xs font-semibold hover:bg-muted inline-flex items-center gap-1">
+              <Copy className="h-3.5 w-3.5" /> Copy
+            </button>
+          </div>
+          {ml.instructions && (
+            <div>
+              <div className="text-[11px] text-muted-foreground mb-1">Instructions</div>
+              <p className="text-sm whitespace-pre-wrap">{ml.instructions}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
   if (item.license_keys.length === 0) {
     return <EmptyNote text="Your license key is being provisioned. Refresh in a moment." />;
   }
@@ -179,6 +210,7 @@ function LicenseBody({ item }: { item: DeliveryItem }) {
     </div>
   );
 }
+
 
 function SubscriptionBody({ item }: { item: DeliveryItem }) {
   // Manual delivery workflow: show delivered state if fulfillment marked it so.
