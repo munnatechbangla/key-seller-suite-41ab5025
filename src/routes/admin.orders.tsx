@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
 import { FulfillmentPanel } from "@/components/fulfillment/FulfillmentPanel";
+import { LicenseAssignmentPanel } from "@/components/admin/LicenseAssignmentPanel";
 
 export const Route = createFileRoute("/admin/orders")({ component: AdminOrders });
 
@@ -102,6 +103,7 @@ function OrderRow({ order: o, onStatusChange }: { order: any; onStatusChange: (s
         <TableRow>
           <TableCell colSpan={6} className="bg-muted/30 space-y-4">
             <FulfillmentPanel orderId={o.id} authed isAdmin />
+            <LicenseAssignmentPanel orderId={o.id} />
             <OrderCustomFieldValues orderId={o.id} authed compact />
           </TableCell>
         </TableRow>
