@@ -144,6 +144,25 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
     fieldsByKey.set(key, arr);
   }
 
+  const { data: mlds } = itemIds.length
+    ? await sb
+        .from("manual_license_deliveries")
+        .select("order_item_id, license_name, license_key, expiry_date, platform, instructions, delivered_at")
+        .in("order_item_id", itemIds)
+    : { data: [] };
+  const mldByItem = new Map<string, DeliveryItem["manual_license"]>();
+  for (const m of (mlds ?? []) as any[]) {
+    mldByItem.set(m.order_item_id, {
+      license_name: m.license_name,
+      license_key: m.license_key,
+      expiry_date: m.expiry_date,
+      platform: m.platform,
+      instructions: m.instructions,
+      delivered_at: m.delivered_at,
+    });
+  }
+
+
   const orderMap = new Map(orderRows.map((o) => [o.id, o]));
 
   return itemRows.map((it) => {
