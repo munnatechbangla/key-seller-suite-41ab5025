@@ -34,6 +34,14 @@ export type DeliveryItem = {
   };
   downloads: DeliveryDownload[];
   license_keys: string[];
+  manual_license?: {
+    license_name: string;
+    license_key: string;
+    expiry_date: string | null;
+    platform: string | null;
+    instructions: string | null;
+    delivered_at: string;
+  } | null;
   custom_fields: DeliveryCustomField[];
   fulfillment?: {
     id: string;
@@ -43,6 +51,7 @@ export type DeliveryItem = {
     metadata: Record<string, any> | null;
   } | null;
 };
+
 
 async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: string; onlyPaid: boolean }) {
   // Resolve order(s)
