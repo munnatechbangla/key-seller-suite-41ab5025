@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
 import { FulfillmentPanel } from "@/components/fulfillment/FulfillmentPanel";
 import { LicenseAssignmentPanel } from "@/components/admin/LicenseAssignmentPanel";
-import { ManualLicenseDeliveryPanel } from "@/components/admin/ManualLicenseDeliveryPanel";
+
 
 export const Route = createFileRoute("/admin/orders")({ component: AdminOrders });
 
