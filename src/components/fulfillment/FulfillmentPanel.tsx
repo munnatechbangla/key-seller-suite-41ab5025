@@ -116,6 +116,32 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
     }
     return set;
   }, [licenseItemsQ.data]);
+  const licenseProductIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const it of (licenseItemsQ.data?.items ?? []) as Array<{ product_id: string }>) {
+      if (it.product_id) set.add(it.product_id);
+    }
+    return set;
+  }, [licenseItemsQ.data]);
+
+  if (typeof window !== "undefined" && isAdmin) {
+    // eslint-disable-next-line no-console
+    console.debug("[FulfillmentPanel]", {
+      orderId,
+      licenseItemsQStatus: licenseItemsQ.status,
+      licenseItemsError: (licenseItemsQ.error as any)?.message,
+      licenseItems: licenseItemsQ.data?.items,
+      fulfillmentRows: (q.data ?? []).map((r: any) => ({
+        id: r.id,
+        product_id: r.product_id,
+        order_item_id: r.order_item_id,
+        delivery_type: r.delivery_type,
+        product_type: r.product_type,
+        product_delivery_type: r.product_delivery_type,
+        status: r.fulfillment_status,
+      })),
+    });
+  }
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["order-fulfillments", orderId] });
 
