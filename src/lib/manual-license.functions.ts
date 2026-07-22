@@ -147,6 +147,7 @@ export const adminSaveManualLicenseDeliveryFn = createServerFn({ method: "POST" 
           delivery_type: "license_key",
           completed_at: nowIso,
           started_at: nowIso,
+          failure_reason: null,
           metadata: { manual_license_delivery_id: saved.id, delivered_at: nowIso, source: "manual_license" },
         })
         .eq("id", existingF.id);
@@ -161,12 +162,22 @@ export const adminSaveManualLicenseDeliveryFn = createServerFn({ method: "POST" 
           delivery_type: "license_key",
           started_at: nowIso,
           completed_at: nowIso,
+          failure_reason: null,
           metadata: { manual_license_delivery_id: saved.id, source: "manual_license" },
         })
         .select("id")
         .single();
       fulfillmentId = newF?.id ?? null;
     }
+
+    // Void any stale pool-based license assignment for this item so the
+    // customer's "My Licenses" list has exactly one delivered record
+    // (the manual_license_deliveries row) instead of a duplicate pool row
+    // with a blank / unrelated key.
+    await supabaseAdmin
+      .from("license_assignments")
+      .delete()
+      .eq("order_item_id", item.id);
 
     // Timeline logs
     if (fulfillmentId) {
