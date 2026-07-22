@@ -98,7 +98,7 @@ function ManualLicenseRow({
   }, [item.delivery?.id]);
 
   const mut = useMutation({
-    mutationFn: () =>
+    mutationFn: (deliver: boolean) =>
       save({
         data: {
           orderItemId: item.order_item_id,
@@ -107,19 +107,23 @@ function ManualLicenseRow({
           expiryDate: expiryDate || null,
           platform: platform || null,
           instructions: instructions || null,
+          deliver,
         },
       }),
     onSuccess: (r: any) => {
-      toast.success(r?.notified ? "Delivered & customer notified" : "License delivery saved");
+      if (r?.draft) toast.success("Draft saved");
+      else toast.success(r?.notified ? "Delivered & customer notified" : "License delivery saved");
       qc.invalidateQueries({ queryKey: ["admin-manual-license", orderId] });
       qc.invalidateQueries({ queryKey: ["order-fulfillments", orderId] });
       qc.invalidateQueries({ queryKey: ["fulfillment-timeline"] });
       qc.invalidateQueries({ queryKey: ["my-deliveries"] });
+      qc.invalidateQueries({ queryKey: ["my-manual-licenses"] });
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed to save"),
   });
 
-  const canSave = !disabled && licenseName.trim().length > 0 && licenseKey.trim().length > 0 && !mut.isPending;
+  const canSubmit = licenseName.trim().length > 0 && licenseKey.trim().length > 0 && !mut.isPending;
+  const canSave = !disabled && canSubmit;
 
   return (
     <div className="rounded-lg border border-border/70 p-3 space-y-3">
@@ -158,13 +162,18 @@ function ManualLicenseRow({
         </div>
       </div>
 
-      <div className="flex justify-end">
-        <Button size="sm" onClick={() => mut.mutate()} disabled={!canSave}>
+      <div className="flex justify-end gap-2">
+        <Button size="sm" variant="outline" onClick={() => mut.mutate(false)} disabled={!canSave}>
+          {mut.isPending ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : null}
+          Save Draft
+        </Button>
+        <Button size="sm" onClick={() => mut.mutate(true)} disabled={!canSave}>
           {mut.isPending ? (
             <><Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> Saving…</>
-          ) : item.delivery ? "Update & Redeliver" : "Save & Deliver"}
+          ) : item.delivery ? "Update & Redeliver" : "Deliver License"}
         </Button>
       </div>
     </div>
   );
 }
+
