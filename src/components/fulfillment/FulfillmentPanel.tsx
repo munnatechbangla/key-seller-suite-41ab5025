@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ManualLicenseDeliveryPanel } from "@/components/admin/ManualLicenseDeliveryPanel";
+import { adminListManualLicenseDeliveriesFn } from "@/lib/manual-license.functions";
 
 import {
   getOrderFulfillmentsAuthFn,
