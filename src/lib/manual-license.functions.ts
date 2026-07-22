@@ -79,6 +79,7 @@ const saveSchema = z.object({
   expiryDate: z.string().nullable().optional(),
   platform: z.string().nullable().optional(),
   instructions: z.string().nullable().optional(),
+  deliver: z.boolean().optional().default(true),
 });
 
 export const adminSaveManualLicenseDeliveryFn = createServerFn({ method: "POST" })
@@ -123,6 +124,11 @@ export const adminSaveManualLicenseDeliveryFn = createServerFn({ method: "POST" 
       .select("*")
       .single();
     if (uErr) throw new Error(uErr.message);
+
+    // Draft: save only, do not mark fulfillment delivered or send email.
+    if (!data.deliver) {
+      return { ok: true, delivery: saved, notified: false, draft: true };
+    }
 
     // Mark fulfillment delivered (find or create the fulfillment row for the item)
     const nowIso = new Date().toISOString();
@@ -201,8 +207,33 @@ export const adminSaveManualLicenseDeliveryFn = createServerFn({ method: "POST" 
       console.error("[manual-license] email failed", e);
     }
 
-    return { ok: true, delivery: saved, notified };
+    return { ok: true, delivery: saved, notified, draft: false };
   });
+
+export const getMyManualLicensesFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const sb = context.supabase as any;
+    // RLS restricts to the current customer. Only surface deliveries whose
+    // fulfillment row has been marked delivered (drafts stay hidden).
+    const { data, error } = await sb
+      .from("manual_license_deliveries")
+      .select("id, order_id, order_item_id, license_name, license_key, expiry_date, platform, instructions, delivered_at, order_items(product_name, product_slug), orders(order_number)")
+      .order("delivered_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    const items = (data ?? []) as any[];
+    if (!items.length) return [];
+    const itemIds = items.map((r) => r.order_item_id);
+    const { data: fulfs } = await sb
+      .from("order_fulfillments")
+      .select("order_item_id, fulfillment_status")
+      .in("order_item_id", itemIds);
+    const delivered = new Set(
+      (fulfs ?? []).filter((f: any) => f.fulfillment_status === "delivered").map((f: any) => f.order_item_id),
+    );
+    return items.filter((r) => delivered.has(r.order_item_id));
+  });
+
 
 function maskKey(k: string): string {
   if (!k) return "";

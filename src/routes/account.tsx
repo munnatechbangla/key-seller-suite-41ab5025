@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { useProductsBySlugs, featuredQuery } from "@/lib/catalog";
 import { getMyOrdersFn, getMyDownloadsFn, getMyLicensesFn } from "@/lib/orders.functions";
+import { getMyManualLicensesFn } from "@/lib/manual-license.functions";
 import { getMySubmissionsFn } from "@/lib/payments/gateways.functions";
 import { MyReviewsTab } from "@/components/site/MyReviewsTab";
 import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
@@ -229,15 +230,30 @@ function DownloadsTab() {
 
 function LicensesTab() {
   const lic = useMyLicenses();
-  const items = lic.data ?? [];
+  const manualFn = useServerFn(getMyManualLicensesFn);
+  const manualQ = useQuery({ queryKey: ["my-manual-licenses"], queryFn: () => manualFn() });
+  const pool = lic.data ?? [];
+  const manual = (manualQ.data ?? []) as Array<{
+    id: string;
+    license_name: string;
+    license_key: string;
+    expiry_date: string | null;
+    platform: string | null;
+    instructions: string | null;
+    delivered_at: string;
+    order_items: { product_name: string } | null;
+    orders: { order_number: string } | null;
+  }>;
+  const loading = lic.isLoading || manualQ.isLoading;
+  const empty = pool.length === 0 && manual.length === 0;
   return (
     <Card>
       <h3 className="font-bold mb-4">Your license keys</h3>
-      {lic.isLoading ? <Loader /> : items.length === 0 ? (
+      {loading ? <Loader /> : empty ? (
         <p className="text-sm text-muted-foreground">No licenses yet. Licenses appear after a successful order.</p>
       ) : (
         <div className="space-y-2">
-          {items.map((a) => {
+          {pool.map((a) => {
             const name = (a as { order_items: { product_name: string } | null }).order_items?.product_name ?? "Product";
             const key = (a as { license_keys: { key_value: string } | null }).license_keys?.key_value ?? "";
             return (
@@ -251,11 +267,36 @@ function LicensesTab() {
               </div>
             );
           })}
+          {manual.map((m) => (
+            <div key={m.id} className="p-3 rounded-xl border border-border space-y-2">
+              <div className="flex items-center gap-3">
+                <KeyRound className="h-5 w-5 text-primary" />
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm">{m.license_name || m.order_items?.product_name || "License"}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    Order #{m.orders?.order_number ?? "—"} · Delivered {new Date(m.delivered_at).toLocaleString()}
+                  </div>
+                </div>
+                <button onClick={() => { navigator.clipboard.writeText(m.license_key); toast.success("Copied"); }} className="px-3 py-2 rounded-lg bg-card border border-border text-xs font-semibold hover:bg-muted">Copy Key</button>
+              </div>
+              <code className="block text-xs font-mono break-all bg-muted/50 rounded px-2 py-1">{m.license_key}</code>
+              <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                {m.expiry_date && <div><span className="font-semibold text-foreground">Expiry:</span> {m.expiry_date}</div>}
+                {m.platform && <div><span className="font-semibold text-foreground">Platform:</span> {m.platform}</div>}
+              </div>
+              {m.instructions && (
+                <div className="text-xs whitespace-pre-wrap rounded bg-muted/40 p-2">
+                  <span className="font-semibold">Instructions:</span> {m.instructions}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </Card>
   );
 }
+
 
 function SubmissionsTab() {
   const fn = useServerFn(getMySubmissionsFn);
