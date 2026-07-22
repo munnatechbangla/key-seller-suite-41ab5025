@@ -189,7 +189,8 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
         const isLicense =
           f.delivery_type === "license_key" ||
           f.product_type === "license_key" ||
-          f.product_delivery_type === "license_key";
+          f.product_delivery_type === "license_key" ||
+          (!!f.order_item_id && licenseOrderItemIds.has(f.order_item_id));
         if (isLicense && isAdmin && f.order_item_id) {
           return (
             <LicenseKeyCard
