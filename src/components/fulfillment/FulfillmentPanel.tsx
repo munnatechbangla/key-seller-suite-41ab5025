@@ -171,6 +171,25 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
             />
           );
         }
+        const isLicense =
+          f.delivery_type === "license_key" ||
+          f.product_type === "license_key" ||
+          f.product_delivery_type === "license_key";
+        if (isLicense && isAdmin && f.order_item_id) {
+          return (
+            <LicenseKeyCard
+              key={f.id}
+              f={f}
+              orderId={orderId}
+              email={email}
+              authed={authed}
+              compact={compact}
+              onCancel={() => cancelMut.mutate(f.id)}
+              cancelPending={cancelMut.isPending}
+            />
+          );
+        }
+
         return (
         <div key={f.id} className="rounded-xl border border-border p-3 space-y-2 bg-card">
           <div className="flex items-center justify-between gap-3 flex-wrap">
