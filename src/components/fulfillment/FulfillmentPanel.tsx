@@ -102,6 +102,20 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
   const restart = useServerFn(adminRestartFulfillmentFn);
   const cancel = useServerFn(adminCancelFulfillmentFn);
   const startForOrder = useServerFn(adminStartFulfillmentForOrderFn);
+  const listManualLicenses = useServerFn(adminListManualLicenseDeliveriesFn);
+
+  const licenseItemsQ = useQuery({
+    queryKey: ["admin-manual-license", orderId],
+    queryFn: () => listManualLicenses({ data: { orderId } }),
+    enabled: isAdmin,
+  });
+  const licenseOrderItemIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const it of (licenseItemsQ.data?.items ?? []) as Array<{ order_item_id: string }>) {
+      set.add(it.order_item_id);
+    }
+    return set;
+  }, [licenseItemsQ.data]);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["order-fulfillments", orderId] });
 
