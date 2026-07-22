@@ -212,16 +212,38 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
             />
           );
         }
+        const matchedByProduct =
+          !!(f as any).product_id && licenseProductIds.has((f as any).product_id);
+        const resolvedOrderItemId =
+          f.order_item_id ??
+          ((licenseItemsQ.data?.items ?? []) as Array<{ order_item_id: string; product_id: string }>)
+            .find((it) => it.product_id === (f as any).product_id)?.order_item_id ??
+          null;
         const isLicense =
           f.delivery_type === "license_key" ||
           f.product_type === "license_key" ||
           f.product_delivery_type === "license_key" ||
-          (!!f.order_item_id && licenseOrderItemIds.has(f.order_item_id));
-        if (isLicense && isAdmin && f.order_item_id) {
+          (!!f.order_item_id && licenseOrderItemIds.has(f.order_item_id)) ||
+          matchedByProduct;
+        if (typeof window !== "undefined" && isAdmin) {
+          // eslint-disable-next-line no-console
+          console.debug("[FulfillmentPanel row]", {
+            fulfillment_id: f.id,
+            product_id: (f as any).product_id,
+            order_item_id: f.order_item_id,
+            resolvedOrderItemId,
+            delivery_type: f.delivery_type,
+            product_type: f.product_type,
+            product_delivery_type: f.product_delivery_type,
+            matchedByProduct,
+            isLicense,
+          });
+        }
+        if (isLicense && isAdmin && resolvedOrderItemId) {
           return (
             <LicenseKeyCard
               key={f.id}
-              f={f}
+              f={{ ...f, order_item_id: resolvedOrderItemId }}
               orderId={orderId}
               email={email}
               authed={authed}
