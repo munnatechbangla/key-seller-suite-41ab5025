@@ -79,6 +79,7 @@ const saveSchema = z.object({
   expiryDate: z.string().nullable().optional(),
   platform: z.string().nullable().optional(),
   instructions: z.string().nullable().optional(),
+  deliver: z.boolean().optional().default(true),
 });
 
 export const adminSaveManualLicenseDeliveryFn = createServerFn({ method: "POST" })
