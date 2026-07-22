@@ -30,7 +30,15 @@ type Item = {
   } | null;
 };
 
-export function ManualLicenseDeliveryPanel({ orderId }: { orderId: string }) {
+export function ManualLicenseDeliveryPanel({
+  orderId,
+  orderItemId,
+  hideHeader = false,
+}: {
+  orderId: string;
+  orderItemId?: string;
+  hideHeader?: boolean;
+}) {
   const list = useServerFn(adminListManualLicenseDeliveriesFn);
   const q = useQuery({
     queryKey: ["admin-manual-license", orderId],
@@ -45,22 +53,25 @@ export function ManualLicenseDeliveryPanel({ orderId }: { orderId: string }) {
     );
   }
 
-  const items = (q.data?.items ?? []) as Item[];
+  const all = (q.data?.items ?? []) as Item[];
+  const items = orderItemId ? all.filter((i) => i.order_item_id === orderItemId) : all;
   if (!items.length) return null;
 
   const eligible = q.data?.order.eligible ?? false;
 
   return (
-    <div className="rounded-xl border border-border p-3 space-y-3 bg-card">
-      <div className="flex items-center gap-2">
-        <KeyRound className="h-4 w-4 text-primary" />
-        <h4 className="font-semibold text-sm">Manual License Delivery</h4>
-        {!eligible && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-300">
-            <ShieldAlert className="h-3 w-3" /> Order not paid — delivery disabled
-          </span>
-        )}
-      </div>
+    <div className={hideHeader ? "space-y-3" : "rounded-xl border border-border p-3 space-y-3 bg-card"}>
+      {!hideHeader && (
+        <div className="flex items-center gap-2">
+          <KeyRound className="h-4 w-4 text-primary" />
+          <h4 className="font-semibold text-sm">Manual License Delivery</h4>
+          {!eligible && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-300">
+              <ShieldAlert className="h-3 w-3" /> Order not paid — delivery disabled
+            </span>
+          )}
+        </div>
+      )}
 
       {items.map((it) => (
         <ManualLicenseRow key={it.order_item_id} orderId={orderId} item={it} disabled={!eligible} />
@@ -68,6 +79,7 @@ export function ManualLicenseDeliveryPanel({ orderId }: { orderId: string }) {
     </div>
   );
 }
+
 
 function ManualLicenseRow({
   orderId,
