@@ -3,9 +3,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
   Loader2, RefreshCw, RotateCcw, XCircle, CheckCircle2, Clock, AlertTriangle,
-  PackageSearch, PackageCheck, ShieldAlert, Circle, Send,
+  PackageSearch, PackageCheck, ShieldAlert, Circle, Send, KeyRound,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ManualLicenseDeliveryPanel } from "@/components/admin/ManualLicenseDeliveryPanel";
+
 import {
   getOrderFulfillmentsAuthFn,
   getOrderFulfillmentsGuestFn,
@@ -169,6 +171,25 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
             />
           );
         }
+        const isLicense =
+          f.delivery_type === "license_key" ||
+          f.product_type === "license_key" ||
+          f.product_delivery_type === "license_key";
+        if (isLicense && isAdmin && f.order_item_id) {
+          return (
+            <LicenseKeyCard
+              key={f.id}
+              f={f}
+              orderId={orderId}
+              email={email}
+              authed={authed}
+              compact={compact}
+              onCancel={() => cancelMut.mutate(f.id)}
+              cancelPending={cancelMut.isPending}
+            />
+          );
+        }
+
         return (
         <div key={f.id} className="rounded-xl border border-border p-3 space-y-2 bg-card">
           <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -334,3 +355,71 @@ function SubscriptionCard({
     </div>
   );
 }
+
+// ============================================================
+// License Key card: inline Manual License Delivery editor
+// ============================================================
+function LicenseKeyCard({
+  f,
+  orderId,
+  email,
+  authed,
+  compact,
+  onCancel,
+  cancelPending,
+}: {
+  f: FulfillmentRow;
+  orderId: string;
+  email?: string;
+  authed: boolean;
+  compact: boolean;
+  onCancel: () => void;
+  cancelPending: boolean;
+}) {
+  const delivered = f.fulfillment_status === "delivered";
+  return (
+    <div className="rounded-xl border border-border p-3 space-y-3 bg-card">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <div className="text-sm font-semibold flex items-center gap-1.5">
+            <KeyRound className="h-4 w-4 text-primary" />
+            {f.product_title ?? "License Key"}
+          </div>
+          <div className="text-[11px] text-muted-foreground">
+            Delivery: license_key
+            {f.attempt_count > 0 ? ` • Attempts: ${f.attempt_count}` : ""}
+          </div>
+        </div>
+        <StatusBadge status={f.fulfillment_status} />
+      </div>
+
+      {f.failure_reason && (
+        <div className="text-xs text-red-600 dark:text-red-400">{f.failure_reason}</div>
+      )}
+
+      <ManualLicenseDeliveryPanel orderId={orderId} orderItemId={f.order_item_id!} hideHeader />
+
+      {!delivered && f.fulfillment_status !== "cancelled" && (
+        <div className="flex gap-2 pt-1">
+          <button
+            onClick={onCancel}
+            disabled={cancelPending}
+            className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-500/10 disabled:opacity-50"
+          >
+            <XCircle className="h-3 w-3" /> Cancel
+          </button>
+        </div>
+      )}
+
+      {!compact && (
+        <details className="pt-1">
+          <summary className="cursor-pointer text-[11px] font-medium text-muted-foreground hover:text-foreground">View timeline</summary>
+          <div className="pt-2">
+            <Timeline fulfillmentId={f.id} email={email} authed={authed} />
+          </div>
+        </details>
+      )}
+    </div>
+  );
+}
+
