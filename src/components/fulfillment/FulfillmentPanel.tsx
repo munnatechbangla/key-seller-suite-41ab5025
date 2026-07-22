@@ -116,6 +116,32 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
     }
     return set;
   }, [licenseItemsQ.data]);
+  const licenseProductIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const it of (licenseItemsQ.data?.items ?? []) as Array<{ product_id: string }>) {
+      if (it.product_id) set.add(it.product_id);
+    }
+    return set;
+  }, [licenseItemsQ.data]);
+
+  if (typeof window !== "undefined" && isAdmin) {
+    // eslint-disable-next-line no-console
+    console.debug("[FulfillmentPanel]", {
+      orderId,
+      licenseItemsQStatus: licenseItemsQ.status,
+      licenseItemsError: (licenseItemsQ.error as any)?.message,
+      licenseItems: licenseItemsQ.data?.items,
+      fulfillmentRows: (q.data ?? []).map((r: any) => ({
+        id: r.id,
+        product_id: r.product_id,
+        order_item_id: r.order_item_id,
+        delivery_type: r.delivery_type,
+        product_type: r.product_type,
+        product_delivery_type: r.product_delivery_type,
+        status: r.fulfillment_status,
+      })),
+    });
+  }
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["order-fulfillments", orderId] });
 
@@ -186,16 +212,38 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
             />
           );
         }
+        const matchedByProduct =
+          !!(f as any).product_id && licenseProductIds.has((f as any).product_id);
+        const resolvedOrderItemId =
+          f.order_item_id ??
+          ((licenseItemsQ.data?.items ?? []) as Array<{ order_item_id: string; product_id: string }>)
+            .find((it) => it.product_id === (f as any).product_id)?.order_item_id ??
+          null;
         const isLicense =
           f.delivery_type === "license_key" ||
           f.product_type === "license_key" ||
           f.product_delivery_type === "license_key" ||
-          (!!f.order_item_id && licenseOrderItemIds.has(f.order_item_id));
-        if (isLicense && isAdmin && f.order_item_id) {
+          (!!f.order_item_id && licenseOrderItemIds.has(f.order_item_id)) ||
+          matchedByProduct;
+        if (typeof window !== "undefined" && isAdmin) {
+          // eslint-disable-next-line no-console
+          console.debug("[FulfillmentPanel row]", {
+            fulfillment_id: f.id,
+            product_id: (f as any).product_id,
+            order_item_id: f.order_item_id,
+            resolvedOrderItemId,
+            delivery_type: f.delivery_type,
+            product_type: f.product_type,
+            product_delivery_type: f.product_delivery_type,
+            matchedByProduct,
+            isLicense,
+          });
+        }
+        if (isLicense && isAdmin && resolvedOrderItemId) {
           return (
             <LicenseKeyCard
               key={f.id}
-              f={f}
+              f={{ ...f, order_item_id: resolvedOrderItemId }}
               orderId={orderId}
               email={email}
               authed={authed}
