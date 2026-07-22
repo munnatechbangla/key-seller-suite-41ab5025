@@ -3,9 +3,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
   Loader2, RefreshCw, RotateCcw, XCircle, CheckCircle2, Clock, AlertTriangle,
-  PackageSearch, PackageCheck, ShieldAlert, Circle, Send,
+  PackageSearch, PackageCheck, ShieldAlert, Circle, Send, KeyRound,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ManualLicenseDeliveryPanel } from "@/components/admin/ManualLicenseDeliveryPanel";
+
 import {
   getOrderFulfillmentsAuthFn,
   getOrderFulfillmentsGuestFn,
