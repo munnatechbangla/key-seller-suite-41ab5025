@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { useProductsBySlugs, featuredQuery } from "@/lib/catalog";
 import { getMyOrdersFn, getMyDownloadsFn, getMyLicensesFn } from "@/lib/orders.functions";
+import { getMyManualLicensesFn } from "@/lib/manual-license.functions";
 import { getMySubmissionsFn } from "@/lib/payments/gateways.functions";
 import { MyReviewsTab } from "@/components/site/MyReviewsTab";
 import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
