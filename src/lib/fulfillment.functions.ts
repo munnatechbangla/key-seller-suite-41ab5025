@@ -36,6 +36,7 @@ export type FulfillmentRow = {
   product_slug?: string | null;
   product_type?: string | null;
   product_delivery_type?: string | null;
+  is_license_key?: boolean | null;
 };
 
 export type FulfillmentLog = {
