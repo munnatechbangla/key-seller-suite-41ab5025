@@ -220,7 +220,7 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
             .find((it) => it.product_id === (f as any).product_id)?.order_item_id ??
           null;
         const isLicense =
-          (f as any).is_license_key === true ||
+          f.is_license_key === true ||
           f.product_type === "license_key" ||
           f.product_delivery_type === "license_key" ||
           f.delivery_type === "license_key" ||
