@@ -64,7 +64,10 @@ export function DeliveryPanel({
 
 function DeliveryCard({ item, showInvoice }: { item: DeliveryItem; showInvoice: boolean }) {
   // Subscription products must never fall through to manual/license/download renderers.
-  const type = item.product.product_type === "subscription" || item.product.delivery_type === "subscription" || item.fulfillment?.delivery_type === "subscription"
+  // Manual license delivery record wins over product-type heuristics.
+  const type = item.manual_license
+    ? "license_key"
+    : item.product.product_type === "subscription" || item.product.delivery_type === "subscription" || item.fulfillment?.delivery_type === "subscription"
     ? "subscription"
     : (item.product.delivery_type || item.product.product_type || "manual");
   const purchased = useMemo(
