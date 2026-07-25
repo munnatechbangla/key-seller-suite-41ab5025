@@ -136,6 +136,20 @@ function PayPage() {
 
   const gw = useQuery({ queryKey: ["enabled-gateways"], queryFn: () => listGateways() });
 
+  const fetchDeliveryAuth = useServerFn(getOrderDeliveryAuthFn);
+  const fetchDeliveryGuest = useServerFn(getOrderDeliveryGuestFn);
+  const fetchDelivery = user ? fetchDeliveryAuth : fetchDeliveryGuest;
+  const deliveryQ = useQuery({
+    queryKey: ["delivery", orderNumber, user?.id ?? "guest"],
+    queryFn: () => fetchDelivery({ data: { orderNumber } }),
+    enabled: !!orderNumber,
+    refetchInterval: (query) => {
+      const items = (query.state.data as any[] | undefined) ?? [];
+      const anyDelivered = items.some((it) => it?.manual_license || it?.fulfillment?.fulfillment_status === "delivered");
+      return anyDelivered ? false : 8000;
+    },
+  });
+
   const order = q.data?.order;
   const assignments = (q.data?.assignments as unknown as Array<unknown>) ?? [];
   const submission = subQ.data?.submission ?? null;
