@@ -19,6 +19,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { getOrderByNumberFn, getMyOrderByNumberFn, simulateGatewayPaymentFn } from "@/lib/orders.functions";
+import { getOrderDeliveryAuthFn, getOrderDeliveryGuestFn } from "@/lib/delivery.functions";
 import { useAuth } from "@/lib/stores";
 import { useSettings } from "@/lib/cms/settings";
 import { initPaymentFn } from "@/lib/payments/init.functions";
