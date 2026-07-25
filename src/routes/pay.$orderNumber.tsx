@@ -19,6 +19,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { getOrderByNumberFn, getMyOrderByNumberFn, simulateGatewayPaymentFn } from "@/lib/orders.functions";
+import { getOrderDeliveryAuthFn, getOrderDeliveryGuestFn } from "@/lib/delivery.functions";
 import { useAuth } from "@/lib/stores";
 import { useSettings } from "@/lib/cms/settings";
 import { initPaymentFn } from "@/lib/payments/init.functions";
@@ -135,6 +136,20 @@ function PayPage() {
 
   const gw = useQuery({ queryKey: ["enabled-gateways"], queryFn: () => listGateways() });
 
+  const fetchDeliveryAuth = useServerFn(getOrderDeliveryAuthFn);
+  const fetchDeliveryGuest = useServerFn(getOrderDeliveryGuestFn);
+  const fetchDelivery = user ? fetchDeliveryAuth : fetchDeliveryGuest;
+  const deliveryQ = useQuery({
+    queryKey: ["delivery", orderNumber, user?.id ?? "guest"],
+    queryFn: () => fetchDelivery({ data: { orderNumber } }),
+    enabled: !!orderNumber,
+    refetchInterval: (query) => {
+      const items = (query.state.data as any[] | undefined) ?? [];
+      const anyDelivered = items.some((it) => it?.manual_license || it?.fulfillment?.fulfillment_status === "delivered");
+      return anyDelivered ? false : 8000;
+    },
+  });
+
   const order = q.data?.order;
   const assignments = (q.data?.assignments as unknown as Array<unknown>) ?? [];
   const submission = subQ.data?.submission ?? null;
@@ -167,7 +182,11 @@ function PayPage() {
     underReview,
     rejected,
     approved,
-    hasLicense: assignments.length > 0,
+    hasLicense:
+      assignments.length > 0 ||
+      (deliveryQ.data ?? []).some(
+        (it: any) => it?.manual_license || it?.fulfillment?.fulfillment_status === "delivered",
+      ),
     isSubscription: isSubscriptionOrder,
     subscriptionDelivered: isSubscriptionOrder && orderStatus === "completed",
   });
