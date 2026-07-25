@@ -192,23 +192,7 @@ function LicenseBody({ item }: { item: DeliveryItem }) {
       </div>
     );
   }
-  if (item.license_keys.length === 0) {
-    return <EmptyNote text="Your license key is being provisioned. Refresh in a moment." />;
-  }
-  return (
-    <div className="space-y-2">
-      {item.license_keys.map((k, i) => (
-        <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-border">
-          <KeyRound className="h-5 w-5 text-primary shrink-0" />
-          <code className="flex-1 font-mono text-sm break-all">{k}</code>
-          <button type="button" onClick={() => copyText(k, "License copied")} className="px-3 py-2 rounded-lg bg-card border border-border text-xs font-semibold hover:bg-muted inline-flex items-center gap-1">
-            <Copy className="h-3.5 w-3.5" /> Copy
-          </button>
-        </div>
-      ))}
-      <p className="text-xs text-muted-foreground">Need help activating? Contact support below.</p>
-    </div>
-  );
+  return <EmptyNote text="Your license key is being prepared and will appear here once delivered." />;
 }
 
 
