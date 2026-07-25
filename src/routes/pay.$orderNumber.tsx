@@ -182,7 +182,11 @@ function PayPage() {
     underReview,
     rejected,
     approved,
-    hasLicense: assignments.length > 0,
+    hasLicense:
+      assignments.length > 0 ||
+      (deliveryQ.data ?? []).some(
+        (it: any) => it?.manual_license || it?.fulfillment?.fulfillment_status === "delivered",
+      ),
     isSubscription: isSubscriptionOrder,
     subscriptionDelivered: isSubscriptionOrder && orderStatus === "completed",
   });
