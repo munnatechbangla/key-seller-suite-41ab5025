@@ -8,13 +8,14 @@ import {
   deleteAssetFn,
   renameAssetFn,
   getAssetUsageFn,
+  syncStorageAssetsFn,
 } from "@/lib/media.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Upload, Copy, Trash2, Pencil, Search, Loader2, Check } from "lucide-react";
+import { Upload, Copy, Trash2, Pencil, Search, Loader2, Check, RefreshCw } from "lucide-react";
 import { resolveMediaUrl } from "@/lib/media/resolve";
 import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
 
