@@ -85,6 +85,7 @@ export function useSiteLogo(forceTheme?: "light" | "dark"): { logoUrl: string; l
   const themedUrl = theme === "dark"
     ? (darkUrl || genericUrl)
     : (lightUrl || genericUrl);
+  if (!hydrated) return { logoUrl: "", loading: true };
   if (themedUrl) return { logoUrl: themedUrl, loading: false };
   const loading = !loaded || (configured && resolving);
   return { logoUrl: "", loading };
