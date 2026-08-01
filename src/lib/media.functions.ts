@@ -139,3 +139,61 @@ export const refreshAssetUrlFn = createServerFn({ method: "POST" })
       .eq("id", data.id);
     return { url: signed?.signedUrl };
   });
+
+/**
+ * Rebuild `media_assets` rows from what actually exists in the `media` bucket.
+ * Needed after a project migration where object metadata/rows were lost.
+ * Never deletes rows — only inserts the ones that are missing.
+ */
+export const syncStorageAssetsFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { folders?: string[] } | undefined) => d ?? {})
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const folders = data.folders?.length
+      ? data.folders
+      : ["products", "categories", "brands", "hero", "banners", "blog", "logos", "icons", "screenshots", "downloads", "invoices", "general", ""];
+
+    const { data: existing } = await context.supabase.from("media_assets").select("storage_path");
+    const known = new Set((existing ?? []).map((r: any) => r.storage_path));
+
+    let scanned = 0;
+    let inserted = 0;
+    for (const folder of folders) {
+      let offset = 0;
+      for (;;) {
+        const { data: objects, error } = await context.supabase.storage
+          .from("media")
+          .list(folder, { limit: 100, offset, sortBy: { column: "name", order: "asc" } });
+        if (error) break;
+        if (!objects?.length) break;
+        for (const obj of objects) {
+          if (!obj.id) continue; // sub-folder placeholder
+          const storage_path = folder ? `${folder}/${obj.name}` : obj.name;
+          scanned++;
+          if (known.has(storage_path)) continue;
+          const meta: any = obj.metadata ?? {};
+          const { data: signed } = await context.supabase.storage
+            .from("media")
+            .createSignedUrl(storage_path, SIGNED_URL_TTL);
+          const { error: insErr } = await context.supabase.from("media_assets").insert({
+            storage_path,
+            filename: obj.name,
+            original_filename: obj.name,
+            folder: folder || "general",
+            mime_type: meta.mimetype ?? "application/octet-stream",
+            file_size: meta.size ?? 0,
+            public_url: signed?.signedUrl ?? null,
+            uploader_id: context.userId,
+          });
+          if (!insErr) {
+            known.add(storage_path);
+            inserted++;
+          }
+        }
+        if (objects.length < 100) break;
+        offset += 100;
+      }
+    }
+    return { scanned, inserted };
+  });
