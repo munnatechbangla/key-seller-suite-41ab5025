@@ -141,6 +141,15 @@ export function MediaLibrary({
     onError: (e: any) => toast.error(e.message),
   });
 
+  const syncMutation = useMutation({
+    mutationFn: () => syncStorage({ data: {} }),
+    onSuccess: (r: any) => {
+      toast.success(`Synced storage — ${r.inserted} new asset(s) of ${r.scanned} scanned`);
+      invalidate();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const items = (data?.items ?? []) as any[];
 
   return (
