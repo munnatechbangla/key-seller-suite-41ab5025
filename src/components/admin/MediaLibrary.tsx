@@ -65,6 +65,7 @@ export function MediaLibrary({
   const del = useServerFn(deleteAssetFn);
   const rename = useServerFn(renameAssetFn);
   const usage = useServerFn(getAssetUsageFn);
+  const syncStorage = useServerFn(syncStorageAssetsFn);
 
   const key = ["media-assets", folder, search, accept];
   const { data, isLoading } = useQuery({
