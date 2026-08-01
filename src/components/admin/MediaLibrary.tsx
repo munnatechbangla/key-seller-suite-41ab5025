@@ -169,6 +169,15 @@ export function MediaLibrary({
             Upload {progress ? `(${progress.done}/${progress.total})` : ""}
           </Button>
         </div>
+        {mode === "manage" && (
+          <div>
+            <Button size="sm" variant="outline" disabled={syncMutation.isPending} onClick={() => syncMutation.mutate()} title="Rebuild library rows from files in storage">
+              {syncMutation.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+              Sync from Storage
+            </Button>
+          </div>
+        )}
+
         <div className="flex-1 min-w-[200px]">
           <Label className="text-xs">Search</Label>
           <div className="relative">
