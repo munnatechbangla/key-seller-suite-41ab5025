@@ -8,13 +8,14 @@ import {
   deleteAssetFn,
   renameAssetFn,
   getAssetUsageFn,
+  syncStorageAssetsFn,
 } from "@/lib/media.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Upload, Copy, Trash2, Pencil, Search, Loader2, Check } from "lucide-react";
+import { Upload, Copy, Trash2, Pencil, Search, Loader2, Check, RefreshCw } from "lucide-react";
 import { resolveMediaUrl } from "@/lib/media/resolve";
 import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
 
@@ -64,6 +65,7 @@ export function MediaLibrary({
   const del = useServerFn(deleteAssetFn);
   const rename = useServerFn(renameAssetFn);
   const usage = useServerFn(getAssetUsageFn);
+  const syncStorage = useServerFn(syncStorageAssetsFn);
 
   const key = ["media-assets", folder, search, accept];
   const { data, isLoading } = useQuery({
@@ -139,6 +141,15 @@ export function MediaLibrary({
     onError: (e: any) => toast.error(e.message),
   });
 
+  const syncMutation = useMutation({
+    mutationFn: () => syncStorage({ data: {} }),
+    onSuccess: (r: any) => {
+      toast.success(`Synced storage — ${r.inserted} new asset(s) of ${r.scanned} scanned`);
+      invalidate();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const items = (data?.items ?? []) as any[];
 
   return (
@@ -158,6 +169,15 @@ export function MediaLibrary({
             Upload {progress ? `(${progress.done}/${progress.total})` : ""}
           </Button>
         </div>
+        {mode === "manage" && (
+          <div>
+            <Button size="sm" variant="outline" disabled={syncMutation.isPending} onClick={() => syncMutation.mutate()} title="Rebuild library rows from files in storage">
+              {syncMutation.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+              Sync from Storage
+            </Button>
+          </div>
+        )}
+
         <div className="flex-1 min-w-[200px]">
           <Label className="text-xs">Search</Label>
           <div className="relative">
