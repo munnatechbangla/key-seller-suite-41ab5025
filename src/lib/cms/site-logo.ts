@@ -65,6 +65,10 @@ export function useResolvedTheme(): "light" | "dark" {
  * Fallback to the text wordmark is handled by <Logo /> when logoUrl is "".
  */
 export function useSiteLogo(forceTheme?: "light" | "dark"): { logoUrl: string; loading: boolean } {
+  // Cached (localStorage) logo URLs are only valid after hydration; rendering
+  // them on the first client pass would mismatch the SSR skeleton.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => { setHydrated(true); }, []);
   const resolvedTheme = useResolvedTheme();
   const theme = forceTheme ?? resolvedTheme;
   const configured = useSettings((s) => {
