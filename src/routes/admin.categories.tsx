@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MediaPicker } from "@/components/admin/MediaLibrary";
+import { ProductThumb } from "@/components/site/ProductThumb";
 import { Plus, Pencil, Trash2, Copy, ExternalLink } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -120,11 +121,15 @@ function AdminCategoriesPage() {
             {(cats as AdminCategory[]).map((c) => (
               <TableRow key={c.id}>
                 <TableCell>
-                  {c.image_url ? (
-                    <img src={c.image_url} alt={c.name} className="h-10 w-10 rounded object-cover" />
-                  ) : (
-                    <div className="h-10 w-10 rounded bg-muted grid place-items-center text-lg">{c.icon || "📁"}</div>
-                  )}
+                  <div className="h-10 w-10 rounded overflow-hidden grid place-items-center bg-muted ring-1 ring-border">
+                    <ProductThumb
+                      src={c.image_url}
+                      emoji={c.icon || "📁"}
+                      alt={c.name}
+                      size={40}
+                      className="h-full w-full object-cover bg-transparent"
+                    />
+                  </div>
                 </TableCell>
                 <TableCell className="font-medium">{c.name}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">{c.slug}</TableCell>

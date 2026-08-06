@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useSettings } from "@/lib/cms/settings";
 import { useSiteLogo } from "@/lib/cms/site-logo";
+import { ProductThumb } from "@/components/site/ProductThumb";
 import { cn } from "@/lib/utils";
 
 type LogoProps = {
@@ -57,11 +58,12 @@ export function Logo({ variant = "light", size = "md", asPlainText, forceTheme, 
     );
   } else if (logoUrl) {
     content = (
-      <img
+      <ProductThumb
         src={logoUrl}
+        emoji=""
         alt={branding.name}
+        size={200}
         className={cn("w-auto shrink-0 object-contain select-none", imgSizeMap[size], className)}
-        draggable={false}
       />
     );
   } else {
