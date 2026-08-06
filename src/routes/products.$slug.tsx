@@ -416,7 +416,10 @@ function LegacyProductPage() {
             ) : (
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                  <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+                  <div 
+                    className="text-muted-foreground leading-relaxed prose prose-sm max-w-none dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: product.description || "" }}
+                  />
                   <h3 className="font-semibold mt-6">Key features</h3>
                   <ul className="space-y-2">
                     {product.features?.map((f) => (
