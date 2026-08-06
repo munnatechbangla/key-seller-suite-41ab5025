@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, lazy, Suspense } from "react";
+const ProductThumb = lazy(() => import("@/components/site/ProductThumb").then(m => ({ default: m.ProductThumb })));
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
