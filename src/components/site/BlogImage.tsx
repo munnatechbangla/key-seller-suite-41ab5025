@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { resolveStoredUrlAsync } from "@/lib/media/resolve";
 import { Newspaper } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ProductThumb } from "@/components/site/ProductThumb";
 
 type Props = {
   src?: string | null;
@@ -17,41 +18,15 @@ type Props = {
  * the source is missing or fails to load. Never emits a broken image.
  */
 export function BlogImage({ src, alt = "", className, aspect = "aspect-[16/10]", eager = false }: Props) {
-  const [url, setUrl] = useState<string | null>(null);
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    let alive = true;
-    setFailed(false);
-    setUrl(null);
-    if (!src) return;
-    // Direct http(s)/data/blob → use as-is; media:// tokens & legacy storage URLs → resolve
-    if (/^(https?:|data:|blob:)/i.test(src) && !src.includes("/storage/v1/object/")) {
-      setUrl(src);
-      return;
-    }
-    resolveStoredUrlAsync(src).then((u) => { if (alive) setUrl(u || null); });
-    return () => { alive = false; };
-  }, [src]);
-
-  const showFallback = !src || failed || !url;
-
   return (
     <div className={cn("relative overflow-hidden bg-muted", aspect, className)}>
-      {showFallback ? (
-        <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-primary/15 via-secondary/10 to-accent/15">
-          <Newspaper className="h-10 w-10 text-primary/50" aria-hidden />
-        </div>
-      ) : (
-        <img
-          src={url}
-          alt={alt}
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-          loading={eager ? "eager" : "lazy"}
-          decoding="async"
-          onError={() => setFailed(true)}
-        />
-      )}
+      <ProductThumb
+        src={src}
+        emoji="📄"
+        alt={alt}
+        size={1200}
+        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03] bg-transparent"
+      />
     </div>
   );
 }
