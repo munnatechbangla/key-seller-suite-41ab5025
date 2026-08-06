@@ -6,6 +6,7 @@ import { SaleBadges } from "@/components/site/SaleBadges";
 import { useMarketplace } from "@/lib/cms/marketplace";
 import { toast } from "sonner";
 import { useState, lazy, Suspense } from "react";
+import { ProductThumb } from "@/components/site/ProductThumb";
 
 const QuickViewModal = lazy(() =>
   import("@/components/site/QuickViewModal").then((m) => ({ default: m.QuickViewModal })),
@@ -38,16 +39,13 @@ export function ProductCard({ product }: { product: Product }) {
 
       <Link to="/products/$slug" params={{ slug: product.slug }} className="block">
         <div className="relative aspect-square bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center overflow-hidden">
-          {product.thumbnailUrl ? (
-            <img
-              src={product.thumbnailUrl}
-              alt={product.name}
-              loading="lazy"
-              className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
-            />
-          ) : (
-            <span className="text-7xl group-hover:scale-110 transition-smooth">{product.emoji}</span>
-          )}
+          <ProductThumb
+            src={product.thumbnailUrl}
+            emoji={product.emoji}
+            alt={product.name}
+            size={400}
+            className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out bg-transparent"
+          />
           {product.badge && (
             <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold bg-gradient-primary text-primary-foreground shadow-elegant">
               {product.badge}
