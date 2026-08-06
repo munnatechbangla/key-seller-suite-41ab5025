@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Star, ShoppingCart, Zap, Heart, GitCompare, Check, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { ProductThumb } from "@/components/site/ProductThumb";
 import { useProduct } from "@/lib/catalog";
 import { useCart, useWishlist, useCompare } from "@/lib/stores";
 import { toast } from "sonner";
@@ -50,12 +51,14 @@ export function QuickViewModal({ slug, open, onOpenChange }: { slug: string | nu
           <X className="h-4 w-4" />
         </button>
         <div className="grid md:grid-cols-2 max-h-[88vh] overflow-y-auto">
-          <div className="relative aspect-square md:aspect-auto bg-gradient-to-br from-primary/15 via-secondary/15 to-accent/15 grid place-items-center">
-            {product.thumbnailUrl ? (
-              <img src={product.thumbnailUrl} alt={product.name} className="h-full w-full object-cover" />
-            ) : (
-              <span className="text-[8rem]">{product.emoji}</span>
-            )}
+          <div className="relative aspect-square md:aspect-auto bg-gradient-to-br from-primary/15 via-secondary/15 to-accent/15 grid place-items-center overflow-hidden">
+            <ProductThumb
+              src={product.thumbnailUrl}
+              emoji={product.emoji}
+              alt={product.name}
+              size={600}
+              className="h-full w-full"
+            />
             {off > 0 && (
               <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold bg-accent text-accent-foreground">
                 -{off}% OFF
