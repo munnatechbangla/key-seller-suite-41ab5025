@@ -18,6 +18,7 @@ import { track } from "@/lib/analytics/track";
 import { useCheckoutFields } from "@/components/checkout/CheckoutCustomFields";
 import { saveOrderCustomFieldsAuthFn, saveOrderCustomFieldsGuestFn } from "@/lib/order-custom-fields.functions";
 import { resolveLineImage } from "@/lib/cart-image";
+import { ProductThumb } from "@/components/site/ProductThumb";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: seoMeta({ title: "Checkout" }) }),

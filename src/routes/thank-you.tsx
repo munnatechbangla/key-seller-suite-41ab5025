@@ -15,6 +15,7 @@ import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValu
 import { DeliveryPanel } from "@/components/delivery/DeliveryPanel";
 import { getOrderDeliveryAuthFn, getOrderDeliveryGuestFn } from "@/lib/delivery.functions";
 import { FulfillmentPanel } from "@/components/fulfillment/FulfillmentPanel";
+import { ProductThumb } from "@/components/site/ProductThumb";
 
 export const Route = createFileRoute("/thank-you")({
   validateSearch: z.object({ order: z.string().optional(), email: z.string().optional() }),
