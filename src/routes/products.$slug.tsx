@@ -276,7 +276,13 @@ function LegacyProductPage() {
                     onClick={() => setActiveImage(img.url)}
                     className={`aspect-square rounded-xl overflow-hidden bg-card border transition-smooth ${isActive ? "border-primary ring-2 ring-primary/40" : "border-border hover:border-primary"}`}
                   >
-                    <img src={img.url} alt={img.alt ?? product.name} className="w-full h-full object-cover" />
+                    <ProductThumb
+                      src={img.url}
+                      emoji={product.emoji}
+                      alt={img.alt ?? product.name}
+                      size={200}
+                      className="w-full h-full object-cover"
+                    />
                   </button>
                 );
               })}
@@ -410,7 +416,10 @@ function LegacyProductPage() {
             ) : (
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                  <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+                  <div 
+                    className="text-muted-foreground leading-relaxed prose prose-sm max-w-none dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: product.description || "" }}
+                  />
                   <h3 className="font-semibold mt-6">Key features</h3>
                   <ul className="space-y-2">
                     {product.features?.map((f) => (

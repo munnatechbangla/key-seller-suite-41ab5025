@@ -18,6 +18,7 @@ import { track } from "@/lib/analytics/track";
 import { useCheckoutFields } from "@/components/checkout/CheckoutCustomFields";
 import { saveOrderCustomFieldsAuthFn, saveOrderCustomFieldsGuestFn } from "@/lib/order-custom-fields.functions";
 import { resolveLineImage } from "@/lib/cart-image";
+import { ProductThumb } from "@/components/site/ProductThumb";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: seoMeta({ title: "Checkout" }) }),
@@ -225,11 +226,15 @@ function CheckoutPage() {
                 const img = resolveLineImage(it.product, it.variant);
                 return (
                 <div key={it.slug} className="flex items-center gap-3 text-sm">
-                  {img ? (
-                    <img src={img} alt="" className="h-10 w-10 rounded object-cover border border-border" />
-                  ) : (
-                    <span className="text-2xl">{it.product.emoji}</span>
-                  )}
+                  <div className="h-10 w-10 shrink-0">
+                    <ProductThumb 
+                      src={img} 
+                      emoji={it.product.emoji} 
+                      alt={it.product.name} 
+                      size={40} 
+                      className="h-full w-full"
+                    />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">{it.product.name}</div>
                     {it.variant && (

@@ -15,6 +15,7 @@ import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValu
 import { DeliveryPanel } from "@/components/delivery/DeliveryPanel";
 import { getOrderDeliveryAuthFn, getOrderDeliveryGuestFn } from "@/lib/delivery.functions";
 import { FulfillmentPanel } from "@/components/fulfillment/FulfillmentPanel";
+import { ProductThumb } from "@/components/site/ProductThumb";
 
 export const Route = createFileRoute("/thank-you")({
   validateSearch: z.object({ order: z.string().optional(), email: z.string().optional() }),
@@ -165,9 +166,19 @@ function ThankYou() {
                 <div className="space-y-2">
                   {q.data.items.map((it) => (
                     <div key={it.id} className="flex items-center gap-3 p-3 rounded-xl border border-border">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 grid place-items-center text-primary font-bold">{it.qty}×</div>
+                      <div className="h-10 w-10 shrink-0">
+                        <ProductThumb 
+                          src={it.thumbnail_url} 
+                          emoji="📦" 
+                          alt={it.product_name} 
+                          size={40} 
+                          className="h-full w-full"
+                        />
+                      </div>
                       <div className="flex-1">
-                        <div className="font-semibold text-sm">{it.product_name}</div>
+                        <div className="font-semibold text-sm flex items-center gap-2">
+                          <span className="text-primary font-bold">{it.qty}×</span> {it.product_name}
+                        </div>
                         <div className="text-xs text-muted-foreground">${Number(it.unit_price).toFixed(2)} each</div>
                       </div>
                     </div>

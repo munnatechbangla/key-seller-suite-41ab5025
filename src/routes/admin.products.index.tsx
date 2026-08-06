@@ -17,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2, Download, Upload } from "lucide-react";
 import { MediaPicker } from "@/components/admin/MediaLibrary";
+import { ProductThumb } from "@/components/site/ProductThumb";
 import { BatchActionsBar } from "@/components/admin/BatchActionsBar";
 import { exportProducts, parseImport, diffImport } from "@/lib/admin/product-io";
 import { logActivity } from "@/lib/admin/activity-log";
@@ -27,6 +28,7 @@ type Row = {
   id: string; title: string; slug: string;
   regular_price: number | string; sale_price: number | string | null;
   status: string; stock_status: string; is_featured: boolean; sales_count: number;
+  thumbnail_url: string | null;
 };
 
 function AdminProducts() {
@@ -270,6 +272,7 @@ function AdminProducts() {
               <TableHead className="w-10">
                 <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Select all" />
               </TableHead>
+              <TableHead className="w-12"></TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Slug</TableHead>
               <TableHead>Price</TableHead>
@@ -280,7 +283,7 @@ function AdminProducts() {
           </TableHeader>
           <TableBody>
             {isLoading && (
-              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>
             )}
             {rows.map((p: Row) => (
               <TableRow key={p.id} data-state={selected.has(p.id) ? "selected" : undefined}>
@@ -291,6 +294,17 @@ function AdminProducts() {
                     onChange={() => toggle(p.id)}
                     aria-label={`Select ${p.title}`}
                   />
+                </TableCell>
+                <TableCell>
+                  <div className="h-10 w-10 rounded bg-muted overflow-hidden">
+                    <ProductThumb 
+                      src={p.thumbnail_url} 
+                      emoji="📦" 
+                      alt={p.title} 
+                      size={40} 
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
                 </TableCell>
                 <TableCell className="font-medium">{p.title}</TableCell>
                 <TableCell className="text-muted-foreground text-sm">{p.slug}</TableCell>
