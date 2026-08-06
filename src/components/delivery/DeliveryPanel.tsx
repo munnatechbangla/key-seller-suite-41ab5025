@@ -82,7 +82,7 @@ function DeliveryCard({ item, showInvoice }: { item: DeliveryItem; showInvoice: 
         <div className="h-12 w-12 shrink-0 rounded-lg overflow-hidden grid place-items-center bg-muted/40 ring-1 ring-border">
           <ProductThumb
             src={item.product.thumbnail_url}
-            emoji={item.product.emoji || "📦"}
+            emoji={(item.product as any).emoji || "📦"}
             alt={item.product.name}
             size={48}
             className="h-full w-full object-cover bg-transparent"
