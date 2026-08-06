@@ -19,19 +19,18 @@ import { StickyBuyBar } from "@/components/site/StickyBuyBar";
 import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelated, useProductsBySlugs } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useMemo, useRef } from "react";
-import { Star, ShoppingCart, Zap, ShieldCheck, Heart, Share2, ChevronRight, ChevronLeft, Minus, Plus, Info, Check, Image as ImageIcon } from "lucide-react";
+import { 
+  Star, ShoppingCart, Zap, ShieldCheck, Heart, Share2, 
+  ChevronRight, ChevronLeft, Minus, Plus, Info, Check, 
+  Image as ImageIcon, GitCompare, Truck, Lock, Package, Shield
+} from "lucide-react";
 import { ProductThumb } from "@/components/site/ProductThumb";
 import { reviewsQuery } from "@/lib/reviews";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
-import { useEffect, useRef, useState } from "react";
 import { VariantSelector } from "@/components/site/VariantSelector";
 import { ProductCustomFields, type ProductCustomFieldsHandle } from "@/components/site/ProductCustomFields";
 import type { ProductVariant } from "@/lib/product-variants.functions";
 import { listProductAttributesFn } from "@/lib/product-variants.functions";
-import {
-  Star, Zap, Shield, Heart, GitCompare, ShoppingCart, Check,
-  Truck, Lock, Package,
-} from "lucide-react";
 import { toast } from "sonner";
 import { track } from "@/lib/analytics/track";
 import { productLayoutPublicResolveFn } from "@/lib/product-layouts.functions";
