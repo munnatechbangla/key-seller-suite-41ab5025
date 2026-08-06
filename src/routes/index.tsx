@@ -26,6 +26,7 @@ import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
 import { subscribeNewsletterFn } from "@/lib/newsletter.functions";
 import { blogListPublicFn } from "@/lib/blog.functions";
 import { BlogImage } from "@/components/site/BlogImage";
+import { ProductThumb } from "@/components/site/ProductThumb";
 import { useServerFn } from "@tanstack/react-start";
 import { categoriesQuery } from "@/lib/catalog";
 
@@ -235,11 +236,13 @@ function FloatingCard({ product, delay = "0s", duration = "10s", size = "md", cl
         <div className="absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
         <div className="flex items-center gap-3">
           <div className={`${isMd ? "h-12 w-12" : "h-11 w-11"} shrink-0 rounded-xl bg-gradient-primary grid place-items-center overflow-hidden text-xl shadow-glow ring-1 ring-white/20`}>
-            {product.thumbnailUrl ? (
-              <img src={product.thumbnailUrl} alt={product.name} className="h-full w-full object-cover" loading="lazy" decoding="async" />
-            ) : (
-              <span>{product.emoji}</span>
-            )}
+            <ProductThumb
+              src={product.thumbnailUrl}
+              emoji={product.emoji}
+              alt={product.name}
+              size={isMd ? 48 : 44}
+              className="h-full w-full object-cover bg-transparent"
+            />
           </div>
           <div className="flex-1 min-w-0">
             <div className={`${isMd ? "text-sm" : "text-[13px]"} font-semibold truncate text-white leading-tight`}>{product.name}</div>

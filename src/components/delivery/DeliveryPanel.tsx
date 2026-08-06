@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Download, KeyRound, ExternalLink, Copy, User as UserIcon, Lock, Package, Receipt, MessageCircle } from "lucide-react";
+import { ProductThumb } from "@/components/site/ProductThumb";
 import { toast } from "sonner";
 import { useSettings } from "@/lib/cms/settings";
 import type { DeliveryItem } from "@/lib/delivery.functions";
@@ -78,11 +79,15 @@ function DeliveryCard({ item, showInvoice }: { item: DeliveryItem; showInvoice: 
   return (
     <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
       <header className="flex items-start gap-3">
-        {item.product.thumbnail_url ? (
-          <img src={item.product.thumbnail_url} alt="" className="h-12 w-12 rounded-lg object-cover" />
-        ) : (
-          <div className="h-12 w-12 rounded-lg bg-primary/10 grid place-items-center"><Package className="h-6 w-6 text-primary" /></div>
-        )}
+        <div className="h-12 w-12 shrink-0 rounded-lg overflow-hidden grid place-items-center bg-muted/40 ring-1 ring-border">
+          <ProductThumb
+            src={item.product.thumbnail_url}
+            emoji={(item.product as any).emoji || "📦"}
+            alt={item.product.name}
+            size={48}
+            className="h-full w-full object-cover bg-transparent"
+          />
+        </div>
         <div className="flex-1 min-w-0">
           <div className="font-bold text-base truncate">{item.product.name}</div>
           <div className="text-xs text-muted-foreground">

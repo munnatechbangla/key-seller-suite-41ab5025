@@ -18,17 +18,19 @@ import { ShareButtons } from "@/components/site/ShareButtons";
 import { StickyBuyBar } from "@/components/site/StickyBuyBar";
 import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelated, useProductsBySlugs } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState, useMemo, useRef } from "react";
+import { 
+  Star, ShoppingCart, Zap, ShieldCheck, Heart, Share2, 
+  ChevronRight, ChevronLeft, Minus, Plus, Info, Check, 
+  Image as ImageIcon, GitCompare, Truck, Lock, Package, Shield
+} from "lucide-react";
+import { ProductThumb } from "@/components/site/ProductThumb";
 import { reviewsQuery } from "@/lib/reviews";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
-import { useEffect, useRef, useState } from "react";
 import { VariantSelector } from "@/components/site/VariantSelector";
 import { ProductCustomFields, type ProductCustomFieldsHandle } from "@/components/site/ProductCustomFields";
 import type { ProductVariant } from "@/lib/product-variants.functions";
 import { listProductAttributesFn } from "@/lib/product-variants.functions";
-import {
-  Star, Zap, Shield, Heart, GitCompare, ShoppingCart, Check,
-  Truck, Lock, Package,
-} from "lucide-react";
 import { toast } from "sonner";
 import { track } from "@/lib/analytics/track";
 import { productLayoutPublicResolveFn } from "@/lib/product-layouts.functions";
@@ -245,11 +247,13 @@ function LegacyProductPage() {
       <div className="container mx-auto px-4 py-10 grid grid-cols-[minmax(0,1fr)] lg:grid-cols-2 gap-10">
         <div className="min-w-0 space-y-4">
           <div className="relative aspect-square rounded-3xl bg-gradient-to-br from-primary/15 via-secondary/15 to-accent/15 grid place-items-center overflow-hidden shadow-elegant">
-            {heroImage ? (
-              <img src={heroImage} alt={activeVariant?.name || product.name} className="h-full w-full object-cover animate-fade-in" />
-            ) : (
-              <span className="text-[12rem]">{product.emoji}</span>
-            )}
+            <ProductThumb
+              src={heroImage}
+              emoji={product.emoji}
+              alt={activeVariant?.name || product.name}
+              size={800}
+              className="h-full w-full object-cover animate-fade-in bg-transparent"
+            />
             {product.badge && (
               <span className="absolute top-4 left-4 px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-primary text-primary-foreground shadow-elegant">
                 {product.badge}

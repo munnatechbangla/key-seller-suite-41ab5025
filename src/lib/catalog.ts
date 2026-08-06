@@ -111,6 +111,14 @@ const SELECT_PRODUCT = `
 export function mapProduct(row: ProductRow): Product {
   const price = row.sale_price != null ? Number(row.sale_price) : Number(row.regular_price);
   const oldPrice = row.sale_price != null ? Number(row.regular_price) : undefined;
+  
+  // Normalize thumbnail_url: if it starts with media://, we keep it for ProductThumb to resolve.
+  // If it's a storage path without media://, we prefix it.
+  let thumbnailUrl = row.thumbnail_url;
+  if (thumbnailUrl && !thumbnailUrl.startsWith("media://") && !/^(https?:|data:|blob:)/i.test(thumbnailUrl)) {
+    thumbnailUrl = `media://${thumbnailUrl}`;
+  }
+
   return {
     id: row.id,
     slug: row.slug,
@@ -130,7 +138,7 @@ export function mapProduct(row: ProductRow): Product {
     included: row.included ?? [],
     specs: row.specs ?? {},
     stock: row.stock_status === "in_stock" ? 50 : 0,
-    thumbnailUrl: row.thumbnail_url,
+    thumbnailUrl: thumbnailUrl,
     seo: {
       meta_title: row.meta_title ?? null,
       meta_description: row.meta_description ?? null,

@@ -6,7 +6,7 @@ type Props = {
   src?: string | null;
   emoji?: string | null;
   alt?: string;
-  size?: number; // px
+  size?: number; // px - used for fallback font sizing if needed, or default width/height
   className?: string;
 };
 
@@ -32,8 +32,7 @@ export function ProductThumb({ src, emoji, alt = "", size = 64, className }: Pro
 
   return (
     <div
-      className={cn("relative shrink-0 overflow-hidden rounded-lg bg-muted", className)}
-      style={{ width: size, height: size }}
+      className={cn("relative shrink-0 overflow-hidden rounded-lg bg-muted flex items-center justify-center", className)}
     >
       {showFallback ? (
         <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 text-2xl">
@@ -49,6 +48,8 @@ export function ProductThumb({ src, emoji, alt = "", size = 64, className }: Pro
           onError={() => setFailed(true)}
         />
       )}
+      {/* Invisible spacer to maintain aspect ratio if no dimensions are provided via className */}
+      <div style={{ width: size, height: size }} className="pointer-events-none invisible" />
     </div>
   );
 }

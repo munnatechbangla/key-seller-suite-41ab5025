@@ -82,7 +82,7 @@ function PageEditor() {
     return (
       <div className="p-6">
         <p className="text-destructive">Unknown page: {slug}</p>
-        <Link to="/admin/pages" className="text-primary text-sm">← Back</Link>
+        <Link to="/admin/pages" search={{}} className="text-primary text-sm">← Back</Link>
       </div>
     );
   }
@@ -112,7 +112,7 @@ function PageEditor() {
   return (
     <div className="p-6 max-w-4xl">
       <div className="flex items-center justify-between mb-4">
-        <button onClick={() => navigate({ to: "/admin/pages" })} className="text-sm text-muted-foreground inline-flex items-center gap-1 hover:text-foreground">
+        <button onClick={() => navigate({ to: "/admin/pages", search: {} })} className="text-sm text-muted-foreground inline-flex items-center gap-1 hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> All pages
         </button>
         <div className="flex items-center gap-2">

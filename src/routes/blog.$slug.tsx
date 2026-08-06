@@ -7,6 +7,7 @@ import { Breadcrumbs } from "@/components/site/PageHero";
 import { blogPosts as staticPosts } from "@/lib/catalog";
 import { blogGetBySlugPublicFn, blogListPublicFn, blogListCategoriesPublicFn } from "@/lib/blog.functions";
 import { BlogImage, readingTimeLabel } from "@/components/site/BlogImage";
+import { ProductThumb } from "@/components/site/ProductThumb";
 import {
   Calendar, ArrowLeft, ArrowRight, Clock, User, BadgeCheck, Send,
   Facebook, Twitter, Linkedin, MessageCircle, Link2, Check, Share2, Printer, X, ChevronLeft, ChevronRight,

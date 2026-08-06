@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { useCart } from "@/lib/stores";
 import { Trash2, ShoppingBag, ArrowRight, Tag } from "lucide-react";
+import { ProductThumb } from "@/components/site/ProductThumb";
 
 export function MiniCart({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const cart = useCart();
@@ -59,11 +60,13 @@ export function MiniCart({ open, onOpenChange }: { open: boolean; onOpenChange: 
                     onClick={close}
                     className="h-16 w-16 shrink-0 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 grid place-items-center text-2xl overflow-hidden"
                   >
-                    {thumb ? (
-                      <img src={thumb} alt={it.product.name} className="h-full w-full object-cover" />
-                    ) : (
-                      <span>{it.product.emoji}</span>
-                    )}
+                    <ProductThumb
+                      src={thumb}
+                      emoji={it.product.emoji}
+                      alt={it.product.name}
+                      size={100}
+                      className="h-full w-full object-cover bg-transparent"
+                    />
                   </Link>
                   <div className="flex-1 min-w-0">
                     <Link
