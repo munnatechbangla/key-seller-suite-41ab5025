@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/site/Header";
+import { ProductThumb } from "@/components/site/ProductThumb";
 import { Footer } from "@/components/site/Footer";
 import {
   Loader2,
@@ -825,7 +826,15 @@ function ManualForm({
           {showQr && (
             <div className="pt-2">
               <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">Scan QR</div>
-              <img src={qrUrl} alt="Payment QR" className="h-40 w-40 rounded-lg border border-border bg-white object-contain" />
+              <div className="h-40 w-40">
+                <ProductThumb 
+                  src={qrUrl} 
+                  emoji="📱" 
+                  alt="Payment QR" 
+                  size={160} 
+                  className="h-full w-full bg-white object-contain"
+                />
+              </div>
             </div>
           )}
         </div>

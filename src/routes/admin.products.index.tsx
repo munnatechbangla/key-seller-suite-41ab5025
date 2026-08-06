@@ -17,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2, Download, Upload } from "lucide-react";
 import { MediaPicker } from "@/components/admin/MediaLibrary";
+import { ProductThumb } from "@/components/site/ProductThumb";
 import { BatchActionsBar } from "@/components/admin/BatchActionsBar";
 import { exportProducts, parseImport, diffImport } from "@/lib/admin/product-io";
 import { logActivity } from "@/lib/admin/activity-log";
