@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { Check, ShoppingCart, Plus } from "lucide-react";
 import { useCart } from "@/lib/stores";
 import type { Product } from "@/lib/catalog";
+import { ProductThumb } from "@/components/site/ProductThumb";
 import { resolveProductPrice } from "@/lib/product-price";
 import type { ProductVariant } from "@/lib/product-variants.functions";
 import { addProductSelectionToCart, getVariantCompareAt, getVariantUnitPrice, isVariantAvailable } from "@/lib/cart-product";
@@ -124,20 +125,17 @@ export function FrequentlyBoughtTogether({
                     className="h-5 w-5 sm:h-4 sm:w-4 sm:absolute sm:top-2 sm:left-2 accent-primary z-10 shrink-0 disabled:opacity-80"
                     aria-label={locked ? `${p.name} (this product)` : `Include ${p.name}`}
                   />
-                  <div
-                    className={`h-16 w-16 sm:h-auto sm:w-full sm:aspect-square shrink-0 rounded-xl border-2 grid place-items-center text-4xl sm:text-5xl overflow-hidden transition-smooth ${checked ? "border-primary" : "border-border opacity-60"}`}
-                  >
-                    {pr.image ? (
-                      <img
+                    <div
+                      className={`h-16 w-16 sm:h-auto sm:w-full sm:aspect-square shrink-0 rounded-xl border-2 grid place-items-center text-4xl sm:text-5xl overflow-hidden transition-smooth ${checked ? "border-primary" : "border-border opacity-60"}`}
+                    >
+                      <ProductThumb
                         src={pr.image}
+                        emoji={p.emoji}
                         alt={p.name}
-                        className="h-full w-full object-cover"
-                        loading="lazy"
+                        size={160}
+                        className="h-full w-full object-cover bg-transparent"
                       />
-                    ) : (
-                      <span>{p.emoji}</span>
-                    )}
-                  </div>
+                    </div>
                   <div className="flex-1 min-w-0 sm:flex-none sm:w-full text-left sm:text-center">
                     <div className="text-sm sm:text-xs font-semibold sm:line-clamp-2 leading-tight">
                       {p.name}
