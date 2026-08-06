@@ -276,7 +276,13 @@ function LegacyProductPage() {
                     onClick={() => setActiveImage(img.url)}
                     className={`aspect-square rounded-xl overflow-hidden bg-card border transition-smooth ${isActive ? "border-primary ring-2 ring-primary/40" : "border-border hover:border-primary"}`}
                   >
-                    <img src={img.url} alt={img.alt ?? product.name} className="w-full h-full object-cover" />
+                    <ProductThumb
+                      src={img.url}
+                      emoji={product.emoji}
+                      alt={img.alt ?? product.name}
+                      size={200}
+                      className="w-full h-full object-cover"
+                    />
                   </button>
                 );
               })}
