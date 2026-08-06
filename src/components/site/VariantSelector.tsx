@@ -149,7 +149,7 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes, bef
   };
 
   return (
-    <div className="space-y-5" aria-label="Variant selector">
+    <div className="space-y-5" aria-label="Hello">
       {/* Attribute pickers */}
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-2">
@@ -190,7 +190,7 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes, bef
                   onChange={(e) => setSelection((s) => ({ ...s, [attr.id]: e.target.value }))}
                 >
                   <option value="" disabled>
-                    Choose {attr.name}
+                    Hello {attr.name}
                   </option>
                   {attr.options.map((o) => {
                     const enabled = isOptionEnabled(attr.id, o.id);
