@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { toast } from "sonner";
 import { Upload, Copy, Trash2, Pencil, Search, Loader2, Check, RefreshCw } from "lucide-react";
 import { resolveMediaUrl } from "@/lib/media/resolve";
+import { ProductThumb } from "@/components/site/ProductThumb";
 import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
 
 export const MEDIA_FOLDERS = [
@@ -215,7 +216,13 @@ export function MediaLibrary({
             <div key={a.id} className="border rounded-lg overflow-hidden bg-background flex flex-col">
               <div className="aspect-square bg-muted flex items-center justify-center relative">
                 {a.mime_type?.startsWith("image/") ? (
-                  <img src={a.public_url} alt={a.filename} className="w-full h-full object-cover" />
+                  <ProductThumb
+                    src={resolveMediaUrl(a)}
+                    emoji="🖼️"
+                    alt={a.filename}
+                    size={256}
+                    className="w-full h-full object-cover bg-transparent"
+                  />
                 ) : (
                   <div className="text-xs text-muted-foreground p-4 text-center break-all">{a.mime_type}</div>
                 )}
