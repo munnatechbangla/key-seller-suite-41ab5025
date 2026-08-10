@@ -81,7 +81,7 @@ function DeliveryCard({ item, showInvoice }: { item: DeliveryItem; showInvoice: 
       <header className="flex items-start gap-3">
         <div className="h-12 w-12 shrink-0 rounded-lg overflow-hidden grid place-items-center bg-muted/40 ring-1 ring-border">
           <ProductThumb
-            src={item.product.thumbnail_url}
+            src={item.manual_license?.thumbnail_url || item.fulfillment?.thumbnail_url || item.product.thumbnail_url}
             emoji={(item.product as any).emoji || "📦"}
             alt={item.product.name}
             size={48}
