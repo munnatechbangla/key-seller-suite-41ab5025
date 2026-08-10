@@ -233,7 +233,9 @@ function LegacyProductPage() {
     null;
   const [activeImage, setActiveImage] = useState<string | null>(null);
   useEffect(() => { setActiveImage(null); }, [product.id]);
-  const heroImage = activeImage ?? activeVariant?.thumbnail_url ?? featuredImage;
+  // Resolve active variant thumbnail if present, fallback to gallery/featured
+  const variantThumb = activeVariant?.thumbnail_url;
+  const heroImage = activeImage ?? variantThumb ?? featuredImage;
 
   return (
     <div className="min-h-screen">
