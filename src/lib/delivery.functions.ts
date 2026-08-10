@@ -41,6 +41,7 @@ export type DeliveryItem = {
     platform: string | null;
     instructions: string | null;
     delivered_at: string;
+    thumbnail_url?: string | null;
   } | null;
   custom_fields: DeliveryCustomField[];
   fulfillment?: {
@@ -49,6 +50,7 @@ export type DeliveryItem = {
     delivery_type: string | null;
     completed_at: string | null;
     metadata: Record<string, any> | null;
+    thumbnail_url?: string | null;
   } | null;
 };
 
@@ -114,6 +116,7 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
       delivery_type: f.delivery_type ?? null,
       completed_at: f.completed_at ?? null,
       metadata: f.metadata ?? null,
+      thumbnail_url: (f.metadata as any)?.thumbnail_snapshot || (f.metadata as any)?.thumbnail_url || null,
     });
   }
 
@@ -159,6 +162,7 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
       platform: m.platform,
       instructions: m.instructions,
       delivered_at: m.delivered_at,
+      thumbnail_url: (m as any).thumbnail_url || null,
     });
   }
 
