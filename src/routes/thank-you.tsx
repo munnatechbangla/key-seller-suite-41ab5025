@@ -168,7 +168,7 @@ function ThankYou() {
                     <div key={it.id} className="flex items-center gap-3 p-3 rounded-xl border border-border">
                       <div className="h-10 w-10 shrink-0">
                         <ProductThumb 
-                          src={it.thumbnail_url} 
+                          src={it.thumbnail_snapshot || it.thumbnail_url} 
                           emoji="📦" 
                           alt={it.product_name} 
                           size={40} 
