@@ -24,6 +24,7 @@ import {
   ChevronRight, ChevronLeft, Minus, Plus, Info, Check, 
   Image as ImageIcon, GitCompare, Truck, Lock, Package, Shield
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { ProductThumb } from "@/components/site/ProductThumb";
 import { reviewsQuery } from "@/lib/reviews";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
