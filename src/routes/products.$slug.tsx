@@ -24,6 +24,7 @@ import {
   ChevronRight, ChevronLeft, Minus, Plus, Info, Check, 
   Image as ImageIcon, GitCompare, Truck, Lock, Package, Shield
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { ProductThumb } from "@/components/site/ProductThumb";
 import { reviewsQuery } from "@/lib/reviews";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
@@ -276,7 +277,10 @@ function LegacyProductPage() {
                     key={img.id}
                     type="button"
                     onClick={() => setActiveImage(img.url)}
-                    className={`aspect-square rounded-xl overflow-hidden bg-card border transition-smooth ${isActive ? "border-primary ring-2 ring-primary/40" : "border-border hover:border-primary"}`}
+                    className={cn(
+                      "aspect-square rounded-xl overflow-hidden bg-card border transition-smooth",
+                      isActive ? "border-primary ring-2 ring-primary/40" : "border-border hover:border-primary"
+                    )}
                   >
                     <ProductThumb
                       src={img.url}

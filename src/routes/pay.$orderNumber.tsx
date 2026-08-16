@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/site/Header";
 import { ProductThumb } from "@/components/site/ProductThumb";
+import { resolveLineImage } from "@/lib/cart-image";
 import { Footer } from "@/components/site/Footer";
 import {
   Loader2,
@@ -82,6 +83,28 @@ function buildTimeline(opts: {
         : approved && hasLicense ? "done" : approved ? "current" : "todo",
     },
   ];
+}
+
+function OrderItemRow({ it }: { it: any }) {
+  // Use the same resolver as cart/checkout for consistency
+  const img = resolveLineImage(it.products || it.product, it.variant);
+  return (
+    <div className="flex items-center gap-3 py-2 border-b border-border last:border-0 text-sm">
+      <div className="h-10 w-10 shrink-0">
+        <ProductThumb 
+          src={img} 
+          emoji={it.products?.emoji || it.product?.emoji} 
+          alt={it.products?.title || it.product?.name} 
+          size={40}
+        />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="font-medium truncate">{it.products?.title || it.product?.name}</div>
+        <div className="text-[11px] text-muted-foreground">Qty {it.qty}</div>
+      </div>
+      <div className="font-semibold">${Number(it.unit_price * it.qty).toFixed(2)}</div>
+    </div>
+  );
 }
 
 function submittedFlag(orderNumber: string) {
@@ -281,6 +304,17 @@ function PayPage() {
                 <SummaryRow label="Amount" value={`${Number(order.total).toFixed(2)} ${order.currency}`} />
                 <SummaryRow label="Method" value={gateway?.name ?? slug ?? "—"} />
               </div>
+
+              {orderItems.length > 0 && (
+                <div className="border border-border rounded-xl p-3 bg-muted/20">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-2">Order Summary</div>
+                  <div className="divide-y divide-border">
+                    {orderItems.map((it, idx) => (
+                      <OrderItemRow key={idx} it={it} />
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <Timeline steps={timeline} />
 
