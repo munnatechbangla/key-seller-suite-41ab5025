@@ -29,7 +29,12 @@ function RenderBlock({ block, product }: { block: ProductBlock; product?: any })
   const c = block.json_content ?? {};
   switch (block.block_type) {
     case "rich_text":
-      return <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: c.html ?? "" }} />;
+      return (
+        <div 
+          className="prose prose-sm max-w-none dark:prose-invert prose-p:my-2 prose-headings:mb-2 prose-ul:my-2 prose-li:my-0" 
+          dangerouslySetInnerHTML={{ __html: c.html ?? "" }} 
+        />
+      );
 
     case "heading": {
       const level = Math.min(Math.max(Number(c.level ?? 2), 1), 6);
