@@ -26,9 +26,9 @@ const sizeMap: Record<NonNullable<LogoProps["size"]>, string> = {
 
 // Responsive height + max-width caps so the <img> never collapses in a flex row.
 const imgSizeMap: Record<NonNullable<LogoProps["size"]>, string> = {
-  sm: "h-7 sm:h-8 max-w-[140px]",
-  md: "h-8 sm:h-9 md:h-10 max-w-[180px]",
-  lg: "h-9 sm:h-10 md:h-11 max-w-[200px]",
+  sm: "h-6 sm:h-7 max-w-[140px]",
+  md: "h-7 sm:h-8 md:h-9 max-w-[180px]",
+  lg: "h-8 sm:h-9 md:h-10 max-w-[200px]",
 };
 
 
