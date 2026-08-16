@@ -63,7 +63,7 @@ export function Logo({ variant = "light", size = "md", asPlainText, forceTheme, 
         emoji=""
         alt={branding.name}
         size={200}
-        className={cn("w-auto shrink-0 object-contain select-none", imgSizeMap[size], className)}
+        className={cn("w-auto shrink-0 object-contain select-none bg-transparent", imgSizeMap[size], className)}
       />
     );
   } else {
