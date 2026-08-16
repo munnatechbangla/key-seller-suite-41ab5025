@@ -32,7 +32,7 @@ export function ProductThumb({ src, emoji, alt = "", size = 64, className }: Pro
 
   return (
     <div
-      className={cn("relative shrink-0 overflow-hidden rounded-lg bg-muted flex items-center justify-center", className)}
+      className={cn("relative shrink-0 rounded-lg bg-muted flex items-center justify-center", className)}
     >
       {showFallback ? (
         <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 text-2xl">
@@ -44,12 +44,14 @@ export function ProductThumb({ src, emoji, alt = "", size = 64, className }: Pro
           alt={alt}
           loading="lazy"
           decoding="async"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="h-full w-full object-contain"
           onError={() => setFailed(true)}
         />
       )}
       {/* Invisible spacer to maintain aspect ratio if no dimensions are provided via className */}
-      <div style={{ width: size, height: size }} className="pointer-events-none invisible" />
+      {!className?.includes("w-") && !className?.includes("h-") && (
+        <div style={{ width: size, height: size }} className="pointer-events-none invisible" />
+      )}
     </div>
   );
 }
