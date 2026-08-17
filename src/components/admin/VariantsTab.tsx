@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { usePriceFormatter, formatPriceWithSymbol } from "@/lib/currency";
+import { usePriceFormatter } from "@/lib/currency";
 import { useSettings } from "@/lib/cms/settings";
 import {
   AlertTriangle,
@@ -132,6 +132,7 @@ function downloadFile(name: string, contents: string, mime = "text/csv") {
 /* ---------------- component ---------------- */
 
 export function VariantsTab({ productId }: { productId: string }) {
+  const formatPrice = usePriceFormatter();
   const listAttrs = useServerFn(listProductAttributesFn);
   const listVars = useServerFn(listProductVariantsFn);
   const upsert = useServerFn(adminUpsertVariantFn);
@@ -672,8 +673,8 @@ function VariantRow({
           </div>
         </div>
         <InlineCell value={variant.sku ?? ""} onCommit={(v) => patch({ sku: v || null })} placeholder="SKU" />
-        <InlineCell value={formatPriceWithSymbol(Number(variant.price))} type="number" align="right" onCommit={(v) => patch({ price: Number(v) })} />
-        <InlineCell value={variant.sale_price == null ? "" : formatPriceWithSymbol(Number(variant.sale_price))} type="number" align="right" onCommit={(v) => patch({ sale_price: v === "" ? null : Number(v) })} placeholder="—" />
+        <InlineCell value={formatPrice(Number(variant.price))} type="number" align="right" onCommit={(v) => patch({ price: Number(v) })} />
+        <InlineCell value={variant.sale_price == null ? "" : formatPrice(Number(variant.sale_price))} type="number" align="right" onCommit={(v) => patch({ sale_price: v === "" ? null : Number(v) })} placeholder="—" />
         <InlineCell value={variant.stock ?? ""} type="number" align="right" onCommit={(v) => patch({ stock: v === "" ? null : Number(v) })} placeholder="—" />
         <RowPoolPicker value={variant.inventory_pool_id} pools={pools?.inventory ?? []} onChange={(v) => patch({ inventory_pool_id: v })} />
         <RowPoolPicker value={variant.subscription_pool_id} pools={pools?.subscription ?? []} onChange={(v) => patch({ subscription_pool_id: v })} />

@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
 import { FulfillmentPanel } from "@/components/fulfillment/FulfillmentPanel";
 import { LicenseAssignmentPanel } from "@/components/admin/LicenseAssignmentPanel";
-import { formatPriceWithSymbol } from "@/lib/currency";
+import { usePriceFormatter } from "@/lib/currency";
 
 
 export const Route = createFileRoute("/admin/orders")({ component: AdminOrders });
@@ -18,6 +18,7 @@ export const Route = createFileRoute("/admin/orders")({ component: AdminOrders }
 const STATUSES = ["pending", "paid", "processing", "completed", "cancelled", "refunded", "failed"];
 
 function AdminOrders() {
+  const formatPrice = usePriceFormatter();
   const list = useServerFn(adminListOrdersFn);
   const setStatus = useServerFn(adminUpdateOrderStatusFn);
   const qc = useQueryClient();
@@ -65,7 +66,7 @@ function AdminOrders() {
           <TableBody>
             {isLoading && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Loading…</TableCell></TableRow>}
             {(data ?? []).map((o: any) => (
-              <OrderRow key={o.id} order={o} onStatusChange={(s: string) => update.mutate({ orderId: o.id, status: s })} />
+              <OrderRow key={o.id} order={o} formatPrice={formatPrice} onStatusChange={(s: string) => update.mutate({ orderId: o.id, status: s })} />
             ))}
           </TableBody>
         </Table>
@@ -74,7 +75,7 @@ function AdminOrders() {
   );
 }
 
-function OrderRow({ order: o, onStatusChange }: { order: any; onStatusChange: (s: string) => void }) {
+function OrderRow({ order: o, formatPrice, onStatusChange }: { order: any; formatPrice: any; onStatusChange: (s: string) => void }) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -88,7 +89,7 @@ function OrderRow({ order: o, onStatusChange }: { order: any; onStatusChange: (s
           <div className="font-medium">{o.customer_name ?? "—"}</div>
           <div className="text-xs text-muted-foreground">{o.email}</div>
         </TableCell>
-        <TableCell>{formatPriceWithSymbol(Number(o.total), o.currency_symbol || o.currency || "$")}</TableCell>
+        <TableCell>{formatPrice(Number(o.total))}</TableCell>
         <TableCell className="text-sm">{o.payment_method ?? "—"}</TableCell>
         <TableCell>
           <select
