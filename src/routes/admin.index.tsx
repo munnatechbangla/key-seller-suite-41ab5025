@@ -6,11 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, ShoppingBag, Users, Package, TrendingUp, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { useSetupStatus } from "@/lib/setup";
 import { useSettings } from "@/lib/cms/settings";
+import { usePriceFormatter } from "@/lib/currency";
 import { DeploymentChecklist } from "@/components/admin/DeploymentChecklist";
 
 export const Route = createFileRoute("/admin/")({ component: AdminDashboard });
 
 function AdminDashboard() {
+  const formatPrice = usePriceFormatter();
   const fn = useServerFn(adminGetKpisFn);
   const { data, isLoading } = useQuery({ queryKey: ["admin-kpis"], queryFn: () => fn() });
   const { data: setup } = useSetupStatus();
@@ -23,7 +25,7 @@ function AdminDashboard() {
 
   const k = data ?? { totalRevenue: 0, orders: 0, customers: 0, products: 0, conversion: 0 };
   const cards = [
-    { label: "Total Revenue", value: `$${k.totalRevenue.toFixed(2)}`, icon: DollarSign },
+    { label: "Total Revenue", value: formatPrice(k.totalRevenue), icon: DollarSign },
     { label: "Orders", value: k.orders, icon: ShoppingBag },
     { label: "Customers", value: k.customers, icon: Users },
     { label: "Products", value: k.products, icon: Package },

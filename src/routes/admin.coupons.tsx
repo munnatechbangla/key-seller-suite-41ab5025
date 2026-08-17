@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import { usePriceFormatter } from "@/lib/currency";
 
 export const Route = createFileRoute("/admin/coupons")({ component: AdminCoupons });
 
@@ -41,6 +42,7 @@ type Coupon = {
 };
 
 function AdminCoupons() {
+  const formatPrice = usePriceFormatter();
   const list = useServerFn(adminListCouponsFn);
   const upsert = useServerFn(adminUpsertCouponFn);
   const del = useServerFn(adminDeleteCouponFn);
@@ -94,9 +96,9 @@ function AdminCoupons() {
               <TableRow key={c.id}>
                 <TableCell className="font-mono font-semibold">{c.code}</TableCell>
                 <TableCell><Badge variant="secondary">{c.type}</Badge></TableCell>
-                <TableCell>{c.type === "percent" ? `${c.value}%` : `$${Number(c.value).toFixed(2)}`}</TableCell>
+                <TableCell>{c.type === "percent" ? `${c.value}%` : formatPrice(Number(c.value))}</TableCell>
                 <TableCell>{c.used_count}{c.usage_limit ? ` / ${c.usage_limit}` : ""}</TableCell>
-                <TableCell>${Number(c.revenue_generated).toFixed(2)}</TableCell>
+                <TableCell>{formatPrice(Number(c.revenue_generated))}</TableCell>
                 <TableCell>
                   <Switch checked={c.is_active} onCheckedChange={(v) => tog.mutate({ id: c.id, is_active: v })} />
                 </TableCell>

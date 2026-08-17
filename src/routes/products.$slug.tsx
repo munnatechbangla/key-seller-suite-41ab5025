@@ -38,6 +38,7 @@ import { productLayoutPublicResolveFn } from "@/lib/product-layouts.functions";
 import { ProductLayoutRenderer, type ProductLayoutSection } from "@/components/cms/ProductLayoutRenderer";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
+import { useSettings } from "@/lib/cms/settings";
 import { productBlocksPublicFn } from "@/lib/product-blocks.functions";
 import { ProductContentBlocks, type ProductBlock } from "@/components/cms/ProductContentBlocks";
 import { useCurrency, usePriceFormatter } from "@/lib/currency";
@@ -65,9 +66,8 @@ export const Route = createFileRoute("/products/$slug")({
     const path = `/products/${params.slug}`;
     
     // We can't use hooks here. We'll use a default or try to pass it through loaderData if we really need it to be dynamic for SEO.
-    // For now, let's use "USD" as fallback for meta tags if we can't get the real one easily without a hook.
-    // Actually, we can just read from the store's initial state if it's imported.
-    const currencyCode = "USD"; 
+    const settings = useSettings.getState().settings;
+    const currencyCode = settings.payment.currency || "USD";
 
     if (!p) return { meta: seoMeta({ path }) };
     const seo = p.seo ?? null;
@@ -123,9 +123,9 @@ export const Route = createFileRoute("/products/$slug")({
     if (seo?.twitter_image) meta.push({ name: "twitter:image", content: seo.twitter_image });
     meta.push(
       { property: "product:price:amount", content: p.price.toFixed(2) },
-      { property: "product:price:currency", content: "USD" },
+      { property: "product:price:currency", content: (p as any).currency || currencyCode },
       { property: "og:price:amount", content: p.price.toFixed(2) },
-      { property: "og:price:currency", content: "USD" },
+      { property: "og:price:currency", content: (p as any).currency || currencyCode },
       { property: "product:availability", content: (p.stock ?? 1) > 0 ? "in stock" : "out of stock" },
     );
     const canonicalHref = seo?.canonical_url || undefined;

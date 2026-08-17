@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
 import { FulfillmentPanel } from "@/components/fulfillment/FulfillmentPanel";
 import { LicenseAssignmentPanel } from "@/components/admin/LicenseAssignmentPanel";
+import { formatPriceWithSymbol } from "@/lib/currency";
 
 
 export const Route = createFileRoute("/admin/orders")({ component: AdminOrders });
@@ -87,7 +88,7 @@ function OrderRow({ order: o, onStatusChange }: { order: any; onStatusChange: (s
           <div className="font-medium">{o.customer_name ?? "—"}</div>
           <div className="text-xs text-muted-foreground">{o.email}</div>
         </TableCell>
-        <TableCell>${Number(o.total).toFixed(2)} {o.currency}</TableCell>
+        <TableCell>{formatPriceWithSymbol(Number(o.total), o.currency_symbol || o.currency || "$")}</TableCell>
         <TableCell className="text-sm">{o.payment_method ?? "—"}</TableCell>
         <TableCell>
           <select
