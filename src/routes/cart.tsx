@@ -14,7 +14,7 @@ import { validateCouponFn } from "@/lib/coupons.functions";
 import { Trash2, Tag, ShoppingBag, ArrowRight, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { usePriceFormatter } from "@/lib/currency";
+import { usePriceFormatter, formatPriceWithSymbol } from "@/lib/currency";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({ meta: [{ title: `Shopping Cart — ${siteName()}` }] }),
