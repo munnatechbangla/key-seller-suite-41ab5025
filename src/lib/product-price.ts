@@ -30,5 +30,6 @@ export function resolveProductPrice(product: Product): ResolvedProductPrice {
 }
 
 export function formatPrice(n: number, symbol: string = "$"): string {
+  if (n == null || isNaN(n)) return `${symbol}0.00`;
   return `${symbol}${n.toFixed(2)}`;
 }
