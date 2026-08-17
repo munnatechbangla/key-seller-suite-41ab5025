@@ -16,6 +16,7 @@ import { DeliveryPanel } from "@/components/delivery/DeliveryPanel";
 import { getOrderDeliveryAuthFn, getOrderDeliveryGuestFn } from "@/lib/delivery.functions";
 import { FulfillmentPanel } from "@/components/fulfillment/FulfillmentPanel";
 import { ProductThumb } from "@/components/site/ProductThumb";
+import { usePriceFormatter } from "@/lib/currency";
 
 export const Route = createFileRoute("/thank-you")({
   validateSearch: z.object({ order: z.string().optional(), email: z.string().optional() }),
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/thank-you")({
 function ThankYou() {
   const { order, email } = Route.useSearch();
   const user = useAuth((s) => s.user);
+  const formatPrice = usePriceFormatter();
   const fetchOrderPublic = useServerFn(getOrderByNumberFn);
   const fetchOrderAuthed = useServerFn(getMyOrderByNumberFn);
   const fetchOrder = user ? fetchOrderAuthed : fetchOrderPublic;
@@ -110,7 +112,7 @@ function ThankYou() {
           </p>
           {q.data?.order && (
             <p className="mt-1 text-sm text-muted-foreground">
-              Total <b>${Number(q.data.order.total).toFixed(2)}</b> · {q.data.items.length} item{q.data.items.length !== 1 ? "s" : ""}
+              Total <b>{formatPrice(Number(q.data.order.total))}</b> · {q.data.items.length} item{q.data.items.length !== 1 ? "s" : ""}
             </p>
           )}
           {isPending && order && (
@@ -179,7 +181,7 @@ function ThankYou() {
                         <div className="font-semibold text-sm flex items-center gap-2">
                           <span className="text-primary font-bold">{it.qty}×</span> {it.product_name}
                         </div>
-                        <div className="text-xs text-muted-foreground">${Number(it.unit_price).toFixed(2)} each</div>
+                        <div className="text-xs text-muted-foreground">{formatPrice(Number(it.unit_price))} each</div>
                       </div>
                     </div>
                   ))}
