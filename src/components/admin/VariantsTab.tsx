@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { usePriceFormatter } from "@/lib/currency";
 import {
   AlertTriangle,
   ChevronDown,
@@ -611,6 +612,7 @@ function VariantRow({
   onChanged: () => void;
   health: Health;
 }) {
+  const formatPrice = usePriceFormatter();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(() => toUpsert(variant));
   const upsert = useServerFn(adminUpsertVariantFn);
