@@ -29,6 +29,7 @@ export function resolveProductPrice(product: Product): ResolvedProductPrice {
   return { price: p, oldPrice: old, fromLabel: false, unavailable: false };
 }
 
-export function formatPrice(n: number): string {
-  return `$${n.toFixed(2)}`;
+export function formatPrice(n: number, symbol: string = "$"): string {
+  if (n == null || isNaN(n)) return `${symbol}0.00`;
+  return `${symbol}${n.toFixed(2)}`;
 }

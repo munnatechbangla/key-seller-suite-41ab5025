@@ -40,20 +40,35 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { productBlocksPublicFn } from "@/lib/product-blocks.functions";
 import { ProductContentBlocks, type ProductBlock } from "@/components/cms/ProductContentBlocks";
+import { useCurrency, usePriceFormatter } from "@/lib/currency";
 
 export const Route = createFileRoute("/products/$slug")({
   validateSearch: zodValidator(productSearchSchema),
   loader: async ({ params, context }) => {
+    // We need currency code for head metadata, but useSettings is a hook.
+    // In TanStack Start loader context, we don't have easy access to Zustand store state without mounting.
+    // However, the head() function can access loaderData.
     const product = await context.queryClient.ensureQueryData(productQuery(params.slug));
     if (!product) throw notFound();
     context.queryClient.ensureQueryData(relatedQuery(params.slug, 4));
     const reviews = await context.queryClient.ensureQueryData(reviewsQuery(product.id));
+    
+    // Fetch settings directly from Supabase for the loader if needed, 
+    // or just pass a default since SEO currency is usually just for schema.
+    // To keep it simple and reactive, we'll try to get it from the store if possible,
+    // but head() runs during SSR where the store might not be hydrated.
     return { product, reviews };
   },
   head: ({ loaderData, params }) => {
     const p = loaderData?.product;
     const reviews = loaderData?.reviews ?? [];
     const path = `/products/${params.slug}`;
+    
+    // We can't use hooks here. We'll use a default or try to pass it through loaderData if we really need it to be dynamic for SEO.
+    // For now, let's use "USD" as fallback for meta tags if we can't get the real one easily without a hook.
+    // Actually, we can just read from the store's initial state if it's imported.
+    const currencyCode = "USD"; 
+
     if (!p) return { meta: seoMeta({ path }) };
     const seo = p.seo ?? null;
     const scripts: Array<{ type: string; children: string }> = [];
@@ -135,6 +150,7 @@ export const Route = createFileRoute("/products/$slug")({
 function ProductPage() {
   const { slug } = Route.useParams();
   const product = useProduct(slug)!;
+  const { code: currencyCode } = useCurrency();
 
   // Phase 4.3A: if this product resolves to a dynamic Product Layout, render it.
   const resolveLayout = useServerFn(productLayoutPublicResolveFn);
@@ -149,7 +165,7 @@ function ProductPage() {
   useEffect(() => { push(product.slug); }, [product.slug, push]);
   useEffect(() => {
     track("view_item", {
-      currency: "USD",
+      currency: currencyCode,
       value: product.price,
       items: [{ item_id: product.slug, item_name: product.name, price: product.price, item_category: product.category }],
     });
@@ -171,6 +187,7 @@ function ProductPage() {
 function LegacyProductPage() {
   const { slug } = Route.useParams();
   const product = useProduct(slug)!;
+  const formatPrice = usePriceFormatter();
   const related = useRelated(slug, 4);
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<"desc" | "specs" | "reviews" | "faq">("desc");
@@ -334,11 +351,11 @@ function LegacyProductPage() {
             <>
               <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 p-5 flex items-end gap-4 flex-wrap">
                 <div>
-                  <div className="text-4xl font-bold text-primary">${product.price}</div>
+                  <div className="text-4xl font-bold text-primary">{formatPrice(product.price)}</div>
                   {product.oldPrice && (
                     <div className="flex gap-2 items-center mt-1">
-                      <span className="text-sm text-muted-foreground line-through">${product.oldPrice}</span>
-                      <span className="text-xs font-bold text-accent">Save ${(product.oldPrice - product.price).toFixed(2)}</span>
+                      <span className="text-sm text-muted-foreground line-through">{formatPrice(product.oldPrice)}</span>
+                      <span className="text-xs font-bold text-accent">Save {formatPrice(product.oldPrice - product.price)}</span>
                     </div>
                   )}
                 </div>

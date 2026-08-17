@@ -20,6 +20,7 @@ import { MyReviewsTab } from "@/components/site/MyReviewsTab";
 import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
 import { DeliveryPanel } from "@/components/delivery/DeliveryPanel";
 import { getMyDeliveriesFn } from "@/lib/delivery.functions";
+import { usePriceFormatter, formatPriceWithSymbol } from "@/lib/currency";
 
 export const Route = createFileRoute("/account")({
   head: () => ({ meta: [{ title: `My Account — ${siteName()}` }] }),
@@ -123,12 +124,13 @@ function Loader() {
 }
 
 function DashboardTab() {
+  const formatPrice = usePriceFormatter();
   const orders = useMyOrders();
   const list = orders.data ?? [];
   const totalSpent = list.filter((o) => o.status === "paid" || o.status === "completed").reduce((s, o) => s + Number(o.total), 0);
   const stats = [
     { label: "Total orders", value: String(list.length), Icon: Package, color: "text-primary bg-primary/10" },
-    { label: "Total spent", value: `$${totalSpent.toFixed(2)}`, Icon: DollarSign, color: "text-emerald-600 bg-emerald-500/10" },
+    { label: "Total spent", value: formatPrice(totalSpent), Icon: DollarSign, color: "text-emerald-600 bg-emerald-500/10" },
     { label: "Active orders", value: String(list.filter((o) => o.status === "paid" || o.status === "processing").length), Icon: CheckCircle2, color: "text-accent bg-accent/10" },
     { label: "Loyalty pts", value: String(Math.floor(totalSpent * 5)), Icon: TrendingUp, color: "text-secondary bg-secondary/10" },
   ];
@@ -188,7 +190,7 @@ function OrdersList({ orders }: { orders: OrderRow[] }) {
                 <div className="text-xs text-muted-foreground">{date} · {itemCount} item{itemCount !== 1 ? "s" : ""}</div>
               </div>
               <div className="text-right space-y-1">
-                <div className="font-bold">${Number(o.total).toFixed(2)}</div>
+                <div className="font-bold">{formatPriceWithSymbol(Number(o.total), (o as any).currency_symbol || o.currency || "$")}</div>
                 <div className="flex gap-1 justify-end">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[o.status] ?? palette.pending}`}>{o.status}</span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[payStatus] ?? palette.pending}`}>{payStatus}</span>
@@ -327,7 +329,7 @@ function SubmissionsTab() {
                     <div className="text-xs text-muted-foreground">Submitted {date}{s.transaction_id ? ` · Txn ${s.transaction_id}` : ""}</div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-sm">${Number(s.amount ?? 0).toFixed(2)}</div>
+                    <div className="font-bold text-sm">{formatPriceWithSymbol(Number(s.amount ?? 0), (s as any).currency_symbol || s.currency || "$")}</div>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[s.status] ?? palette.pending}`}>{s.status}</span>
                   </div>
                 </div>

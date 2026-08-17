@@ -14,6 +14,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ShoppingCart, Zap, Check, AlertTriangle } from "lucide-react";
+import { useCurrency, usePriceFormatter } from "@/lib/currency";
 import {
   listProductAttributesFn,
   listProductVariantsFn,
@@ -36,6 +37,7 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes, bef
   const listAttrs = useServerFn(listProductAttributesFn);
   const listVars = useServerFn(listProductVariantsFn);
   const cart = useCart();
+  const formatPrice = usePriceFormatter();
   const navigate = useNavigate({ from: "/products/$slug" });
   const search = productRouteApi.useSearch();
 
@@ -285,12 +287,12 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes, bef
       {/* Price + variant meta */}
       <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 p-5">
         <div key={priceKey} className="animate-fade-in flex items-end gap-3 flex-wrap">
-          <div className="text-4xl font-bold text-primary">${price.toFixed(2)}</div>
+          <div className="text-4xl font-bold text-primary">{formatPrice(price)}</div>
           {compareAt && compareAt > price && (
             <div className="flex gap-2 items-center">
-              <span className="text-sm text-muted-foreground line-through">${compareAt.toFixed(2)}</span>
+              <span className="text-sm text-muted-foreground line-through">{formatPrice(compareAt)}</span>
               <span className="text-xs font-bold text-accent">
-                Save ${(compareAt - price).toFixed(2)}
+                Save {formatPrice(compareAt - price)}
               </span>
             </div>
           )}

@@ -2,6 +2,7 @@
 // safe default fallback so head() works on both SSR and client. All values
 // are dynamic — no hardcoded domain or brand.
 import { defaultSettings, useSettings } from "./settings";
+import { formatPriceWithSymbol } from "@/lib/currency";
 
 export function getSettings() {
   try {
