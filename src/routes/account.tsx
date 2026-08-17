@@ -190,7 +190,7 @@ function OrdersList({ orders }: { orders: OrderRow[] }) {
                 <div className="text-xs text-muted-foreground">{date} · {itemCount} item{itemCount !== 1 ? "s" : ""}</div>
               </div>
               <div className="text-right space-y-1">
-                <div className="font-bold">{formatPriceWithSymbol(Number(o.total), o.currency_symbol || o.currency || "$")}</div>
+                <div className="font-bold">{formatPriceWithSymbol(Number(o.total), (o as any).currency_symbol || o.currency || "$")}</div>
                 <div className="flex gap-1 justify-end">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[o.status] ?? palette.pending}`}>{o.status}</span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[payStatus] ?? palette.pending}`}>{payStatus}</span>
@@ -329,7 +329,7 @@ function SubmissionsTab() {
                     <div className="text-xs text-muted-foreground">Submitted {date}{s.transaction_id ? ` · Txn ${s.transaction_id}` : ""}</div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-sm">{formatPriceWithSymbol(Number(s.amount ?? 0), s.currency_symbol || s.currency || "$")}</div>
+                    <div className="font-bold text-sm">{formatPriceWithSymbol(Number(s.amount ?? 0), (s as any).currency_symbol || s.currency || "$")}</div>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[s.status] ?? palette.pending}`}>{s.status}</span>
                   </div>
                 </div>
