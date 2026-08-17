@@ -193,7 +193,7 @@ export function productJsonLd(p: {
       "@type": "Offer",
       url: absUrl(`/products/${p.slug}`),
       priceCurrency: currency,
-      price: p.price.toFixed(2),
+      price: formatPriceWithSymbol(p.price),
       availability: `https://schema.org/${p.inStock === false ? "OutOfStock" : "InStock"}`,
       itemCondition: "https://schema.org/NewCondition",
     },

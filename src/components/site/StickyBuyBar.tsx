@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { usePriceFormatter } from "@/lib/currency";
 import { ShoppingCart, Zap } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import type { Product } from "@/lib/catalog";
@@ -19,6 +20,7 @@ export function StickyBuyBar({ product, threshold = 480, variant, hasAttributes 
   const enabled = useMarketplace((s) => s.config.product_experience.sticky_buy_bar_enabled);
   const speed = useMarketplace((s) => s.config.ui.animation_speed_ms);
   const cart = useCart();
+  const formatPrice = usePriceFormatter();
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
 
@@ -72,10 +74,10 @@ export function StickyBuyBar({ product, threshold = 480, variant, hasAttributes 
         <div className="min-w-0 flex-1">
           <div className="text-xs font-semibold truncate">{label}</div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-sm font-bold text-primary">${unitPrice.toFixed(2)}</span>
+            <span className="text-sm font-bold text-primary">{formatPrice(unitPrice)}</span>
             {compareAt && compareAt > unitPrice && (
               <>
-                <span className="text-[11px] text-muted-foreground line-through">${compareAt.toFixed(2)}</span>
+                <span className="text-[11px] text-muted-foreground line-through">{formatPrice(compareAt)}</span>
                 {off > 0 && <span className="text-[10px] font-bold text-accent">-{off}%</span>}
               </>
             )}

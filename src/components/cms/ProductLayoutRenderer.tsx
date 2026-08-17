@@ -11,6 +11,7 @@ import { Star, ShieldCheck, Truck, Lock, ShoppingCart, Check } from "lucide-reac
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { usePriceFormatter } from "@/lib/currency";
 
 export type ProductLayoutSection = {
   id: string;
@@ -77,6 +78,7 @@ export function ProductLayoutRenderer({ product, sections }: { product: any; sec
 }
 
 function RenderProductSection({ section, product }: { section: ProductLayoutSection; product: any }) {
+  const formatPrice = usePriceFormatter();
   const c = section.json_content ?? {};
   const style: ProductSectionCommonStyle = c.style ?? {};
 
@@ -119,10 +121,10 @@ function RenderProductSection({ section, product }: { section: ProductLayoutSect
       return (
         <SectionWrap style={style}>
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-bold">${product.price.toFixed(2)}</span>
+            <span className="text-3xl font-bold">{formatPrice(product.price)}</span>
             {c.show_old_price && product.oldPrice && (
               <>
-                <span className="text-muted-foreground line-through">${product.oldPrice.toFixed(2)}</span>
+                <span className="text-muted-foreground line-through">{formatPrice(product.oldPrice)}</span>
                 <span className="text-sm font-semibold text-green-600">
                   {Math.round((1 - product.price / product.oldPrice) * 100)}% OFF
                 </span>
