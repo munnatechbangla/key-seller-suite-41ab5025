@@ -4,10 +4,12 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/com
 import { useCart } from "@/lib/stores";
 import { Trash2, ShoppingBag, ArrowRight, Tag } from "lucide-react";
 import { ProductThumb } from "@/components/site/ProductThumb";
+import { usePriceFormatter } from "@/lib/currency";
 
 export function MiniCart({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const cart = useCart();
   const close = () => onOpenChange(false);
+  const formatPrice = usePriceFormatter();
 
   // ESC handled by Sheet; outside click handled by Sheet overlay.
   useEffect(() => {
@@ -96,7 +98,7 @@ export function MiniCart({ open, onOpenChange }: { open: boolean; onOpenChange: 
                         >+</button>
                       </div>
                     <div className="shrink-0 text-sm font-bold text-primary">
-                        ${(unit * it.qty).toFixed(2)}
+                        {formatPrice(unit * it.qty)}
                       </div>
                     </div>
                   </div>
@@ -116,17 +118,17 @@ export function MiniCart({ open, onOpenChange }: { open: boolean; onOpenChange: 
               <div className="w-full space-y-1.5 text-sm">
                 <div className="flex justify-between text-muted-foreground">
                   <span>Subtotal</span>
-                  <span>${cart.subtotal().toFixed(2)}</span>
+                  <span>{formatPrice(cart.subtotal())}</span>
                 </div>
                 {cart.coupon && (
                   <div className="flex justify-between text-emerald-600">
                     <span className="inline-flex items-center gap-1"><Tag className="h-3.5 w-3.5" /> {cart.coupon}</span>
-                    <span>−${cart.discount().toFixed(2)}</span>
+                    <span>−{formatPrice(cart.discount())}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-base font-bold pt-1 border-t border-border">
                   <span>Estimated total</span>
-                  <span className="text-primary">${cart.total().toFixed(2)}</span>
+                  <span className="text-primary">{formatPrice(cart.total())}</span>
                 </div>
               </div>
               <div className="grid min-w-0 grid-cols-2 gap-2 w-full">

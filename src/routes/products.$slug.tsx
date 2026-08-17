@@ -40,6 +40,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { productBlocksPublicFn } from "@/lib/product-blocks.functions";
 import { ProductContentBlocks, type ProductBlock } from "@/components/cms/ProductContentBlocks";
+import { useCurrency, usePriceFormatter } from "@/lib/currency";
 
 export const Route = createFileRoute("/products/$slug")({
   validateSearch: zodValidator(productSearchSchema),
@@ -108,9 +109,9 @@ export const Route = createFileRoute("/products/$slug")({
     if (seo?.twitter_image) meta.push({ name: "twitter:image", content: seo.twitter_image });
     meta.push(
       { property: "product:price:amount", content: p.price.toFixed(2) },
-      { property: "product:price:currency", content: "USD" },
+      { property: "product:price:currency", content: currencyCode },
       { property: "og:price:amount", content: p.price.toFixed(2) },
-      { property: "og:price:currency", content: "USD" },
+      { property: "og:price:currency", content: currencyCode },
       { property: "product:availability", content: (p.stock ?? 1) > 0 ? "in stock" : "out of stock" },
     );
     const canonicalHref = seo?.canonical_url || undefined;
@@ -135,6 +136,7 @@ export const Route = createFileRoute("/products/$slug")({
 function ProductPage() {
   const { slug } = Route.useParams();
   const product = useProduct(slug)!;
+  const { code: currencyCode } = useCurrency();
 
   // Phase 4.3A: if this product resolves to a dynamic Product Layout, render it.
   const resolveLayout = useServerFn(productLayoutPublicResolveFn);
@@ -149,7 +151,7 @@ function ProductPage() {
   useEffect(() => { push(product.slug); }, [product.slug, push]);
   useEffect(() => {
     track("view_item", {
-      currency: "USD",
+      currency: currencyCode,
       value: product.price,
       items: [{ item_id: product.slug, item_name: product.name, price: product.price, item_category: product.category }],
     });
@@ -171,6 +173,7 @@ function ProductPage() {
 function LegacyProductPage() {
   const { slug } = Route.useParams();
   const product = useProduct(slug)!;
+  const formatPrice = usePriceFormatter();
   const related = useRelated(slug, 4);
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<"desc" | "specs" | "reviews" | "faq">("desc");
@@ -334,11 +337,11 @@ function LegacyProductPage() {
             <>
               <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 p-5 flex items-end gap-4 flex-wrap">
                 <div>
-                  <div className="text-4xl font-bold text-primary">${product.price}</div>
+                  <div className="text-4xl font-bold text-primary">{formatPrice(product.price)}</div>
                   {product.oldPrice && (
                     <div className="flex gap-2 items-center mt-1">
-                      <span className="text-sm text-muted-foreground line-through">${product.oldPrice}</span>
-                      <span className="text-xs font-bold text-accent">Save ${(product.oldPrice - product.price).toFixed(2)}</span>
+                      <span className="text-sm text-muted-foreground line-through">{formatPrice(product.oldPrice)}</span>
+                      <span className="text-xs font-bold text-accent">Save {formatPrice(product.oldPrice - product.price)}</span>
                     </div>
                   )}
                 </div>

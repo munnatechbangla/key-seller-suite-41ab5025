@@ -35,6 +35,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
+import { formatPriceWithSymbol } from "@/lib/currency";
 
 const BUILTIN_AUTO = new Set(["sslcommerz", "bkash", "stripe"]);
 
@@ -301,7 +302,7 @@ function PayPage() {
           ) : (
             <>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <SummaryRow label="Amount" value={`${Number(order.total).toFixed(2)} ${order.currency}`} />
+                <SummaryRow label="Amount" value={formatPriceWithSymbol(order.total, order.currency_symbol || order.currency || "$")} />
                 <SummaryRow label="Method" value={gateway?.name ?? slug ?? "—"} />
               </div>
 
@@ -377,7 +378,7 @@ function PayPage() {
                       className="inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow disabled:opacity-60"
                     >
                       {working === "paid" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-                      Pay ${Number(order.total).toFixed(2)}
+                      Pay {formatPriceWithSymbol(order.total, order.currency_symbol || order.currency || "$")}
                     </button>
                     <button
                       type="button"
