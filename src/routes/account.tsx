@@ -302,6 +302,7 @@ function LicensesTab() {
 
 
 function SubmissionsTab() {
+  const formatPrice = usePriceFormatter();
   const fn = useServerFn(getMySubmissionsFn);
   const q = useQuery({ queryKey: ["my-submissions"], queryFn: () => fn() });
   const items = q.data ?? [];
