@@ -103,7 +103,7 @@ function OrderItemRow({ it }: { it: any }) {
         <div className="font-medium truncate">{it.products?.title || it.product?.name}</div>
         <div className="text-[11px] text-muted-foreground">Qty {it.qty}</div>
       </div>
-      <div className="font-semibold">${Number(it.unit_price * it.qty).toFixed(2)}</div>
+      <div className="font-semibold">{formatPriceWithSymbol(it.unit_price * it.qty, it.products?.currency_symbol || it.product?.currency_symbol || it.products?.currency || it.product?.currency || "$")}</div>
     </div>
   );
 }
