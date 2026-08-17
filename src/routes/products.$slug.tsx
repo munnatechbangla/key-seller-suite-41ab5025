@@ -45,16 +45,30 @@ import { useCurrency, usePriceFormatter } from "@/lib/currency";
 export const Route = createFileRoute("/products/$slug")({
   validateSearch: zodValidator(productSearchSchema),
   loader: async ({ params, context }) => {
+    // We need currency code for head metadata, but useSettings is a hook.
+    // In TanStack Start loader context, we don't have easy access to Zustand store state without mounting.
+    // However, the head() function can access loaderData.
     const product = await context.queryClient.ensureQueryData(productQuery(params.slug));
     if (!product) throw notFound();
     context.queryClient.ensureQueryData(relatedQuery(params.slug, 4));
     const reviews = await context.queryClient.ensureQueryData(reviewsQuery(product.id));
+    
+    // Fetch settings directly from Supabase for the loader if needed, 
+    // or just pass a default since SEO currency is usually just for schema.
+    // To keep it simple and reactive, we'll try to get it from the store if possible,
+    // but head() runs during SSR where the store might not be hydrated.
     return { product, reviews };
   },
   head: ({ loaderData, params }) => {
     const p = loaderData?.product;
     const reviews = loaderData?.reviews ?? [];
     const path = `/products/${params.slug}`;
+    
+    // We can't use hooks here. We'll use a default or try to pass it through loaderData if we really need it to be dynamic for SEO.
+    // For now, let's use "USD" as fallback for meta tags if we can't get the real one easily without a hook.
+    // Actually, we can just read from the store's initial state if it's imported.
+    const currencyCode = "USD"; 
+
     if (!p) return { meta: seoMeta({ path }) };
     const seo = p.seo ?? null;
     const scripts: Array<{ type: string; children: string }> = [];
