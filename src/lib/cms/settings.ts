@@ -465,7 +465,6 @@ export const useSettings = create<SettingsState>((set, get) => ({
     }
   },
 }));
-if (typeof window !== "undefined") { (window as any).__SETTINGS_STORE__ = useSettings; }
 
 
 export function formatCopyright(template: string, name: string): string {
