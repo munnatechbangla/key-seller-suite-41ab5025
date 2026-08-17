@@ -159,7 +159,7 @@ function CartPage() {
                 <span className="text-muted-foreground inline-flex items-center gap-1">Coupon ({cart.coupon})
                   <button onClick={() => cart.clearCoupon()} className="text-muted-foreground hover:text-destructive"><X className="h-3 w-3" /></button>
                 </span>
-                <span className="text-accent font-semibold">-${cart.discount().toFixed(2)}</span>
+                <span className="text-accent font-semibold">-{formatPrice(cart.discount())}</span>
               </div>
             )}
             <Row label="Delivery" value="Free" />
