@@ -9,6 +9,7 @@ import { Package, CheckCircle2, Search, Clock, XCircle, Loader2 } from "lucide-r
 import { getOrderByNumberFn } from "@/lib/orders.functions";
 import { toast } from "sonner";
 import { usePage } from "@/lib/cms/pages/hooks";
+import { formatPriceWithSymbol } from "@/lib/currency";
 
 export const Route = createFileRoute("/track-order")({
   head: () => ({ meta: [{ title: `Track Order — ${siteName()}` }] }),
@@ -95,7 +96,7 @@ function TrackOrder() {
 
             <div className="pt-3 border-t border-border text-sm">
               <div className="flex justify-between"><span className="text-muted-foreground">Items</span><span>{result.items.length}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Total</span><span className="font-bold">${Number(result.order.total).toFixed(2)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Total</span><span className="font-bold">{formatPriceWithSymbol(Number(result.order.total), (result.order as any).currency_symbol || result.order.currency || "$")}</span></div>
             </div>
           </div>
         )}

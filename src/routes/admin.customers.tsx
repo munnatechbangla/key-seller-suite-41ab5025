@@ -2,12 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { adminListCustomersFn } from "@/lib/admin.functions";
+import { usePriceFormatter } from "@/lib/currency";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const Route = createFileRoute("/admin/customers")({ component: AdminCustomers });
 
 function AdminCustomers() {
+  const formatPrice = usePriceFormatter();
   const list = useServerFn(adminListCustomersFn);
   const { data, isLoading } = useQuery({ queryKey: ["admin-customers"], queryFn: () => list() });
 
@@ -40,7 +42,7 @@ function AdminCustomers() {
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">{c.email}</TableCell>
                 <TableCell>{c.orders}</TableCell>
-                <TableCell>${Number(c.spent).toFixed(2)}</TableCell>
+                <TableCell>{formatPrice(Number(c.spent))}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</TableCell>
               </TableRow>
             ))}

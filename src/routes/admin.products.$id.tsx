@@ -33,6 +33,8 @@ import { RichContentTab } from "@/components/admin/RichContentTab";
 import { ProductSeoTab } from "@/components/admin/ProductSeoTab";
 import { AttributesTab } from "@/components/admin/AttributesTab";
 import { VariantsTab } from "@/components/admin/VariantsTab";
+import { usePriceFormatter, formatPriceWithSymbol } from "@/lib/currency";
+import { useSettings } from "@/lib/cms/settings";
 import { WizardSteps, type WizardStep } from "@/components/admin/WizardSteps";
 import { ProductToolbar } from "@/components/admin/ProductToolbar";
 import { EditorHelpDialog } from "@/components/admin/EditorHelpDialog";
@@ -75,6 +77,7 @@ export const Route = createFileRoute("/admin/products/$id")({
 
 function ManageProduct() {
   const { id } = Route.useParams();
+  const formatPrice = usePriceFormatter();
   const { tab } = Route.useSearch();
   const navigate = useNavigate();
   const setTab = (t: string) =>
@@ -644,7 +647,7 @@ function VariationsTab({ productId }: { productId: string }) {
           <div key={v.id} className="p-3 flex items-center gap-3">
             <div className="flex-1">
               <div className="font-medium">{v.name} <span className="text-xs text-muted-foreground">{v.sku ?? ""}</span></div>
-              <div className="text-xs text-muted-foreground">${Number(v.price).toFixed(2)}{v.compare_price ? ` (was $${Number(v.compare_price).toFixed(2)})` : ""} · stock {v.stock ?? "—"} · {v.status}</div>
+              <div className="text-xs text-muted-foreground">{formatPriceWithSymbol(Number(v.price))}{v.compare_price ? ` (was ${formatPriceWithSymbol(Number(v.compare_price))})` : ""} · stock {v.stock ?? "—"} · {v.status}</div>
             </div>
             <Button variant="ghost" size="icon" onClick={() => confirm("Delete?") && remove.mutate(v.id)}><Trash2 className="h-4 w-4" /></Button>
           </div>
@@ -912,7 +915,7 @@ function BasicInfoTab({
       {productMode === "simple" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label>Regular price</Label>
+            <Label>Regular price ({useSettings.getState().settings.payment.currency_symbol || "$"})</Label>
             <Input
               type="number"
               step="0.01"
@@ -921,7 +924,7 @@ function BasicInfoTab({
             />
           </div>
           <div>
-            <Label>Sale price</Label>
+            <Label>Sale price ({useSettings.getState().settings.payment.currency_symbol || "$"})</Label>
             <Input
               type="number"
               step="0.01"

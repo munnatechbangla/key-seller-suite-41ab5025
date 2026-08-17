@@ -17,7 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { usePriceFormatter } from "@/lib/currency";
+import { usePriceFormatter, formatPriceWithSymbol } from "@/lib/currency";
+import { useSettings } from "@/lib/cms/settings";
 import {
   AlertTriangle,
   ChevronDown,
@@ -671,8 +672,8 @@ function VariantRow({
           </div>
         </div>
         <InlineCell value={variant.sku ?? ""} onCommit={(v) => patch({ sku: v || null })} placeholder="SKU" />
-        <InlineCell value={Number(variant.price).toFixed(2)} type="number" align="right" onCommit={(v) => patch({ price: Number(v) })} />
-        <InlineCell value={variant.sale_price == null ? "" : Number(variant.sale_price).toFixed(2)} type="number" align="right" onCommit={(v) => patch({ sale_price: v === "" ? null : Number(v) })} placeholder="—" />
+        <InlineCell value={formatPriceWithSymbol(Number(variant.price))} type="number" align="right" onCommit={(v) => patch({ price: Number(v) })} />
+        <InlineCell value={variant.sale_price == null ? "" : formatPriceWithSymbol(Number(variant.sale_price))} type="number" align="right" onCommit={(v) => patch({ sale_price: v === "" ? null : Number(v) })} placeholder="—" />
         <InlineCell value={variant.stock ?? ""} type="number" align="right" onCommit={(v) => patch({ stock: v === "" ? null : Number(v) })} placeholder="—" />
         <RowPoolPicker value={variant.inventory_pool_id} pools={pools?.inventory ?? []} onChange={(v) => patch({ inventory_pool_id: v })} />
         <RowPoolPicker value={variant.subscription_pool_id} pools={pools?.subscription ?? []} onChange={(v) => patch({ subscription_pool_id: v })} />
@@ -708,8 +709,8 @@ function VariantRow({
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <Field label="Name"><Input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} /></Field>
             <Field label="SKU"><Input value={draft.sku ?? ""} onChange={(e) => setDraft({ ...draft, sku: e.target.value })} /></Field>
-            <Field label="Price"><Input type="number" step="0.01" value={String(draft.price)} onChange={(e) => setDraft({ ...draft, price: Number(e.target.value) })} /></Field>
-            <Field label="Sale price">
+            <Field label={`Price (${useSettings.getState().settings.payment.currency_symbol || "$"})`}><Input type="number" step="0.01" value={String(draft.price)} onChange={(e) => setDraft({ ...draft, price: Number(e.target.value) })} /></Field>
+            <Field label={`Sale price (${useSettings.getState().settings.payment.currency_symbol || "$"})`}>
               <Input type="number" step="0.01" value={draft.sale_price == null ? "" : String(draft.sale_price)} onChange={(e) => setDraft({ ...draft, sale_price: e.target.value === "" ? null : Number(e.target.value) })} />
             </Field>
             <Field label="Stock"><Input type="number" value={draft.stock == null ? "" : String(draft.stock)} onChange={(e) => setDraft({ ...draft, stock: e.target.value === "" ? null : Number(e.target.value) })} /></Field>

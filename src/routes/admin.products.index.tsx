@@ -21,6 +21,7 @@ import { ProductThumb } from "@/components/site/ProductThumb";
 import { BatchActionsBar } from "@/components/admin/BatchActionsBar";
 import { exportProducts, parseImport, diffImport } from "@/lib/admin/product-io";
 import { logActivity } from "@/lib/admin/activity-log";
+import { usePriceFormatter } from "@/lib/currency";
 
 export const Route = createFileRoute("/admin/products/")({ component: AdminProducts });
 
@@ -32,6 +33,7 @@ type Row = {
 };
 
 function AdminProducts() {
+  const formatPrice = usePriceFormatter();
   const list = useServerFn(adminListProductsFn);
   const upsert = useServerFn(adminUpsertProductFn);
   const del = useServerFn(adminDeleteProductFn);
@@ -308,7 +310,7 @@ function AdminProducts() {
                 </TableCell>
                 <TableCell className="font-medium">{p.title}</TableCell>
                 <TableCell className="text-muted-foreground text-sm">{p.slug}</TableCell>
-                <TableCell>${Number(p.sale_price ?? p.regular_price).toFixed(2)}</TableCell>
+                <TableCell>{formatPrice(Number(p.sale_price ?? p.regular_price))}</TableCell>
                 <TableCell><Badge variant={p.status === "published" ? "default" : "secondary"}>{p.status}</Badge></TableCell>
                 <TableCell>{p.sales_count ?? 0}</TableCell>
                 <TableCell>
