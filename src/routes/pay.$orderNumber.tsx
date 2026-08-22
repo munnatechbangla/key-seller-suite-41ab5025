@@ -90,7 +90,7 @@ function buildTimeline(opts: {
 function OrderItemRow({ it }: { it: any }) {
   const formatPrice = usePriceFormatter();
   // Use the same resolver as cart/checkout for consistency
-  const img = resolveLineImage(it.products || it.product, it.variant);
+  const img = resolveLineImage(it.product || it.products || it, it.variant);
   return (
 
     <div className="flex items-center gap-3 py-2 border-b border-border last:border-0 text-sm">
