@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { MediaPicker } from "@/components/admin/MediaLibrary";
 import { GatewayLogo } from "@/components/site/GatewayLogo";
 import { supabase } from "@/integrations/supabase/client";
+import { formatPriceWithSymbol } from "@/lib/currency";
 import {
   listAllGatewaysFn, upsertGatewayFn, deleteGatewayFn, toggleGatewayFn, reorderGatewaysFn,
   listSubmissionsFn, reviewSubmissionFn,

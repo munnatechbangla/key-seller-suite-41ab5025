@@ -5,6 +5,7 @@ import { Footer } from "@/components/site/Footer";
 import { PageHero } from "@/components/site/PageHero";
 import { useCompare, useCart } from "@/lib/stores";
 import { useProductsBySlugs, type Product } from "@/lib/catalog";
+import { formatPriceWithSymbol } from "@/lib/currency";
 import { X, Check, ShoppingCart, GitCompare } from "lucide-react";
 
 export const Route = createFileRoute("/compare")({

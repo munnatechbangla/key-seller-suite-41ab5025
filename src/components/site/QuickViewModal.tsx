@@ -6,6 +6,7 @@ import { useProduct } from "@/lib/catalog";
 import { useCart, useWishlist, useCompare } from "@/lib/stores";
 import { toast } from "sonner";
 import { useState } from "react";
+import { usePriceFormatter } from "@/lib/currency";
 import { LiveVisitorsCounter } from "./LiveVisitorsCounter";
 import { SaleBadges } from "./SaleBadges";
 
