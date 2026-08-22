@@ -180,9 +180,9 @@ function PayPage() {
     },
   });
 
-  const order = q.data?.order || q.data;
+  const order = q.data?.order || (q.data as any);
   const assignments = (q.data?.assignments as unknown as Array<unknown>) || (q.data as any)?.order_items?.filter((it: any) => it.license_assignments)?.flatMap((it: any) => it.license_assignments) || [];
-  const submission = subQ.data?.submission ?? subQ.data?.[0] ?? null;
+  const submission = subQ.data?.submission ?? (subQ.data as any)?.[0] ?? null;
   const slug: string = order?.payment_method ?? "";
   const gateway: GatewayRow | undefined = gw.data?.gateways.find((g) => g.slug === slug);
   const isManual = gateway?.type === "manual";
