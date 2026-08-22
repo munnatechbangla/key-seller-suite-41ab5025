@@ -223,7 +223,9 @@ function Hero() {
 
 function FloatingCard({ product, delay = "0s", duration = "10s", size = "md", className = "" }: { product: Product; delay?: string; duration?: string; size?: "sm" | "md"; className?: string }) {
   const isMd = size === "md";
+  const formatPrice = usePriceFormatter();
   return (
+
     <Link
       to="/products/$slug"
       params={{ slug: product.slug }}
