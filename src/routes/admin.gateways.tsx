@@ -683,7 +683,7 @@ function SubmissionsList() {
                   <td className="p-3">{s.gateway_slug}</td>
                   <td className="p-3 font-mono text-xs">{txn ?? "—"}</td>
                   <td className="p-3 text-xs">{sname ?? "—"}<br /><span className="text-muted-foreground">{sacct ?? ""}</span></td>
-                  <td className="p-3 text-right">{ord ? formatPriceWithSymbol(Number(ord.total), ord.currency_symbol || ord.currency) : "—"}</td>
+                  <td className="p-3 text-right">{ord ? formatPriceWithSymbol(Number(ord.total), (ord as any).currency_symbol || ord.currency) : "—"}</td>
                   <td className="p-3"><span className={cn("text-xs px-2 py-0.5 rounded",
                     s.status === "approved" ? "bg-emerald-500/15 text-emerald-600" :
                     s.status === "rejected" ? "bg-destructive/15 text-destructive" : "bg-amber-500/15 text-amber-600")}>{s.status}</span></td>
