@@ -55,11 +55,6 @@ export const Route = createFileRoute("/")({
 function Home() {
   const formatPrice = usePriceFormatter();
 
-  errorComponent: () => <div className="p-8 text-center">Something went wrong loading the homepage.</div>,
-  notFoundComponent: () => <div className="p-8 text-center">Page not found.</div>,
-});
-
-function Home() {
   // Additive: if an admin has published a CMS homepage, render that instead.
   const cmsHome = useTQuery({
     queryKey: ["cms-home"],
