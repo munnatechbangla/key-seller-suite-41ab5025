@@ -180,7 +180,8 @@ export function productJsonLd(p: {
     createdAt?: string;
   }>;
 }) {
-  const currency = p.currency || getSettings().payment.currency || "USD";
+  const settings = getSettings();
+  const currency = p.currency || settings.payment.currency || "USD";
   const data: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
