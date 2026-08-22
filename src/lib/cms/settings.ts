@@ -213,8 +213,9 @@ export const defaultSettings: AllSettings = {
   },
 
   payment: {
-    currency: "USD",
-    currency_symbol: "$",
+    currency: "BDT",
+    currency_symbol: "৳",
+
     sslcommerz_enabled: false,
     sslcommerz_mode: "sandbox",
     bkash_enabled: false,

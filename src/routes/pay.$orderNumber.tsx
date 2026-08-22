@@ -35,7 +35,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { formatPriceWithSymbol } from "@/lib/currency";
+import { usePriceFormatter, formatPriceWithSymbol } from "@/lib/currency";
+
 
 const BUILTIN_AUTO = new Set(["sslcommerz", "bkash", "stripe"]);
 
@@ -87,9 +88,11 @@ function buildTimeline(opts: {
 }
 
 function OrderItemRow({ it }: { it: any }) {
+  const formatPrice = usePriceFormatter();
   // Use the same resolver as cart/checkout for consistency
   const img = resolveLineImage(it.products || it.product, it.variant);
   return (
+
     <div className="flex items-center gap-3 py-2 border-b border-border last:border-0 text-sm">
       <div className="h-10 w-10 shrink-0">
         <ProductThumb 
@@ -103,7 +106,7 @@ function OrderItemRow({ it }: { it: any }) {
         <div className="font-medium truncate">{it.products?.title || it.product?.name}</div>
         <div className="text-[11px] text-muted-foreground">Qty {it.qty}</div>
       </div>
-      <div className="font-semibold">{formatPriceWithSymbol(it.unit_price * it.qty, it.products?.currency_symbol || it.product?.currency_symbol || it.products?.currency || it.product?.currency || "$")}</div>
+      <div className="font-semibold">{formatPrice(it.unit_price * it.qty)}</div>
     </div>
   );
 }
@@ -113,6 +116,8 @@ function submittedFlag(orderNumber: string) {
 }
 
 function PayPage() {
+  const formatPrice = usePriceFormatter();
+
   const { orderNumber } = Route.useParams();
   const navigate = useNavigate();
   const user = useAuth((s) => s.user);
@@ -302,7 +307,7 @@ function PayPage() {
           ) : (
             <>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <SummaryRow label="Amount" value={formatPriceWithSymbol(order.total, order.currency_symbol || order.currency || "$")} />
+                <SummaryRow label="Amount" value={formatPrice(order.total)} />
                 <SummaryRow label="Method" value={gateway?.name ?? slug ?? "—"} />
               </div>
 
@@ -378,7 +383,7 @@ function PayPage() {
                       className="inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow disabled:opacity-60"
                     >
                       {working === "paid" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-                      Pay {formatPriceWithSymbol(order.total, order.currency_symbol || order.currency || "$")}
+                      Pay {formatPrice(order.total)}
                     </button>
                     <button
                       type="button"

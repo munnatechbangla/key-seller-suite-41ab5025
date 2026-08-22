@@ -9,7 +9,8 @@ import { Footer } from "@/components/site/Footer";
 import { Section } from "@/components/site/Section";
 import { ProductCard } from "@/components/site/ProductCard";
 import { blogPosts } from "@/lib/catalog";
-import { resolveProductPrice, formatPrice } from "@/lib/product-price";
+import { resolveProductPrice } from "@/lib/product-price";
+import { useCurrency, usePriceFormatter } from "@/lib/currency";
 import {
   useCategories,
   featuredQuery,
@@ -23,6 +24,7 @@ import {
 import { useProductSection, useResolvedProducts, resolveIcon } from "@/lib/cms";
 import { useHomepage, defaultHomepageConfig, type HomeProductSection, type SectionId } from "@/lib/cms/homepage";
 import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
+
 import { subscribeNewsletterFn } from "@/lib/newsletter.functions";
 import { blogListPublicFn } from "@/lib/blog.functions";
 import { BlogImage } from "@/components/site/BlogImage";
@@ -48,11 +50,11 @@ export const Route = createFileRoute("/")({
     context.queryClient.ensureQueryData(productsBySlugsQuery(defaultHomepageConfig.hero.manualProductSlugs ?? defaultHomepageConfig.hero.floatingProductSlugs));
   },
   component: Home,
-  errorComponent: () => <div className="p-8 text-center">Something went wrong loading the homepage.</div>,
-  notFoundComponent: () => <div className="p-8 text-center">Page not found.</div>,
 });
 
 function Home() {
+  const formatPrice = usePriceFormatter();
+
   // Additive: if an admin has published a CMS homepage, render that instead.
   const cmsHome = useTQuery({
     queryKey: ["cms-home"],
@@ -221,7 +223,9 @@ function Hero() {
 
 function FloatingCard({ product, delay = "0s", duration = "10s", size = "md", className = "" }: { product: Product; delay?: string; duration?: string; size?: "sm" | "md"; className?: string }) {
   const isMd = size === "md";
+  const formatPrice = usePriceFormatter();
   return (
+
     <Link
       to="/products/$slug"
       params={{ slug: product.slug }}
@@ -264,6 +268,7 @@ function FloatingCard({ product, delay = "0s", duration = "10s", size = "md", cl
                     {formatPrice(rp.price!)}
                   </div>
                   {rp.oldPrice && <div className="text-[10px] text-white/40 line-through">{formatPrice(rp.oldPrice)}</div>}
+
                 </>
               );
             })()}
