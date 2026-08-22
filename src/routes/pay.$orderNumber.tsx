@@ -89,21 +89,21 @@ function buildTimeline(opts: {
 
 function OrderItemRow({ it }: { it: any }) {
   const formatPrice = usePriceFormatter();
-  // Use the same resolver as cart/checkout for consistency
-  const img = resolveLineImage(it.products || it.product, it.variant);
+  const img = resolveLineImage(it.product || it.products || it, it.variant);
+  const name = it.product_name || it.products?.title || it.product?.name || it.product?.title || "Product";
+  
   return (
-
     <div className="flex items-center gap-3 py-2 border-b border-border last:border-0 text-sm">
       <div className="h-10 w-10 shrink-0">
         <ProductThumb 
           src={img} 
           emoji={it.products?.emoji || it.product?.emoji} 
-          alt={it.products?.title || it.product?.name} 
+          alt={name} 
           size={40}
         />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="font-medium truncate">{it.products?.title || it.product?.name}</div>
+        <div className="font-medium truncate">{name}</div>
         <div className="text-[11px] text-muted-foreground">Qty {it.qty}</div>
       </div>
       <div className="font-semibold">{formatPrice(it.unit_price * it.qty)}</div>
@@ -148,8 +148,8 @@ function PayPage() {
     queryKey: ["order", orderNumber, user?.id ?? "guest"],
     queryFn: () => fetchOrder({ data: { orderNumber } }),
     refetchInterval: (query) => {
-      const data = query.state.data as { order?: { status?: string } } | undefined;
-      const status = data?.order?.status;
+      const data = query.state.data as any;
+      const status = data?.order?.status || data?.status;
       return status === "pending" ? 15000 : false;
     },
   });
@@ -180,9 +180,9 @@ function PayPage() {
     },
   });
 
-  const order = q.data?.order;
-  const assignments = (q.data?.assignments as unknown as Array<unknown>) ?? [];
-  const submission = subQ.data?.submission ?? null;
+  const order = q.data?.order || (q.data as any);
+  const assignments = (q.data?.assignments as unknown as Array<unknown>) || (q.data as any)?.order_items?.filter((it: any) => it.license_assignments)?.flatMap((it: any) => it.license_assignments) || [];
+  const submission = subQ.data?.submission ?? (subQ.data as any)?.[0] ?? null;
   const slug: string = order?.payment_method ?? "";
   const gateway: GatewayRow | undefined = gw.data?.gateways.find((g) => g.slug === slug);
   const isManual = gateway?.type === "manual";
@@ -190,8 +190,8 @@ function PayPage() {
   const isBuiltinAuto = gateway?.type === "builtin" && BUILTIN_AUTO.has(slug);
 
   const orderStatus = order?.status ?? "pending";
-  const orderItems = (q.data?.items as any[]) ?? [];
-  const isSubscriptionOrder = orderItems.some((it) => it.product_type === "subscription" || it.delivery_type === "subscription");
+  const orderItems = (q.data?.items as any[]) || (q.data as any)?.order_items || [];
+  const isSubscriptionOrder = orderItems.some((it: any) => it.product_type === "subscription" || it.delivery_type === "subscription" || it.product?.product_type === "subscription");
   const approved = orderStatus === "paid" || orderStatus === "completed";
   const rejected = submission?.status === "rejected";
   const pendingSubmission = submission?.status === "pending" || submission?.status === "under_review";
