@@ -89,21 +89,21 @@ function buildTimeline(opts: {
 
 function OrderItemRow({ it }: { it: any }) {
   const formatPrice = usePriceFormatter();
-  // Use the same resolver as cart/checkout for consistency
   const img = resolveLineImage(it.product || it.products || it, it.variant);
+  const name = it.product_name || it.products?.title || it.product?.name || it.product?.title || "Product";
+  
   return (
-
     <div className="flex items-center gap-3 py-2 border-b border-border last:border-0 text-sm">
       <div className="h-10 w-10 shrink-0">
         <ProductThumb 
           src={img} 
           emoji={it.products?.emoji || it.product?.emoji} 
-          alt={it.products?.title || it.product?.name} 
+          alt={name} 
           size={40}
         />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="font-medium truncate">{it.products?.title || it.product?.name}</div>
+        <div className="font-medium truncate">{name}</div>
         <div className="text-[11px] text-muted-foreground">Qty {it.qty}</div>
       </div>
       <div className="font-semibold">{formatPrice(it.unit_price * it.qty)}</div>
