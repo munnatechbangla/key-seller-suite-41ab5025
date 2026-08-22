@@ -148,8 +148,8 @@ function PayPage() {
     queryKey: ["order", orderNumber, user?.id ?? "guest"],
     queryFn: () => fetchOrder({ data: { orderNumber } }),
     refetchInterval: (query) => {
-      const data = query.state.data as { order?: { status?: string } } | undefined;
-      const status = data?.order?.status;
+      const data = query.state.data as any;
+      const status = data?.order?.status || data?.status;
       return status === "pending" ? 15000 : false;
     },
   });
@@ -180,9 +180,9 @@ function PayPage() {
     },
   });
 
-  const order = q.data?.order;
-  const assignments = (q.data?.assignments as unknown as Array<unknown>) ?? [];
-  const submission = subQ.data?.submission ?? null;
+  const order = q.data?.order || q.data;
+  const assignments = (q.data?.assignments as unknown as Array<unknown>) || (q.data as any)?.order_items?.filter((it: any) => it.license_assignments)?.flatMap((it: any) => it.license_assignments) || [];
+  const submission = subQ.data?.submission ?? subQ.data?.[0] ?? null;
   const slug: string = order?.payment_method ?? "";
   const gateway: GatewayRow | undefined = gw.data?.gateways.find((g) => g.slug === slug);
   const isManual = gateway?.type === "manual";
@@ -190,8 +190,8 @@ function PayPage() {
   const isBuiltinAuto = gateway?.type === "builtin" && BUILTIN_AUTO.has(slug);
 
   const orderStatus = order?.status ?? "pending";
-  const orderItems = (q.data?.items as any[]) ?? [];
-  const isSubscriptionOrder = orderItems.some((it) => it.product_type === "subscription" || it.delivery_type === "subscription");
+  const orderItems = (q.data?.items as any[]) || (q.data as any)?.order_items || [];
+  const isSubscriptionOrder = orderItems.some((it: any) => it.product_type === "subscription" || it.delivery_type === "subscription" || it.product?.product_type === "subscription");
   const approved = orderStatus === "paid" || orderStatus === "completed";
   const rejected = submission?.status === "rejected";
   const pendingSubmission = submission?.status === "pending" || submission?.status === "under_review";
