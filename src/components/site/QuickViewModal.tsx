@@ -6,6 +6,7 @@ import { useProduct } from "@/lib/catalog";
 import { useCart, useWishlist, useCompare } from "@/lib/stores";
 import { toast } from "sonner";
 import { useState } from "react";
+import { usePriceFormatter } from "@/lib/currency";
 import { LiveVisitorsCounter } from "./LiveVisitorsCounter";
 import { SaleBadges } from "./SaleBadges";
 
@@ -87,9 +88,9 @@ export function QuickViewModal({ slug, open, onOpenChange }: { slug: string | nu
             <p className="text-sm text-muted-foreground line-clamp-3">{product.short}</p>
 
             <div className="flex items-end gap-3 flex-wrap">
-              <div className="text-3xl font-bold text-primary">${product.price}</div>
+              <div className="text-3xl font-bold text-primary">{usePriceFormatter()(product.price)}</div>
               {product.oldPrice && (
-                <div className="text-sm text-muted-foreground line-through mb-1">${product.oldPrice}</div>
+                <div className="text-sm text-muted-foreground line-through mb-1">{usePriceFormatter()(product.oldPrice)}</div>
               )}
             </div>
 

@@ -123,9 +123,9 @@ export const Route = createFileRoute("/products/$slug")({
     if (seo?.twitter_image) meta.push({ name: "twitter:image", content: seo.twitter_image });
     meta.push(
       { property: "product:price:amount", content: p.price.toFixed(2) },
-      { property: "product:price:currency", content: (p as any).currency || currencyCode },
+      { property: "product:price:currency", content: (p as any).currency_code || (p as any).currency || currencyCode },
       { property: "og:price:amount", content: p.price.toFixed(2) },
-      { property: "og:price:currency", content: (p as any).currency || currencyCode },
+      { property: "og:price:currency", content: (p as any).currency_code || (p as any).currency || currencyCode },
       { property: "product:availability", content: (p.stock ?? 1) > 0 ? "in stock" : "out of stock" },
     );
     const canonicalHref = seo?.canonical_url || undefined;

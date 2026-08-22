@@ -5,6 +5,7 @@ import { Footer } from "@/components/site/Footer";
 import { PageHero } from "@/components/site/PageHero";
 import { useCompare, useCart } from "@/lib/stores";
 import { useProductsBySlugs, type Product } from "@/lib/catalog";
+import { formatPriceWithSymbol } from "@/lib/currency";
 import { X, Check, ShoppingCart, GitCompare } from "lucide-react";
 
 export const Route = createFileRoute("/compare")({
@@ -41,7 +42,7 @@ function ComparePage() {
                         <button onClick={() => cmp.remove(p.slug)} className="absolute top-2 right-2 h-7 w-7 grid place-items-center rounded-lg hover:bg-muted"><X className="h-4 w-4" /></button>
                         <div className="text-5xl mb-2">{p.emoji}</div>
                         <Link to="/products/$slug" params={{ slug: p.slug }} className="font-semibold text-sm hover:text-primary line-clamp-2">{p.name}</Link>
-                        <div className="text-primary font-bold mt-1">${p.price}</div>
+                        <div className="text-primary font-bold mt-1">{formatPriceWithSymbol(p.price, (p as any).currency_symbol)}</div>
                         <button onClick={() => cart.add(p)} className="mt-3 w-full py-2 rounded-lg bg-gradient-primary text-primary-foreground text-xs font-semibold inline-flex items-center justify-center gap-1">
                           <ShoppingCart className="h-3.5 w-3.5" /> Add
                         </button>
@@ -53,7 +54,7 @@ function ComparePage() {
               <tbody>
                 {(() => {
                   const rows: { label: string; fn: (p: Product) => string }[] = [
-                    { label: "Price", fn: (p) => `$${p.price}` },
+                    { label: "Price", fn: (p) => formatPriceWithSymbol(p.price, (p as any).currency_symbol) },
                     { label: "Rating", fn: (p) => `${p.rating} ★ (${p.reviews})` },
                     { label: "Delivery", fn: (p) => p.delivery },
                     { label: "Category", fn: (p) => p.category },

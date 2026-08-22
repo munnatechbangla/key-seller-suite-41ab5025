@@ -1,4 +1,5 @@
 import { seoMeta, siteName, canonicalLink } from "@/lib/cms/seo";
+import { useSettings } from "@/lib/cms/settings";
 import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -76,7 +77,7 @@ function ProductsPage() {
             <div className="font-semibold mb-3">Price range</div>
             <input type="range" min={0} max={100} defaultValue={50} className="w-full accent-[var(--primary)]" />
             <div className="flex justify-between text-xs text-muted-foreground mt-2">
-              <span>$0</span><span>$100+</span>
+              <span>{useSettings.getState().settings.payment.currency_symbol || "$"}0</span><span>{useSettings.getState().settings.payment.currency_symbol || "$"}{"100+"}</span>
             </div>
           </div>
         </aside>

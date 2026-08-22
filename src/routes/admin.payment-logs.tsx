@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { listPaymentLogsFn, gatewayStatusFn } from "@/lib/payments/admin.functions";
+import { formatPriceWithSymbol } from "@/lib/currency";
 import { Loader2, ShieldCheck, ShieldAlert, CheckCircle2, XCircle, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -117,7 +118,7 @@ function PaymentLogsPage() {
                   <td className="p-3"><span className="text-xs px-2 py-0.5 rounded bg-muted">{row.event_type}</span></td>
                   <td className="p-3 font-mono text-xs">{row.order_number ?? "—"}</td>
                   <td className="p-3 font-mono text-xs">{row.transaction_id ?? "—"}</td>
-                  <td className="p-3 text-right">{row.amount != null ? `${Number(row.amount).toFixed(2)} ${row.currency ?? ""}` : "—"}</td>
+                  <td className="p-3 text-right">{row.amount != null ? formatPriceWithSymbol(Number(row.amount), (row as any).currency_symbol || row.currency) : "—"}</td>
                   <td className="p-3"><span className={cn("text-xs px-2 py-0.5 rounded", row.status === "VALID" || row.status === "paid" || row.event_type === "success" ? "bg-emerald-500/15 text-emerald-600" : row.event_type === "failed" || row.status === "failed" ? "bg-destructive/15 text-destructive" : "bg-muted")}>{row.status ?? "—"}</span></td>
                   <td className="p-3">{row.signature_valid == null ? "—" : row.signature_valid ? <ShieldCheck className="h-4 w-4 text-emerald-500" /> : <ShieldAlert className="h-4 w-4 text-destructive" />}</td>
                 </tr>

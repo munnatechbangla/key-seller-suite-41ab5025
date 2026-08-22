@@ -6,7 +6,8 @@ import { ProductCard } from "@/components/site/ProductCard";
 import { PageHero } from "@/components/site/PageHero";
 import { ProductThumb } from "@/components/site/ProductThumb";
 import { useSearchResults } from "@/lib/catalog";
-import { resolveProductPrice, formatPrice } from "@/lib/product-price";
+import { resolveProductPrice } from "@/lib/product-price";
+import { usePriceFormatter } from "@/lib/currency";
 import { Search, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/search")({
 const trending = ["ChatGPT Plus", "Netflix", "Canva Pro", "Spotify", "IPTV", "Office 365"];
 
 function SearchPage() {
+  const formatPrice = usePriceFormatter();
   const { q: initial } = Route.useSearch();
   const [q, setQ] = useState(initial ?? "");
   const results = useSearchResults(q);
