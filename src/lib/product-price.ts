@@ -1,4 +1,5 @@
 import type { Product } from "@/lib/catalog";
+import { formatPriceWithSymbol } from "./currency";
 
 /**
  * Single source of truth for the price shown on product tiles / mini cards.
@@ -29,7 +30,8 @@ export function resolveProductPrice(product: Product): ResolvedProductPrice {
   return { price: p, oldPrice: old, fromLabel: false, unavailable: false };
 }
 
-export function formatPrice(n: number, symbol: string = "$"): string {
-  if (n == null || isNaN(n)) return `${symbol}0.00`;
-  return `${symbol}${Number(n).toFixed(2)}`;
+/** @deprecated Use formatPrice from '@/lib/currency' instead */
+export function formatPrice(n: number | null | undefined, symbol: string = "$"): string {
+  return formatPriceWithSymbol(n, symbol);
 }
+

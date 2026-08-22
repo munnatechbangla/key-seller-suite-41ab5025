@@ -264,6 +264,7 @@ function FloatingCard({ product, delay = "0s", duration = "10s", size = "md", cl
                     {formatPrice(rp.price!)}
                   </div>
                   {rp.oldPrice && <div className="text-[10px] text-white/40 line-through">{formatPrice(rp.oldPrice)}</div>}
+
                 </>
               );
             })()}
