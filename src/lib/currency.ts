@@ -7,8 +7,9 @@ export function useCurrency() {
   const settings = useSettings((s) => s.settings.payment);
   
   return {
-    code: settings.currency || "USD",
-    symbol: settings.currency_symbol || "$",
+    code: settings.currency || "BDT",
+    symbol: settings.currency_symbol || "৳",
+
   };
 }
 

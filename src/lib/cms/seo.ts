@@ -181,7 +181,7 @@ export function productJsonLd(p: {
   }>;
 }) {
   const settings = getSettings();
-  const currency = p.currency || settings.payment.currency || "USD";
+  const currency = p.currency || settings.payment.currency || "BDT";
   const data: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
