@@ -846,11 +846,13 @@ function BasicInfoTab({
 
       <div>
         <Label>Full description</Label>
-        <textarea
-          className="w-full min-h-[180px] rounded-md border bg-background px-3 py-2 text-sm"
-          value={form.description}
-          onChange={(e) => set({ description: e.target.value })}
-        />
+        <div className="mt-2">
+          <RichTextEditor
+            value={form.description}
+            onChange={(html) => set({ description: html })}
+            placeholder="Enter detailed product description..."
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
