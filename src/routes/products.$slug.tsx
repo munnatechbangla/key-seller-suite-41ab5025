@@ -385,53 +385,6 @@ function LegacyProductPage() {
           </div>
 
 
-  useEffect(() => {
-    if (product?.product_type === "smm_service" && product.smm_config) {
-      setSmmQty(Number(product.smm_config.min_quantity || 1));
-    }
-  }, [product]);
-
-  const smmPrice = useMemo(() => {
-    if (product?.product_type === "smm_service" && product.smm_config) {
-      return calculateSMMPrice(smmQty, product.smm_config);
-    }
-    return 0;
-  }, [product, smmQty]);
-
-  const addToCart = () => {
-    if (!validateCustomFields()) return;
-    
-    if (product.product_type === "smm_service") {
-      const validation = validateSMMQuantity(smmQty, product.smm_config);
-      if (!validation.valid) {
-        toast.error(validation.error);
-        return;
-      }
-      cart.add(product, 1, undefined, product.smm_config, smmQty);
-      toast.success("Added SMM service to cart");
-      return;
-    }
-    
-    cart.add(product, qty, activeVariant || undefined);
-    toast.success("Added to cart");
-  };
-
-  const buyNow = () => {
-    if (!validateCustomFields()) return;
-    
-    if (product.product_type === "smm_service") {
-      const validation = validateSMMQuantity(smmQty, product.smm_config);
-      if (!validation.valid) {
-        toast.error(validation.error);
-        return;
-      }
-      cart.add(product, 1, undefined, product.smm_config, smmQty);
-    } else {
-      cart.add(product, qty, activeVariant || undefined);
-    }
-    navigate({ to: "/checkout" });
-  };
-
           {hasAttrs ? (
             <VariantSelector
               product={product}
