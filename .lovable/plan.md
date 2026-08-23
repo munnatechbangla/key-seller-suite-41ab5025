@@ -1,60 +1,37 @@
-# Subscription Product Workflow — Independent Track
+# Plan: Fix Downloadable Product Delivery Workflow
 
-Goal: Subscription products get a manual-delivery workflow. License and Download workflows stay exactly as they are. Product Type == `subscription` is the switch.
+Refactor the fulfillment timeline and delivery labels to dynamically reflect the product type (Downloadable vs. License vs. Subscription).
 
-## Scope
+## User Review Required
 
-Only touched code paths:
-- Fulfillment DB functions — branch on `products.product_type = 'subscription'`
-- New admin action: **Mark Subscription Delivered**
-- Storefront timeline + delivery card for subscription orders
-- Admin order row — show subscription info + delivery button
+> [!IMPORTANT]
+> The implementation uses existing database fields (`product_type`, `delivery_type`) to distinguish between downloadable and license-based products.
 
-Untouched: license_keys, license_assignments, license_pools, downloads, product_downloads, and every `delivery_type in ('license_key','download','downloadable','external','account','manual')` renderer.
+## Proposed Changes
 
-## Database changes (single migration)
+### Storefront & Order Status
 
-1. Update `public.start_fulfillment_for_order(_order_id)`:
-   - When the row's product is `product_type = 'subscription'`, insert the fulfillment with `delivery_type = 'subscription'` and `fulfillment_status = 'manual_review'` (waiting for admin), and **skip** all license/download provisioning branches.
-   - All other product types keep their current path unchanged.
+#### [src/routes/pay.$orderNumber.tsx]
+- Update `buildTimeline` to accept `isDownloadable` and `anyDelivered` flags.
+- Modify the final timeline step label to show "Download Available" for downloadable products when approved/delivered.
+- Update `PayPage` to detect if any product in the order is downloadable.
 
-2. New RPC `public.admin_mark_subscription_delivered(_fulfillment_id uuid, _note text)`:
-   - Admin-only (checks `has_role`).
-   - Guards: the fulfillment's product must be `subscription`.
-   - Sets `fulfillment_status = 'delivered'`, `completed_at = now()`, appends `metadata.delivery_note`, writes a `fulfillment_logs` entry `event = 'subscription_delivered'`, and marks parent `orders.status = 'completed'` when all items are delivered.
+#### [src/routes/thank-you.tsx]
+- Ensure `FulfillmentPanel` (which handles the timeline visualization) is correctly informed about the product types.
 
-3. `get_order_fulfillments` — no schema change; already returns `delivery_type`. Front-end uses that to branch.
+### Components
 
-## Server functions
+#### [src/components/delivery/DeliveryPanel.tsx]
+- (Verification) Confirm existing logic handles `download` / `downloadable` types correctly. It already has a `DownloadBody` renderer, but I will verify labels like "License Delivered" are not used in its headers.
 
-`src/lib/fulfillment.functions.ts`
-- Add `adminMarkSubscriptionDeliveredFn` calling the new RPC.
+#### [src/components/fulfillment/FulfillmentPanel.tsx]
+- Update `SubscriptionCard` logic to be generic or create a `DownloadableCard` equivalent for the checklist-style timeline.
+- Ensure the 5-step checklist in the customer view shows "Download Available" instead of "License Delivered" for downloadable products.
 
-## Frontend
+## Technical Details
 
-`src/components/fulfillment/FulfillmentPanel.tsx`
-- When `f.delivery_type === 'subscription'`:
-  - Hide Retry/Restart/Cancel license buttons.
-  - Show a single admin **Mark Subscription Delivered** button (disabled once `delivered`).
-  - Replace timeline UI with the fixed 5-step subscription checklist:
-    Order Created → Payment Submitted → Under Verification → Payment Approved → Subscription Delivered.
-    Steps derive from: order exists, manual_payment_submissions row, submission status, order.status = 'paid', fulfillment.status = 'delivered'.
-- Other delivery types: existing UI unchanged.
-
-`src/components/delivery/DeliveryPanel.tsx`
-- Rewrite only the `SubscriptionBody` renderer:
-  - Before delivery: "Subscription pending — awaiting delivery".
-  - After delivery (fulfillment delivered): green "Subscription Delivered — Delivered successfully" + delivery date.
-  - No Download button, no license UI.
-
-`src/routes/admin.orders.tsx`
-- Existing expanded row already shows `FulfillmentPanel` + `OrderCustomFieldValues`. Add customer email + subscription delivery note field beside the new button (rendered inside the panel).
-
-`src/routes/thank-you.tsx`
-- Remove the "No license keys were issued" message when the item is a subscription; rely on `DeliveryPanel`'s subscription renderer.
-
-## Verification checklist (delivered at end)
-
-- ✅ Subscription workflow: manual approve → Mark Delivered → customer sees Delivered
-- ✅ License workflow untouched (same RPCs, same UI branches)
-- ✅ Download workflow untouched
+- Detection logic: `it.product_type === 'download' || it.delivery_type === 'download'`.
+- Timeline labels:
+  - License: `License Delivered`
+  - Downloadable: `Download Available`
+  - Subscription: `Subscription Delivered`
