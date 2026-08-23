@@ -30,6 +30,7 @@ type Row = {
   regular_price: number | string; sale_price: number | string | null;
   status: string; stock_status: string; is_featured: boolean; sales_count: number;
   thumbnail_url: string | null;
+  smm_config: any | null;
 };
 
 function AdminProducts() {
