@@ -20,6 +20,7 @@ import { StickyBuyBar } from "@/components/site/StickyBuyBar";
 import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelated, useProductsBySlugs } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useMemo, useRef } from "react";
+import { validateSMMQuantity, calculateSMMPrice } from "@/lib/catalog";
 import { 
   Star, ShoppingCart, Zap, ShieldCheck, Heart, Share2, 
   ChevronRight, ChevronLeft, Minus, Plus, Info, Check, 
@@ -348,6 +349,63 @@ function LegacyProductPage() {
               beforeAdd={validateCustomFields}
               beforeButtons={<ProductCustomFields ref={customFieldsRef} productSlug={product.slug} />}
             />
+          ) : product.product_type === "smm_service" ? (
+            <>
+              <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 p-5 space-y-4">
+                <div className="flex items-end justify-between gap-4 flex-wrap">
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground mb-1">Total Price</div>
+                    <div className="text-4xl font-bold text-primary">{formatPrice(smmPrice)}</div>
+                    {product.smm_config?.pricing_mode === 'per_1000' && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Rate: {formatPrice(Number(product.smm_config.price || 0))} per 1,000
+                      </div>
+                    )}
+                  </div>
+                  <div className="inline-flex items-center gap-2 text-sm font-semibold text-accent">
+                    <Zap className="h-4 w-4" /> {product.delivery} delivery
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-primary/10">
+                  <label className="block text-sm font-bold text-foreground mb-2">
+                    Enter Quantity ({product.smm_config?.min_quantity || 1} - {product.smm_config?.max_quantity || 'Max'})
+                  </label>
+                  <div className="flex gap-3">
+                    <div className="relative flex-1">
+                      <input
+                        type="number"
+                        value={smmQty}
+                        onChange={(e) => setSmmQty(Number(e.target.value))}
+                        min={product.smm_config?.min_quantity || 1}
+                        max={product.smm_config?.max_quantity}
+                        step={product.smm_config?.quantity_step || 1}
+                        className="w-full h-11 px-4 rounded-xl border border-border bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-semibold"
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground pointer-events-none">
+                        UNITS
+                      </div>
+                    </div>
+                  </div>
+                  {product.smm_config?.quantity_step > 1 && (
+                    <p className="text-[10px] text-muted-foreground mt-1.5 uppercase tracking-wider font-bold">
+                      Step: {product.smm_config.quantity_step} units
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <ProductCustomFields ref={customFieldsRef} productSlug={product.slug} />
+
+              <div className="flex gap-3 flex-wrap items-center">
+                <button onClick={addToCart} className="min-w-0 flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-card border border-primary text-primary font-semibold hover:bg-primary/5 transition-smooth">
+                  <ShoppingCart className="h-4 w-4" /> Add to Cart
+                </button>
+                <button onClick={buyNow} className="min-w-0 flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:opacity-95 transition-smooth">
+                  <Zap className="h-4 w-4" /> Buy Now
+                </button>
+              </div>
+            </>
           ) : (
             <>
               <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 p-5 flex items-end gap-4 flex-wrap">

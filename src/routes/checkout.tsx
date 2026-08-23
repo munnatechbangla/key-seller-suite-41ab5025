@@ -5,6 +5,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { PageHero } from "@/components/site/PageHero";
 import { useCart, useAuth } from "@/lib/stores";
+import { calculateSMMPrice } from "@/lib/catalog";
 import { useState, useEffect } from "react";
 import { Lock, Tag, Wallet } from "lucide-react";
 import { toast } from "sonner";
