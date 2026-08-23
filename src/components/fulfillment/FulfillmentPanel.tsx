@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
   Loader2, RefreshCw, RotateCcw, XCircle, CheckCircle2, Clock, AlertTriangle,
-  PackageSearch, PackageCheck, ShieldAlert, Circle, Send, KeyRound, Activity, Save
+  PackageSearch, PackageCheck, ShieldAlert, Circle, Send, KeyRound, Activity, Save, BarChart3
 } from "lucide-react";
 import { toast } from "sonner";
 import { ManualLicenseDeliveryPanel } from "@/components/admin/ManualLicenseDeliveryPanel";
