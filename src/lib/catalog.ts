@@ -109,9 +109,7 @@ const SELECT_PRODUCT = `
   meta_title, meta_description, focus_keyword, secondary_keywords, canonical_url, robots,
   og_title, og_description, og_image, twitter_title, twitter_description, twitter_image,
   schema_enabled, faq_schema_enabled, breadcrumb_schema_enabled, product_schema_enabled,
-  product_categories ( slug, name ),
-  smm_config, product_type
-
+  product_categories ( slug, name )
 ` as const;
 
 export function mapProduct(row: ProductRow): Product {
@@ -222,7 +220,7 @@ async function fetchProducts(filter: ProductsFilter = {}): Promise<Product[]> {
     return q;
   };
 
-  const { data, error } = await query(SELECT_PRODUCT);
+  const { data, error } = await query(`${SELECT_PRODUCT}, smm_config, product_type`);
 
   if (error) throw error;
   const mapped = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
@@ -281,7 +279,7 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
     .eq("status", "published")
     .maybeSingle();
 
-  const { data, error } = await query(SELECT_PRODUCT);
+  const { data, error } = await query(`${SELECT_PRODUCT}, smm_config, product_type`);
 
   if (error) throw error;
   if (!data) return null;
@@ -305,7 +303,7 @@ async function fetchProductsBySlugs(slugs: string[]): Promise<Product[]> {
     .in("slug", slugs)
     .eq("status", "published");
 
-  const { data, error } = await query(SELECT_PRODUCT);
+  const { data, error } = await query(`${SELECT_PRODUCT}, smm_config, product_type`);
 
   if (error) throw error;
   const items = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
@@ -320,7 +318,7 @@ async function fetchCurated(table: "featured_products" | "trending_products" | "
     .select(`sort_order, products!inner ( ${select} )`)
     .order("sort_order", { ascending: true });
 
-  const { data, error } = await query(SELECT_PRODUCT);
+  const { data, error } = await query(`${SELECT_PRODUCT}, smm_config, product_type`);
 
   if (error) throw error;
   const items = ((data ?? []) as unknown as { products: ProductRow }[])
@@ -352,7 +350,7 @@ async function searchProducts(q: string): Promise<Product[]> {
     .or(`title.ilike.${term},short_description.ilike.${term},description.ilike.${term}`)
     .limit(40);
 
-  const { data, error } = await query(SELECT_PRODUCT);
+  const { data, error } = await query(`${SELECT_PRODUCT}, smm_config, product_type`);
 
   if (error) throw error;
   const items = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
@@ -433,7 +431,7 @@ async function fetchHeroFeatured(limit = 12): Promise<Product[]> {
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  const { data, error } = await query(SELECT_PRODUCT);
+  const { data, error } = await query(`${SELECT_PRODUCT}, smm_config, product_type`);
 
   if (error) throw error;
   const items = ((data ?? []) as unknown as { products: ProductRow }[])
@@ -451,7 +449,7 @@ async function fetchHeroLatest(limit = 12): Promise<Product[]> {
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  const { data, error } = await query(SELECT_PRODUCT);
+  const { data, error } = await query(`${SELECT_PRODUCT}, smm_config, product_type`);
 
   if (error) throw error;
   const items = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
