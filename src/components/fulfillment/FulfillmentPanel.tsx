@@ -200,12 +200,16 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
         </div>
       )}
       {rows.map((f) => {
-        if (f.delivery_type === "subscription" || f.product_type === "subscription" || f.product_delivery_type === "subscription") {
+        const isSubscription = f.delivery_type === "subscription" || f.product_type === "subscription" || f.product_delivery_type === "subscription";
+        const isDownloadable = f.delivery_type === "download" || f.product_type === "download" || f.product_delivery_type === "download";
+
+        if (isSubscription || (isDownloadable && !isAdmin)) {
           return (
-            <SubscriptionCard
+            <ChecklistCard
               key={f.id}
               f={f}
-              isAdmin={isAdmin}
+              isAdmin={isAdmin && isSubscription}
+              type={isSubscription ? "subscription" : "download"}
               onDelivered={() => {
                 invalidate();
                 qc.invalidateQueries({ queryKey: ["fulfillment-timeline"] });
@@ -317,21 +321,23 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
 // ============================================================
 // Subscription-only card: fixed 5-step checklist + admin deliver
 // ============================================================
-function SubscriptionCard({
+function ChecklistCard({
   f,
   isAdmin,
   onDelivered,
+  type,
 }: {
   f: FulfillmentRow;
   isAdmin: boolean;
   onDelivered: () => void;
+  type: "subscription" | "download";
 }) {
   const markDelivered = useServerFn(adminMarkSubscriptionDeliveredFn);
   const [note, setNote] = useState("");
   const mut = useMutation({
     mutationFn: () => markDelivered({ data: { fulfillmentId: f.id, note: note || undefined } }),
     onSuccess: () => {
-      toast.success("Subscription marked delivered");
+      toast.success(`${type === "subscription" ? "Subscription" : "Download"} marked delivered`);
       setNote("");
       onDelivered();
     },
@@ -347,7 +353,10 @@ function SubscriptionCard({
     { label: "Payment Submitted", done: true },
     { label: "Under Verification", done: underVerification },
     { label: "Payment Approved", done: paymentApproved },
-    { label: "Subscription Delivered", done: delivered },
+    { 
+      label: type === "subscription" ? "Subscription Delivered" : "Download Available", 
+      done: delivered 
+    },
   ];
 
   const deliveredAt = (f.metadata as any)?.delivered_at ?? f.completed_at;
@@ -357,8 +366,8 @@ function SubscriptionCard({
     <div className="rounded-xl border border-border p-4 space-y-3 bg-card">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <div className="text-sm font-semibold">{f.product_title ?? "Subscription"}</div>
-          <div className="text-[11px] text-muted-foreground">Subscription product</div>
+          <div className="text-sm font-semibold">{f.product_title ?? (type === "subscription" ? "Subscription" : "Download")}</div>
+          <div className="text-[11px] text-muted-foreground">{type === "subscription" ? "Subscription product" : "Downloadable product"}</div>
         </div>
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
@@ -368,7 +377,9 @@ function SubscriptionCard({
           }`}
         >
           {delivered ? <PackageCheck className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
-          {delivered ? "Subscription Delivered" : "Payment Approved"}
+          {delivered 
+            ? (type === "subscription" ? "Subscription Delivered" : "Download Available") 
+            : "Payment Approved"}
         </span>
       </div>
 
@@ -414,7 +425,7 @@ function SubscriptionCard({
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
           >
             {mut.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
-            Mark Subscription Delivered
+            Mark {type === "subscription" ? "Subscription" : "Download"} Delivered
           </button>
         </div>
       )}
