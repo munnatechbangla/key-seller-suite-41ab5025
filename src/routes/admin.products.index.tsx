@@ -69,7 +69,7 @@ function AdminProducts() {
   });
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const rows = (data ?? []) as Row[];
+  const rows = (data ?? []) as unknown as Row[];
   const allSelected = useMemo(
     () => rows.length > 0 && rows.every((r) => selected.has(r.id)),
     [rows, selected],
