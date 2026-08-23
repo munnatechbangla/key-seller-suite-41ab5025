@@ -125,16 +125,23 @@ function CheckoutPage() {
       // Persist custom field values (best-effort; server re-validates)
       if (customFields.length > 0) {
         const values = customFields
-          .map((f) => ({ field_id: f.id, value: storedFieldValues[f.product_slug]?.[f.id] ?? "" }));
-        try {
-          const saveArgs = { data: { orderId: result.orderId, email: customer.email, values } };
-          if (user) await saveFieldsAuth(saveArgs);
-          else await saveFieldsGuest(saveArgs);
-        } catch (err) {
-          console.error("[custom-fields] save failed", err);
-          toast.error(err instanceof Error ? err.message : "Could not save product details");
-          setSubmitting(false);
-          return;
+          .map((f) => ({ 
+            field_id: f.id, 
+            value: storedFieldValues[f.product_slug]?.[f.id] ?? "" 
+          }))
+          .filter(v => v.value !== ""); // Only save non-empty values
+
+        if (values.length > 0) {
+          try {
+            const saveArgs = { data: { orderId: result.orderId, email: customer.email, values } };
+            if (user) await saveFieldsAuth(saveArgs);
+            else await saveFieldsGuest(saveArgs);
+            console.log("[custom-fields] saved successfully", values);
+          } catch (err) {
+            console.error("[custom-fields] save failed", err);
+            // We don't block the order if fields fail to save, but we toast a warning
+            toast.error("Could not save some product details, but your order was placed.");
+          }
         }
       }
 

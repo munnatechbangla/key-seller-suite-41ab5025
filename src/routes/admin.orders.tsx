@@ -104,11 +104,21 @@ function OrderRow({ order: o, formatPrice, onStatusChange }: { order: any; forma
       </TableRow>
       {open && (
         <TableRow>
-          <TableCell colSpan={6} className="bg-muted/30 space-y-4">
-            <FulfillmentPanel orderId={o.id} authed isAdmin />
-            <LicenseAssignmentPanel orderId={o.id} />
-
-            <OrderCustomFieldValues orderId={o.id} email={o.email} authed isAdmin />
+          <TableCell colSpan={6} className="bg-muted/30 p-6 space-y-6">
+            <div className="grid lg:grid-cols-2 gap-6">
+              <div className="space-y-6">
+                <FulfillmentPanel orderId={o.id} authed isAdmin />
+                <LicenseAssignmentPanel orderId={o.id} />
+              </div>
+              <div className="space-y-6">
+                <OrderCustomFieldValues 
+                  orderId={o.id} 
+                  email={o.email} 
+                  authed={true} 
+                  isAdmin={true} 
+                />
+              </div>
+            </div>
 
           </TableCell>
         </TableRow>
