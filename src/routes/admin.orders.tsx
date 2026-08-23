@@ -111,6 +111,40 @@ function OrderRow({ order: o, formatPrice, onStatusChange }: { order: any; forma
                 <LicenseAssignmentPanel orderId={o.id} />
               </div>
               <div className="space-y-6">
+                <div className="space-y-4">
+                  <h3 className="font-bold text-lg">Order Items</h3>
+                  <div className="space-y-2">
+                    {(o.order_items || []).map((item: any) => (
+                      <div key={item.id} className="p-3 rounded-lg border bg-card text-sm">
+                        <div className="flex justify-between font-medium">
+                          <span>{item.product_name}</span>
+                          <span>{formatPrice(Number(item.line_total))}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Qty: {item.qty} · Unit Price: {formatPrice(Number(item.unit_price))}
+                        </div>
+                        {item.variant_name && (
+                          <div className="text-xs text-muted-foreground">
+                            Variant: {item.variant_name}
+                          </div>
+                        )}
+                        {/* SMM Details Display */}
+                        {item.sku_snapshot?.smm_config_snapshot && (
+                          <div className="mt-2 pt-2 border-t border-border space-y-1">
+                            <div className="text-[10px] font-bold uppercase text-primary">SMM Service Details</div>
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                              <div><span className="text-muted-foreground">Platform:</span> {item.sku_snapshot.smm_config_snapshot.platform}</div>
+                              <div><span className="text-muted-foreground">Service:</span> {item.sku_snapshot.smm_config_snapshot.service_type}</div>
+                              <div><span className="text-muted-foreground">Quantity:</span> {item.sku_snapshot.smm_quantity || item.qty}</div>
+                              <div><span className="text-muted-foreground">Pricing Mode:</span> {item.sku_snapshot.smm_config_snapshot.pricing_mode}</div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <OrderCustomFieldValues 
                   orderId={o.id} 
                   email={o.email} 
