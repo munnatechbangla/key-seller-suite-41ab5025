@@ -1,4 +1,5 @@
 import { seoMeta, canonicalLink, productJsonLd, breadcrumbJsonLd, faqJsonLd, jsonLdScript } from "@/lib/cms/seo";
+import { formatDescription } from "@/lib/content-utils";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
@@ -440,8 +441,8 @@ function LegacyProductPage() {
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-4">
                   <div 
-                    className="text-muted-foreground leading-relaxed prose prose-sm max-w-none dark:prose-invert prose-p:my-2 prose-headings:mb-2 prose-ul:my-2 prose-li:my-0"
-                    dangerouslySetInnerHTML={{ __html: product.description || "" }}
+                    className="text-muted-foreground leading-relaxed prose prose-sm max-w-none dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: formatDescription(product.description || "") }}
                   />
                   <h3 className="font-semibold mt-6">Key features</h3>
                   <ul className="space-y-2">
