@@ -57,8 +57,10 @@ function buildTimeline(opts: {
   hasLicense: boolean;
   isSubscription: boolean;
   subscriptionDelivered: boolean;
+  isDownloadable: boolean;
+  anyDelivered: boolean;
 }): TimelineStep[] {
-  const { submitted, underReview, rejected, approved, hasLicense, isSubscription, subscriptionDelivered } = opts;
+  const { submitted, underReview, rejected, approved, hasLicense, isSubscription, subscriptionDelivered, isDownloadable, anyDelivered } = opts;
   const s = (cond: "done" | "current" | "todo" | "error"): "done" | "current" | "todo" | "error" => cond;
   return [
     { key: "created", label: "Order Created", state: s("done") },
@@ -73,16 +75,13 @@ function buildTimeline(opts: {
       state: rejected ? "error" : approved ? "done" : underReview ? "current" : "todo",
     },
     {
-      key: "approved",
-      label: "Payment Approved",
-      state: approved ? "done" : rejected ? "todo" : "todo",
-    },
-    {
       key: "delivered",
-      label: isSubscription ? "Subscription Delivered" : "License Delivered",
+      label: isSubscription ? "Subscription Delivered"
+        : isDownloadable ? "Download Available"
+        : "License Delivered",
       state: isSubscription
-        ? subscriptionDelivered ? "done" : approved ? "current" : "todo"
-        : approved && hasLicense ? "done" : approved ? "current" : "todo",
+        ? (subscriptionDelivered ? "done" : approved ? "current" : "todo")
+        : (approved && (hasLicense || anyDelivered) ? "done" : approved ? "current" : "todo"),
     },
   ];
 }
@@ -192,6 +191,8 @@ function PayPage() {
   const orderStatus = order?.status ?? "pending";
   const orderItems = (q.data?.items as any[]) || (q.data as any)?.order_items || [];
   const isSubscriptionOrder = orderItems.some((it: any) => it.product_type === "subscription" || it.delivery_type === "subscription" || it.product?.product_type === "subscription");
+  const isDownloadableOrder = orderItems.some((it: any) => it.product_type === "download" || it.delivery_type === "download" || it.product?.product_type === "download" || it.product?.delivery_type === "download");
+  const anyDelivered = (deliveryQ.data ?? []).some((it: any) => it?.manual_license || it?.fulfillment?.fulfillment_status === "delivered" || (it?.downloads?.length > 0));
   const approved = orderStatus === "paid" || orderStatus === "completed";
   const rejected = submission?.status === "rejected";
   const pendingSubmission = submission?.status === "pending" || submission?.status === "under_review";
@@ -215,10 +216,12 @@ function PayPage() {
     hasLicense:
       assignments.length > 0 ||
       (deliveryQ.data ?? []).some(
-        (it: any) => it?.manual_license || it?.fulfillment?.fulfillment_status === "delivered",
+        (it: any) => it?.manual_license || (it?.fulfillment?.fulfillment_status === "delivered" && (it.product?.product_type === 'license_key' || it.product?.delivery_type === 'license_key')),
       ),
     isSubscription: isSubscriptionOrder,
     subscriptionDelivered: isSubscriptionOrder && orderStatus === "completed",
+    isDownloadable: isDownloadableOrder,
+    anyDelivered,
   });
 
   const redirectToGateway = async () => {
