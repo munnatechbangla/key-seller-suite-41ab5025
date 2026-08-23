@@ -12,6 +12,7 @@ export type FulfillmentStatus =
   | "waiting_inventory"
   | "manual_review"
   | "delivered"
+  | "partial"
   | "failed"
   | "cancelled";
 
