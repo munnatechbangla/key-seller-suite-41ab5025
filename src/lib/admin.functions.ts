@@ -143,14 +143,27 @@ export const adminListOrdersFn = createServerFn({ method: "GET" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    let q = context.supabase
-      .from("orders")
-      .select("id, order_number, email, customer_name, total, currency, status, payment_method, created_at, order_items(*)")
-      .order("created_at", { ascending: false })
-      .limit(200);
-    if (data.status) q = q.eq("status", data.status as any);
-    if (data.search) q = q.or(`order_number.ilike.%${data.search}%,email.ilike.%${data.search}%`);
-    const { data: rows, error } = await q;
+    const selectWithSmm = "id, order_number, email, customer_name, total, currency, status, payment_method, created_at, order_items(*, smm_fulfillment)";
+    const selectWithoutSmm = "id, order_number, email, customer_name, total, currency, status, payment_method, created_at, order_items(*)";
+
+    const fetchOrders = async (select: string) => {
+      let q = context.supabase
+        .from("orders")
+        .select(select)
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (data.status) q = q.eq("status", data.status as any);
+      if (data.search) q = q.or(`order_number.ilike.%${data.search}%,email.ilike.%${data.search}%`);
+      return q;
+    };
+
+    let { data: rows, error } = await fetchOrders(selectWithSmm);
+    
+    if (error && (error.code === "42703" || error.message.includes("smm_fulfillment"))) {
+      const retry = await fetchOrders(selectWithoutSmm);
+      rows = retry.data;
+      error = retry.error;
+    }
     if (error) throw new Error(error.message);
     return rows ?? [];
   });
