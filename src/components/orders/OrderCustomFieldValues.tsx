@@ -8,18 +8,20 @@ export function OrderCustomFieldValues({
   authed,
   className,
   compact,
+  isAdmin,
 }: {
   orderId: string | undefined | null;
   email?: string;
   authed: boolean;
   className?: string;
   compact?: boolean;
+  isAdmin?: boolean;
 }) {
   const guestFn = useServerFn(getOrderCustomFieldsGuestFn);
   const authFn = useServerFn(getOrderCustomFieldsAuthFn);
   const q = useQuery({
-    queryKey: ["order-custom-values", orderId, email, authed ? "u" : "g"],
-    queryFn: () => (authed ? authFn : guestFn)({ data: { orderId: orderId!, email } }),
+    queryKey: ["order-custom-values", orderId, email, authed ? "u" : "g", isAdmin ? "admin" : "user"],
+    queryFn: () => (isAdmin || authed ? authFn : guestFn)({ data: { orderId: orderId!, email } }),
     enabled: !!orderId,
   });
   const values = (q.data ?? []) as OrderCustomFieldValue[];
@@ -36,7 +38,8 @@ export function OrderCustomFieldValues({
 
   return (
     <div className={className}>
-      {!compact && <h3 className="font-bold text-lg mb-3">Customer product information</h3>}
+      {!compact && <h3 className="font-bold text-lg mb-3">Customer Provided Information</h3>}
+      {compact && <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Customer Provided Information</h4>}
       <div className="space-y-4">
         {Array.from(groups.entries()).map(([slug, rows]) => (
           <div key={slug} className="rounded-xl border border-border bg-card p-4">

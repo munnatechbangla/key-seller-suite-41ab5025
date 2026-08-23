@@ -106,7 +106,7 @@ export const saveOrderCustomFieldsGuestFn = createServerFn({ method: "POST" })
     return r;
   });
 
-/** Authenticated: save values as the signed-in user. */
+/** Authenticated/Admin: save values. */
 export const saveOrderCustomFieldsAuthFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => saveSchema.parse(d))
