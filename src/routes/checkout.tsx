@@ -258,9 +258,9 @@ function CheckoutPage() {
                   </div>
                   <span className="font-semibold">
                     {formatPrice(
-                      (item.product.product_type === 'smm_service' && item.smm_config_snapshot && item.smm_quantity
-                        ? calculateSMMPrice(item.smm_quantity, item.smm_config_snapshot)
-                        : (item.variant ? (item.variant.sale_price != null && item.variant.sale_price > 0 ? item.variant.sale_price : item.variant.price) : item.product.price) * item.qty)
+                      (it.product.product_type === 'smm_service' && it.smm_config_snapshot && it.smm_quantity
+                        ? calculateSMMPrice(it.smm_quantity, it.smm_config_snapshot)
+                        : (it.variant ? (it.variant.sale_price != null && it.variant.sale_price > 0 ? it.variant.sale_price : it.variant.price) : it.product.price) * it.qty)
                     )}
                   </span>
                 </div>
