@@ -84,8 +84,8 @@ function AccountPage() {
         <section className="min-w-0">
           {active === "dashboard" && <DashboardTab />}
           {active === "orders" && <OrdersTab />}
-          {active === "subscriptions" && <SubscriptionsTab />}
-          {active === "downloads" && <DownloadsTab />}
+          {active === "subscriptions" && <DeliveriesByTypeTab type="subscription" title="Subscriptions" />}
+          {active === "downloads" && <DeliveriesByTypeTab type="download" title="Downloads" />}
           {active === "licenses" && <LicensesTab />}
           {active === "submissions" && <SubmissionsTab />}
           {active === "reviews" && <MyReviewsTab />}
@@ -182,6 +182,16 @@ function OrdersList({ orders }: { orders: OrderRow[] }) {
         const date = new Date(o.created_at).toLocaleDateString();
         const payStatus = (o as { payments?: { status: string }[] }).payments?.[0]?.status ?? "pending";
         const deliveryItems = deliveriesByOrder.get(o.id) ?? [];
+        const isSmm = deliveryItems.some(it => it.product?.product_type === 'smm_service' || (it as any).product_type === 'smm_service');
+        const smmStatus = (deliveryItems.find(it => it.product?.product_type === 'smm_service' || (it as any).product_type === 'smm_service')?.smm_fulfillment as any)?.status;
+        const smmPalette: Record<string, string> = {
+          completed: "text-emerald-600 bg-emerald-500/10 border border-emerald-500/20",
+          partial: "text-blue-600 bg-blue-500/10 border border-blue-500/20",
+          processing: "text-amber-600 bg-amber-500/10 border border-amber-500/20",
+          cancelled: "text-rose-600 bg-rose-500/10 border border-rose-500/20",
+          refunded: "text-purple-600 bg-purple-500/10 border border-purple-500/20",
+          pending: "text-slate-600 bg-slate-500/10 border border-slate-500/20",
+        };
         return (
           <details key={o.id} className="rounded-xl border border-border hover:bg-muted/40 transition-smooth group">
             <summary className="flex items-center gap-3 p-3 cursor-pointer list-none">
@@ -195,6 +205,11 @@ function OrdersList({ orders }: { orders: OrderRow[] }) {
                 <div className="flex gap-1 justify-end">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[o.status] ?? palette.pending}`}>{o.status}</span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[payStatus] ?? palette.pending}`}>{payStatus}</span>
+                  {isSmm && smmStatus && (
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${smmPalette[smmStatus] ?? smmPalette.pending}`}>
+                      SMM: {smmStatus}
+                    </span>
+                  )}
                 </div>
               </div>
             </summary>
@@ -214,22 +229,54 @@ function OrdersTab() {
   return <Card><h3 className="font-bold mb-4">All orders</h3>{orders.isLoading ? <Loader /> : <OrdersList orders={orders.data ?? []} />}</Card>;
 }
 
-function DownloadsTab() {
+function DeliveriesByTypeTab({ type, title }: { type: string; title: string }) {
   const fn = useServerFn(getMyDeliveriesFn);
-  const q = useQuery({ queryKey: ["my-deliveries"], queryFn: () => fn({}) });
-  const items = q.data ?? [];
+  const q = useQuery({
+    queryKey: ["my-deliveries", type],
+    queryFn: () => fn({}),
+    refetchInterval: (query) => {
+      if (type !== "subscription" && type !== "smm_service") return false;
+      const data = (query.state.data as any[]) ?? [];
+      const items = data.filter(
+        (it) =>
+          it.product?.product_type === type ||
+          it.product?.delivery_type === type ||
+          (it as any).fulfillment?.delivery_type === type,
+      );
+      const pending = items.some((it) => {
+        if (type === "smm_service") {
+          const s = (it.smm_fulfillment as any)?.status;
+          return s !== "completed" && s !== "cancelled" && s !== "refunded";
+        }
+        return (it.fulfillment?.fulfillment_status ?? "pending") !== "delivered";
+      });
+      return pending ? 8000 : false;
+    },
+  });
+  const allItems = q.data ?? [];
+  const items = allItems.filter(
+    (it) =>
+      it.product?.product_type === type ||
+      it.product?.delivery_type === type ||
+      (it as any).fulfillment?.delivery_type === type,
+  );
+
   return (
     <Card>
-      <h3 className="font-bold mb-1">Download Center</h3>
-      <p className="text-xs text-muted-foreground mb-4">All your delivered products — downloads, licenses, accounts and more.</p>
-      {q.isLoading ? <Loader /> : items.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No delivered items yet. Purchases will appear here once payment is confirmed.</p>
+      <h3 className="font-bold mb-1">{title}</h3>
+      <p className="text-xs text-muted-foreground mb-4">Your delivered {title.toLowerCase()}.</p>
+      {q.isLoading ? (
+        <Loader />
+      ) : items.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No {title.toLowerCase()} found yet.</p>
       ) : (
         <DeliveryPanel items={items} showHeader={false} />
       )}
     </Card>
   );
 }
+
+
 
 function LicensesTab() {
   const lic = useMyLicenses();
@@ -300,6 +347,10 @@ function LicensesTab() {
   );
 }
 
+
+function SubscriptionsTab() {
+  return <DeliveriesByTypeTab type="subscription" title="Subscriptions" />;
+}
 
 function SubmissionsTab() {
   const formatPrice = usePriceFormatter();
@@ -462,25 +513,3 @@ function Field({ label, type = "text", defaultValue, placeholder }: { label: str
   );
 }
 
-function SubscriptionsTab() {
-  const fn = useServerFn(getMyDeliveriesFn);
-  const { data = [], isLoading } = useQuery({
-    queryKey: ["my-deliveries"],
-    queryFn: () => fn({}),
-    refetchOnWindowFocus: true,
-    refetchOnMount: "always",
-    refetchInterval: (q) => {
-      const rows = (q.state.data as any[] | undefined) ?? [];
-      const subs = rows.filter((it: any) => it.product?.product_type === "subscription" || it.product?.delivery_type === "subscription" || it.fulfillment?.delivery_type === "subscription");
-      const pending = subs.some((it: any) => (it.fulfillment?.fulfillment_status ?? "pending") !== "delivered");
-      return pending ? 8000 : false;
-    },
-  });
-  const subscriptions = data.filter((it) => it.product.product_type === "subscription" || it.product.delivery_type === "subscription" || (it as any).fulfillment?.delivery_type === "subscription");
-  if (isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
-  if (subscriptions.length === 0)
-    return <div className="text-sm text-muted-foreground">No subscriptions yet.</div>;
-  return (
-    <DeliveryPanel items={subscriptions} showHeader={false} />
-  );
-}

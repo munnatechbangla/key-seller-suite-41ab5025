@@ -109,7 +109,9 @@ const SELECT_PRODUCT = `
   meta_title, meta_description, focus_keyword, secondary_keywords, canonical_url, robots,
   og_title, og_description, og_image, twitter_title, twitter_description, twitter_image,
   schema_enabled, faq_schema_enabled, breadcrumb_schema_enabled, product_schema_enabled,
-  product_categories ( slug, name )
+  product_categories ( slug, name ),
+  smm_config, product_type
+
 ` as const;
 
 export function mapProduct(row: ProductRow): Product {
@@ -220,16 +222,7 @@ async function fetchProducts(filter: ProductsFilter = {}): Promise<Product[]> {
     return q;
   };
 
-  // Try with SMM columns first
-  let { data, error } = await query(`${SELECT_PRODUCT}, product_type, smm_config`);
-  
-  // Fallback if columns are missing (42703 is Undefined Column)
-  if (error && (error.code === "42703" || error.message.includes("smm_config") || error.message.includes("product_type"))) {
-    console.warn("Retrying products fetch without SMM columns due to missing schema.");
-    const retry = await query(SELECT_PRODUCT);
-    data = retry.data;
-    error = retry.error;
-  }
+  const { data, error } = await query(SELECT_PRODUCT);
 
   if (error) throw error;
   const mapped = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
@@ -288,13 +281,7 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
     .eq("status", "published")
     .maybeSingle();
 
-  let { data, error } = await query(`${SELECT_PRODUCT}, product_type, smm_config`);
-  
-  if (error && (error.code === "42703" || error.message.includes("smm_config") || error.message.includes("product_type"))) {
-    const retry = await query(SELECT_PRODUCT);
-    data = retry.data;
-    error = retry.error;
-  }
+  const { data, error } = await query(SELECT_PRODUCT);
 
   if (error) throw error;
   if (!data) return null;
@@ -318,13 +305,7 @@ async function fetchProductsBySlugs(slugs: string[]): Promise<Product[]> {
     .in("slug", slugs)
     .eq("status", "published");
 
-  let { data, error } = await query(`${SELECT_PRODUCT}, product_type, smm_config`);
-
-  if (error && (error.code === "42703" || error.message.includes("smm_config") || error.message.includes("product_type"))) {
-    const retry = await query(SELECT_PRODUCT);
-    data = retry.data;
-    error = retry.error;
-  }
+  const { data, error } = await query(SELECT_PRODUCT);
 
   if (error) throw error;
   const items = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
@@ -339,13 +320,7 @@ async function fetchCurated(table: "featured_products" | "trending_products" | "
     .select(`sort_order, products!inner ( ${select} )`)
     .order("sort_order", { ascending: true });
 
-  let { data, error } = await query(`${SELECT_PRODUCT}, product_type, smm_config`);
-
-  if (error && (error.code === "42703" || error.message.includes("smm_config") || error.message.includes("product_type"))) {
-    const retry = await query(SELECT_PRODUCT);
-    data = retry.data;
-    error = retry.error;
-  }
+  const { data, error } = await query(SELECT_PRODUCT);
 
   if (error) throw error;
   const items = ((data ?? []) as unknown as { products: ProductRow }[])
@@ -377,13 +352,7 @@ async function searchProducts(q: string): Promise<Product[]> {
     .or(`title.ilike.${term},short_description.ilike.${term},description.ilike.${term}`)
     .limit(40);
 
-  let { data, error } = await query(`${SELECT_PRODUCT}, product_type, smm_config`);
-
-  if (error && (error.code === "42703" || error.message.includes("smm_config") || error.message.includes("product_type"))) {
-    const retry = await query(SELECT_PRODUCT);
-    data = retry.data;
-    error = retry.error;
-  }
+  const { data, error } = await query(SELECT_PRODUCT);
 
   if (error) throw error;
   const items = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
@@ -464,13 +433,7 @@ async function fetchHeroFeatured(limit = 12): Promise<Product[]> {
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  let { data, error } = await query(`${SELECT_PRODUCT}, product_type, smm_config`);
-
-  if (error && (error.code === "42703" || error.message.includes("smm_config") || error.message.includes("product_type"))) {
-    const retry = await query(SELECT_PRODUCT);
-    data = retry.data;
-    error = retry.error;
-  }
+  const { data, error } = await query(SELECT_PRODUCT);
 
   if (error) throw error;
   const items = ((data ?? []) as unknown as { products: ProductRow }[])
@@ -488,13 +451,7 @@ async function fetchHeroLatest(limit = 12): Promise<Product[]> {
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  let { data, error } = await query(`${SELECT_PRODUCT}, product_type, smm_config`);
-
-  if (error && (error.code === "42703" || error.message.includes("smm_config") || error.message.includes("product_type"))) {
-    const retry = await query(SELECT_PRODUCT);
-    data = retry.data;
-    error = retry.error;
-  }
+  const { data, error } = await query(SELECT_PRODUCT);
 
   if (error) throw error;
   const items = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);

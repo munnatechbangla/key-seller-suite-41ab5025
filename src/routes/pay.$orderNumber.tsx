@@ -58,9 +58,11 @@ function buildTimeline(opts: {
   isSubscription: boolean;
   subscriptionDelivered: boolean;
   isDownloadable: boolean;
+  isSmm?: boolean;
+  smmDelivered?: boolean;
   anyDelivered: boolean;
 }): TimelineStep[] {
-  const { submitted, underReview, rejected, approved, hasLicense, isSubscription, subscriptionDelivered, isDownloadable, anyDelivered } = opts;
+  const { submitted, underReview, rejected, approved, hasLicense, isSubscription, subscriptionDelivered, isDownloadable, isSmm, smmDelivered, anyDelivered } = opts;
   const s = (cond: "done" | "current" | "todo" | "error"): "done" | "current" | "todo" | "error" => cond;
   return [
     { key: "created", label: "Order Created", state: s("done") },
@@ -77,10 +79,13 @@ function buildTimeline(opts: {
     {
       key: "delivered",
       label: isSubscription ? "Subscription Delivered"
+        : isSmm ? "Service Delivered"
         : isDownloadable ? "Download Available"
         : "License Delivered",
       state: isSubscription
         ? (subscriptionDelivered ? "done" : approved ? "current" : "todo")
+        : isSmm
+        ? (smmDelivered ? "done" : approved ? "current" : "todo")
         : (approved && (hasLicense || anyDelivered) ? "done" : approved ? "current" : "todo"),
     },
   ];
@@ -208,6 +213,11 @@ function PayPage() {
     }
   }, [approved, orderNumber]);
 
+  const deliveryItems = deliveryQ.data ?? [];
+  const isSmmOrder = deliveryItems.some((it: any) => it.product?.product_type === 'smm_service' || it.product_type === 'smm_service');
+  const smmFulfillment = deliveryItems.find((it: any) => it.product?.product_type === 'smm_service' || it.product_type === 'smm_service')?.smm_fulfillment;
+  const smmDelivered = (smmFulfillment as any)?.status === 'completed' || (smmFulfillment as any)?.status === 'partial';
+
   const timeline = buildTimeline({
     submitted,
     underReview,
@@ -215,12 +225,14 @@ function PayPage() {
     approved,
     hasLicense:
       assignments.length > 0 ||
-      (deliveryQ.data ?? []).some(
+      deliveryItems.some(
         (it: any) => it?.manual_license || (it?.fulfillment?.fulfillment_status === "delivered" && (it.product?.product_type === 'license_key' || it.product?.delivery_type === 'license_key')),
       ),
     isSubscription: isSubscriptionOrder,
     subscriptionDelivered: isSubscriptionOrder && orderStatus === "completed",
     isDownloadable: isDownloadableOrder,
+    isSmm: isSmmOrder,
+    smmDelivered: smmDelivered,
     anyDelivered,
   });
 
