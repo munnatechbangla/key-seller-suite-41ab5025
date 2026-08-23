@@ -227,6 +227,10 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
       {rows.map((f) => {
         const isSubscription = f.delivery_type === "subscription" || f.product_type === "subscription" || f.product_delivery_type === "subscription";
         const isDownloadable = f.delivery_type === "download" || f.product_type === "download" || f.product_delivery_type === "download";
+        const isSmm = f.product_type === "smm_service";
+
+        if (isSmm) return null; // Rendered above in specialized panel
+
 
         if (isSubscription || (isDownloadable && !isAdmin)) {
           return (
