@@ -150,7 +150,8 @@ function renderBody(item: DeliveryItem, type: string) {
 function SmmDelivery({ item }: { item: DeliveryItem }) {
   const f = item.smm_fulfillment;
   const delivered = f?.delivered_quantity || 0;
-  const ordered = f?.ordered_quantity || item.qty || 0;
+  const ordered = (f as any)?.ordered_quantity || item.qty || 0;
+  const status = f?.status || "pending";
   const progress = ordered > 0 ? Math.min(100, (delivered / ordered) * 100) : 0;
 
   const getStatusConfig = (s: string) => {
