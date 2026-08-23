@@ -40,6 +40,7 @@ const STATUS_META: Record<FulfillmentStatus, { label: string; color: string; ico
   waiting_inventory: { label: "Waiting Inventory", color: "bg-amber-500/15 text-amber-700 dark:text-amber-300", icon: PackageSearch },
   manual_review:     { label: "Manual Review",     color: "bg-purple-500/15 text-purple-700 dark:text-purple-300", icon: ShieldAlert },
   delivered:         { label: "Delivered",         color: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300", icon: PackageCheck },
+  partial:           { label: "Partial",           color: "bg-blue-500/15 text-blue-700 dark:text-blue-300", icon: BarChart3 },
   failed:            { label: "Failed",            color: "bg-red-500/15 text-red-700 dark:text-red-300",   icon: AlertTriangle },
   cancelled:         { label: "Cancelled",         color: "bg-muted text-muted-foreground",                icon: XCircle },
 };
