@@ -256,12 +256,15 @@ function LegacyProductPage() {
     
     cart.add(product, qty, activeVariant ? {
       variant_id: activeVariant.id,
-      variant_name: activeVariant.title,
+      variant_name: activeVariant.name,
       price: Number(activeVariant.price),
       sale_price: activeVariant.sale_price ? Number(activeVariant.sale_price) : undefined,
       sku: activeVariant.sku || undefined,
       thumbnail_url: activeVariant.thumbnail_url || undefined,
       license_pool_id: activeVariant.license_pool_id || null,
+      delivery_type: activeVariant.delivery_type || null,
+      inventory_pool_id: activeVariant.inventory_pool_id || null,
+      subscription_pool_id: activeVariant.subscription_pool_id || null,
       selected_attributes: activeVariant.attributes || {}
     } : undefined);
     toast.success("Added to cart");
@@ -280,12 +283,15 @@ function LegacyProductPage() {
     } else {
       cart.add(product, qty, activeVariant ? {
         variant_id: activeVariant.id,
-        variant_name: activeVariant.title,
+        variant_name: activeVariant.name,
         price: Number(activeVariant.price),
         sale_price: activeVariant.sale_price ? Number(activeVariant.sale_price) : undefined,
         sku: activeVariant.sku || undefined,
         thumbnail_url: activeVariant.thumbnail_url || undefined,
         license_pool_id: activeVariant.license_pool_id || null,
+        delivery_type: activeVariant.delivery_type || null,
+        inventory_pool_id: activeVariant.inventory_pool_id || null,
+        subscription_pool_id: activeVariant.subscription_pool_id || null,
         selected_attributes: activeVariant.attributes || {}
       } : undefined);
     }
