@@ -31,7 +31,7 @@ function RenderBlock({ block, product }: { block: ProductBlock; product?: any })
     case "rich_text":
       return (
         <div 
-          className="prose prose-sm max-w-none dark:prose-invert prose-p:my-2 prose-headings:mb-2 prose-ul:my-2 prose-li:my-0" 
+          className="prose prose-sm max-w-none dark:prose-invert" 
           dangerouslySetInnerHTML={{ __html: c.html ?? "" }} 
         />
       );
