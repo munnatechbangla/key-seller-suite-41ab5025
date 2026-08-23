@@ -38,6 +38,8 @@ export type Product = {
   hasAttributes?: boolean;
   priceFrom?: number | null;
   oldPriceFrom?: number | null;
+  product_type?: string | null;
+  smm_config?: any | null;
 };
 
 
@@ -96,6 +98,8 @@ type ProductRow = {
   faq_schema_enabled?: boolean | null;
   breadcrumb_schema_enabled?: boolean | null;
   product_schema_enabled?: boolean | null;
+  product_type: string | null;
+  smm_config: any | null;
 };
 
 const SELECT_PRODUCT = `
@@ -105,6 +109,7 @@ const SELECT_PRODUCT = `
   meta_title, meta_description, focus_keyword, secondary_keywords, canonical_url, robots,
   og_title, og_description, og_image, twitter_title, twitter_description, twitter_image,
   schema_enabled, faq_schema_enabled, breadcrumb_schema_enabled, product_schema_enabled,
+  product_type, smm_config,
   product_categories ( slug, name )
 ` as const;
 
@@ -157,6 +162,8 @@ export function mapProduct(row: ProductRow): Product {
       breadcrumb_schema_enabled: row.breadcrumb_schema_enabled ?? true,
       product_schema_enabled: row.product_schema_enabled ?? true,
     },
+    product_type: row.product_type,
+    smm_config: row.smm_config,
   };
 }
 
