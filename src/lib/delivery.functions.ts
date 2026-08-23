@@ -125,6 +125,8 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
       completed_at: f.completed_at ?? null,
       metadata: f.metadata ?? null,
       thumbnail_url: (f.metadata as any)?.thumbnail_snapshot || (f.metadata as any)?.thumbnail_url || null,
+      qty: (f as any).qty || null,
+      smm_fulfillment: (f as any).smm_fulfillment || null,
     });
   }
 
