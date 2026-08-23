@@ -51,6 +51,8 @@ export type DeliveryItem = {
     completed_at: string | null;
     metadata: Record<string, any> | null;
     thumbnail_url?: string | null;
+    qty?: number | null;
+    smm_fulfillment?: any | null;
   } | null;
   smm_fulfillment?: {
     status: string;
