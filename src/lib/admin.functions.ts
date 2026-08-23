@@ -41,10 +41,23 @@ export const adminListProductsFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context);
-    const { data, error } = await context.supabase
+    const baseSelect = "id, title, slug, short_description, description, thumbnail_url, regular_price, sale_price, status, stock_status, is_featured, sales_count, created_at, delivery_type, visibility, external_url, is_digital, is_license_key, category_id";
+    
+    // Try with SMM columns first
+    let { data, error } = await context.supabase
       .from("products")
-      .select("id, title, slug, short_description, description, thumbnail_url, regular_price, sale_price, status, stock_status, is_featured, sales_count, created_at, product_type, delivery_type, visibility, external_url, is_digital, is_license_key, category_id, smm_config")
+      .select(`${baseSelect}, product_type, smm_config`)
       .order("created_at", { ascending: false });
+    
+    if (error && (error.code === "42703" || error.message.includes("smm_config") || error.message.includes("product_type"))) {
+      const retry = await context.supabase
+        .from("products")
+        .select(baseSelect)
+        .order("created_at", { ascending: false });
+      data = retry.data;
+      error = retry.error;
+    }
+
     if (error) throw new Error(error.message);
     return data ?? [];
   });
