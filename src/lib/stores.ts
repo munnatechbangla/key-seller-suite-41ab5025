@@ -32,7 +32,7 @@ type CartItem = {
   qty: number;
   product: Product;
   variant?: CartVariantMeta;
-  smm_config_snapshot?: any | null;
+  smm_config_snapshot?: any;
   smm_quantity?: number;
 };
 
@@ -99,8 +99,8 @@ export const useCart = create<CartState>()(
               qty: smmQty || qty, 
               product: p, 
               variant,
-              smm_config_snapshot: smmConfig || null,
-              smm_quantity: smmQty || null
+              smm_config_snapshot: smmConfig,
+              smm_quantity: smmQty
             }],
           };
         }),
