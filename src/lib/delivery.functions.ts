@@ -56,6 +56,7 @@ export type DeliveryItem = {
     status: string;
     delivered_quantity: number;
     remaining_quantity: number;
+    ordered_quantity?: number;
     admin_notes: string;
     updated_at: string;
   } | null;
