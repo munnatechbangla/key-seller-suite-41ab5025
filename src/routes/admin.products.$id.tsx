@@ -30,6 +30,7 @@ import { ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, Star, AlertTriangle, Check
 import { CustomFieldsTab } from "@/components/admin/CustomFieldsTab";
 import { MediaPicker } from "@/components/admin/MediaLibrary";
 import { RichContentTab } from "@/components/admin/RichContentTab";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { ProductSeoTab } from "@/components/admin/ProductSeoTab";
 import { AttributesTab } from "@/components/admin/AttributesTab";
 import { VariantsTab } from "@/components/admin/VariantsTab";
