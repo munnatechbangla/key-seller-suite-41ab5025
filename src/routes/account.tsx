@@ -319,6 +319,10 @@ function LicensesTab() {
 }
 
 
+function SubscriptionsTab() {
+  return <DeliveriesByTypeTab type="subscription" title="Subscriptions" />;
+}
+
 function SubmissionsTab() {
   const formatPrice = usePriceFormatter();
   const fn = useServerFn(getMySubmissionsFn);
