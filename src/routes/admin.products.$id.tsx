@@ -168,6 +168,7 @@ function ManageProduct() {
       delivery_type: p.delivery_type ?? null,
       visibility: p.visibility ?? null,
       external_url: p.external_url ?? null,
+      smm_config: p.smm_config ?? null,
       ...patch,
     };
   };

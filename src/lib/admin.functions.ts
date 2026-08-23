@@ -43,14 +43,14 @@ export const adminListProductsFn = createServerFn({ method: "GET" })
     await assertAdmin(context);
     const { data, error } = await context.supabase
       .from("products")
-      .select("id, title, slug, short_description, description, thumbnail_url, regular_price, sale_price, status, stock_status, is_featured, sales_count, created_at, product_type, delivery_type, visibility, external_url, is_digital, is_license_key, category_id")
+      .select("id, title, slug, short_description, description, thumbnail_url, regular_price, sale_price, status, stock_status, is_featured, sales_count, created_at, product_type, delivery_type, visibility, external_url, is_digital, is_license_key, category_id, smm_config")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
   });
 
 const productTypeEnum = z.enum([
-  "downloadable", "license_key", "subscription", "account", "external", "manual",
+  "downloadable", "license_key", "subscription", "account", "external", "manual", "smm_service",
 ]);
 const deliveryTypeEnum = z.enum([
   "download", "license_key", "account", "manual", "external_url",
@@ -76,6 +76,15 @@ const productSchema = z.object({
   visibility: productVisibilityEnum.nullable().optional(),
   external_url: z.string().nullable().optional(),
   category_id: z.string().uuid().nullable().optional(),
+  smm_config: z.object({
+    platform: z.string(),
+    service_type: z.string(),
+    min_quantity: z.number().gt(0),
+    max_quantity: z.number().nonnegative(),
+    quantity_step: z.number().gt(0),
+    pricing_mode: z.enum(["per_unit", "per_1000", "quantity_tier"]),
+    price: z.number().nonnegative(),
+  }).nullable().optional(),
 });
 
 export const adminUpsertProductFn = createServerFn({ method: "POST" })
