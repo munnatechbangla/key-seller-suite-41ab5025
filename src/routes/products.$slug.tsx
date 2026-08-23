@@ -1,4 +1,5 @@
 import { seoMeta, canonicalLink, productJsonLd, breadcrumbJsonLd, faqJsonLd, jsonLdScript } from "@/lib/cms/seo";
+import { formatDescription } from "@/lib/content-utils";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
