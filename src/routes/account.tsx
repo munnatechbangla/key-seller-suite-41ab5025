@@ -183,7 +183,7 @@ function OrdersList({ orders }: { orders: OrderRow[] }) {
         const payStatus = (o as { payments?: { status: string }[] }).payments?.[0]?.status ?? "pending";
         const deliveryItems = deliveriesByOrder.get(o.id) ?? [];
         const isSmm = deliveryItems.some(it => it.product?.product_type === 'smm_service' || (it as any).product_type === 'smm_service');
-        const smmStatus = deliveryItems.find(it => it.product?.product_type === 'smm_service' || (it as any).product_type === 'smm_service')?.smm_fulfillment?.status;
+        const smmStatus = (deliveryItems.find(it => it.product?.product_type === 'smm_service' || (it as any).product_type === 'smm_service')?.smm_fulfillment as any)?.status;
         const smmPalette: Record<string, string> = {
           completed: "text-emerald-600 bg-emerald-500/10 border border-emerald-500/20",
           partial: "text-blue-600 bg-blue-500/10 border border-blue-500/20",
