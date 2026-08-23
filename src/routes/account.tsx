@@ -84,8 +84,8 @@ function AccountPage() {
         <section className="min-w-0">
           {active === "dashboard" && <DashboardTab />}
           {active === "orders" && <OrdersTab />}
-          {active === "subscriptions" && <SubscriptionsTab />}
-          {active === "downloads" && <DownloadsTab />}
+          {active === "subscriptions" && <DeliveriesByTypeTab type="subscription" title="Subscriptions" />}
+          {active === "downloads" && <DeliveriesByTypeTab type="download" title="Downloads" />}
           {active === "licenses" && <LicensesTab />}
           {active === "submissions" && <SubmissionsTab />}
           {active === "reviews" && <MyReviewsTab />}
@@ -229,22 +229,25 @@ function OrdersTab() {
   return <Card><h3 className="font-bold mb-4">All orders</h3>{orders.isLoading ? <Loader /> : <OrdersList orders={orders.data ?? []} />}</Card>;
 }
 
-function DownloadsTab() {
+function DeliveriesByTypeTab({ type, title }: { type: string; title: string }) {
   const fn = useServerFn(getMyDeliveriesFn);
-  const q = useQuery({ queryKey: ["my-deliveries"], queryFn: () => fn({}) });
-  const items = q.data ?? [];
+  const q = useQuery({ queryKey: ["my-deliveries", type], queryFn: () => fn({}) });
+  const allItems = q.data ?? [];
+  const items = allItems.filter(it => it.product?.product_type === type || it.product?.delivery_type === type);
+  
   return (
     <Card>
-      <h3 className="font-bold mb-1">Download Center</h3>
-      <p className="text-xs text-muted-foreground mb-4">All your delivered products — downloads, licenses, accounts and more.</p>
+      <h3 className="font-bold mb-1">{title}</h3>
+      <p className="text-xs text-muted-foreground mb-4">Your delivered {title.toLowerCase()}.</p>
       {q.isLoading ? <Loader /> : items.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No delivered items yet. Purchases will appear here once payment is confirmed.</p>
+        <p className="text-sm text-muted-foreground">No {title.toLowerCase()} found yet.</p>
       ) : (
         <DeliveryPanel items={items} showHeader={false} />
       )}
     </Card>
   );
 }
+
 
 function LicensesTab() {
   const lic = useMyLicenses();
