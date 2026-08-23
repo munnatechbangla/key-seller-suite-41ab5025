@@ -114,6 +114,12 @@ function CheckoutPage() {
           qty: i.qty,
           variant_id: i.variant?.variant_id ?? null,
           selected_attributes: i.variant?.selected_attributes ?? undefined,
+          product_slug: i.productSlug ?? i.slug,
+          smm_config_snapshot: i.smm_config_snapshot ?? null,
+          smm_quantity: i.smm_quantity ?? null,
+          price: i.product.product_type === 'smm_service' && i.smm_config_snapshot && i.smm_quantity
+            ? calculateSMMPrice(i.smm_quantity, i.smm_config_snapshot)
+            : undefined
         })),
         customer,
         paymentMethod: gateway,
