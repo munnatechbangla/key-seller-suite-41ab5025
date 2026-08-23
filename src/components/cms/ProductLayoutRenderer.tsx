@@ -1,5 +1,6 @@
 import type { ProductSectionCommonStyle } from "@/lib/cms/product-section-types";
 import { cn } from "@/lib/utils";
+import { formatDescription } from "@/lib/content-utils";
 import { ReviewsSection } from "@/components/site/ReviewsSection";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Breadcrumbs } from "@/components/site/PageHero";
