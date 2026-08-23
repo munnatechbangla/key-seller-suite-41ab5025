@@ -245,7 +245,8 @@ function DeliveriesByTypeTab({ type, title }: { type: string; title: string }) {
       );
       const pending = items.some((it) => {
         if (type === "smm_service") {
-          return it.smm_fulfillment?.status !== "completed" && it.smm_fulfillment?.status !== "cancelled";
+          const s = (it.smm_fulfillment as any)?.status;
+          return s !== "completed" && s !== "cancelled" && s !== "refunded";
         }
         return (it.fulfillment?.fulfillment_status ?? "pending") !== "delivered";
       });
