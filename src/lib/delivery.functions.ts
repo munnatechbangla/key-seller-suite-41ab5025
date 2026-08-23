@@ -212,11 +212,11 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
 
       custom_fields: fieldsByKey.get(`${it.order_id}::${it.product_id}`) ?? [],
       fulfillment,
-      smm_fulfillment: it.smm_fulfillment 
-        ? { 
-            ...it.smm_fulfillment, 
-            ordered_quantity: it.qty 
-          } 
+      smm_fulfillment: (it.smm_fulfillment || fulfillment?.smm_fulfillment)
+        ? {
+            ...(it.smm_fulfillment || fulfillment?.smm_fulfillment),
+            ordered_quantity: it.qty || fulfillment?.qty,
+          }
         : null,
     } as DeliveryItem;
   });
