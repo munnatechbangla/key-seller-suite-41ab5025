@@ -38,6 +38,8 @@ export type Product = {
   hasAttributes?: boolean;
   priceFrom?: number | null;
   oldPriceFrom?: number | null;
+  product_type?: string | null;
+  smm_config?: any | null;
 };
 
 
@@ -96,6 +98,8 @@ type ProductRow = {
   faq_schema_enabled?: boolean | null;
   breadcrumb_schema_enabled?: boolean | null;
   product_schema_enabled?: boolean | null;
+  product_type: string | null;
+  smm_config: any | null;
 };
 
 const SELECT_PRODUCT = `
@@ -105,6 +109,7 @@ const SELECT_PRODUCT = `
   meta_title, meta_description, focus_keyword, secondary_keywords, canonical_url, robots,
   og_title, og_description, og_image, twitter_title, twitter_description, twitter_image,
   schema_enabled, faq_schema_enabled, breadcrumb_schema_enabled, product_schema_enabled,
+  product_type, smm_config,
   product_categories ( slug, name )
 ` as const;
 
@@ -157,6 +162,8 @@ export function mapProduct(row: ProductRow): Product {
       breadcrumb_schema_enabled: row.breadcrumb_schema_enabled ?? true,
       product_schema_enabled: row.product_schema_enabled ?? true,
     },
+    product_type: row.product_type,
+    smm_config: row.smm_config,
   };
 }
 
@@ -335,6 +342,45 @@ async function searchProducts(q: string): Promise<Product[]> {
   await augmentWithVariantPricing(items);
   return items;
 
+}
+
+// ---------------- Helpers ----------------
+export function validateSMMQuantity(qty: number, config: any): { valid: boolean; error?: string } {
+  if (!config) return { valid: false, error: "Missing configuration" };
+  const min = Number(config.min_quantity || 1);
+  const max = Number(config.max_quantity || 999999);
+  const step = Number(config.quantity_step || 1);
+
+  if (qty < min) return { valid: false, error: `Minimum quantity is ${min}` };
+  if (qty > max) return { valid: false, error: `Maximum quantity is ${max}` };
+  if ((qty - min) % step !== 0) return { valid: false, error: `Quantity must be in steps of ${step}` };
+
+  return { valid: true };
+}
+
+export function calculateSMMPrice(qty: number, config: any): number {
+  if (!config) return 0;
+  const mode = config.pricing_mode || "per_1000";
+  const basePrice = Number(config.price || 0);
+
+  switch (mode) {
+    case "per_unit":
+      return qty * basePrice;
+    case "per_1000":
+      return (qty / 1000) * basePrice;
+    case "quantity_tier": {
+      const tiers = Array.isArray(config.tiers) ? config.tiers : [];
+      const applicableTier = [...tiers]
+        .sort((a, b) => b.min - a.min)
+        .find((t) => qty >= t.min);
+      const tierPrice = applicableTier ? Number(applicableTier.price) : basePrice;
+      // Assume tiers are per unit unless specified, but standard SMM usually does per 1000 even in tiers.
+      // We'll follow the per_1000 logic for tiers as it's the industry standard.
+      return (qty / 1000) * tierPrice;
+    }
+    default:
+      return (qty / 1000) * basePrice;
+  }
 }
 
 // ---------------- Query options ----------------

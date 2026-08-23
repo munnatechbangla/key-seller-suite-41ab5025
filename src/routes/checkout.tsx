@@ -5,6 +5,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { PageHero } from "@/components/site/PageHero";
 import { useCart, useAuth } from "@/lib/stores";
+import { calculateSMMPrice } from "@/lib/catalog";
 import { useState, useEffect } from "react";
 import { Lock, Tag, Wallet } from "lucide-react";
 import { toast } from "sonner";
@@ -113,6 +114,12 @@ function CheckoutPage() {
           qty: i.qty,
           variant_id: i.variant?.variant_id ?? null,
           selected_attributes: i.variant?.selected_attributes ?? undefined,
+          product_slug: i.productSlug ?? i.slug,
+          smm_config_snapshot: i.smm_config_snapshot ?? null,
+          smm_quantity: i.smm_quantity ?? null,
+          price: i.product.product_type === 'smm_service' && i.smm_config_snapshot && i.smm_quantity
+            ? calculateSMMPrice(i.smm_quantity, i.smm_config_snapshot)
+            : undefined
         })),
         customer,
         paymentMethod: gateway,
@@ -256,7 +263,11 @@ function CheckoutPage() {
                     <div className="text-xs text-muted-foreground">Qty {it.qty}</div>
                   </div>
                   <span className="font-semibold">
-                    {formatPrice((it.variant ? (it.variant.sale_price != null && it.variant.sale_price > 0 ? it.variant.sale_price : it.variant.price) : it.product.price) * it.qty)}
+                    {formatPrice(
+                      (it.product.product_type === 'smm_service' && it.smm_config_snapshot && it.smm_quantity
+                        ? calculateSMMPrice(it.smm_quantity, it.smm_config_snapshot)
+                        : (it.variant ? (it.variant.sale_price != null && it.variant.sale_price > 0 ? it.variant.sale_price : it.variant.price) : it.product.price) * it.qty)
+                    )}
                   </span>
                 </div>
                 );

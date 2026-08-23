@@ -20,6 +20,7 @@ import { StickyBuyBar } from "@/components/site/StickyBuyBar";
 import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelated, useProductsBySlugs } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useMemo, useRef } from "react";
+import { validateSMMQuantity, calculateSMMPrice } from "@/lib/catalog";
 import { 
   Star, ShoppingCart, Zap, ShieldCheck, Heart, Share2, 
   ChevronRight, ChevronLeft, Minus, Plus, Info, Check, 
@@ -191,6 +192,20 @@ function LegacyProductPage() {
   const formatPrice = usePriceFormatter();
   const related = useRelated(slug, 4);
   const [qty, setQty] = useState(1);
+  const [smmQty, setSmmQty] = useState<number>(0);
+
+  useEffect(() => {
+    if (product?.product_type === "smm_service" && product.smm_config) {
+      setSmmQty(Number(product.smm_config.min_quantity || 1));
+    }
+  }, [product]);
+
+  const smmPrice = useMemo(() => {
+    if (product?.product_type === "smm_service" && product.smm_config) {
+      return calculateSMMPrice(smmQty, product.smm_config);
+    }
+    return 0;
+  }, [product, smmQty]);
   const [tab, setTab] = useState<"desc" | "specs" | "reviews" | "faq">("desc");
   const [activeVariant, setActiveVariant] = useState<ProductVariant | null>(null);
   const fetchAttrs = useServerFn(listProductAttributesFn);
@@ -225,9 +240,63 @@ function LegacyProductPage() {
     if (!validateCustomFields()) { toast.error("Please complete the product details"); return false; }
     return true;
   };
-  const addToCart = () => { if (!guardCustomFields()) return; cart.add(product, qty); toast.success(`${product.name} added to cart`); };
+  const addToCart = () => {
+    if (!guardCustomFields()) return;
+    
+    if (product.product_type === "smm_service") {
+      const validation = validateSMMQuantity(smmQty, product.smm_config);
+      if (!validation.valid) {
+        toast.error(validation.error);
+        return;
+      }
+      cart.add(product, 1, undefined, product.smm_config, smmQty);
+      toast.success("Added SMM service to cart");
+      return;
+    }
+    
+    cart.add(product, qty, activeVariant ? {
+      variant_id: activeVariant.id,
+      variant_name: activeVariant.name,
+      price: Number(activeVariant.price),
+      sale_price: activeVariant.sale_price ? Number(activeVariant.sale_price) : null,
+      sku: activeVariant.sku || null,
+      thumbnail_url: activeVariant.thumbnail_url || null,
+      license_pool_id: activeVariant.license_pool_id || null,
+      delivery_type: activeVariant.delivery_type || null,
+      inventory_pool_id: activeVariant.inventory_pool_id || null,
+      subscription_pool_id: activeVariant.subscription_pool_id || null,
+      selected_attributes: activeVariant.attributes || {}
+    } : undefined);
+    toast.success("Added to cart");
+  };
   const navigate = useNavigate();
-  const buyNow = () => { if (!guardCustomFields()) return; cart.add(product, qty); navigate({ to: "/checkout" }); };
+  const buyNow = () => {
+    if (!guardCustomFields()) return;
+    
+    if (product.product_type === "smm_service") {
+      const validation = validateSMMQuantity(smmQty, product.smm_config);
+      if (!validation.valid) {
+        toast.error(validation.error);
+        return;
+      }
+      cart.add(product, 1, undefined, product.smm_config, smmQty);
+    } else {
+      cart.add(product, qty, activeVariant ? {
+        variant_id: activeVariant.id,
+        variant_name: activeVariant.name,
+        price: Number(activeVariant.price),
+        sale_price: activeVariant.sale_price ? Number(activeVariant.sale_price) : null,
+        sku: activeVariant.sku || null,
+        thumbnail_url: activeVariant.thumbnail_url || null,
+        license_pool_id: activeVariant.license_pool_id || null,
+        delivery_type: activeVariant.delivery_type || null,
+        inventory_pool_id: activeVariant.inventory_pool_id || null,
+        subscription_pool_id: activeVariant.subscription_pool_id || null,
+        selected_attributes: activeVariant.attributes || {}
+      } : undefined);
+    }
+    navigate({ to: "/checkout" });
+  };
 
   // Gallery images (public read on product_images)
   const galleryQuery = useQuery({
@@ -339,7 +408,6 @@ function LegacyProductPage() {
             <LiveVisitorsCounter surface="product" seed={product.slug} />
           </div>
 
-          <p className="text-muted-foreground leading-relaxed">{product.short}</p>
 
           {hasAttrs ? (
             <VariantSelector
@@ -348,6 +416,63 @@ function LegacyProductPage() {
               beforeAdd={validateCustomFields}
               beforeButtons={<ProductCustomFields ref={customFieldsRef} productSlug={product.slug} />}
             />
+          ) : product.product_type === "smm_service" ? (
+            <>
+              <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 p-5 space-y-4">
+                <div className="flex items-end justify-between gap-4 flex-wrap">
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground mb-1">Total Price</div>
+                    <div className="text-4xl font-bold text-primary">{formatPrice(smmPrice)}</div>
+                    {product.smm_config?.pricing_mode === 'per_1000' && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Rate: {formatPrice(Number(product.smm_config.price || 0))} per 1,000
+                      </div>
+                    )}
+                  </div>
+                  <div className="inline-flex items-center gap-2 text-sm font-semibold text-accent">
+                    <Zap className="h-4 w-4" /> {product.delivery} delivery
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-primary/10">
+                  <label className="block text-sm font-bold text-foreground mb-2">
+                    Enter Quantity ({product.smm_config?.min_quantity || 1} - {product.smm_config?.max_quantity || 'Max'})
+                  </label>
+                  <div className="flex gap-3">
+                    <div className="relative flex-1">
+                      <input
+                        type="number"
+                        value={smmQty}
+                        onChange={(e) => setSmmQty(Number(e.target.value))}
+                        min={product.smm_config?.min_quantity || 1}
+                        max={product.smm_config?.max_quantity}
+                        step={product.smm_config?.quantity_step || 1}
+                        className="w-full h-11 px-4 rounded-xl border border-border bg-card focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-semibold"
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground pointer-events-none">
+                        UNITS
+                      </div>
+                    </div>
+                  </div>
+                  {product.smm_config?.quantity_step > 1 && (
+                    <p className="text-[10px] text-muted-foreground mt-1.5 uppercase tracking-wider font-bold">
+                      Step: {product.smm_config.quantity_step} units
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <ProductCustomFields ref={customFieldsRef} productSlug={product.slug} />
+
+              <div className="flex gap-3 flex-wrap items-center">
+                <button onClick={addToCart} className="min-w-0 flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-card border border-primary text-primary font-semibold hover:bg-primary/5 transition-smooth">
+                  <ShoppingCart className="h-4 w-4" /> Add to Cart
+                </button>
+                <button onClick={buyNow} className="min-w-0 flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:opacity-95 transition-smooth">
+                  <Zap className="h-4 w-4" /> Buy Now
+                </button>
+              </div>
+            </>
           ) : (
             <>
               <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 p-5 flex items-end gap-4 flex-wrap">
