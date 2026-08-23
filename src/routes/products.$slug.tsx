@@ -148,20 +148,6 @@ export const Route = createFileRoute("/products/$slug")({
   errorComponent: () => <div className="p-8">Something went wrong.</div>,
 });
 
-function formatDescription(text: string) {
-  if (!text) return "";
-  // If it already looks like HTML (has paragraphs or lists), return as is
-  if (/<(p|ul|ol|li|h[1-6]|div|br|span|b|i|strong|em)[\s\S]*>/i.test(text)) {
-    return text;
-  }
-  // Otherwise, split by newlines and wrap in paragraphs
-  return text
-    .split("\n")
-    .filter((line) => line.trim() !== "")
-    .map((line) => `<p>${line}</p>`)
-    .join("");
-}
-
 function ProductPage() {
   const { slug } = Route.useParams();
   const product = useProduct(slug)!;
