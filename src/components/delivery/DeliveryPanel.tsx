@@ -222,7 +222,7 @@ function SmmDelivery({ item }: { item: DeliveryItem }) {
             <MessageSquare className="h-3.5 w-3.5" />
             Merchant Message
           </div>
-          {f.admin_notes}
+          {(f as any).admin_notes}
         </div>
       )}
 
