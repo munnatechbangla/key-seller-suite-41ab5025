@@ -216,7 +216,7 @@ function PayPage() {
   const deliveryItems = deliveryQ.data ?? [];
   const isSmmOrder = deliveryItems.some((it: any) => it.product?.product_type === 'smm_service' || it.product_type === 'smm_service');
   const smmFulfillment = deliveryItems.find((it: any) => it.product?.product_type === 'smm_service' || it.product_type === 'smm_service')?.smm_fulfillment;
-  const smmDelivered = smmFulfillment?.status === 'completed' || smmFulfillment?.status === 'partial';
+  const smmDelivered = (smmFulfillment as any)?.status === 'completed' || (smmFulfillment as any)?.status === 'partial';
 
   const timeline = buildTimeline({
     submitted,
