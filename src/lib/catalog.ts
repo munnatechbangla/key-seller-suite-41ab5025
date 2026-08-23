@@ -98,8 +98,8 @@ type ProductRow = {
   faq_schema_enabled?: boolean | null;
   breadcrumb_schema_enabled?: boolean | null;
   product_schema_enabled?: boolean | null;
-  product_type: string | null;
-  smm_config: any | null;
+  product_type?: string | null;
+  smm_config?: any | null;
 };
 
 const SELECT_PRODUCT = `
@@ -109,7 +109,6 @@ const SELECT_PRODUCT = `
   meta_title, meta_description, focus_keyword, secondary_keywords, canonical_url, robots,
   og_title, og_description, og_image, twitter_title, twitter_description, twitter_image,
   schema_enabled, faq_schema_enabled, breadcrumb_schema_enabled, product_schema_enabled,
-  product_type, smm_config,
   product_categories ( slug, name )
 ` as const;
 
@@ -162,8 +161,8 @@ export function mapProduct(row: ProductRow): Product {
       breadcrumb_schema_enabled: row.breadcrumb_schema_enabled ?? true,
       product_schema_enabled: row.product_schema_enabled ?? true,
     },
-    product_type: row.product_type,
-    smm_config: row.smm_config,
+    product_type: (row as any).product_type ?? null,
+    smm_config: (row as any).smm_config ?? null,
   };
 }
 
@@ -198,29 +197,40 @@ export type ProductSort = "popular" | "newest" | "oldest" | "price-asc" | "price
 export type ProductsFilter = { categorySlug?: string | null; sort?: ProductSort; limit?: number };
 
 async function fetchProducts(filter: ProductsFilter = {}): Promise<Product[]> {
-  let q = supabase
-    .from("products")
-    .select(SELECT_PRODUCT)
-    .eq("status", "published");
-  if (filter.categorySlug) {
-    const { data: cat } = await supabase
-      .from("product_categories")
-      .select("id")
-      .eq("slug", filter.categorySlug)
-      .maybeSingle();
-    if (cat) q = q.eq("category_id", cat.id);
+  const query = (select: string) => {
+    let q = supabase
+      .from("products")
+      .select(select)
+      .eq("status", "published");
+    if (filter.categorySlug) {
+      // Note: category filtering relies on category_id which should exist.
+      // If it doesn't, this will also fail, but it's an existing column.
+      q = q.filter("product_categories.slug", "eq", filter.categorySlug);
+    }
+    switch (filter.sort) {
+      case "newest": q = q.order("created_at", { ascending: false }); break;
+      case "oldest": q = q.order("created_at", { ascending: true }); break;
+      case "price-asc": q = q.order("sale_price", { ascending: true, nullsFirst: false }).order("regular_price", { ascending: true }); break;
+      case "price-desc": q = q.order("sale_price", { ascending: false, nullsFirst: false }).order("regular_price", { ascending: false }); break;
+      case "rating": q = q.order("rating", { ascending: false }); break;
+      case "best-selling": q = q.order("sales_count", { ascending: false }); break;
+      default: q = q.order("reviews_count", { ascending: false });
+    }
+    if (filter.limit) q = q.limit(filter.limit);
+    return q;
+  };
+
+  // Try with SMM columns first
+  let { data, error } = await query(`${SELECT_PRODUCT}, product_type, smm_config`);
+  
+  // Fallback if columns are missing (42703 is Undefined Column)
+  if (error && (error.code === "42703" || error.message.includes("smm_config") || error.message.includes("product_type"))) {
+    console.warn("Retrying products fetch without SMM columns due to missing schema.");
+    const retry = await query(SELECT_PRODUCT);
+    data = retry.data;
+    error = retry.error;
   }
-  switch (filter.sort) {
-    case "newest": q = q.order("created_at", { ascending: false }); break;
-    case "oldest": q = q.order("created_at", { ascending: true }); break;
-    case "price-asc": q = q.order("sale_price", { ascending: true, nullsFirst: false }).order("regular_price", { ascending: true }); break;
-    case "price-desc": q = q.order("sale_price", { ascending: false, nullsFirst: false }).order("regular_price", { ascending: false }); break;
-    case "rating": q = q.order("rating", { ascending: false }); break;
-    case "best-selling": q = q.order("sales_count", { ascending: false }); break;
-    default: q = q.order("reviews_count", { ascending: false });
-  }
-  if (filter.limit) q = q.limit(filter.limit);
-  const { data, error } = await q;
+
   if (error) throw error;
   const mapped = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
   await augmentWithVariantPricing(mapped);
@@ -271,12 +281,21 @@ async function augmentWithVariantPricing(products: Product[]): Promise<void> {
 
 
 async function fetchProductBySlug(slug: string): Promise<Product | null> {
-  const { data, error } = await supabase
+  const query = (select: string) => supabase
     .from("products")
-    .select(SELECT_PRODUCT)
+    .select(select)
     .eq("slug", slug)
     .eq("status", "published")
     .maybeSingle();
+
+  let { data, error } = await query(`${SELECT_PRODUCT}, product_type, smm_config`);
+  
+  if (error && (error.code === "42703" || error.message.includes("smm_config") || error.message.includes("product_type"))) {
+    const retry = await query(SELECT_PRODUCT);
+    data = retry.data;
+    error = retry.error;
+  }
+
   if (error) throw error;
   if (!data) return null;
   const product = mapProduct(data as unknown as ProductRow);
@@ -292,11 +311,21 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
 
 async function fetchProductsBySlugs(slugs: string[]): Promise<Product[]> {
   if (slugs.length === 0) return [];
-  const { data, error } = await supabase
+  
+  const query = (select: string) => supabase
     .from("products")
-    .select(SELECT_PRODUCT)
+    .select(select)
     .in("slug", slugs)
     .eq("status", "published");
+
+  let { data, error } = await query(`${SELECT_PRODUCT}, product_type, smm_config`);
+
+  if (error && (error.code === "42703" || error.message.includes("smm_config") || error.message.includes("product_type"))) {
+    const retry = await query(SELECT_PRODUCT);
+    data = retry.data;
+    error = retry.error;
+  }
+
   if (error) throw error;
   const items = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
   await augmentWithVariantPricing(items);
@@ -305,10 +334,19 @@ async function fetchProductsBySlugs(slugs: string[]): Promise<Product[]> {
 }
 
 async function fetchCurated(table: "featured_products" | "trending_products" | "best_sellers"): Promise<Product[]> {
-  const { data, error } = await supabase
+  const query = (select: string) => supabase
     .from(table)
-    .select(`sort_order, products!inner ( ${SELECT_PRODUCT} )`)
+    .select(`sort_order, products!inner ( ${select} )`)
     .order("sort_order", { ascending: true });
+
+  let { data, error } = await query(`${SELECT_PRODUCT}, product_type, smm_config`);
+
+  if (error && (error.code === "42703" || error.message.includes("smm_config") || error.message.includes("product_type"))) {
+    const retry = await query(SELECT_PRODUCT);
+    data = retry.data;
+    error = retry.error;
+  }
+
   if (error) throw error;
   const items = ((data ?? []) as unknown as { products: ProductRow }[])
     .map((r) => mapProduct(r.products))
@@ -331,12 +369,22 @@ async function fetchRelated(slug: string, n = 4): Promise<Product[]> {
 async function searchProducts(q: string): Promise<Product[]> {
   if (!q.trim()) return [];
   const term = `%${q.trim()}%`;
-  const { data, error } = await supabase
+  
+  const query = (select: string) => supabase
     .from("products")
-    .select(SELECT_PRODUCT)
+    .select(select)
     .eq("status", "published")
     .or(`title.ilike.${term},short_description.ilike.${term},description.ilike.${term}`)
     .limit(40);
+
+  let { data, error } = await query(`${SELECT_PRODUCT}, product_type, smm_config`);
+
+  if (error && (error.code === "42703" || error.message.includes("smm_config") || error.message.includes("product_type"))) {
+    const retry = await query(SELECT_PRODUCT);
+    data = retry.data;
+    error = retry.error;
+  }
+
   if (error) throw error;
   const items = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
   await augmentWithVariantPricing(items);
@@ -410,11 +458,20 @@ export const bestSellersQuery = () =>
   queryOptions({ queryKey: ["catalog", "best-sellers"], queryFn: () => fetchCurated("best_sellers") });
 
 async function fetchHeroFeatured(limit = 12): Promise<Product[]> {
-  const { data, error } = await supabase
+  const query = (select: string) => supabase
     .from("featured_products")
-    .select(`created_at, products!inner ( ${SELECT_PRODUCT} )`)
+    .select(`created_at, products!inner ( ${select} )`)
     .order("created_at", { ascending: false })
     .limit(limit);
+
+  let { data, error } = await query(`${SELECT_PRODUCT}, product_type, smm_config`);
+
+  if (error && (error.code === "42703" || error.message.includes("smm_config") || error.message.includes("product_type"))) {
+    const retry = await query(SELECT_PRODUCT);
+    data = retry.data;
+    error = retry.error;
+  }
+
   if (error) throw error;
   const items = ((data ?? []) as unknown as { products: ProductRow }[])
     .map((r) => mapProduct(r.products))
@@ -424,12 +481,21 @@ async function fetchHeroFeatured(limit = 12): Promise<Product[]> {
 }
 
 async function fetchHeroLatest(limit = 12): Promise<Product[]> {
-  const { data, error } = await supabase
+  const query = (select: string) => supabase
     .from("products")
-    .select(SELECT_PRODUCT)
+    .select(select)
     .eq("status", "published")
     .order("created_at", { ascending: false })
     .limit(limit);
+
+  let { data, error } = await query(`${SELECT_PRODUCT}, product_type, smm_config`);
+
+  if (error && (error.code === "42703" || error.message.includes("smm_config") || error.message.includes("product_type"))) {
+    const retry = await query(SELECT_PRODUCT);
+    data = retry.data;
+    error = retry.error;
+  }
+
   if (error) throw error;
   const items = ((data ?? []) as unknown as ProductRow[]).map(mapProduct);
   await augmentWithVariantPricing(items);
