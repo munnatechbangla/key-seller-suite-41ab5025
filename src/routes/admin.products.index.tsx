@@ -30,6 +30,7 @@ type Row = {
   regular_price: number | string; sale_price: number | string | null;
   status: string; stock_status: string; is_featured: boolean; sales_count: number;
   thumbnail_url: string | null;
+  smm_config: any | null;
 };
 
 function AdminProducts() {
@@ -68,7 +69,7 @@ function AdminProducts() {
   });
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const rows = (data ?? []) as Row[];
+  const rows = (data ?? []) as unknown as Row[];
   const allSelected = useMemo(
     () => rows.length > 0 && rows.every((r) => selected.has(r.id)),
     [rows, selected],

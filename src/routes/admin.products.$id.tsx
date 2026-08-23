@@ -168,6 +168,7 @@ function ManageProduct() {
       delivery_type: p.delivery_type ?? null,
       visibility: p.visibility ?? null,
       external_url: p.external_url ?? null,
+      smm_config: p.smm_config ?? null,
       ...patch,
     };
   };
@@ -765,6 +766,7 @@ function BasicInfoTab({
     product_type: "",
     delivery_type: "",
     category_id: "",
+    smm_config: null,
   }));
   const loadedFor = useRef<string | null>(null);
   useEffect(() => {
@@ -784,6 +786,7 @@ function BasicInfoTab({
       product_type: product.product_type ?? "",
       delivery_type: product.delivery_type ?? "",
       category_id: product.category_id ?? "",
+      smm_config: product.smm_config ?? null,
     });
   }, [product]);
 
@@ -811,6 +814,7 @@ function BasicInfoTab({
         product_type: form.product_type || null,
         delivery_type: form.delivery_type || null,
         category_id: form.category_id ? form.category_id : null,
+        smm_config: form.smm_config ?? null,
       };
       return upsert({ data: payload });
     },
@@ -896,6 +900,7 @@ function BasicInfoTab({
             <option value="account">account</option>
             <option value="external">external</option>
             <option value="manual">manual</option>
+            <option value="smm_service">smm_service</option>
           </select>
         </div>
         <div>
@@ -914,6 +919,128 @@ function BasicInfoTab({
           </select>
         </div>
       </div>
+      
+      {form.product_type === "smm_service" && (
+        <div className="space-y-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="font-semibold text-lg">SMM Service Configuration</h3>
+            <Badge variant="outline">Phase 1</Badge>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="smm-platform">Platform</Label>
+              <Input 
+                id="smm-platform"
+                placeholder="e.g. Facebook, Instagram"
+                value={form.smm_config?.platform ?? ""}
+                onChange={(e) => {
+                  const cfg = form.smm_config || {};
+                  set({ smm_config: { ...cfg, platform: e.target.value } });
+                }}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="smm-type">Service Type</Label>
+              <Input 
+                id="smm-type"
+                placeholder="e.g. Followers, Likes"
+                value={form.smm_config?.service_type ?? ""}
+                onChange={(e) => {
+                  const cfg = form.smm_config || {};
+                  set({ smm_config: { ...cfg, service_type: e.target.value } });
+                }}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="smm-min">Minimum Quantity</Label>
+              <Input 
+                id="smm-min"
+                type="number"
+                min="1"
+                value={form.smm_config?.min_quantity ?? 1}
+                onChange={(e) => {
+                  const cfg = form.smm_config || {};
+                  set({ smm_config: { ...cfg, min_quantity: parseInt(e.target.value) || 1 } });
+                }}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="smm-max">Maximum Quantity</Label>
+              <Input 
+                id="smm-max"
+                type="number"
+                min="1"
+                value={form.smm_config?.max_quantity ?? 1}
+                onChange={(e) => {
+                  const cfg = form.smm_config || {};
+                  set({ smm_config: { ...cfg, max_quantity: parseInt(e.target.value) || 1 } });
+                }}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="smm-step">Quantity Step</Label>
+              <Input 
+                id="smm-step"
+                type="number"
+                min="1"
+                value={form.smm_config?.quantity_step ?? 1}
+                onChange={(e) => {
+                  const cfg = form.smm_config || {};
+                  set({ smm_config: { ...cfg, quantity_step: parseInt(e.target.value) || 1 } });
+                }}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="smm-mode">Pricing Mode</Label>
+              <select 
+                id="smm-mode"
+                className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+                value={form.smm_config?.pricing_mode ?? "per_1000"}
+                onChange={(e) => {
+                  const cfg = form.smm_config || {};
+                  set({ smm_config: { ...cfg, pricing_mode: e.target.value } });
+                }}
+              >
+                <option value="per_unit">Per Unit</option>
+                <option value="per_1000">Per 1,000</option>
+                <option value="quantity_tier">Quantity Tier</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="smm-price">Base Price</Label>
+              <div className="relative">
+                <Input 
+                  id="smm-price"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className="pl-8"
+                  value={form.smm_config?.price ?? 0}
+                  onChange={(e) => {
+                    const cfg = form.smm_config || {};
+                    set({ smm_config: { ...cfg, price: parseFloat(e.target.value) || 0 } });
+                  }}
+                />
+                <span className="absolute left-3 top-2.5 text-muted-foreground">৳</span>
+              </div>
+            </div>
+          </div>
+          
+          {form.smm_config?.max_quantity < form.smm_config?.min_quantity && (
+            <div className="text-xs text-destructive flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              Max quantity must be greater than or equal to min quantity
+            </div>
+          )}
+        </div>
+      )}
 
       {productMode === "simple" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

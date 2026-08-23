@@ -3465,6 +3465,7 @@ export type Database = {
           twitter_title: string | null
           updated_at: string
           views_count: number
+          smm_config: Json | null
           visibility: Database["public"]["Enums"]["product_visibility"]
         }
         Insert: {
@@ -3525,6 +3526,7 @@ export type Database = {
           twitter_title?: string | null
           updated_at?: string
           views_count?: number
+          smm_config?: Json | null
           visibility?: Database["public"]["Enums"]["product_visibility"]
         }
         Update: {
@@ -3585,6 +3587,7 @@ export type Database = {
           twitter_title?: string | null
           updated_at?: string
           views_count?: number
+          smm_config?: Json | null
           visibility?: Database["public"]["Enums"]["product_visibility"]
         }
         Relationships: [
