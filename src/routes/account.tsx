@@ -231,15 +231,42 @@ function OrdersTab() {
 
 function DeliveriesByTypeTab({ type, title }: { type: string; title: string }) {
   const fn = useServerFn(getMyDeliveriesFn);
-  const q = useQuery({ queryKey: ["my-deliveries", type], queryFn: () => fn({}) });
+  const q = useQuery({
+    queryKey: ["my-deliveries", type],
+    queryFn: () => fn({}),
+    refetchInterval: (query) => {
+      if (type !== "subscription" && type !== "smm_service") return false;
+      const data = (query.state.data as any[]) ?? [];
+      const items = data.filter(
+        (it) =>
+          it.product?.product_type === type ||
+          it.product?.delivery_type === type ||
+          (it as any).fulfillment?.delivery_type === type,
+      );
+      const pending = items.some((it) => {
+        if (type === "smm_service") {
+          return it.smm_fulfillment?.status !== "completed" && it.smm_fulfillment?.status !== "cancelled";
+        }
+        return (it.fulfillment?.fulfillment_status ?? "pending") !== "delivered";
+      });
+      return pending ? 8000 : false;
+    },
+  });
   const allItems = q.data ?? [];
-  const items = allItems.filter(it => it.product?.product_type === type || it.product?.delivery_type === type);
-  
+  const items = allItems.filter(
+    (it) =>
+      it.product?.product_type === type ||
+      it.product?.delivery_type === type ||
+      (it as any).fulfillment?.delivery_type === type,
+  );
+
   return (
     <Card>
       <h3 className="font-bold mb-1">{title}</h3>
       <p className="text-xs text-muted-foreground mb-4">Your delivered {title.toLowerCase()}.</p>
-      {q.isLoading ? <Loader /> : items.length === 0 ? (
+      {q.isLoading ? (
+        <Loader />
+      ) : items.length === 0 ? (
         <p className="text-sm text-muted-foreground">No {title.toLowerCase()} found yet.</p>
       ) : (
         <DeliveryPanel items={items} showHeader={false} />
@@ -247,6 +274,7 @@ function DeliveriesByTypeTab({ type, title }: { type: string; title: string }) {
     </Card>
   );
 }
+
 
 
 function LicensesTab() {
