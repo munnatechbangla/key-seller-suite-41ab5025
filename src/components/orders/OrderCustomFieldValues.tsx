@@ -38,22 +38,32 @@ export function OrderCustomFieldValues({
 
   return (
     <div className={className}>
-      {!compact && <h3 className="font-bold text-lg mb-3">Customer Provided Information</h3>}
+      {!compact && (
+        <div className="flex items-center gap-2 mb-4">
+          <div className="h-8 w-1 bg-primary rounded-full" />
+          <h3 className="font-bold text-lg">Customer Provided Information</h3>
+        </div>
+      )}
       {compact && <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Customer Provided Information</h4>}
       <div className="space-y-4">
         {Array.from(groups.entries()).map(([slug, rows]) => (
-          <div key={slug} className="rounded-xl border border-border bg-card p-4">
-            <div className="text-xs uppercase tracking-wide text-muted-foreground mb-2">{slug}</div>
-            <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-              {rows.map((r) => (
-                <div key={r.id} className="min-w-0">
-                  <dt className="text-muted-foreground text-xs">{r.field_label}</dt>
-                  <dd className="font-medium break-all">
-                    {r.field_type === "password" ? "••••••••" : (r.value || <span className="text-muted-foreground italic">not provided</span>)}
-                  </dd>
-                </div>
-              ))}
-            </dl>
+          <div key={slug} className="rounded-xl border border-border bg-card/50 overflow-hidden">
+            <div className="px-4 py-2 bg-muted/50 border-b border-border text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center justify-between">
+              <span>Product: {slug}</span>
+              <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full">{rows.length} fields</span>
+            </div>
+            <div className="p-4">
+              <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                {rows.map((r) => (
+                  <div key={r.id} className="min-w-0 space-y-1">
+                    <dt className="text-muted-foreground text-[11px] font-semibold uppercase tracking-tight">{r.field_label}</dt>
+                    <dd className="font-medium break-all text-foreground bg-muted/30 p-2 rounded-lg border border-border/50">
+                      {r.field_type === "password" ? "••••••••" : (r.value || <span className="text-muted-foreground italic">not provided</span>)}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           </div>
         ))}
       </div>

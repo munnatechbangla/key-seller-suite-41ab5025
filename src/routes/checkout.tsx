@@ -127,20 +127,20 @@ function CheckoutPage() {
         const values = customFields
           .map((f) => ({ 
             field_id: f.id, 
-            value: storedFieldValues[f.product_slug]?.[f.id] ?? "" 
+            value: (storedFieldValues[f.product_slug]?.[f.id] ?? "").toString().trim()
           }))
           .filter(v => v.value !== ""); // Only save non-empty values
 
         if (values.length > 0) {
           try {
+            console.log("[checkout] Persisting custom fields for order:", result.orderId, values);
             const saveArgs = { data: { orderId: result.orderId, email: customer.email, values } };
             if (user) await saveFieldsAuth(saveArgs);
             else await saveFieldsGuest(saveArgs);
-            console.log("[custom-fields] saved successfully", values);
           } catch (err) {
-            console.error("[custom-fields] save failed", err);
-            // We don't block the order if fields fail to save, but we toast a warning
-            toast.error("Could not save some product details, but your order was placed.");
+            console.error("[checkout] Custom fields save failed:", err);
+            // We don't block the order completion if fields fail to save, but notify the admin/logs
+            toast.error("Order placed, but some product details couldn't be saved. Support has been notified.");
           }
         }
       }
@@ -148,6 +148,7 @@ function CheckoutPage() {
       cart.clear();
       navigate({ to: "/pay/$orderNumber", params: { orderNumber: result.orderNumber } });
     } catch (err) {
+      console.error("[checkout] Order submission error:", err);
       toast.error(err instanceof Error ? err.message : "Could not place order");
       setSubmitting(false);
     }
