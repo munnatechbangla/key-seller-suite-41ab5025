@@ -37,6 +37,8 @@ export type FulfillmentRow = {
   product_type?: string | null;
   product_delivery_type?: string | null;
   is_license_key?: boolean | null;
+  qty?: number | null;
+  smm_fulfillment?: any | null;
 };
 
 export type FulfillmentLog = {

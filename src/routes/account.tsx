@@ -182,6 +182,16 @@ function OrdersList({ orders }: { orders: OrderRow[] }) {
         const date = new Date(o.created_at).toLocaleDateString();
         const payStatus = (o as { payments?: { status: string }[] }).payments?.[0]?.status ?? "pending";
         const deliveryItems = deliveriesByOrder.get(o.id) ?? [];
+        const isSmm = deliveryItems.some(it => it.product?.product_type === 'smm_service');
+        const smmStatus = deliveryItems.find(it => it.product?.product_type === 'smm_service')?.smm_fulfillment?.status;
+        const smmPalette: Record<string, string> = {
+          completed: "text-emerald-600 bg-emerald-500/10 border border-emerald-500/20",
+          partial: "text-blue-600 bg-blue-500/10 border border-blue-500/20",
+          processing: "text-amber-600 bg-amber-500/10 border border-amber-500/20",
+          cancelled: "text-rose-600 bg-rose-500/10 border border-rose-500/20",
+          refunded: "text-purple-600 bg-purple-500/10 border border-purple-500/20",
+          pending: "text-slate-600 bg-slate-500/10 border border-slate-500/20",
+        };
         return (
           <details key={o.id} className="rounded-xl border border-border hover:bg-muted/40 transition-smooth group">
             <summary className="flex items-center gap-3 p-3 cursor-pointer list-none">
@@ -195,6 +205,11 @@ function OrdersList({ orders }: { orders: OrderRow[] }) {
                 <div className="flex gap-1 justify-end">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[o.status] ?? palette.pending}`}>{o.status}</span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[payStatus] ?? palette.pending}`}>{payStatus}</span>
+                  {isSmm && smmStatus && (
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${smmPalette[smmStatus] ?? smmPalette.pending}`}>
+                      SMM: {smmStatus}
+                    </span>
+                  )}
                 </div>
               </div>
             </summary>

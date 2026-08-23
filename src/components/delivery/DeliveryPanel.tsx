@@ -1,9 +1,14 @@
 import { useMemo } from "react";
-import { Download, KeyRound, ExternalLink, Copy, User as UserIcon, Lock, Package, Receipt, MessageCircle } from "lucide-react";
+import { 
+  Download, KeyRound, ExternalLink, Copy, User as UserIcon, 
+  Lock, Package, Receipt, MessageCircle, Activity, BarChart3, 
+  MessageSquare, Clock, CheckCircle2, AlertCircle, RefreshCw
+} from "lucide-react";
 import { ProductThumb } from "@/components/site/ProductThumb";
 import { toast } from "sonner";
 import { useSettings } from "@/lib/cms/settings";
 import type { DeliveryItem } from "@/lib/delivery.functions";
+import { cn } from "@/lib/utils";
 
 function formatBytes(size: number | null): string | null {
   if (!size || size <= 0) return null;
@@ -68,6 +73,8 @@ function DeliveryCard({ item, showInvoice }: { item: DeliveryItem; showInvoice: 
   // Manual license delivery record wins over product-type heuristics.
   const type = item.manual_license
     ? "license_key"
+    : item.product.product_type === "smm_service"
+    ? "smm_service"
     : item.product.product_type === "subscription" || item.product.delivery_type === "subscription" || item.fulfillment?.delivery_type === "subscription"
     ? "subscription"
     : (item.product.delivery_type || item.product.product_type || "manual");
@@ -119,6 +126,8 @@ function DeliveryCard({ item, showInvoice }: { item: DeliveryItem; showInvoice: 
 
 function renderBody(item: DeliveryItem, type: string) {
   switch (type) {
+    case "smm_service":
+      return <SmmDelivery item={item} />;
     case "download":
     case "downloadable":
       return <DownloadBody item={item} />;
@@ -136,6 +145,101 @@ function renderBody(item: DeliveryItem, type: string) {
     default:
       return <ManualBody item={item} />;
   }
+}
+
+function SmmDelivery({ item }: { item: DeliveryItem }) {
+  const f = item.smm_fulfillment;
+  const delivered = f?.delivered_quantity || 0;
+  const ordered = f?.ordered_quantity || item.qty || 0;
+  const progress = ordered > 0 ? Math.min(100, (delivered / ordered) * 100) : 0;
+
+  const getStatusConfig = (s: string) => {
+    switch (s) {
+      case "completed": return { color: "text-green-500", bg: "bg-green-500/10", icon: CheckCircle2, label: "Order Completed" };
+      case "partial": return { color: "text-blue-500", bg: "bg-blue-500/10", icon: BarChart3, label: "Partially Delivered" };
+      case "processing": return { color: "text-amber-500", bg: "bg-amber-500/10", icon: RefreshCw, label: "Processing" };
+      case "cancelled": return { color: "text-red-500", bg: "bg-red-500/10", icon: AlertCircle, label: "Cancelled" };
+      case "refunded": return { color: "text-purple-500", bg: "bg-purple-500/10", icon: Receipt, label: "Refunded" };
+      default: return { color: "text-slate-500", bg: "bg-slate-500/10", icon: Clock, label: "Pending Start" };
+    }
+  };
+
+  const config = getStatusConfig(status);
+
+  return (
+    <div className="space-y-6">
+      <div className={cn("flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border border-border", config.bg)}>
+        <div className="flex items-center gap-3">
+          <div className={cn("p-2 rounded-lg bg-background shadow-sm", config.color)}>
+            <config.icon className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="text-sm font-bold uppercase tracking-wide">{config.label}</div>
+            <div className="text-xs text-muted-foreground">Order ID: #{item.order_number}</div>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <div className="text-right">
+            <div className="text-[10px] text-muted-foreground uppercase font-bold">Progress</div>
+            <div className="text-lg font-black font-mono">{Math.round(progress)}%</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="p-3 rounded-xl border border-border bg-card">
+          <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Total Quantity</div>
+          <div className="text-base font-bold">{ordered.toLocaleString()}</div>
+        </div>
+        <div className="p-3 rounded-xl border border-border bg-card">
+          <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Delivered</div>
+          <div className="text-base font-bold text-primary">{delivered.toLocaleString()}</div>
+        </div>
+        <div className="p-3 rounded-xl border border-border bg-card col-span-2 sm:col-span-1">
+          <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Remaining</div>
+          <div className="text-base font-bold">{Math.max(0, ordered - delivered).toLocaleString()}</div>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-xs font-bold uppercase text-muted-foreground px-1">
+          <span>Delivery Progress</span>
+          <span>{delivered.toLocaleString()} / {ordered.toLocaleString()}</span>
+        </div>
+        <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-primary transition-all duration-500 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      {f?.admin_notes && (
+        <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 text-xs text-amber-700 dark:text-amber-400">
+          <div className="flex items-center gap-1.5 font-bold uppercase text-[10px] mb-1">
+            <MessageSquare className="h-3.5 w-3.5" />
+            Merchant Message
+          </div>
+          {f.admin_notes}
+        </div>
+      )}
+
+      {item.custom_fields.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-[10px] font-bold uppercase text-muted-foreground px-1">Service Details</div>
+          <div className="grid gap-2">
+            {item.custom_fields.map((cf, idx) => (
+              <div key={idx} className="flex items-center justify-between p-3 rounded-lg border border-border bg-card text-xs">
+                <span className="text-muted-foreground">{cf.field_label}</span>
+                <span className="font-mono font-medium">{cf.value || 'N/A'}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function DownloadBody({ item }: { item: DeliveryItem }) {
