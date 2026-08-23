@@ -108,7 +108,7 @@ function OrderRow({ order: o, formatPrice, onStatusChange }: { order: any; forma
             <FulfillmentPanel orderId={o.id} authed isAdmin />
             <LicenseAssignmentPanel orderId={o.id} />
 
-            <OrderCustomFieldValues orderId={o.id} authed compact />
+            <OrderCustomFieldValues orderId={o.id} email={o.email} authed isAdmin />
 
           </TableCell>
         </TableRow>
