@@ -254,7 +254,16 @@ function LegacyProductPage() {
       return;
     }
     
-    cart.add(product, qty, activeVariant || undefined);
+    cart.add(product, qty, activeVariant ? {
+      variant_id: activeVariant.id,
+      variant_name: activeVariant.title,
+      price: Number(activeVariant.price),
+      sale_price: activeVariant.sale_price ? Number(activeVariant.sale_price) : undefined,
+      sku: activeVariant.sku || undefined,
+      thumbnail_url: activeVariant.thumbnail_url || undefined,
+      license_pool_id: activeVariant.license_pool_id || null,
+      selected_attributes: activeVariant.attributes || {}
+    } : undefined);
     toast.success("Added to cart");
   };
   const navigate = useNavigate();
@@ -269,7 +278,16 @@ function LegacyProductPage() {
       }
       cart.add(product, 1, undefined, product.smm_config, smmQty);
     } else {
-      cart.add(product, qty, activeVariant || undefined);
+      cart.add(product, qty, activeVariant ? {
+        variant_id: activeVariant.id,
+        variant_name: activeVariant.title,
+        price: Number(activeVariant.price),
+        sale_price: activeVariant.sale_price ? Number(activeVariant.sale_price) : undefined,
+        sku: activeVariant.sku || undefined,
+        thumbnail_url: activeVariant.thumbnail_url || undefined,
+        license_pool_id: activeVariant.license_pool_id || null,
+        selected_attributes: activeVariant.attributes || {}
+      } : undefined);
     }
     navigate({ to: "/checkout" });
   };
