@@ -54,7 +54,12 @@ export const adminListProductsFn = createServerFn({ method: "GET" })
         .from("products")
         .select(baseSelect)
         .order("created_at", { ascending: false });
-      data = retry.data;
+      
+      data = (retry.data ?? []).map(r => ({
+        ...r,
+        product_type: null,
+        smm_config: null
+      })) as any;
       error = retry.error;
     }
 
