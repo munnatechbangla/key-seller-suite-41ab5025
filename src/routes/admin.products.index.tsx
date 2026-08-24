@@ -470,10 +470,10 @@ function AdminProducts() {
                         <Input
                           type="number"
                           min="1"
-                          value={(editing as any).smm_config?.min_quantity ?? 1}
+                          value={(editing as any).smm_config?.min_quantity ?? ""}
                           onChange={(e) => {
                             const cfg = (editing as any).smm_config || {};
-                            setEditing({ ...editing, smm_config: { ...cfg, min_quantity: parseInt(e.target.value) || 1 } } as any);
+                            setEditing({ ...editing, smm_config: { ...cfg, min_quantity: parseInt(e.target.value) } } as any);
                           }}
                         />
                       </div>
@@ -483,10 +483,10 @@ function AdminProducts() {
                         <Input
                           type="number"
                           min="1"
-                          value={(editing as any).smm_config?.max_quantity ?? 1}
+                          value={(editing as any).smm_config?.max_quantity ?? ""}
                           onChange={(e) => {
                             const cfg = (editing as any).smm_config || {};
-                            setEditing({ ...editing, smm_config: { ...cfg, max_quantity: parseInt(e.target.value) || 1 } } as any);
+                            setEditing({ ...editing, smm_config: { ...cfg, max_quantity: parseInt(e.target.value) } } as any);
                           }}
                         />
                       </div>
@@ -496,10 +496,10 @@ function AdminProducts() {
                         <Input
                           type="number"
                           min="1"
-                          value={(editing as any).smm_config?.quantity_step ?? 1}
+                          value={(editing as any).smm_config?.quantity_step ?? ""}
                           onChange={(e) => {
                             const cfg = (editing as any).smm_config || {};
-                            setEditing({ ...editing, smm_config: { ...cfg, quantity_step: parseInt(e.target.value) || 1 } } as any);
+                            setEditing({ ...editing, smm_config: { ...cfg, quantity_step: parseInt(e.target.value) } } as any);
                           }}
                         />
                       </div>
@@ -526,10 +526,10 @@ function AdminProducts() {
                           type="number"
                           step="0.01"
                           min="0"
-                          value={(editing as any).smm_config?.price ?? 0}
+                          value={(editing as any).smm_config?.price ?? ""}
                           onChange={(e) => {
                             const cfg = (editing as any).smm_config || {};
-                            setEditing({ ...editing, smm_config: { ...cfg, price: parseFloat(e.target.value) || 0 } } as any);
+                            setEditing({ ...editing, smm_config: { ...cfg, price: parseFloat(e.target.value) } } as any);
                           }}
                         />
                       </div>
@@ -632,7 +632,13 @@ function AdminProducts() {
                   visibility: (editing as any).visibility ?? "public",
                   product_type: (editing as any).product_type || null,
                   delivery_type: (editing as any).delivery_type || null,
-                  smm_config: (editing as any).smm_config || null,
+                  smm_config: (editing as any).product_type === 'smm_service' && (editing as any).smm_config ? {
+                    ...(editing as any).smm_config,
+                    min_quantity: Number((editing as any).smm_config.min_quantity ?? 1),
+                    max_quantity: Number((editing as any).smm_config.max_quantity ?? 1),
+                    quantity_step: Number((editing as any).smm_config.quantity_step ?? 1),
+                    price: Number((editing as any).smm_config.price ?? 0),
+                  } : null,
 
                 });
               }}
