@@ -779,6 +779,73 @@ export type Database = {
           },
         ]
       }
+      manual_license_deliveries: {
+        Row: {
+          created_at: string | null
+          delivered_at: string | null
+          delivered_by: string | null
+          expiry_date: string | null
+          id: string
+          instructions: string | null
+          license_key: string
+          license_name: string
+          order_id: string | null
+          order_item_id: string | null
+          platform: string | null
+          product_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          delivered_at?: string | null
+          delivered_by?: string | null
+          expiry_date?: string | null
+          id?: string
+          instructions?: string | null
+          license_key: string
+          license_name: string
+          order_id?: string | null
+          order_item_id?: string | null
+          platform?: string | null
+          product_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          delivered_at?: string | null
+          delivered_by?: string | null
+          expiry_date?: string | null
+          id?: string
+          instructions?: string | null
+          license_key?: string
+          license_name?: string
+          order_id?: string | null
+          order_item_id?: string | null
+          platform?: string | null
+          product_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_license_deliveries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_license_deliveries_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_license_deliveries_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manual_payment_submissions: {
         Row: {
           id: string
@@ -977,45 +1044,98 @@ export type Database = {
       }
       payment_gateways: {
         Row: {
+          config: Json | null
           description: string | null
           id: string
           is_active: boolean | null
           is_enabled: boolean | null
           logo_url: string | null
           mode: string | null
+          name: string | null
           slug: string
+          sort_order: number | null
+          type: string | null
         }
         Insert: {
+          config?: Json | null
           description?: string | null
           id?: string
           is_active?: boolean | null
           is_enabled?: boolean | null
           logo_url?: string | null
           mode?: string | null
+          name?: string | null
           slug: string
+          sort_order?: number | null
+          type?: string | null
         }
         Update: {
+          config?: Json | null
           description?: string | null
           id?: string
           is_active?: boolean | null
           is_enabled?: boolean | null
           logo_url?: string | null
           mode?: string | null
+          name?: string | null
           slug?: string
+          sort_order?: number | null
+          type?: string | null
         }
         Relationships: []
       }
       payment_intents: {
         Row: {
+          amount: number | null
+          created_at: string | null
+          currency: string | null
+          gateway: string | null
+          gateway_session_id: string | null
           id: string
+          mode: string | null
+          order_id: string | null
+          order_number: string | null
+          redirect_url: string | null
+          response_payload: Json | null
+          status: string | null
         }
         Insert: {
+          amount?: number | null
+          created_at?: string | null
+          currency?: string | null
+          gateway?: string | null
+          gateway_session_id?: string | null
           id?: string
+          mode?: string | null
+          order_id?: string | null
+          order_number?: string | null
+          redirect_url?: string | null
+          response_payload?: Json | null
+          status?: string | null
         }
         Update: {
+          amount?: number | null
+          created_at?: string | null
+          currency?: string | null
+          gateway?: string | null
+          gateway_session_id?: string | null
           id?: string
+          mode?: string | null
+          order_id?: string | null
+          order_number?: string | null
+          redirect_url?: string | null
+          response_payload?: Json | null
+          status?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "payment_intents_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_logs: {
         Row: {
@@ -1271,6 +1391,7 @@ export type Database = {
           admin_reply: string | null
           body: string | null
           created_at: string
+          display_name: string | null
           id: string
           is_approved: boolean
           is_verified: boolean
@@ -1287,6 +1408,7 @@ export type Database = {
           admin_reply?: string | null
           body?: string | null
           created_at?: string
+          display_name?: string | null
           id?: string
           is_approved?: boolean
           is_verified?: boolean
@@ -1303,6 +1425,7 @@ export type Database = {
           admin_reply?: string | null
           body?: string | null
           created_at?: string
+          display_name?: string | null
           id?: string
           is_approved?: boolean
           is_verified?: boolean
@@ -1539,6 +1662,33 @@ export type Database = {
           id?: string
           phone?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      redirects: {
+        Row: {
+          created_at: string | null
+          destination: string
+          id: string
+          is_active: boolean | null
+          source: string
+          status_code: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          destination: string
+          id?: string
+          is_active?: boolean | null
+          source: string
+          status_code?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          destination?: string
+          id?: string
+          is_active?: boolean | null
+          source?: string
+          status_code?: number | null
         }
         Relationships: []
       }
