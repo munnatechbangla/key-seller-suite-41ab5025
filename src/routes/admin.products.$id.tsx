@@ -400,7 +400,83 @@ function ManageProduct() {
 
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild><Link to="/admin/products"><ArrowLeft className="h-4 w-4 mr-1" /> Products</Link></Button>
-        <h1 className="text-2xl font-bold flex-1">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            STOP making display-text changes.\n\nThe live website is still failing to load and shows the generic error boundary:\n\n\"This page didn't load\"\n\"Something went wrong on our end.\"\n\nThe previous Admin Products text changes are unrelated to this issue.\n\nFor this request, DO NOT modify any code yet.\n\nFirst perform a read-only diagnosis of the homepage loading failure.\n\nPlease inspect:\n\nThe root/homepage route loader.\n\nAll server functions called during the initial homepage request.\n\nSupabase/database queries executed during initial page load.\n\nBrowser console/runtime errors.\n\nServer-side errors and failed requests.\n\nRecent changes related to SMM fields, product_type, smm_config, smm_fulfillment, and catalog/product fetching.\n\nAny 400/42703/schema-cache errors or other database errors.\n\nFind the FIRST underlying error that causes the error boundary to appear.\n\nImportant:\n\nDo not search for the error-boundary display text as the cause.\n\nDo not change UI text.\n\nDo not modify the SMM workflow.\n\nDo not modify the database.\n\nDo not reset/recreate tables.\n\nDo not delete or migrate production data.\n\nDo not perform a broad refactor.\n\nReturn only a diagnosis containing:\n\nExact error message\n\nFailing file/function/query\n\nWhy it causes the homepage to crash\n\nMinimal recommended fix\n\nDo not implement the fix until the root cause is identified and reported.</h1>
+        <h1 className="text-2xl font-bold flex-1">Priority: Fix Production Website Loading Error Before Any SMM Work
+
+The production website is currently not loading and shows:
+
+"This page didn't load — Something went wrong on our end."
+
+Production URL: https://digital.topuphut.com/
+
+Do NOT start Phase 4 or make any new SMM workflow changes yet.
+
+Goal
+
+First diagnose and fix the current production runtime failure so the homepage and existing customer/admin pages load normally again.
+
+Important Instructions
+
+Identify the actual root cause from the current production/runtime error, server logs, Supabase errors, build errors, and recent code/database changes.
+
+Pay special attention to recent SMM-related changes and database schema changes, including:
+
+smm_config
+
+product_type
+
+delivery_type
+
+smm_fulfillment
+
+recent migrations/RPC changes
+
+Check whether production database schema and application queries are synchronized.
+
+If a recently added column/table/function is missing in production, fix the migration/schema properly instead of repeatedly adding frontend workarounds.
+
+If a query requests optional/new columns, make the relevant data-loading code safely handle missing data without crashing the entire application.
+
+Check the homepage loader first because the entire site currently fails before the customer can navigate anywhere.
+
+Also verify product listing/product detail and Admin Products pages after fixing the root cause.
+
+Do not remove or disable existing features just to make the homepage load.
+
+Do not change existing License, Subscription, Downloadable, Variable, Payment, Order, or Customer Product Field workflows.
+
+Do not redesign the UI.
+
+Do not make unrelated changes.
+
+Do not create duplicate migrations or duplicate database columns/functions. Inspect the existing schema/migrations first.
+
+Keep all existing SMM code intact unless a specific SMM change is proven to be the cause of the crash.
+
+Verification
+
+After the fix:
+
+Homepage loads successfully.
+
+Product listing loads.
+
+Product detail loads.
+
+Admin Products loads.
+
+Existing product types still work.
+
+No 42703 Undefined Column errors.
+
+No PGRST schema-cache errors.
+
+No fatal runtime errors.
+
+Run the production/build checks available in the project.
+
+Most importantly, fix the ROOT CAUSE rather than only hiding the error with defensive code.
+
+Do not proceed to the next SMM phase until the production website is confirmed stable.</h1>
       </div>
 
       {/* Wizard steps */}
