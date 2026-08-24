@@ -71,8 +71,9 @@ const productTypeEnum = z.enum([
   "downloadable", "license_key", "subscription", "account", "external", "manual", "smm_service",
 ]);
 const deliveryTypeEnum = z.enum([
-  "download", "license_key", "account", "manual", "external_url",
+  "download", "license_key", "account", "manual", "external_url", "smm_fulfillment",
 ]);
+
 const productVisibilityEnum = z.enum(["public", "members_only", "hidden"]);
 const productStatusEnum = z.enum(["draft", "published", "private", "archived"]);
 
