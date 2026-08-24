@@ -14,6 +14,170 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string | null
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          action?: string | null
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          action?: string | null
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
+      blog_categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          kind: string | null
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          kind?: string | null
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          kind?: string | null
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      blog_comments: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          id: string
+          post_id: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      blog_posts: {
+        Row: {
+          author_id: string | null
+          category_id: string | null
+          content: string | null
+          created_at: string | null
+          excerpt: string | null
+          id: string
+          post_type: string | null
+          slug: string
+          status: string | null
+          tag_ids: string[] | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          author_id?: string | null
+          category_id?: string | null
+          content?: string | null
+          created_at?: string | null
+          excerpt?: string | null
+          id?: string
+          post_type?: string | null
+          slug: string
+          status?: string | null
+          tag_ids?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          author_id?: string | null
+          category_id?: string | null
+          content?: string | null
+          created_at?: string | null
+          excerpt?: string | null
+          id?: string
+          post_type?: string | null
+          slug?: string
+          status?: string | null
+          tag_ids?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      blog_tags: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
       coupon_usage: {
         Row: {
           id: string
@@ -282,29 +446,41 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          license_pool_id_snapshot: string | null
           order_id: string | null
           product_id: string | null
+          product_name: string | null
+          product_slug: string | null
           qty: number
           smm_fulfillment: Json | null
           unit_price: number
+          variation_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
+          license_pool_id_snapshot?: string | null
           order_id?: string | null
           product_id?: string | null
+          product_name?: string | null
+          product_slug?: string | null
           qty?: number
           smm_fulfillment?: Json | null
           unit_price?: number
+          variation_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
+          license_pool_id_snapshot?: string | null
           order_id?: string | null
           product_id?: string | null
+          product_name?: string | null
+          product_slug?: string | null
           qty?: number
           smm_fulfillment?: Json | null
           unit_price?: number
+          variation_id?: string | null
         }
         Relationships: [
           {
@@ -523,6 +699,44 @@ export type Database = {
           },
         ]
       }
+      product_faqs: {
+        Row: {
+          answer: string
+          created_at: string
+          id: string
+          product_id: string
+          question: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          id?: string
+          product_id: string
+          question: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          id?: string
+          product_id?: string
+          question?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_faqs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_images: {
         Row: {
           alt: string | null
@@ -708,11 +922,13 @@ export type Database = {
           description: string | null
           external_url: string | null
           id: string
+          is_best_seller: boolean | null
           is_digital: boolean
           is_external: boolean
           is_featured: boolean
           is_license_key: boolean
           is_subscription: boolean
+          is_trending: boolean | null
           product_type: Database["public"]["Enums"]["product_type"] | null
           regular_price: number
           sale_price: number | null
@@ -735,11 +951,13 @@ export type Database = {
           description?: string | null
           external_url?: string | null
           id?: string
+          is_best_seller?: boolean | null
           is_digital?: boolean
           is_external?: boolean
           is_featured?: boolean
           is_license_key?: boolean
           is_subscription?: boolean
+          is_trending?: boolean | null
           product_type?: Database["public"]["Enums"]["product_type"] | null
           regular_price?: number
           sale_price?: number | null
@@ -762,11 +980,13 @@ export type Database = {
           description?: string | null
           external_url?: string | null
           id?: string
+          is_best_seller?: boolean | null
           is_digital?: boolean
           is_external?: boolean
           is_featured?: boolean
           is_license_key?: boolean
           is_subscription?: boolean
+          is_trending?: boolean | null
           product_type?: Database["public"]["Enums"]["product_type"] | null
           regular_price?: number
           sale_price?: number | null
@@ -912,6 +1132,10 @@ export type Database = {
           id: string
           product_name: string
         }[]
+      }
+      start_fulfillment_for_order: {
+        Args: { _order_id: string }
+        Returns: undefined
       }
     }
     Enums: {
