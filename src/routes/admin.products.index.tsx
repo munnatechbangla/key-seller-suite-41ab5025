@@ -534,8 +534,78 @@ function AdminProducts() {
                         />
                       </div>
                     </div>
+
+                    {(editing as any).smm_config?.pricing_mode === "quantity_tier" && (
+                      <div className="mt-4 space-y-3 pt-4 border-t border-primary/10">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs font-semibold">Pricing Tiers</Label>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-[10px]"
+                            onClick={() => {
+                              const cfg = (editing as any).smm_config || {};
+                              const tiers = Array.isArray(cfg.tiers) ? cfg.tiers : [];
+                              setEditing({ ...editing, smm_config: { ...cfg, tiers: [...tiers, { min: 0, price: 0 }] } } as any);
+                            }}
+                          >
+                            <Plus className="h-3 w-3 mr-1" /> Add Tier
+                          </Button>
+                        </div>
+                        <div className="space-y-2 max-h-[150px] overflow-y-auto pr-1">
+                          {(Array.isArray((editing as any).smm_config?.tiers) ? (editing as any).smm_config.tiers : []).map((tier: any, idx: number) => (
+                            <div key={idx} className="flex items-end gap-2 p-2 rounded border bg-background/50">
+                              <div className="flex-1 space-y-1">
+                                <Label className="text-[9px]">Min Qty</Label>
+                                <Input
+                                  className="h-7 text-xs"
+                                  type="number"
+                                  value={tier.min}
+                                  onChange={(e) => {
+                                    const cfg = { ...(editing as any).smm_config };
+                                    if (!Array.isArray(cfg.tiers)) cfg.tiers = [];
+                                    cfg.tiers = [...cfg.tiers];
+                                    cfg.tiers[idx] = { ...cfg.tiers[idx], min: parseInt(e.target.value) || 0 };
+                                    setEditing({ ...editing, smm_config: cfg } as any);
+                                  }}
+                                />
+                              </div>
+                              <div className="flex-1 space-y-1">
+                                <Label className="text-[9px]">Price (৳)</Label>
+                                <Input
+                                  className="h-7 text-xs"
+                                  type="number"
+                                  step="0.01"
+                                  value={tier.price}
+                                  onChange={(e) => {
+                                    const cfg = { ...(editing as any).smm_config };
+                                    if (!Array.isArray(cfg.tiers)) cfg.tiers = [];
+                                    cfg.tiers = [...cfg.tiers];
+                                    cfg.tiers[idx] = { ...cfg.tiers[idx], price: parseFloat(e.target.value) || 0 };
+                                    setEditing({ ...editing, smm_config: cfg } as any);
+                                  }}
+                                />
+                              </div>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 text-destructive"
+                                onClick={() => {
+                                  const cfg = { ...(editing as any).smm_config };
+                                  cfg.tiers = cfg.tiers.filter((_: any, i: number) => i !== idx);
+                                  setEditing({ ...editing, smm_config: cfg } as any);
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
+
 
                 <div className="col-span-2"><MediaPicker label="Thumbnail" value={(editing as any).thumbnail_url ?? ""} onChange={(url) => setEditing({ ...editing, thumbnail_url: url } as any)} /></div>
               </div>
