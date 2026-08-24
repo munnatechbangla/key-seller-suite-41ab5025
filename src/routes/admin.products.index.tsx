@@ -632,7 +632,13 @@ function AdminProducts() {
                   visibility: (editing as any).visibility ?? "public",
                   product_type: (editing as any).product_type || null,
                   delivery_type: (editing as any).delivery_type || null,
-                  smm_config: (editing as any).smm_config || null,
+                  smm_config: (editing as any).product_type === 'smm_service' && (editing as any).smm_config ? {
+                    ...(editing as any).smm_config,
+                    min_quantity: Number((editing as any).smm_config.min_quantity ?? 1),
+                    max_quantity: Number((editing as any).smm_config.max_quantity ?? 1),
+                    quantity_step: Number((editing as any).smm_config.quantity_step ?? 1),
+                    price: Number((editing as any).smm_config.price ?? 0),
+                  } : null,
 
                 });
               }}

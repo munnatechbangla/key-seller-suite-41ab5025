@@ -814,7 +814,13 @@ function BasicInfoTab({
         product_type: form.product_type || null,
         delivery_type: form.delivery_type || null,
         category_id: form.category_id ? form.category_id : null,
-        smm_config: form.smm_config ?? null,
+        smm_config: form.product_type === 'smm_service' && form.smm_config ? {
+          ...form.smm_config,
+          min_quantity: Number(form.smm_config.min_quantity ?? 1),
+          max_quantity: Number(form.smm_config.max_quantity ?? 1),
+          quantity_step: Number(form.smm_config.quantity_step ?? 1),
+          price: Number(form.smm_config.price ?? 0),
+        } : null,
       };
       return upsert({ data: payload });
     },
