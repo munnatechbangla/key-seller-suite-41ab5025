@@ -916,7 +916,9 @@ function BasicInfoTab({
             <option value="account">account</option>
             <option value="manual">manual</option>
             <option value="external_url">external_url</option>
+            <option value="smm_fulfillment">smm_fulfillment</option>
           </select>
+
         </div>
       </div>
       
@@ -1033,13 +1035,82 @@ function BasicInfoTab({
             </div>
           </div>
           
+          {form.smm_config?.pricing_mode === "quantity_tier" && (
+            <div className="mt-4 space-y-3 pt-4 border-t border-primary/10">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-semibold">Pricing Tiers</Label>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => {
+                    const cfg = form.smm_config || {};
+                    const tiers = Array.isArray(cfg.tiers) ? cfg.tiers : [];
+                    set({ smm_config: { ...cfg, tiers: [...tiers, { min: 0, price: 0 }] } });
+                  }}
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Tier
+                </Button>
+              </div>
+              
+              <div className="space-y-2">
+                {(Array.isArray(form.smm_config?.tiers) ? form.smm_config.tiers : []).map((tier: any, idx: number) => (
+                  <div key={idx} className="flex items-end gap-2 p-2 rounded border bg-background/50">
+                    <div className="flex-1 space-y-1">
+                      <Label className="text-[10px]">Min Quantity</Label>
+                      <Input 
+                        type="number" 
+                        value={tier.min} 
+                        onChange={(e) => {
+                          const cfg = { ...form.smm_config };
+                          cfg.tiers[idx].min = parseInt(e.target.value) || 0;
+                          set({ smm_config: cfg });
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <Label className="text-[10px]">Price (৳)</Label>
+                      <Input 
+                        type="number" 
+                        step="0.01"
+                        value={tier.price} 
+                        onChange={(e) => {
+                          const cfg = { ...form.smm_config };
+                          cfg.tiers[idx].price = parseFloat(e.target.value) || 0;
+                          set({ smm_config: cfg });
+                        }}
+                      />
+                    </div>
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => {
+                        const cfg = { ...form.smm_config };
+                        cfg.tiers = cfg.tiers.filter((_: any, i: number) => i !== idx);
+                        set({ smm_config: cfg });
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                {(Array.isArray(form.smm_config?.tiers) ? form.smm_config.tiers : []).length === 0 && (
+                  <div className="text-xs text-muted-foreground text-center py-2 italic">
+                    No tiers added yet. Using base price.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
           {form.smm_config?.max_quantity < form.smm_config?.min_quantity && (
-            <div className="text-xs text-destructive flex items-center gap-1">
+            <div className="text-xs text-destructive flex items-center gap-1 mt-2">
               <AlertTriangle className="h-3 w-3" />
               Max quantity must be greater than or equal to min quantity
             </div>
           )}
         </div>
+
       )}
 
       {productMode === "simple" ? (

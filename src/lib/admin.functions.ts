@@ -71,8 +71,9 @@ const productTypeEnum = z.enum([
   "downloadable", "license_key", "subscription", "account", "external", "manual", "smm_service",
 ]);
 const deliveryTypeEnum = z.enum([
-  "download", "license_key", "account", "manual", "external_url",
+  "download", "license_key", "account", "manual", "external_url", "smm_fulfillment",
 ]);
+
 const productVisibilityEnum = z.enum(["public", "members_only", "hidden"]);
 const productStatusEnum = z.enum(["draft", "published", "private", "archived"]);
 
@@ -102,7 +103,12 @@ const productSchema = z.object({
     quantity_step: z.number().gt(0),
     pricing_mode: z.enum(["per_unit", "per_1000", "quantity_tier"]),
     price: z.number().nonnegative(),
+    tiers: z.array(z.object({
+      min: z.number().nonnegative(),
+      price: z.number().nonnegative(),
+    })).optional().nullable(),
   }).nullable().optional(),
+
 });
 
 export const adminUpsertProductFn = createServerFn({ method: "POST" })
