@@ -418,6 +418,7 @@ function AdminProducts() {
                     <option value="account">Account</option>
                     <option value="external">External</option>
                     <option value="manual">Manual delivery</option>
+                    <option value="smm_service">SMM Service</option>
                   </select>
                 </div>
                 <div><Label>Delivery type</Label>
@@ -430,6 +431,110 @@ function AdminProducts() {
                     <option value="external_url">External URL</option>
                   </select>
                 </div>
+
+                {(editing as any).product_type === "smm_service" && (
+                  <div className="col-span-2 space-y-4 rounded-lg border border-primary/20 bg-primary/5 p-4 mt-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="font-semibold text-base">SMM Service Configuration</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs">Platform</Label>
+                        <Input
+                          placeholder="e.g. Facebook, Instagram"
+                          value={(editing as any).smm_config?.platform ?? ""}
+                          onChange={(e) => {
+                            const cfg = (editing as any).smm_config || {};
+                            setEditing({ ...editing, smm_config: { ...cfg, platform: e.target.value } } as any);
+                          }}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-xs">Service Type</Label>
+                        <Input
+                          placeholder="e.g. Followers, Likes"
+                          value={(editing as any).smm_config?.service_type ?? ""}
+                          onChange={(e) => {
+                            const cfg = (editing as any).smm_config || {};
+                            setEditing({ ...editing, smm_config: { ...cfg, service_type: e.target.value } } as any);
+                          }}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-xs">Minimum Quantity</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={(editing as any).smm_config?.min_quantity ?? 1}
+                          onChange={(e) => {
+                            const cfg = (editing as any).smm_config || {};
+                            setEditing({ ...editing, smm_config: { ...cfg, min_quantity: parseInt(e.target.value) || 1 } } as any);
+                          }}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-xs">Maximum Quantity</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={(editing as any).smm_config?.max_quantity ?? 1}
+                          onChange={(e) => {
+                            const cfg = (editing as any).smm_config || {};
+                            setEditing({ ...editing, smm_config: { ...cfg, max_quantity: parseInt(e.target.value) || 1 } } as any);
+                          }}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-xs">Quantity Step</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={(editing as any).smm_config?.quantity_step ?? 1}
+                          onChange={(e) => {
+                            const cfg = (editing as any).smm_config || {};
+                            setEditing({ ...editing, smm_config: { ...cfg, quantity_step: parseInt(e.target.value) || 1 } } as any);
+                          }}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-xs">Pricing Mode</Label>
+                        <select
+                          className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+                          value={(editing as any).smm_config?.pricing_mode ?? "per_1000"}
+                          onChange={(e) => {
+                            const cfg = (editing as any).smm_config || {};
+                            setEditing({ ...editing, smm_config: { ...cfg, pricing_mode: e.target.value } } as any);
+                          }}
+                        >
+                          <option value="per_unit">Per Unit</option>
+                          <option value="per_1000">Per 1,000</option>
+                          <option value="quantity_tier">Quantity Tier</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-xs">Base Price (৳)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={(editing as any).smm_config?.price ?? 0}
+                          onChange={(e) => {
+                            const cfg = (editing as any).smm_config || {};
+                            setEditing({ ...editing, smm_config: { ...cfg, price: parseFloat(e.target.value) || 0 } } as any);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="col-span-2"><MediaPicker label="Thumbnail" value={(editing as any).thumbnail_url ?? ""} onChange={(url) => setEditing({ ...editing, thumbnail_url: url } as any)} /></div>
               </div>
               <div><Label>Short description</Label><Textarea rows={2} value={(editing as any).short_description ?? ""} onChange={(e) => setEditing({ ...editing, short_description: e.target.value } as any)} /></div>
