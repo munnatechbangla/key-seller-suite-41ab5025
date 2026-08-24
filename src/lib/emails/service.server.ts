@@ -130,18 +130,19 @@ export async function processPendingEmails(limit = 25) {
   for (const r of rows ?? []) {
     const result = await deliverEmail({
       to: r.recipient,
-      subject: r.subject,
+      subject: r.subject ?? "Email Notification",
       html: r.rendered_html ?? "",
       from: sender.sender_email!,
       fromName: sender.sender_name ?? sender.site_name ?? "Marketplace",
-      replyTo: sender.reply_to,
+      replyTo: sender.reply_to ?? undefined,
     });
+    const currentAttempts = r.attempts ?? 0;
     if (result.ok) {
       await supabaseAdmin
         .from("email_logs")
         .update({
           status: "sent",
-          attempts: r.attempts + 1,
+          attempts: currentAttempts + 1,
           sent_at: new Date().toISOString(),
           provider: result.provider,
         })
@@ -151,8 +152,8 @@ export async function processPendingEmails(limit = 25) {
       await supabaseAdmin
         .from("email_logs")
         .update({
-          status: r.attempts + 1 >= 5 ? "failed" : "pending",
-          attempts: r.attempts + 1,
+          status: currentAttempts + 1 >= 5 ? "failed" : "pending",
+          attempts: currentAttempts + 1,
           error_message: result.error,
           provider: result.provider,
         })
@@ -208,7 +209,7 @@ export async function retryEmail(id: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   await supabaseAdmin
     .from("email_logs")
-    .update({ status: "pending", error_message: null, next_retry_at: null })
+    .update({ status: "pending", error_message: null } as any)
     .eq("id", id);
   return { ok: true };
 }

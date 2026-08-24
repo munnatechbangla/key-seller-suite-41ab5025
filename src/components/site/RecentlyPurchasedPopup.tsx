@@ -70,7 +70,7 @@ export function RecentlyPurchasedPopup() {
       try {
         const { data } = await supabase.rpc("list_recent_public_purchases", { _limit: 20 });
         if (data && (data as any[]).length > 0) {
-          pool.current = data as Purchase[];
+          pool.current = (data as any) as Purchase[];
         } else {
           pool.current = Array.from({ length: 10 }, genDemo);
         }

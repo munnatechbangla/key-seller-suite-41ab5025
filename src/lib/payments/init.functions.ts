@@ -47,7 +47,7 @@ export const initPaymentFn = createServerFn({ method: "POST" })
 
     const { data: order, error: oErr } = await supabaseAdmin
       .from("orders")
-      .select("id, order_number, status, total, currency, email, customer_name, phone, address")
+      .select("id, order_number, status, total, currency, email, customer_name, phone")
       .eq("order_number", data.orderNumber)
       .maybeSingle();
     if (oErr || !order) throw new Error("Order not found");
@@ -80,7 +80,7 @@ export const initPaymentFn = createServerFn({ method: "POST" })
         customerName: order.customer_name || order.email,
         customerEmail: order.email,
         customerPhone: order.phone || undefined,
-        customerAddress: order.address || undefined,
+        customerAddress: undefined,
         productName,
         baseUrl,
         mode,
