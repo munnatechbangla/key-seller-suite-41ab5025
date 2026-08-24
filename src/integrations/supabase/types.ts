@@ -47,6 +47,32 @@ export type Database = {
         }
         Relationships: []
       }
+      best_sellers: {
+        Row: {
+          created_at: string
+          product_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          product_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          product_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "best_sellers_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_categories: {
         Row: {
           created_at: string | null
@@ -178,6 +204,175 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_navigation: {
+        Row: {
+          created_at: string | null
+          enabled: boolean | null
+          icon: string | null
+          id: string
+          label: string
+          menu_name: string
+          parent_id: string | null
+          sort_order: number | null
+          target: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean | null
+          icon?: string | null
+          id?: string
+          label: string
+          menu_name: string
+          parent_id?: string | null
+          sort_order?: number | null
+          target?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean | null
+          icon?: string | null
+          id?: string
+          label?: string
+          menu_name?: string
+          parent_id?: string | null
+          sort_order?: number | null
+          target?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_navigation_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "cms_navigation"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_pages: {
+        Row: {
+          body_html: string | null
+          canonical_url: string | null
+          created_at: string | null
+          description: string | null
+          excerpt: string | null
+          featured_image: string | null
+          id: string
+          is_system: boolean | null
+          menu_order: number | null
+          meta_description: string | null
+          meta_title: string | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          published_at: string | null
+          slug: string
+          status: string | null
+          title: string
+          twitter_card: string | null
+          twitter_image: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          body_html?: string | null
+          canonical_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          is_system?: boolean | null
+          menu_order?: number | null
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          published_at?: string | null
+          slug: string
+          status?: string | null
+          title: string
+          twitter_card?: string | null
+          twitter_image?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          body_html?: string | null
+          canonical_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          is_system?: boolean | null
+          menu_order?: number | null
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          published_at?: string | null
+          slug?: string
+          status?: string | null
+          title?: string
+          twitter_card?: string | null
+          twitter_image?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      cms_sections: {
+        Row: {
+          created_at: string | null
+          enabled: boolean | null
+          id: string
+          json_content: Json | null
+          page_id: string | null
+          section_key: string
+          section_type: string
+          sort_order: number | null
+          subtitle: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          json_content?: Json | null
+          page_id?: string | null
+          section_key: string
+          section_type: string
+          sort_order?: number | null
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          json_content?: Json | null
+          page_id?: string | null
+          section_key?: string
+          section_type?: string
+          sort_order?: number | null
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_sections_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "cms_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coupon_usage: {
         Row: {
           id: string
@@ -282,6 +477,32 @@ export type Database = {
           template_key?: string
         }
         Relationships: []
+      }
+      featured_products: {
+        Row: {
+          created_at: string
+          product_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          product_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          product_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "featured_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       legal_pages: {
         Row: {
@@ -1089,6 +1310,32 @@ export type Database = {
           value?: Json
         }
         Relationships: []
+      }
+      trending_products: {
+        Row: {
+          created_at: string
+          product_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          product_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          product_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trending_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
