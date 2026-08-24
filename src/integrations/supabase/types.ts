@@ -939,6 +939,7 @@ export type Database = {
           id: string
           order_number: string
           payment_method: string | null
+          phone: string | null
           status: string
           total: number
           updated_at: string
@@ -952,6 +953,7 @@ export type Database = {
           id?: string
           order_number: string
           payment_method?: string | null
+          phone?: string | null
           status?: string
           total?: number
           updated_at?: string
@@ -965,6 +967,7 @@ export type Database = {
           id?: string
           order_number?: string
           payment_method?: string | null
+          phone?: string | null
           status?: string
           total?: number
           updated_at?: string
@@ -1698,6 +1701,13 @@ export type Database = {
         | "manual"
         | "external_url"
         | "smm_fulfillment"
+      fulfillment_status:
+        | "pending"
+        | "processing"
+        | "partial"
+        | "completed"
+        | "cancelled"
+        | "failed"
       product_status: "draft" | "published" | "private" | "archived"
       product_type:
         | "downloadable"
@@ -1852,6 +1862,14 @@ export const Constants = {
         "manual",
         "external_url",
         "smm_fulfillment",
+      ],
+      fulfillment_status: [
+        "pending",
+        "processing",
+        "partial",
+        "completed",
+        "cancelled",
+        "failed",
       ],
       product_status: ["draft", "published", "private", "archived"],
       product_type: [
