@@ -974,18 +974,30 @@ export type Database = {
       }
       payment_gateways: {
         Row: {
+          description: string | null
           id: string
+          is_active: boolean | null
           is_enabled: boolean | null
+          logo_url: string | null
+          mode: string | null
           slug: string
         }
         Insert: {
+          description?: string | null
           id?: string
+          is_active?: boolean | null
           is_enabled?: boolean | null
+          logo_url?: string | null
+          mode?: string | null
           slug: string
         }
         Update: {
+          description?: string | null
           id?: string
+          is_active?: boolean | null
           is_enabled?: boolean | null
+          logo_url?: string | null
+          mode?: string | null
           slug?: string
         }
         Relationships: []
@@ -1655,6 +1667,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      list_public_payment_gateways: { Args: never; Returns: Json }
       list_recent_public_purchases:
         | { Args: never; Returns: Json }
         | {
