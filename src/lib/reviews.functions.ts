@@ -205,9 +205,9 @@ export const adminReplyReviewFn = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { error } = await context.supabase
+    const { error } = await (context.supabase as any)
       .from("product_reviews")
-      .update({ admin_reply: data.reply || null, admin_reply_at: (data.reply ? new Date().toISOString() : null) as any })
+      .update({ admin_reply: data.reply || null, admin_reply_at: (data.reply ? new Date().toISOString() : null) as any } as any)
       .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
