@@ -560,6 +560,8 @@ function AdminProducts() {
                   visibility: (editing as any).visibility ?? "public",
                   product_type: (editing as any).product_type || null,
                   delivery_type: (editing as any).delivery_type || null,
+                  smm_config: (editing as any).smm_config || null,
+
                 });
               }}
             >
