@@ -962,10 +962,10 @@ function BasicInfoTab({
                 id="smm-min"
                 type="number"
                 min="1"
-                value={form.smm_config?.min_quantity ?? 1}
+                value={form.smm_config?.min_quantity ?? ""}
                 onChange={(e) => {
                   const cfg = form.smm_config || {};
-                  set({ smm_config: { ...cfg, min_quantity: parseInt(e.target.value) || 1 } });
+                  set({ smm_config: { ...cfg, min_quantity: parseInt(e.target.value) } });
                 }}
               />
             </div>
@@ -976,10 +976,10 @@ function BasicInfoTab({
                 id="smm-max"
                 type="number"
                 min="1"
-                value={form.smm_config?.max_quantity ?? 1}
+                value={form.smm_config?.max_quantity ?? ""}
                 onChange={(e) => {
                   const cfg = form.smm_config || {};
-                  set({ smm_config: { ...cfg, max_quantity: parseInt(e.target.value) || 1 } });
+                  set({ smm_config: { ...cfg, max_quantity: parseInt(e.target.value) } });
                 }}
               />
             </div>
@@ -1024,10 +1024,10 @@ function BasicInfoTab({
                   step="0.01"
                   min="0"
                   className="pl-8"
-                  value={form.smm_config?.price ?? 0}
+                  value={form.smm_config?.price ?? ""}
                   onChange={(e) => {
                     const cfg = form.smm_config || {};
-                    set({ smm_config: { ...cfg, price: parseFloat(e.target.value) || 0 } });
+                    set({ smm_config: { ...cfg, price: parseFloat(e.target.value) } });
                   }}
                 />
                 <span className="absolute left-3 top-2.5 text-muted-foreground">৳</span>

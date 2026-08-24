@@ -470,10 +470,10 @@ function AdminProducts() {
                         <Input
                           type="number"
                           min="1"
-                          value={(editing as any).smm_config?.min_quantity ?? 1}
+                          value={(editing as any).smm_config?.min_quantity ?? ""}
                           onChange={(e) => {
                             const cfg = (editing as any).smm_config || {};
-                            setEditing({ ...editing, smm_config: { ...cfg, min_quantity: parseInt(e.target.value) || 1 } } as any);
+                            setEditing({ ...editing, smm_config: { ...cfg, min_quantity: parseInt(e.target.value) } } as any);
                           }}
                         />
                       </div>
@@ -483,10 +483,10 @@ function AdminProducts() {
                         <Input
                           type="number"
                           min="1"
-                          value={(editing as any).smm_config?.max_quantity ?? 1}
+                          value={(editing as any).smm_config?.max_quantity ?? ""}
                           onChange={(e) => {
                             const cfg = (editing as any).smm_config || {};
-                            setEditing({ ...editing, smm_config: { ...cfg, max_quantity: parseInt(e.target.value) || 1 } } as any);
+                            setEditing({ ...editing, smm_config: { ...cfg, max_quantity: parseInt(e.target.value) } } as any);
                           }}
                         />
                       </div>
@@ -526,10 +526,10 @@ function AdminProducts() {
                           type="number"
                           step="0.01"
                           min="0"
-                          value={(editing as any).smm_config?.price ?? 0}
+                          value={(editing as any).smm_config?.price ?? ""}
                           onChange={(e) => {
                             const cfg = (editing as any).smm_config || {};
-                            setEditing({ ...editing, smm_config: { ...cfg, price: parseFloat(e.target.value) || 0 } } as any);
+                            setEditing({ ...editing, smm_config: { ...cfg, price: parseFloat(e.target.value) } } as any);
                           }}
                         />
                       </div>
