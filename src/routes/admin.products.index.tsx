@@ -496,10 +496,10 @@ function AdminProducts() {
                         <Input
                           type="number"
                           min="1"
-                          value={(editing as any).smm_config?.quantity_step ?? 1}
+                          value={(editing as any).smm_config?.quantity_step ?? ""}
                           onChange={(e) => {
                             const cfg = (editing as any).smm_config || {};
-                            setEditing({ ...editing, smm_config: { ...cfg, quantity_step: parseInt(e.target.value) || 1 } } as any);
+                            setEditing({ ...editing, smm_config: { ...cfg, quantity_step: parseInt(e.target.value) } } as any);
                           }}
                         />
                       </div>

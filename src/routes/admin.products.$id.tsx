@@ -990,10 +990,10 @@ function BasicInfoTab({
                 id="smm-step"
                 type="number"
                 min="1"
-                value={form.smm_config?.quantity_step ?? 1}
+                value={form.smm_config?.quantity_step ?? ""}
                 onChange={(e) => {
                   const cfg = form.smm_config || {};
-                  set({ smm_config: { ...cfg, quantity_step: parseInt(e.target.value) || 1 } });
+                  set({ smm_config: { ...cfg, quantity_step: parseInt(e.target.value) } });
                 }}
               />
             </div>
