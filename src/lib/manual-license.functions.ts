@@ -25,6 +25,9 @@ export const getManualLicenseDeliveries = createServerFn({ method: "GET" })
     return deliveries;
   });
 
+// Aliases for component compatibility
+export const adminListManualLicenseDeliveriesFn = getManualLicenseDeliveries;
+
 export const adminUpsertManualLicense = createServerFn({ method: "POST" })
   .inputValidator((data) => z.object({
     id: z.string().optional(),
@@ -40,7 +43,6 @@ export const adminUpsertManualLicense = createServerFn({ method: "POST" })
     delivered_by: z.string(),
   }).parse(data))
   .handler(async ({ data }) => {
-    // 1. Upsert delivery
     const { data: delivery, error: deliveryError } = await supabase
       .from("manual_license_deliveries")
       .upsert({
@@ -61,12 +63,10 @@ export const adminUpsertManualLicense = createServerFn({ method: "POST" })
       .single();
 
     if (deliveryError) throw deliveryError;
-
-    // 2. Mark item as fulfilled in order_items if needed
-    // Assuming we have a way to track fulfillment status
-    
     return delivery;
   });
+
+export const adminSaveManualLicenseDeliveryFn = adminUpsertManualLicense;
 
 export const adminDeleteManualLicense = createServerFn({ method: "POST" })
   .inputValidator((data) => z.string().parse(data))
