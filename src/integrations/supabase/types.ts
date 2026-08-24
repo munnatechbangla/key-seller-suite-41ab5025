@@ -791,6 +791,71 @@ export type Database = {
         }
         Relationships: []
       }
+      media_asset_usage: {
+        Row: {
+          asset_id: string | null
+          created_at: string | null
+          entity_id: string
+          entity_type: string
+          field_name: string | null
+          id: string
+        }
+        Insert: {
+          asset_id?: string | null
+          created_at?: string | null
+          entity_id: string
+          entity_type: string
+          field_name?: string | null
+          id?: string
+        }
+        Update: {
+          asset_id?: string | null
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          field_name?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_asset_usage_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "media_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media_assets: {
+        Row: {
+          created_at: string | null
+          filename: string
+          id: string
+          metadata: Json | null
+          mime_type: string | null
+          size_bytes: number | null
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string | null
+          filename: string
+          id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path: string
+        }
+        Update: {
+          created_at?: string | null
+          filename?: string
+          id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
@@ -1504,7 +1569,9 @@ export type Database = {
         Args: { _item_id: string }
         Returns: undefined
       }
+      admin_get_asset_usage: { Args: { _asset_id: string }; Returns: Json }
       admin_list_inventory_pools: { Args: never; Returns: Json }
+      admin_list_media_assets: { Args: never; Returns: Json }
       admin_mark_subscription_delivered: {
         Args: { _item_id: string }
         Returns: undefined
