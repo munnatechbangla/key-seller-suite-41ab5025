@@ -856,6 +856,30 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_subscribers: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          metadata: Json | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          metadata?: Json | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          metadata?: Json | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
@@ -977,6 +1001,44 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      payment_logs: {
+        Row: {
+          created_at: string | null
+          event_type: string | null
+          gateway: string | null
+          id: string
+          order_id: string | null
+          payload: Json | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_type?: string | null
+          gateway?: string | null
+          id?: string
+          order_id?: string | null
+          payload?: Json | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string | null
+          gateway?: string | null
+          id?: string
+          order_id?: string | null
+          payload?: Json | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
