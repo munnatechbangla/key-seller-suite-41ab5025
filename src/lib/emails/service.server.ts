@@ -209,7 +209,7 @@ export async function retryEmail(id: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   await supabaseAdmin
     .from("email_logs")
-    .update({ status: "pending", error_message: null, next_retry_at: null })
+    .update({ status: "pending", error_message: null } as any)
     .eq("id", id);
   return { ok: true };
 }

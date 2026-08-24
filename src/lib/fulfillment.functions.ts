@@ -135,7 +135,7 @@ export const adminRetryFulfillmentFn = createServerFn({ method: "POST" })
       _item_id: data.fulfillmentId,
     } as any);
     if (error) throw new Error(error.message);
-    return res as { ok: boolean; status: FulfillmentStatus };
+    return (res || { ok: false, status: 'failed' }) as { ok: boolean; status: FulfillmentStatus };
   });
 
 export const adminRestartFulfillmentFn = createServerFn({ method: "POST" })
@@ -147,7 +147,7 @@ export const adminRestartFulfillmentFn = createServerFn({ method: "POST" })
       _item_id: data.fulfillmentId,
     } as any);
     if (error) throw new Error(error.message);
-    return res as { ok: boolean; status: FulfillmentStatus };
+    return (res || { ok: false, status: 'pending' }) as { ok: boolean; status: FulfillmentStatus };
   });
 
 const cancelSchema = z.object({
@@ -165,7 +165,7 @@ export const adminCancelFulfillmentFn = createServerFn({ method: "POST" })
       _reason: data.reason || undefined,
     } as any);
     if (error) throw new Error(error.message);
-    return res as { ok: boolean };
+    return (res || { ok: false }) as { ok: boolean };
   });
 
 /** Kick off fulfillment for a paid order that predates the engine, or after
@@ -198,5 +198,5 @@ export const adminMarkSubscriptionDeliveredFn = createServerFn({ method: "POST" 
       _note: data.note ?? undefined,
     } as any);
     if (error) throw new Error(error.message);
-    return res as { ok: boolean; order_completed: boolean };
+    return (res || { ok: false, order_completed: false }) as { ok: boolean; order_completed: boolean };
   });

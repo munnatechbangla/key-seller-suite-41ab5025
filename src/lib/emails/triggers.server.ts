@@ -55,7 +55,7 @@ export async function sendPostPaymentEmails(orderId: string) {
   const { data: downloads } = await supabaseAdmin
     .from("downloads")
     .select("file_url, order_items(product_name)")
-    .eq("order_id", orderId);
+    .eq("id", orderId);
   if (downloads && downloads.length) {
     const block = downloads
       .map((d: any) => `<p>${d.order_items?.product_name ?? "File"}: <a href="${d.file_url ?? "#"}">Download</a></p>`)
