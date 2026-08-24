@@ -98,11 +98,11 @@ const productSchema = z.object({
   smm_config: z.object({
     platform: z.string(),
     service_type: z.string(),
-    min_quantity: z.number().gt(0),
-    max_quantity: z.number().nonnegative(),
-    quantity_step: z.number().gt(0),
+    min_quantity: z.number().gt(0).or(z.string().transform(v => parseInt(v)).pipe(z.number().gt(0))),
+    max_quantity: z.number().nonnegative().or(z.string().transform(v => parseInt(v)).pipe(z.number().nonnegative())),
+    quantity_step: z.number().gt(0).or(z.string().transform(v => parseInt(v)).pipe(z.number().gt(0))),
     pricing_mode: z.enum(["per_unit", "per_1000", "quantity_tier"]),
-    price: z.number().nonnegative(),
+    price: z.number().nonnegative().or(z.string().transform(v => parseFloat(v)).pipe(z.number().nonnegative())),
     tiers: z.array(z.object({
       min: z.number().nonnegative(),
       price: z.number().nonnegative(),
