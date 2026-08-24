@@ -47,7 +47,7 @@ function PaymentLogsPage() {
               </div>
               <div className="text-xs text-muted-foreground mb-3 capitalize">Mode: {g.mode}</div>
               <div className="space-y-1 text-xs">
-                {g.secretsPresent.map((s) => (
+                {(g.secretsPresent as any[]).map((s: any) => (
                   <div key={s.name} className="flex items-center justify-between font-mono">
                     <span className="truncate">{s.name}</span>
                     {s.set ? <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 shrink-0" /> : <ShieldAlert className="h-3.5 w-3.5 text-amber-500 shrink-0" />}

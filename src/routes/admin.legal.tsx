@@ -43,14 +43,14 @@ function AdminLegalPages() {
   async function createNew(slug?: string) {
     const s = slug ?? prompt("Page slug (e.g. shipping, cookies)")?.trim();
     if (!s) return;
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("legal_pages")
       .insert({
         slug: s,
         title: s.charAt(0).toUpperCase() + s.slice(1),
         content: { sections: [{ h: "Section", p: "Content..." }] } as any,
         is_published: false as any,
-      })
+      } as any)
       .select("*")
       .single();
     if (error) return toast.error(error.message);

@@ -526,9 +526,9 @@ export const getSubscriptionRenewalHistoryFn = createServerFn({ method: "POST" }
 export const getMySubscriptionsFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase.rpc("get_customer_subscriptions", {
+    const { data, error } = await (context.supabase.rpc as any)("get_customer_subscriptions" as any, {
       _email: undefined,
-    });
+    } as any);
     if (error) throw new Error(error.message);
     return data ?? [];
   });
