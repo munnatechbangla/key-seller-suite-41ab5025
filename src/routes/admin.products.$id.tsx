@@ -400,63 +400,47 @@ function ManageProduct() {
 
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild><Link to="/admin/products"><ArrowLeft className="h-4 w-4 mr-1" /> Products</Link></Button>
-        <h1 className="text-2xl font-bold flex-1">Priority: Fix Production Website Loading Error Before Any SMM Work
+        <h1 className="text-2xl font-bold flex-1">URGENT: Restore the website homepage first. Do not work on SMM features.
 
-The production website is currently not loading and shows:
+The Lovable Preview is still showing:
 
-"This page didn't load — Something went wrong on our end."
+"This page didn't load"
+"Something went wrong on our end."
 
-Production URL: https://digital.topuphut.com/
+The homepage was working before the recent SMM workflow changes.
 
-Do NOT start Phase 4 or make any new SMM workflow changes yet.
+For this task, do not change any Admin Products display text.
 
-Goal
+First diagnose the actual runtime failure:
 
-First diagnose and fix the current production runtime failure so the homepage and existing customer/admin pages load normally again.
+Open the Homepage route in Preview and inspect the actual runtime/server error.
 
-Important Instructions
+Check the browser console, server logs, route loader, and failed Supabase requests.
 
-Identify the actual root cause from the current production/runtime error, server logs, Supabase errors, build errors, and recent code/database changes.
+Find the FIRST real exception that causes the Homepage error boundary to render.
 
-Pay special attention to recent SMM-related changes and database schema changes, including:
+Compare the recent SMM-related changes with the last known working implementation.
 
-smm_config
+Pay particular attention to shared catalog/product queries and recently added SMM fields such as smm_config, product_type, and smm_fulfillment.
 
-product_type
+Check for missing database columns, invalid queries, failed imports, server-function errors, or runtime TypeErrors.
 
-delivery_type
+If the crash was introduced by a recent SMM change, revert or isolate ONLY the specific change responsible for the crash. Do not remove unrelated working functionality.
 
-smm_fulfillment
+Do not create a new database, reset the database, delete data, drop tables, or recreate existing tables.
 
-recent migrations/RPC changes
+Do not add another large migration unless the actual error proves that a specific schema change is required.
 
-Check whether production database schema and application queries are synchronized.
+Do not make broad refactors or UI changes.
 
-If a recently added column/table/function is missing in production, fix the migration/schema properly instead of repeatedly adding frontend workarounds.
+Priority:
+The existing website must load first. Existing Simple, Variable, License, Subscription, Downloadable, Payment, Order, and Customer Product Field workflows must remain intact.
 
-If a query requests optional/new columns, make the relevant data-loading code safely handle missing data without crashing the entire application.
+After identifying and fixing the root cause, verify:
 
-Check the homepage loader first because the entire site currently fails before the customer can navigate anywhere.
+Homepage loads in Preview.
 
-Also verify product listing/product detail and Admin Products pages after fixing the root cause.
-
-Do not remove or disable existing features just to make the homepage load.
-
-Do not change existing License, Subscription, Downloadable, Variable, Payment, Order, or Customer Product Field workflows.
-
-Do not redesign the UI.
-
-Do not make unrelated changes.
-
-Do not create duplicate migrations or duplicate database columns/functions. Inspect the existing schema/migrations first.
-
-Keep all existing SMM code intact unless a specific SMM change is proven to be the cause of the crash.
-
-Verification
-
-After the fix:
-
-Homepage loads successfully.
+Homepage loads after refresh.
 
 Product listing loads.
 
@@ -464,19 +448,24 @@ Product detail loads.
 
 Admin Products loads.
 
-Existing product types still work.
+No fatal runtime error remains.
 
-No 42703 Undefined Column errors.
+No missing-column/schema-cache error remains.
 
-No PGRST schema-cache errors.
+IMPORTANT:
+Do not report success just because the project builds. The Homepage must actually render successfully in Preview.
 
-No fatal runtime errors.
+Report:
 
-Run the production/build checks available in the project.
+The exact root error
 
-Most importantly, fix the ROOT CAUSE rather than only hiding the error with defensive code.
+The file/function causing it
 
-Do not proceed to the next SMM phase until the production website is confirmed stable.</h1>
+The minimal fix applied
+
+The verification result
+
+Do not proceed to any SMM development until the Homepage is confirmed working.</h1>
       </div>
 
       {/* Wizard steps */}
