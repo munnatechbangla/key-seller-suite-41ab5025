@@ -204,6 +204,33 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_footer: {
+        Row: {
+          created_at: string | null
+          enabled: boolean | null
+          id: string
+          json_content: Json | null
+          section_name: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          json_content?: Json | null
+          section_name: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          json_content?: Json | null
+          section_name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
       cms_navigation: {
         Row: {
           created_at: string | null
@@ -267,9 +294,15 @@ export type Database = {
           og_description: string | null
           og_image: string | null
           og_title: string | null
+          open_new_tab: boolean | null
+          page_type: string | null
           published_at: string | null
+          robots: string | null
+          show_in_footer: boolean | null
+          show_in_header: boolean | null
           slug: string
           status: string | null
+          template: string | null
           title: string
           twitter_card: string | null
           twitter_image: string | null
@@ -290,9 +323,15 @@ export type Database = {
           og_description?: string | null
           og_image?: string | null
           og_title?: string | null
+          open_new_tab?: boolean | null
+          page_type?: string | null
           published_at?: string | null
+          robots?: string | null
+          show_in_footer?: boolean | null
+          show_in_header?: boolean | null
           slug: string
           status?: string | null
+          template?: string | null
           title: string
           twitter_card?: string | null
           twitter_image?: string | null
@@ -313,9 +352,15 @@ export type Database = {
           og_description?: string | null
           og_image?: string | null
           og_title?: string | null
+          open_new_tab?: boolean | null
+          page_type?: string | null
           published_at?: string | null
+          robots?: string | null
+          show_in_footer?: boolean | null
+          show_in_header?: boolean | null
           slug?: string
           status?: string | null
+          template?: string | null
           title?: string
           twitter_card?: string | null
           twitter_image?: string | null
@@ -459,22 +504,28 @@ export type Database = {
           enabled: boolean | null
           html_body: string | null
           id: string
+          name: string | null
           subject: string | null
           template_key: string
+          text_body: string | null
         }
         Insert: {
           enabled?: boolean | null
           html_body?: string | null
           id?: string
+          name?: string | null
           subject?: string | null
           template_key: string
+          text_body?: string | null
         }
         Update: {
           enabled?: boolean | null
           html_body?: string | null
           id?: string
+          name?: string | null
           subject?: string | null
           template_key?: string
+          text_body?: string | null
         }
         Relationships: []
       }
@@ -1383,6 +1434,10 @@ export type Database = {
       start_fulfillment_for_order: {
         Args: { _order_id: string }
         Returns: undefined
+      }
+      validate_coupon: {
+        Args: { _code: string; _order_total?: number; _user_id?: string }
+        Returns: Json
       }
     }
     Enums: {
