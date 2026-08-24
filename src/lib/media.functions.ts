@@ -27,6 +27,9 @@ export const adminListMediaAssets = createServerFn({ method: "GET" })
     return assets;
   });
 
+// Aliases for component compatibility
+export const listAssetsFn = adminListMediaAssets;
+
 export const adminUpsertMediaAsset = createServerFn({ method: "POST" })
   .inputValidator((data) => z.object({
     id: z.string().optional(),
@@ -54,6 +57,8 @@ export const adminUpsertMediaAsset = createServerFn({ method: "POST" })
     return asset;
   });
 
+export const registerAssetFn = adminUpsertMediaAsset;
+
 export const adminDeleteMediaAsset = createServerFn({ method: "POST" })
   .inputValidator((data) => z.string().parse(data))
   .handler(async ({ data: id }) => {
@@ -66,6 +71,27 @@ export const adminDeleteMediaAsset = createServerFn({ method: "POST" })
     return { success: true };
   });
 
+export const deleteAssetFn = adminDeleteMediaAsset;
+
+export const adminRenameMediaAsset = createServerFn({ method: "POST" })
+  .inputValidator((data) => z.object({
+    id: z.string(),
+    new_filename: z.string(),
+  }).parse(data))
+  .handler(async ({ data }) => {
+    const { data: asset, error } = await supabase
+      .from("media_assets")
+      .update({ filename: data.new_filename } as any)
+      .eq("id", data.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return asset;
+  });
+
+export const renameAssetFn = adminRenameMediaAsset;
+
 export const adminGetAssetUsage = createServerFn({ method: "GET" })
   .inputValidator((data) => z.string().parse(data))
   .handler(async ({ data: assetId }) => {
@@ -77,3 +103,13 @@ export const adminGetAssetUsage = createServerFn({ method: "GET" })
     if (error) throw error;
     return usage;
   });
+
+export const getAssetUsageFn = adminGetAssetUsage;
+
+export const adminSyncStorageAssets = createServerFn({ method: "POST" })
+  .handler(async () => {
+    // Placeholder logic for storage sync
+    return { success: true, count: 0 };
+  });
+
+export const syncStorageAssetsFn = adminSyncStorageAssets;
