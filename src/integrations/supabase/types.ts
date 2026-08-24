@@ -555,6 +555,36 @@ export type Database = {
           },
         ]
       }
+      landing_pages: {
+        Row: {
+          content: Json | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          slug: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          content?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          slug: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: Json | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          slug?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       legal_pages: {
         Row: {
           content: string | null
@@ -1414,6 +1444,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_cancel_fulfillment: {
+        Args: { _item_id: string }
+        Returns: undefined
+      }
+      admin_list_inventory_pools: { Args: never; Returns: Json }
+      admin_mark_subscription_delivered: {
+        Args: { _item_id: string }
+        Returns: undefined
+      }
+      admin_restart_fulfillment: {
+        Args: { _item_id: string }
+        Returns: undefined
+      }
+      admin_retry_fulfillment: {
+        Args: { _item_id: string }
+        Returns: undefined
+      }
+      get_fulfillment_timeline: { Args: { _order_id: string }; Returns: Json }
+      get_order_fulfillments: { Args: { _order_id: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
