@@ -14,6 +14,147 @@ export type Database = {
   }
   public: {
     Tables: {
+      coupon_usage: {
+        Row: {
+          id: string
+        }
+        Insert: {
+          id?: string
+        }
+        Update: {
+          id?: string
+        }
+        Relationships: []
+      }
+      coupons: {
+        Row: {
+          id: string
+        }
+        Insert: {
+          id?: string
+        }
+        Update: {
+          id?: string
+        }
+        Relationships: []
+      }
+      downloads: {
+        Row: {
+          id: string
+        }
+        Insert: {
+          id?: string
+        }
+        Update: {
+          id?: string
+        }
+        Relationships: []
+      }
+      email_logs: {
+        Row: {
+          attempts: number | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          payload: Json | null
+          provider: string | null
+          recipient: string
+          rendered_html: string | null
+          sent_at: string | null
+          status: string | null
+          subject: string | null
+          template_key: string | null
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          payload?: Json | null
+          provider?: string | null
+          recipient: string
+          rendered_html?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+          template_key?: string | null
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          payload?: Json | null
+          provider?: string | null
+          recipient?: string
+          rendered_html?: string | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+          template_key?: string | null
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          enabled: boolean | null
+          html_body: string | null
+          id: string
+          subject: string | null
+          template_key: string
+        }
+        Insert: {
+          enabled?: boolean | null
+          html_body?: string | null
+          id?: string
+          subject?: string | null
+          template_key: string
+        }
+        Update: {
+          enabled?: boolean | null
+          html_body?: string | null
+          id?: string
+          subject?: string | null
+          template_key?: string
+        }
+        Relationships: []
+      }
+      legal_pages: {
+        Row: {
+          content: string | null
+          id: string
+          is_active: boolean | null
+          slug: string
+          title: string
+        }
+        Insert: {
+          content?: string | null
+          id?: string
+          is_active?: boolean | null
+          slug: string
+          title: string
+        }
+        Update: {
+          content?: string | null
+          id?: string
+          is_active?: boolean | null
+          slug?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      manual_payment_submissions: {
+        Row: {
+          id: string
+        }
+        Insert: {
+          id?: string
+        }
+        Update: {
+          id?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
@@ -51,6 +192,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payment_gateways: {
+        Row: {
+          id: string
+          is_enabled: boolean | null
+          slug: string
+        }
+        Insert: {
+          id?: string
+          is_enabled?: boolean | null
+          slug: string
+        }
+        Update: {
+          id?: string
+          is_enabled?: boolean | null
+          slug?: string
+        }
+        Relationships: []
+      }
+      payment_intents: {
+        Row: {
+          id: string
+        }
+        Insert: {
+          id?: string
+        }
+        Update: {
+          id?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          id: string
+        }
+        Insert: {
+          id?: string
+        }
+        Update: {
+          id?: string
+        }
+        Relationships: []
       }
       product_categories: {
         Row: {
@@ -98,6 +281,44 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_images: {
+        Row: {
+          alt: string | null
+          created_at: string
+          id: string
+          is_primary: boolean
+          product_id: string
+          sort_order: number
+          url: string
+        }
+        Insert: {
+          alt?: string | null
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          product_id: string
+          sort_order?: number
+          url: string
+        }
+        Update: {
+          alt?: string | null
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          product_id?: string
+          sort_order?: number
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_images_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
