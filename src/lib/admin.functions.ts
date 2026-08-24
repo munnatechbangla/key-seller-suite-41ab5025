@@ -103,7 +103,12 @@ const productSchema = z.object({
     quantity_step: z.number().gt(0),
     pricing_mode: z.enum(["per_unit", "per_1000", "quantity_tier"]),
     price: z.number().nonnegative(),
+    tiers: z.array(z.object({
+      min: z.number().nonnegative(),
+      price: z.number().nonnegative(),
+    })).optional().nullable(),
   }).nullable().optional(),
+
 });
 
 export const adminUpsertProductFn = createServerFn({ method: "POST" })
