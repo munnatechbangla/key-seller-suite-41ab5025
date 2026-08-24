@@ -916,7 +916,9 @@ function BasicInfoTab({
             <option value="account">account</option>
             <option value="manual">manual</option>
             <option value="external_url">external_url</option>
+            <option value="smm_fulfillment">smm_fulfillment</option>
           </select>
+
         </div>
       </div>
       

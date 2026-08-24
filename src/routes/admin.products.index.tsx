@@ -429,8 +429,10 @@ function AdminProducts() {
                     <option value="account">Account</option>
                     <option value="manual">Manual</option>
                     <option value="external_url">External URL</option>
+                    <option value="smm_fulfillment">SMM Fulfillment</option>
                   </select>
                 </div>
+
 
                 {(editing as any).product_type === "smm_service" && (
                   <div className="col-span-2 space-y-4 rounded-lg border border-primary/20 bg-primary/5 p-4 mt-2">
