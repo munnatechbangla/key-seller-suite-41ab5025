@@ -460,6 +460,7 @@ export type Database = {
           created_at: string | null
           error_message: string | null
           id: string
+          last_attempt_at: string | null
           payload: Json | null
           provider: string | null
           recipient: string
@@ -474,6 +475,7 @@ export type Database = {
           created_at?: string | null
           error_message?: string | null
           id?: string
+          last_attempt_at?: string | null
           payload?: Json | null
           provider?: string | null
           recipient: string
@@ -488,6 +490,7 @@ export type Database = {
           created_at?: string | null
           error_message?: string | null
           id?: string
+          last_attempt_at?: string | null
           payload?: Json | null
           provider?: string | null
           recipient?: string
@@ -551,6 +554,50 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: true
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      landing_page_sections: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          json_content: Json | null
+          page_id: string | null
+          section_key: string
+          section_type: string
+          sort_order: number | null
+          title: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          json_content?: Json | null
+          page_id?: string | null
+          section_key: string
+          section_type: string
+          sort_order?: number | null
+          title?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          json_content?: Json | null
+          page_id?: string | null
+          section_key?: string
+          section_type?: string
+          sort_order?: number | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_page_sections_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "landing_pages"
             referencedColumns: ["id"]
           },
         ]
@@ -1086,6 +1133,8 @@ export type Database = {
           is_approved: boolean
           is_verified: boolean
           product_id: string
+          product_name: string | null
+          product_slug: string | null
           rating: number
           status: string | null
           title: string | null
@@ -1100,6 +1149,8 @@ export type Database = {
           is_approved?: boolean
           is_verified?: boolean
           product_id: string
+          product_name?: string | null
+          product_slug?: string | null
           rating: number
           status?: string | null
           title?: string | null
@@ -1114,6 +1165,8 @@ export type Database = {
           is_approved?: boolean
           is_verified?: boolean
           product_id?: string
+          product_name?: string | null
+          product_slug?: string | null
           rating?: number
           status?: string | null
           title?: string | null
@@ -1422,18 +1475,21 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          permissions: Json | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          permissions?: Json | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          permissions?: Json | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
@@ -1470,16 +1526,18 @@ export type Database = {
         }
         Returns: boolean
       }
-      list_recent_public_purchases: {
-        Args: { _limit: number }
-        Returns: {
-          created_at: string
-          customer_name: string
-          emoji: string
-          id: string
-          product_name: string
-        }[]
-      }
+      list_recent_public_purchases:
+        | { Args: never; Returns: Json }
+        | {
+            Args: { _limit: number }
+            Returns: {
+              created_at: string
+              customer_name: string
+              emoji: string
+              id: string
+              product_name: string
+            }[]
+          }
       start_fulfillment_for_order: {
         Args: { _order_id: string }
         Returns: undefined
