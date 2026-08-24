@@ -143,6 +143,129 @@ export type Database = {
         }
         Relationships: []
       }
+      license_assignments: {
+        Row: {
+          assigned_at: string
+          id: string
+          license_key_id: string | null
+          order_id: string | null
+          order_item_id: string | null
+          revoked_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assigned_at?: string
+          id?: string
+          license_key_id?: string | null
+          order_id?: string | null
+          order_item_id?: string | null
+          revoked_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assigned_at?: string
+          id?: string
+          license_key_id?: string | null
+          order_id?: string | null
+          order_item_id?: string | null
+          revoked_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_assignments_license_key_id_fkey"
+            columns: ["license_key_id"]
+            isOneToOne: false
+            referencedRelation: "license_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "license_assignments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "license_assignments_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      license_keys: {
+        Row: {
+          created_at: string
+          id: string
+          key_value: string
+          pool_id: string
+          product_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key_value: string
+          pool_id: string
+          product_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key_value?: string
+          pool_id?: string
+          product_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_keys_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "license_pools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "license_keys_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      license_pools: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          product_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          product_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_pools_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manual_payment_submissions: {
         Row: {
           id: string
@@ -193,6 +316,48 @@ export type Database = {
           },
         ]
       }
+      orders: {
+        Row: {
+          created_at: string
+          currency: string
+          customer_name: string | null
+          email: string
+          id: string
+          order_number: string
+          payment_method: string | null
+          status: string
+          total: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          customer_name?: string | null
+          email: string
+          id?: string
+          order_number: string
+          payment_method?: string | null
+          status?: string
+          total?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          customer_name?: string | null
+          email?: string
+          id?: string
+          order_number?: string
+          payment_method?: string | null
+          status?: string
+          total?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       payment_gateways: {
         Row: {
           id: string
@@ -234,6 +399,79 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      product_attribute_options: {
+        Row: {
+          attribute_id: string
+          color: string | null
+          id: string
+          image: string | null
+          label: string
+          sort_order: number
+          value: string
+        }
+        Insert: {
+          attribute_id: string
+          color?: string | null
+          id?: string
+          image?: string | null
+          label: string
+          sort_order?: number
+          value: string
+        }
+        Update: {
+          attribute_id?: string
+          color?: string | null
+          id?: string
+          image?: string | null
+          label?: string
+          sort_order?: number
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_attribute_options_attribute_id_fkey"
+            columns: ["attribute_id"]
+            isOneToOne: false
+            referencedRelation: "product_attributes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_attributes: {
+        Row: {
+          display_type: string | null
+          id: string
+          name: string
+          product_id: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          display_type?: string | null
+          id?: string
+          name: string
+          product_id: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          display_type?: string | null
+          id?: string
+          name?: string
+          product_id?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_attributes_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_categories: {
         Row: {
@@ -369,6 +607,92 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "product_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_variations: {
+        Row: {
+          attribute_option_ids: string[] | null
+          attributes: Json
+          compare_price: number | null
+          created_at: string
+          delivery_type: Database["public"]["Enums"]["delivery_type"] | null
+          dimensions: Json | null
+          id: string
+          inventory_pool_id: string | null
+          license_pool_id: string | null
+          name: string
+          price: number
+          product_id: string
+          sale_price: number | null
+          sku: string | null
+          sort_order: number
+          status: Database["public"]["Enums"]["variation_status"]
+          stock: number | null
+          stock_status: Database["public"]["Enums"]["stock_state"]
+          subscription_pool_id: string | null
+          thumbnail_url: string | null
+          updated_at: string
+          visibility: string | null
+          weight: number | null
+        }
+        Insert: {
+          attribute_option_ids?: string[] | null
+          attributes?: Json
+          compare_price?: number | null
+          created_at?: string
+          delivery_type?: Database["public"]["Enums"]["delivery_type"] | null
+          dimensions?: Json | null
+          id?: string
+          inventory_pool_id?: string | null
+          license_pool_id?: string | null
+          name: string
+          price?: number
+          product_id: string
+          sale_price?: number | null
+          sku?: string | null
+          sort_order?: number
+          status?: Database["public"]["Enums"]["variation_status"]
+          stock?: number | null
+          stock_status?: Database["public"]["Enums"]["stock_state"]
+          subscription_pool_id?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+          visibility?: string | null
+          weight?: number | null
+        }
+        Update: {
+          attribute_option_ids?: string[] | null
+          attributes?: Json
+          compare_price?: number | null
+          created_at?: string
+          delivery_type?: Database["public"]["Enums"]["delivery_type"] | null
+          dimensions?: Json | null
+          id?: string
+          inventory_pool_id?: string | null
+          license_pool_id?: string | null
+          name?: string
+          price?: number
+          product_id?: string
+          sale_price?: number | null
+          sku?: string | null
+          sort_order?: number
+          status?: Database["public"]["Enums"]["variation_status"]
+          stock?: number | null
+          stock_status?: Database["public"]["Enums"]["stock_state"]
+          subscription_pool_id?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+          visibility?: string | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variations_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
