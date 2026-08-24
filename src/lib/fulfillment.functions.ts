@@ -104,8 +104,8 @@ export const getFulfillmentTimelineAuthFn = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase.rpc("get_fulfillment_timeline", {
       _fulfillment_id: data.fulfillmentId,
-      _email: data.email,
-    });
+      _email: data.email || undefined,
+    } as any);
     if (error) throw new Error(error.message);
     return (rows as FulfillmentLog[]) ?? [];
   });
@@ -116,8 +116,8 @@ export const getFulfillmentTimelineGuestFn = createServerFn({ method: "GET" })
     const sb = createServerSupabaseClient();
     const { data: rows, error } = await sb.rpc("get_fulfillment_timeline", {
       _fulfillment_id: data.fulfillmentId,
-      _email: data.email,
-    });
+      _email: data.email || undefined,
+    } as any);
     if (error) throw new Error(error.message);
     return (rows as FulfillmentLog[]) ?? [];
   });
@@ -132,8 +132,8 @@ export const adminRetryFulfillmentFn = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { data: res, error } = await context.supabase.rpc("admin_retry_fulfillment", {
-      _fulfillment_id: data.fulfillmentId,
-    });
+      _item_id: data.fulfillmentId,
+    } as any);
     if (error) throw new Error(error.message);
     return res as { ok: boolean; status: FulfillmentStatus };
   });
@@ -144,8 +144,8 @@ export const adminRestartFulfillmentFn = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { data: res, error } = await context.supabase.rpc("admin_restart_fulfillment", {
-      _fulfillment_id: data.fulfillmentId,
-    });
+      _item_id: data.fulfillmentId,
+    } as any);
     if (error) throw new Error(error.message);
     return res as { ok: boolean; status: FulfillmentStatus };
   });
@@ -161,9 +161,9 @@ export const adminCancelFulfillmentFn = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { data: res, error } = await context.supabase.rpc("admin_cancel_fulfillment", {
-      _fulfillment_id: data.fulfillmentId,
-      _reason: data.reason,
-    });
+      _item_id: data.fulfillmentId,
+      _reason: data.reason || undefined,
+    } as any);
     if (error) throw new Error(error.message);
     return res as { ok: boolean };
   });
@@ -194,9 +194,9 @@ export const adminMarkSubscriptionDeliveredFn = createServerFn({ method: "POST" 
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { data: res, error } = await context.supabase.rpc("admin_mark_subscription_delivered", {
-      _fulfillment_id: data.fulfillmentId,
+      _item_id: data.fulfillmentId,
       _note: data.note ?? undefined,
-    });
+    } as any);
     if (error) throw new Error(error.message);
     return res as { ok: boolean; order_completed: boolean };
   });
