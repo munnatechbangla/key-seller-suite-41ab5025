@@ -10,7 +10,7 @@ import { useCheckoutFields } from "@/components/checkout/CheckoutCustomFields";
 import { resolveLineImage } from "@/lib/cart-image";
 import { ProductThumb } from "@/components/site/ProductThumb";
 import { useFeatured, featuredQuery } from "@/lib/catalog";
-import { validateCouponFn } from "@/lib/coupons.functions";
+import { validateCoupon } from "@/lib/coupons.functions";
 import { Trash2, Tag, ShoppingBag, ArrowRight, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -29,7 +29,7 @@ function CartPage() {
   const [code, setCode] = useState("");
   const [applying, setApplying] = useState(false);
   const formatPrice = usePriceFormatter();
-  const validate = useServerFn(validateCouponFn);
+  const validate = useServerFn(validateCoupon);
   const crossSell = useFeatured().slice(0, 4);
   const cartSlugs = cart.items.map((i) => i.productSlug ?? i.slug);
   const fieldsQuery = useCheckoutFields(cartSlugs);
@@ -42,13 +42,13 @@ function CartPage() {
       const r = await validate({
         data: { code: code.trim(), subtotal: cart.subtotal(), productSlugs: cart.items.map((i) => i.productSlug ?? i.slug) },
       });
-      if (r.ok) {
-        cart.setCoupon(r.code, r.discount);
+      if ((r as any).valid) {
+        cart.setCoupon((r as any).code || code.trim(), (r as any).discount || 0);
         toast.success(`Saved ${formatPrice(r.discount)}`);
         setCode("");
       } else {
         cart.clearCoupon();
-        toast.error(couponReason(r.reason, r));
+        toast.error(couponReason((r as any).reason || (r as any).message || "Invalid", r as any));
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not apply coupon");

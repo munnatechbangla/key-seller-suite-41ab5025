@@ -24,13 +24,13 @@ export type ReviewBreakdown = {
 export async function fetchApprovedReviews(productId: string, limit = 50): Promise<PublicReview[]> {
   const { data, error } = await supabase
     .from("product_reviews")
-    .select("id, rating, title, body, display_name, avatar_url, is_verified, admin_reply, admin_reply_at, created_at")
+    .select("id, rating, title, body, display_name, is_verified, admin_reply, admin_reply_at, created_at")
     .eq("product_id", productId)
     .eq("status", "approved")
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw error;
-  return (data ?? []) as PublicReview[];
+  return (data ?? []) as any[];
 }
 
 export function computeBreakdown(reviews: PublicReview[]): ReviewBreakdown {

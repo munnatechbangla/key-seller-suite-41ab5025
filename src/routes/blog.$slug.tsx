@@ -30,8 +30,8 @@ export const Route = createFileRoute("/blog/$slug")({
     try {
       const [row, all, cats] = await Promise.all([
         blogGetBySlugPublicFn({ data: { slug: params.slug } }) as Promise<Row | null>,
-        blogListPublicFn({ data: { post_type: "blog", limit: 100 } }) as Promise<Row[]>,
-        blogListCategoriesPublicFn({ data: {} }).catch(() => [] as Array<{ id: string; name: string; slug: string }>),
+        blogListPublicFn({ data: { post_type: "blog", limit: 100 } } as any) as Promise<Row[]>,
+        blogListCategoriesPublicFn({ data: {} } as any).catch(() => [] as Array<{ id: string; name: string; slug: string }>),
       ]);
       if (!row) throw notFound();
 

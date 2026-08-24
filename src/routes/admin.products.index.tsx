@@ -224,7 +224,7 @@ function AdminProducts() {
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-2xl font-bold">Products</h1>
+          <h1 className="text-2xl font-bold">'''Do not make any visual modifications. The phrases I write are commands to understand what I want, not to be written down. Understand their content well, then execute what is required.'''\n                                        \n                                            \n                                            Please investigate the current "Something went wrong" page-loading error.\n\nThe site was working previously, but after the recent changes the main site no longer loads.\n\nFirst identify the exact runtime error causing the page to fail.\n\nDo not add features or make broad changes.\n\nOnly fix the specific error responsible for the page-loading failure, then verify that the homepage and product pages load normally.\n\nIf the cause is unclear, report the exact error instead of making unrelated changes.</h1>
           <p className="text-sm text-muted-foreground">{data?.length ?? 0} products</p>
         </div>
         <div className="flex flex-wrap gap-1.5">

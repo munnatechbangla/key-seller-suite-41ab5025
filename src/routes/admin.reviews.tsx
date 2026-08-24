@@ -31,7 +31,7 @@ function AdminReviewsPage() {
     queryFn: () => list({ data: { status, search, limit: 200 } }),
   });
 
-  const rows = data ?? [];
+  const rows = (data as any[]) ?? [];
   const allChecked = useMemo(() => rows.length > 0 && rows.every((r) => selected.has(r.id)), [rows, selected]);
 
   function toggle(id: string) {
@@ -127,8 +127,8 @@ function AdminReviewsPage() {
               <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">No reviews match this filter.</td></tr>
             )}
             {rows.map((r) => {
-              const prod = (r as unknown as { products?: { title?: string; slug?: string } }).products;
-              const prof = (r as unknown as { profiles?: { full_name?: string; email?: string } }).profiles;
+              const prod = (r as any).products;
+              const prof = (r as any).profiles;
               return (
                 <tr key={r.id} className="border-t border-border align-top">
                   <td className="px-3 py-3"><input type="checkbox" checked={selected.has(r.id)} onChange={() => toggle(r.id)} /></td>

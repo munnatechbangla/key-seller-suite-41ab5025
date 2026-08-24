@@ -36,7 +36,7 @@ export async function claimFirstAdmin(): Promise<{ ok: boolean; reason?: string 
 export async function markSetupComplete(): Promise<{ ok: boolean; error?: string }> {
   const { error } = await supabase
     .from("setup_state")
-    .update({ is_completed: true, completed_at: new Date().toISOString() })
+    .update({ is_completed: true, completed_at: new Date().toISOString() } as any)
     .eq("id", 1);
   if (error) return { ok: false, error: error.message };
   return { ok: true };
@@ -45,7 +45,7 @@ export async function markSetupComplete(): Promise<{ ok: boolean; error?: string
 export async function reopenSetup(): Promise<{ ok: boolean; error?: string }> {
   const { error } = await supabase
     .from("setup_state")
-    .update({ is_completed: false, completed_at: null })
+    .update({ is_completed: false, completed_at: null } as any)
     .eq("id", 1);
   if (error) return { ok: false, error: error.message };
   return { ok: true };

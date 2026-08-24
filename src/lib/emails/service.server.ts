@@ -87,8 +87,8 @@ export async function enqueueEmail(args: EnqueueArgs) {
   }
   const sender = await loadSenderSettings();
   const vars = { site_name: sender.site_name ?? "Marketplace", ...(args.vars ?? {}) };
-  const subject = args.subject ?? renderTemplate(tpl.subject, vars);
-  const html = renderTemplate(tpl.html_body, vars);
+  const subject = args.subject ?? renderTemplate(tpl.subject || "", vars);
+  const html = renderTemplate(tpl.html_body || "", vars);
 
   // Dev mode: no sender domain configured OR sending not enabled globally.
   const sendingEnabled =
@@ -129,11 +129,11 @@ export async function processPendingEmails(limit = 25) {
   let ok = 0;
   for (const r of rows ?? []) {
     const result = await deliverEmail({
-      to: r.recipient,
+      to: r.recipient!,
       subject: r.subject ?? "Email Notification",
       html: r.rendered_html ?? "",
       from: sender.sender_email!,
-      fromName: sender.sender_name ?? sender.site_name ?? "Marketplace",
+      fromName: (sender.sender_name ?? sender.site_name ?? "Marketplace")!,
       replyTo: sender.reply_to ?? undefined,
     });
     const currentAttempts = r.attempts ?? 0;
