@@ -39,7 +39,7 @@ export const submitReviewFn = createServerFn({ method: "POST" })
     const { data: purchased } = await supabase.rpc("user_purchased_product", {
       _user_id: userId,
       _product_id: data.productId,
-    });
+    } as any);
     const isVerified = Boolean(purchased);
 
     // One review per product per user
