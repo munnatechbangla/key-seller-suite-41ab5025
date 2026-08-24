@@ -118,19 +118,19 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
 
   const licenseItemsQ = useQuery({
     queryKey: ["admin-manual-license", orderId],
-    queryFn: () => listManualLicenses({ data: { orderId } }),
+    queryFn: () => listManualLicenses({ data: { orderId } } as any),
     enabled: isAdmin,
   });
   const licenseOrderItemIds = useMemo(() => {
     const set = new Set<string>();
-    for (const it of (licenseItemsQ.data?.items ?? []) as Array<{ order_item_id: string }>) {
+    for (const it of ((licenseItemsQ.data as any)?.items ?? []) as Array<{ order_item_id: string }>) {
       set.add(it.order_item_id);
     }
     return set;
   }, [licenseItemsQ.data]);
   const licenseProductIds = useMemo(() => {
     const set = new Set<string>();
-    for (const it of (licenseItemsQ.data?.items ?? []) as Array<{ product_id: string }>) {
+    for (const it of ((licenseItemsQ.data as any)?.items ?? []) as Array<{ product_id: string }>) {
       if (it.product_id) set.add(it.product_id);
     }
     return set;
@@ -142,7 +142,7 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
       orderId,
       licenseItemsQStatus: licenseItemsQ.status,
       licenseItemsError: (licenseItemsQ.error as any)?.message,
-      licenseItems: licenseItemsQ.data?.items,
+      licenseItems: (licenseItemsQ.data as any)?.items,
       fulfillmentRows: (q.data ?? []).map((r: any) => ({
         id: r.id,
         product_id: r.product_id,
@@ -251,7 +251,7 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
           !!(f as any).product_id && licenseProductIds.has((f as any).product_id);
         const resolvedOrderItemId =
           f.order_item_id ??
-          ((licenseItemsQ.data?.items ?? []) as Array<{ order_item_id: string; product_id: string }>)
+          (((licenseItemsQ.data as any)?.items ?? []) as Array<{ order_item_id: string; product_id: string }>)
             .find((it) => it.product_id === (f as any).product_id)?.order_item_id ??
           null;
         const isLicense =

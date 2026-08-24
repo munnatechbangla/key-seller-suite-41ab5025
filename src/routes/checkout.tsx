@@ -10,7 +10,7 @@ import { useState, useEffect } from "react";
 import { Lock, Tag, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { placeOrderAuthFn, placeOrderGuestFn } from "@/lib/orders.functions";
-import { validateCouponFn } from "@/lib/coupons.functions";
+import { validateCoupon } from "@/lib/coupons.functions";
 import { couponReason } from "@/routes/cart";
 import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
 import { GatewayLogo } from "@/components/site/GatewayLogo";
@@ -35,7 +35,7 @@ function CheckoutPage() {
   const formatPrice = usePriceFormatter();
   const listGateways = useServerFn(listEnabledGatewaysFn);
   const gwQuery = useQuery({ queryKey: ["enabled-gateways"], queryFn: () => listGateways() });
-  const gateways = gwQuery.data?.gateways ?? [];
+  const gateways = (gwQuery.data as any)?.gateways ?? [];
   const [gateway, setGateway] = useState<string>("");
   useEffect(() => { if (!gateway && gateways[0]) setGateway(gateways[0].slug); }, [gateways, gateway]);
 
@@ -46,7 +46,7 @@ function CheckoutPage() {
   const [applying, setApplying] = useState(false);
   const placeGuest = useServerFn(placeOrderGuestFn);
   const placeAuth = useServerFn(placeOrderAuthFn);
-  const validate = useServerFn(validateCouponFn);
+  const validate = useServerFn(validateCoupon);
   const saveFieldsAuth = useServerFn(saveOrderCustomFieldsAuthFn);
   const saveFieldsGuest = useServerFn(saveOrderCustomFieldsGuestFn);
 
@@ -61,10 +61,10 @@ function CheckoutPage() {
     setApplying(true);
     try {
       const r = await validate({
-        data: { code: code.trim(), subtotal: cart.subtotal(), productSlugs: cart.items.map((i) => i.slug) },
+        data: { code: code.trim(), subtotal: cart.subtotal(), productSlugs: cart.items.map((i) => i.slug) } as any,
       });
-      if (r.ok) { cart.setCoupon(r.code, r.discount); toast.success(`Saved ${formatPrice(r.discount)}`); setCode(""); }
-      else { cart.clearCoupon(); toast.error(couponReason(r.reason, r)); }
+      if ((r as any).valid) { cart.setCoupon((r as any).code || code.trim(), (r as any).discount || 0); toast.success(`Saved ${formatPrice((r as any).discount || 0)}`); setCode(""); }
+      else { cart.clearCoupon(); toast.error(couponReason((r as any).reason || (r as any).message || "Invalid", r as any)); }
     } finally { setApplying(false); }
   };
 
@@ -206,7 +206,7 @@ function CheckoutPage() {
               <p className="text-sm text-muted-foreground">No payment methods enabled. Please contact support.</p>
             ) : (
               <div className="space-y-2">
-                {gateways.map((g) => (
+                {gateways.map((g: any) => (
                   <label key={g.slug} className={`flex min-w-0 items-center gap-3 p-4 rounded-xl border cursor-pointer transition-smooth ${gateway === g.slug ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
                     <input type="radio" name="gateway" checked={gateway === g.slug} onChange={() => setGateway(g.slug)} className="shrink-0 accent-[var(--primary)]" />
                     <GatewayLogo src={g.logo_url} alt={g.name} />

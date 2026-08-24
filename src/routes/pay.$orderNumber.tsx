@@ -28,7 +28,7 @@ import { initPaymentFn } from "@/lib/payments/init.functions";
 import {
   listEnabledGatewaysFn,
   submitManualPaymentFn,
-  getMySubmissionForOrderFn,
+  getMySubmissionsFn,
   type GatewayRow,
 } from "@/lib/payments/gateways.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -131,7 +131,7 @@ function PayPage() {
   const simulate = useServerFn(simulateGatewayPaymentFn);
   const initPayment = useServerFn(initPaymentFn);
   const listGateways = useServerFn(listEnabledGatewaysFn);
-  const fetchSubmission = useServerFn(getMySubmissionForOrderFn);
+  const fetchSubmission = useServerFn(getMySubmissionsFn);
   const support = useSettings((s) => s.settings.support);
   const contact = useSettings((s) => s.settings.contact);
   const loadSettings = useSettings((s) => s.load);
@@ -160,7 +160,7 @@ function PayPage() {
 
   const subQ = useQuery({
     queryKey: ["submission", orderNumber],
-    queryFn: () => fetchSubmission({ data: { orderNumber } }),
+    queryFn: () => fetchSubmission() as any,
     enabled: !!user,
     refetchInterval: (query) => {
       const s = (query.state.data as { submission?: { status?: string } } | undefined)?.submission?.status;
@@ -188,7 +188,7 @@ function PayPage() {
   const assignments = (q.data?.assignments as unknown as Array<unknown>) || (q.data as any)?.order_items?.filter((it: any) => it.license_assignments)?.flatMap((it: any) => it.license_assignments) || [];
   const submission = subQ.data?.submission ?? (subQ.data as any)?.[0] ?? null;
   const slug: string = order?.payment_method ?? "";
-  const gateway: GatewayRow | undefined = gw.data?.gateways.find((g) => g.slug === slug);
+  const gateway: any = (gw.data as any)?.gateways?.find((g: any) => g.slug === slug);
   const isManual = gateway?.type === "manual";
   const isCustomAuto = gateway?.type === "custom_auto";
   const isBuiltinAuto = gateway?.type === "builtin" && BUILTIN_AUTO.has(slug);

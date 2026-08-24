@@ -65,7 +65,7 @@ function LandingEditor() {
     const p = await getPage({ data: { id } });
     setPage(p);
     const s = await listSec({ data: { page_id: id } });
-    setSections(s as Section[]);
+    setSections(s as any);
   };
   useEffect(() => { refresh(); listTpl().then((t) => setTemplates(t as any[])); }, [id]);
 

@@ -36,10 +36,10 @@ export const submitReviewFn = createServerFn({ method: "POST" })
     if ((recent ?? 0) > 0) throw new Error("Please wait a moment before submitting another review.");
 
     // Verified purchase check (and one-review-per-product guard)
-    const { data: purchased } = await supabase.rpc("user_purchased_product", {
+    const { data: purchased } = await (supabase.rpc as any)("user_purchased_product", {
       _user_id: userId,
       _product_id: data.productId,
-    } as any);
+    });
     const isVerified = Boolean(purchased);
 
     // One review per product per user
@@ -72,11 +72,11 @@ export const submitReviewFn = createServerFn({ method: "POST" })
         rating: data.rating,
         title: data.title ?? null,
         body: data.body ?? null,
-        order_item_id: data.orderItemId ?? null,
+        order_item_id: (data.orderItemId as any) || null,
         display_name: data.displayName?.trim() || null,
         is_verified: isVerified,
         status: "pending",
-      })
+      } as any)
       .select("id, status")
       .single();
     if (error) throw new Error(error.message);
@@ -207,7 +207,7 @@ export const adminReplyReviewFn = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { error } = await context.supabase
       .from("product_reviews")
-      .update({ admin_reply: data.reply || null, admin_reply_at: data.reply ? new Date().toISOString() : null })
+      .update({ admin_reply: data.reply || null, admin_reply_at: (data.reply ? new Date().toISOString() : null) as any })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };

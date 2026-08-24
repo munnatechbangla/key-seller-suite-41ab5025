@@ -48,8 +48,8 @@ function AdminLegalPages() {
       .insert({
         slug: s,
         title: s.charAt(0).toUpperCase() + s.slice(1),
-        content: { sections: [{ h: "Section", p: "Content..." }] },
-        is_published: false,
+        content: { sections: [{ h: "Section", p: "Content..." }] } as any,
+        is_published: false as any,
       })
       .select("*")
       .single();
@@ -62,7 +62,7 @@ function AdminLegalPages() {
   async function save(patch: Partial<LegalPage>) {
     if (!selected) return;
     setSaving(true);
-    const { error } = await supabase.from("legal_pages").update(patch).eq("id", selected.id);
+    const { error } = await supabase.from("legal_pages").update(patch as any).eq("id", selected.id);
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Saved");

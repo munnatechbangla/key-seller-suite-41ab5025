@@ -95,8 +95,8 @@ function HomepageBuilder() {
     }
     (async () => {
       try {
-        const res = (await listGateways()) as { gateways: Array<{ id: string; name: string; logo_url: string | null }> };
-        const seeded: HomePaymentLogo[] = (res.gateways ?? []).map((g, i) => ({
+        const res = (await listGateways()) as any;
+        const seeded: HomePaymentLogo[] = ((res.gateways as any[]) ?? []).map((g: any, i: number) => ({
           id: newId(`pay-${i}`),
           enabled: true,
           logo: g.logo_url ?? "",

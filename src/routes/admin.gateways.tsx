@@ -548,8 +548,8 @@ function GatewayHealthPanel({ id, slug }: { id: string; slug: string }) {
         <div className="text-sm font-semibold flex items-center gap-2"><Activity className="h-4 w-4" />Health & Logs</div>
         <Button size="sm" variant="outline" disabled={testing} onClick={async () => {
           setTesting(true); setTestResult(null);
-          try { const r = await testFn({ data: { id } }); setTestResult(r); h.refetch(); }
-          catch (e) { setTestResult({ ok: false, message: e instanceof Error ? e.message : "failed", latencyMs: 0 }); }
+          try { const r = await testFn({ data: { id } }); setTestResult({ ...r, latencyMs: 0 } as any); h.refetch(); }
+          catch (e) { setTestResult({ ok: false, message: e instanceof Error ? e.message : "failed", latencyMs: 0 } as any); }
           finally { setTesting(false); }
         }}>{testing ? <Loader2 className="h-3 w-3 animate-spin" /> : "Test Connection"}</Button>
       </div>
@@ -563,12 +563,12 @@ function GatewayHealthPanel({ id, slug }: { id: string; slug: string }) {
       <div className="grid grid-cols-2 gap-2 text-xs">
         <div className="rounded border bg-card p-2">
           <div className="text-muted-foreground">Last success</div>
-          <div className="font-mono truncate">{h.data?.lastSuccess ? new Date(h.data.lastSuccess.created_at).toLocaleString() : "—"}</div>
+          <div className="font-mono truncate">{(h.data as any)?.lastSuccess ? new Date((h.data as any).lastSuccess.created_at).toLocaleString() : "—"}</div>
         </div>
         <div className="rounded border bg-card p-2">
           <div className="text-muted-foreground">Last failure</div>
-          <div className="font-mono truncate">{h.data?.lastFailure ? new Date(h.data.lastFailure.created_at).toLocaleString() : "—"}</div>
-          {h.data?.lastFailure?.error_message && <div className="text-destructive truncate">{h.data.lastFailure.error_message}</div>}
+          <div className="font-mono truncate">{(h.data as any)?.lastFailure ? new Date((h.data as any).lastFailure.created_at).toLocaleString() : "—"}</div>
+          {(h.data as any)?.lastFailure?.error_message && <div className="text-destructive truncate">{(h.data as any).lastFailure.error_message}</div>}
         </div>
       </div>
       <div className="max-h-48 overflow-y-auto border rounded bg-card">
@@ -577,7 +577,7 @@ function GatewayHealthPanel({ id, slug }: { id: string; slug: string }) {
             <th className="text-left p-1.5">Time</th><th className="text-left p-1.5">Event</th><th className="text-left p-1.5">Status</th><th className="text-left p-1.5">Order / Txn</th>
           </tr></thead>
           <tbody>
-            {(h.data?.logs ?? []).map((l) => (
+            {((h.data as any)?.logs ?? []).map((l: any) => (
               <tr key={l.id} className="border-t">
                 <td className="p-1.5 whitespace-nowrap">{new Date(l.created_at).toLocaleTimeString()}</td>
                 <td className="p-1.5">{l.event_type}</td>
@@ -585,7 +585,7 @@ function GatewayHealthPanel({ id, slug }: { id: string; slug: string }) {
                 <td className="p-1.5 font-mono truncate max-w-[140px]">{l.order_number ?? l.transaction_id ?? "—"}</td>
               </tr>
             ))}
-            {!h.isLoading && (h.data?.logs.length ?? 0) === 0 && (
+            {!h.isLoading && ((h.data as any)?.logs.length ?? 0) === 0 && (
               <tr><td colSpan={4} className="p-3 text-center text-muted-foreground">No events yet.</td></tr>
             )}
           </tbody>
@@ -645,7 +645,7 @@ function SubmissionsList() {
 
   const q = useQuery({
     queryKey: ["admin", "manual-submissions", status],
-    queryFn: () => fetchSubs({ data: { status } }),
+    queryFn: () => fetchSubs({ data: { status } } as any),
     refetchInterval: 15000,
   });
 
@@ -672,7 +672,7 @@ function SubmissionsList() {
             </tr>
           </thead>
           <tbody>
-            {q.data?.submissions.map((s) => {
+            {((q.data as any)?.submissions ?? []).map((s: any) => {
               const ord = s.orders as { order_number: string; total: number; currency: string } | null;
               const fv = (s.field_values ?? {}) as Record<string, string>;
               const txn = s.transaction_id ?? fv.transaction_id ?? fv.txn_id ?? fv.trxid ?? fv.trx_id ?? null;
@@ -724,7 +724,7 @@ function SubmissionsList() {
               );
             })}
             {q.isLoading && <tr><td colSpan={7} className="p-8 text-center text-muted-foreground"><Loader2 className="inline h-4 w-4 animate-spin mr-2" />Loading…</td></tr>}
-            {!q.isLoading && (q.data?.submissions.length ?? 0) === 0 && (
+            {!q.isLoading && ((q.data as any)?.submissions.length ?? 0) === 0 && (
               <tr><td colSpan={7} className="p-8 text-center text-sm text-muted-foreground">No submissions.</td></tr>
             )}
           </tbody>

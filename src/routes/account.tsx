@@ -180,7 +180,7 @@ function OrdersList({ orders }: { orders: OrderRow[] }) {
       {orders.map((o) => {
         const itemCount = o.order_items?.length ?? 0;
         const date = new Date(o.created_at).toLocaleDateString();
-        const payStatus = (o as { payments?: { status: string }[] }).payments?.[0]?.status ?? "pending";
+        const payStatus = (o as any).payments?.[0]?.status ?? "pending";
         const deliveryItems = deliveriesByOrder.get(o.id) ?? [];
         const isSmm = deliveryItems.some(it => it.product?.product_type === 'smm_service' || (it as any).product_type === 'smm_service');
         const smmStatus = (deliveryItems.find(it => it.product?.product_type === 'smm_service' || (it as any).product_type === 'smm_service')?.smm_fulfillment as any)?.status;
@@ -370,7 +370,7 @@ function SubmissionsTab() {
       ) : (
         <div className="space-y-2">
           {items.map((s) => {
-            const ord = (s as { orders: { order_number: string } | null }).orders;
+            const ord = (s as any).orders;
             const date = new Date(s.created_at).toLocaleString();
             const reviewed = s.reviewed_at ? new Date(s.reviewed_at).toLocaleString() : null;
             return (

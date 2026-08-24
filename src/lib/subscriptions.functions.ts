@@ -421,13 +421,13 @@ export const extendSubscriptionFn = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const { data: r, error } = await context.supabase.rpc("admin_extend_subscription" as any, {
+    const { data: r, error } = await (context.supabase.rpc as any)("admin_extend_subscription" as any, {
       _assignment_id: data.id,
       _days: data.days,
       _notes: data.notes ?? undefined,
     });
     if (error) throw new Error(error.message);
-    return r;
+    return r as any;
   });
 
 export const renewSubscriptionFn = createServerFn({ method: "POST" })
@@ -441,13 +441,13 @@ export const renewSubscriptionFn = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const { data: r, error } = await context.supabase.rpc("admin_renew_subscription" as any, {
+    const { data: r, error } = await (context.supabase.rpc as any)("admin_renew_subscription" as any, {
       _assignment_id: data.id,
       _days: data.days,
       _notes: data.notes ?? undefined,
     });
     if (error) throw new Error(error.message);
-    return r;
+    return r as any;
   });
 
 export const suspendSubscriptionFn = createServerFn({ method: "POST" })
@@ -457,12 +457,12 @@ export const suspendSubscriptionFn = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const { data: r, error } = await context.supabase.rpc("admin_suspend_subscription" as any, {
+    const { data: r, error } = await (context.supabase.rpc as any)("admin_suspend_subscription" as any, {
       _assignment_id: data.id,
       _reason: data.reason ?? undefined,
     });
     if (error) throw new Error(error.message);
-    return r;
+    return r as any;
   });
 
 export const resumeSubscriptionFn = createServerFn({ method: "POST" })
@@ -470,7 +470,7 @@ export const resumeSubscriptionFn = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const { data: r, error } = await context.supabase.rpc("admin_resume_subscription", {
+    const { data: r, error } = await (context.supabase.rpc as any)("admin_resume_subscription" as any, {
       _assignment_id: data.id,
     });
     if (error) throw new Error(error.message);
@@ -500,13 +500,13 @@ export const evaluateSubscriptionStatusFn = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     if (data.id) {
-      const { error } = await context.supabase.rpc("evaluate_subscription_status", {
+      const { error } = await (context.supabase.rpc as any)("evaluate_subscription_status" as any, {
         _assignment_id: data.id,
       });
       if (error) throw new Error(error.message);
       return { ok: true };
     }
-    const { data: r, error } = await context.supabase.rpc("evaluate_all_subscriptions");
+    const { data: r, error } = await (context.supabase.rpc as any)("evaluate_all_subscriptions" as any);
     if (error) throw new Error(error.message);
     return { ok: true, evaluated: r };
   });
@@ -515,9 +515,9 @@ export const getSubscriptionRenewalHistoryFn = createServerFn({ method: "POST" }
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: r, error } = await context.supabase.rpc(
-      "get_subscription_renewal_history",
-      { _assignment_id: data.id },
+    const { data: r, error } = await (context.supabase.rpc as any)(
+      "get_subscription_renewal_history" as any,
+      { _assignment_id: data.id } as any
     );
     if (error) throw new Error(error.message);
     return r ?? [];
