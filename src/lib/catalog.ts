@@ -104,7 +104,7 @@ type ProductRow = {
 
 const SELECT_PRODUCT = `
   id, slug, title, short_description, description,
-  regular_price, sale_price, thumbnail_url, delivery_time, badge,
+  regular_price, sale_price, thumbnail_url, badge,
   rating, reviews_count, features, included, specs, stock_status,
   meta_title, meta_description, focus_keyword, secondary_keywords, canonical_url, robots,
   og_title, og_description, og_image, twitter_title, twitter_description, twitter_image,
