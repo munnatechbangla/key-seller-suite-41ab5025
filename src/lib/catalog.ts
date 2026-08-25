@@ -105,7 +105,6 @@ type ProductRow = {
 const SELECT_PRODUCT = `
   id, slug, title, short_description, description,
   regular_price, sale_price, thumbnail_url,
-  features, included, specs, stock_status,
   product_categories ( slug, name )
 ` as const;
 
