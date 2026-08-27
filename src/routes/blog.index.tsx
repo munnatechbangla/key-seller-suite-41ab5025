@@ -30,7 +30,7 @@ function BlogPage() {
   });
   const { data: cats } = useQuery({
     queryKey: ["blog", "public", "cats"],
-    queryFn: () => catsFn({ data: {} } as any),
+    queryFn: () => catsFn({ data: {} }),
     staleTime: 60_000,
   });
   const catNameById = new Map<string, string>();

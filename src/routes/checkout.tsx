@@ -5,12 +5,11 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { PageHero } from "@/components/site/PageHero";
 import { useCart, useAuth } from "@/lib/stores";
-import { calculateSMMPrice } from "@/lib/catalog";
 import { useState, useEffect } from "react";
 import { Lock, Tag, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { placeOrderAuthFn, placeOrderGuestFn } from "@/lib/orders.functions";
-import { validateCoupon } from "@/lib/coupons.functions";
+import { validateCouponFn } from "@/lib/coupons.functions";
 import { couponReason } from "@/routes/cart";
 import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
 import { GatewayLogo } from "@/components/site/GatewayLogo";
@@ -35,7 +34,7 @@ function CheckoutPage() {
   const formatPrice = usePriceFormatter();
   const listGateways = useServerFn(listEnabledGatewaysFn);
   const gwQuery = useQuery({ queryKey: ["enabled-gateways"], queryFn: () => listGateways() });
-  const gateways = (gwQuery.data as any)?.gateways ?? [];
+  const gateways = gwQuery.data?.gateways ?? [];
   const [gateway, setGateway] = useState<string>("");
   useEffect(() => { if (!gateway && gateways[0]) setGateway(gateways[0].slug); }, [gateways, gateway]);
 
@@ -46,7 +45,7 @@ function CheckoutPage() {
   const [applying, setApplying] = useState(false);
   const placeGuest = useServerFn(placeOrderGuestFn);
   const placeAuth = useServerFn(placeOrderAuthFn);
-  const validate = useServerFn(validateCoupon);
+  const validate = useServerFn(validateCouponFn);
   const saveFieldsAuth = useServerFn(saveOrderCustomFieldsAuthFn);
   const saveFieldsGuest = useServerFn(saveOrderCustomFieldsGuestFn);
 
@@ -61,10 +60,10 @@ function CheckoutPage() {
     setApplying(true);
     try {
       const r = await validate({
-        data: { code: code.trim(), subtotal: cart.subtotal(), productSlugs: cart.items.map((i) => i.slug) } as any,
+        data: { code: code.trim(), subtotal: cart.subtotal(), productSlugs: cart.items.map((i) => i.slug) },
       });
-      if ((r as any).valid) { cart.setCoupon((r as any).code || code.trim(), (r as any).discount || 0); toast.success(`Saved ${formatPrice((r as any).discount || 0)}`); setCode(""); }
-      else { cart.clearCoupon(); toast.error(couponReason((r as any).reason || (r as any).message || "Invalid", r as any)); }
+      if (r.ok) { cart.setCoupon(r.code, r.discount); toast.success(`Saved ${formatPrice(r.discount)}`); setCode(""); }
+      else { cart.clearCoupon(); toast.error(couponReason(r.reason, r)); }
     } finally { setApplying(false); }
   };
 
@@ -114,12 +113,6 @@ function CheckoutPage() {
           qty: i.qty,
           variant_id: i.variant?.variant_id ?? null,
           selected_attributes: i.variant?.selected_attributes ?? undefined,
-          product_slug: i.productSlug ?? i.slug,
-          smm_config_snapshot: i.smm_config_snapshot ?? null,
-          smm_quantity: i.smm_quantity ?? null,
-          price: i.product.product_type === 'smm_service' && i.smm_config_snapshot && i.smm_quantity
-            ? calculateSMMPrice(i.smm_quantity, i.smm_config_snapshot)
-            : undefined
         })),
         customer,
         paymentMethod: gateway,
@@ -132,30 +125,22 @@ function CheckoutPage() {
       // Persist custom field values (best-effort; server re-validates)
       if (customFields.length > 0) {
         const values = customFields
-          .map((f) => ({ 
-            field_id: f.id, 
-            value: (storedFieldValues[f.product_slug]?.[f.id] ?? "").toString().trim()
-          }))
-          .filter(v => v.value !== ""); // Only save non-empty values
-
-        if (values.length > 0) {
-          try {
-            console.log("[checkout] Persisting custom fields for order:", result.orderId, values);
-            const saveArgs = { data: { orderId: result.orderId, email: customer.email, values } };
-            if (user) await saveFieldsAuth(saveArgs);
-            else await saveFieldsGuest(saveArgs);
-          } catch (err) {
-            console.error("[checkout] Custom fields save failed:", err);
-            // We don't block the order completion if fields fail to save, but notify the admin/logs
-            toast.error("Order placed, but some product details couldn't be saved. Support has been notified.");
-          }
+          .map((f) => ({ field_id: f.id, value: storedFieldValues[f.product_slug]?.[f.id] ?? "" }));
+        try {
+          const saveArgs = { data: { orderId: result.orderId, email: customer.email, values } };
+          if (user) await saveFieldsAuth(saveArgs);
+          else await saveFieldsGuest(saveArgs);
+        } catch (err) {
+          console.error("[custom-fields] save failed", err);
+          toast.error(err instanceof Error ? err.message : "Could not save product details");
+          setSubmitting(false);
+          return;
         }
       }
 
       cart.clear();
       navigate({ to: "/pay/$orderNumber", params: { orderNumber: result.orderNumber } });
     } catch (err) {
-      console.error("[checkout] Order submission error:", err);
       toast.error(err instanceof Error ? err.message : "Could not place order");
       setSubmitting(false);
     }
@@ -206,7 +191,7 @@ function CheckoutPage() {
               <p className="text-sm text-muted-foreground">No payment methods enabled. Please contact support.</p>
             ) : (
               <div className="space-y-2">
-                {gateways.map((g: any) => (
+                {gateways.map((g) => (
                   <label key={g.slug} className={`flex min-w-0 items-center gap-3 p-4 rounded-xl border cursor-pointer transition-smooth ${gateway === g.slug ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
                     <input type="radio" name="gateway" checked={gateway === g.slug} onChange={() => setGateway(g.slug)} className="shrink-0 accent-[var(--primary)]" />
                     <GatewayLogo src={g.logo_url} alt={g.name} />
@@ -263,11 +248,7 @@ function CheckoutPage() {
                     <div className="text-xs text-muted-foreground">Qty {it.qty}</div>
                   </div>
                   <span className="font-semibold">
-                    {formatPrice(
-                      (it.product.product_type === 'smm_service' && it.smm_config_snapshot && it.smm_quantity
-                        ? calculateSMMPrice(it.smm_quantity, it.smm_config_snapshot)
-                        : (it.variant ? (it.variant.sale_price != null && it.variant.sale_price > 0 ? it.variant.sale_price : it.variant.price) : it.product.price) * it.qty)
-                    )}
+                    {formatPrice((it.variant ? (it.variant.sale_price != null && it.variant.sale_price > 0 ? it.variant.sale_price : it.variant.price) : it.product.price) * it.qty)}
                   </span>
                 </div>
                 );

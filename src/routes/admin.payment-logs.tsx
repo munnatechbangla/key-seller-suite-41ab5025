@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { adminListPaymentLogsFn } from "@/lib/payments/admin.functions";
+import { listPaymentLogsFn, gatewayStatusFn } from "@/lib/payments/admin.functions";
 import { formatPriceWithSymbol } from "@/lib/currency";
 import { Loader2, ShieldCheck, ShieldAlert, CheckCircle2, XCircle, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,11 +14,16 @@ export const Route = createFileRoute("/admin/payment-logs")({
 });
 
 function PaymentLogsPage() {
-  const fetchLogs = useServerFn(adminListPaymentLogsFn);
+  const fetchLogs = useServerFn(listPaymentLogsFn);
+  const fetchStatus = useServerFn(gatewayStatusFn);
   const [gateway, setGateway] = useState<string>("all");
   const [eventType, setEventType] = useState<string>("all");
 
-  const statusQ = { data: null, isLoading: false };
+  const statusQ = useQuery({
+    queryKey: ["admin", "gateway-status"],
+    queryFn: () => fetchStatus(),
+    refetchInterval: 15000,
+  });
 
   const logsQ = useQuery({
     queryKey: ["admin", "payment-logs", gateway, eventType],
@@ -35,8 +40,8 @@ function PaymentLogsPage() {
 
       {/* Gateway status grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {(statusQ.data as any)?.gateways?.map((g: any) => {
-          const s = (statusQ.data as any)?.stats?.[g.id] ?? { success: 0, failed: 0, total: 0 };
+        {statusQ.data?.gateways.map((g) => {
+          const s = statusQ.data!.stats[g.id] ?? { success: 0, failed: 0, total: 0 };
           return (
             <div key={g.id} className="rounded-xl border bg-card p-4">
               <div className="flex items-center justify-between mb-2">
@@ -47,7 +52,7 @@ function PaymentLogsPage() {
               </div>
               <div className="text-xs text-muted-foreground mb-3 capitalize">Mode: {g.mode}</div>
               <div className="space-y-1 text-xs">
-                {(g.secretsPresent as any[]).map((s: any) => (
+                {g.secretsPresent.map((s) => (
                   <div key={s.name} className="flex items-center justify-between font-mono">
                     <span className="truncate">{s.name}</span>
                     {s.set ? <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 shrink-0" /> : <ShieldAlert className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
@@ -106,7 +111,7 @@ function PaymentLogsPage() {
               </tr>
             </thead>
             <tbody>
-              {((logsQ.data as any)?.logs ?? []).map((row: any) => (
+              {logsQ.data?.logs.map((row) => (
                 <tr key={row.id} className="border-t hover:bg-muted/20">
                   <td className="p-3 whitespace-nowrap text-xs text-muted-foreground">{new Date(row.created_at).toLocaleString()}</td>
                   <td className="p-3">{row.gateway}</td>
@@ -118,7 +123,7 @@ function PaymentLogsPage() {
                   <td className="p-3">{row.signature_valid == null ? "—" : row.signature_valid ? <ShieldCheck className="h-4 w-4 text-emerald-500" /> : <ShieldAlert className="h-4 w-4 text-destructive" />}</td>
                 </tr>
               ))}
-              {!logsQ.isLoading && ((logsQ.data as any)?.logs?.length ?? 0) === 0 && (
+              {!logsQ.isLoading && (logsQ.data?.logs.length ?? 0) === 0 && (
                 <tr><td colSpan={8} className="p-8 text-center text-sm text-muted-foreground">No payment activity yet.</td></tr>
               )}
               {logsQ.isLoading && (

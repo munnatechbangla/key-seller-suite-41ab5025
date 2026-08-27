@@ -1,188 +1,177 @@
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 
-// Public functions
+function pubClient() {
+  return createClient<Database>(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+  });
+}
+
+// -------- Public reads --------
 export const blogListPublicFn = createServerFn({ method: "GET" })
-  .inputValidator((data) => z.object({
-    post_type: z.enum(["blog", "kb", "docs", "tutorial", "changelog"]).optional().default("blog"),
-    category_id: z.string().optional(),
-    tag_id: z.string().optional(),
-    limit: z.number().optional().default(100),
-  }).parse(data))
+  .inputValidator((d: { post_type?: string; category_slug?: string; limit?: number } | undefined) => d ?? {})
   .handler(async ({ data }) => {
-    let query = supabase
-      .from("blog_posts")
-      .select("*, blog_categories(id, name, slug)")
-      .eq("status", "published")
-      .order("published_at", { ascending: false });
-
-    if (data.post_type) {
-      // In new schema, we might use a post_type column or just filter by category/tag conventions.
-      // Assuming a post_type column exists or was intended.
-      query = query.eq("post_type" as any, data.post_type);
-    }
-    if (data.category_id) query = query.eq("category_id", data.category_id);
-
-    const { data: posts, error } = await query.limit(data.limit);
-    if (error) return [] as any[];
-    
-    // Mapping thumbnail_url to cover_url for compatibility
-    return (posts || []).map(p => ({
-      ...p,
-      cover_url: p.thumbnail_url || (p as any).cover_url || null
-    }));
+    const sb = pubClient();
+    let q = sb.from("blog_posts").select("*").eq("status", "published").order("published_at", { ascending: false }).limit(data.limit ?? 100);
+    if (data.post_type) q = q.eq("post_type", data.post_type);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    return rows ?? [];
   });
 
 export const blogGetBySlugPublicFn = createServerFn({ method: "GET" })
-  .inputValidator((data) => z.object({ slug: z.string() }).parse(data))
-  .handler(async ({ data: { slug } }) => {
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .select("*, blog_categories(*)")
-      .eq("slug", slug)
-      .eq("status", "published")
-      .single();
-
-    if (error) return null;
-    return {
-      ...data,
-      cover_url: data.thumbnail_url || (data as any).cover_url || null
-    };
+  .inputValidator((d: { slug: string }) => d)
+  .handler(async ({ data }) => {
+    const sb = pubClient();
+    const { data: row, error } = await sb.from("blog_posts").select("*").eq("slug", data.slug).eq("status", "published").maybeSingle();
+    if (error) throw new Error(error.message);
+    return row;
   });
 
 export const blogListCategoriesPublicFn = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const { data, error } = await supabase
-      .from("blog_categories")
-      .select("*")
-      .order("name", { ascending: true });
-    return data || [];
+  .inputValidator((d: { kind?: string } | undefined) => d ?? {})
+  .handler(async ({ data }) => {
+    const sb = pubClient();
+    let q = sb.from("blog_categories").select("*").order("sort_order");
+    if (data.kind) q = q.eq("kind", data.kind);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    return rows ?? [];
   });
 
-export const blogSubmitCommentFn = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({
-    post_id: z.string(),
-    content: z.string().min(1),
-    parent_id: z.string().optional().nullable(),
-  }).parse(data))
-  .handler(async ({ data, context }) => {
-    const { data: comment, error } = await supabase
-      .from("blog_comments" as any)
-      .insert({
-        post_id: data.post_id,
-        content: data.content,
-        parent_id: data.parent_id,
-        author_id: context.userId,
-      })
-      .select()
-      .single();
-    if (error) throw error;
-    return comment;
-  });
-
-// Admin functions
+// -------- Admin CRUD --------
 export const blogAdminListFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .select("*, blog_categories(*)")
-      .order("created_at", { ascending: false });
-    if (error) throw error;
-    return data;
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.from("blog_posts").select("*").order("updated_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return data ?? [];
   });
 
 export const blogAdminUpsertFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.any().parse(data))
-  .handler(async ({ data }) => {
-    const { data: post, error } = await supabase
-      .from("blog_posts")
-      .upsert({
-        ...data,
-        updated_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
-    if (error) throw error;
-    return post;
+  .inputValidator((d: Record<string, unknown>) => d)
+  .handler(async ({ data, context }) => {
+    const row = { ...data } as Record<string, unknown>;
+    if (row.status === "published" && !row.published_at) row.published_at = new Date().toISOString();
+    if (!row.id) delete row.id;
+    const { data: saved, error } = await context.supabase.from("blog_posts").upsert(row as never).select().single();
+    if (error) throw new Error(error.message);
+    return saved;
   });
 
 export const blogAdminDeleteFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ id: z.string() }).parse(data))
-  .handler(async ({ data: { id } }) => {
-    const { error } = await supabase.from("blog_posts").delete().eq("id", id);
-    if (error) throw error;
-    return { success: true };
-  });
-
-export const blogAdminListCategoriesFn = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async () => {
-    const { data, error } = await supabase.from("blog_categories").select("*").order("name");
-    if (error) throw error;
-    return data;
-  });
-
-export const blogAdminUpsertCategoryFn = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.any().parse(data))
-  .handler(async ({ data }) => {
-    const { data: cat, error } = await supabase.from("blog_categories").upsert(data).select().single();
-    if (error) throw error;
-    return cat;
-  });
-
-export const blogAdminDeleteCategoryFn = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ id: z.string() }).parse(data))
-  .handler(async ({ data: { id } }) => {
-    const { error } = await supabase.from("blog_categories").delete().eq("id", id);
-    if (error) throw error;
-    return { success: true };
-  });
-
-export const blogAdminListTagsFn = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async () => {
-    const { data, error } = await supabase.from("blog_tags" as any).select("*").order("name");
-    return data || [];
-  });
-
-export const blogAdminUpsertTagFn = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.any().parse(data))
-  .handler(async ({ data }) => {
-    const { data: tag, error } = await supabase.from("blog_tags" as any).upsert(data).select().single();
-    if (error) throw error;
-    return tag;
-  });
-
-export const blogAdminDeleteTagFn = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ id: z.string() }).parse(data))
-  .handler(async ({ data: { id } }) => {
-    const { error } = await supabase.from("blog_tags" as any).delete().eq("id", id);
-    if (error) throw error;
-    return { success: true };
+  .inputValidator((d: { id: string }) => d)
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("blog_posts").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
 
 export const blogAdminListCommentsFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
-    const { data, error } = await supabase.from("blog_comments" as any).select("*, blog_posts(title)").order("created_at", { ascending: false });
-    return data || [];
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.from("blog_comments").select("*").order("created_at", { ascending: false }).limit(500);
+    if (error) throw new Error(error.message);
+    return data ?? [];
   });
 
 export const blogAdminModerateCommentFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({ id: z.string(), status: z.string() }).parse(data))
-  .handler(async ({ data }) => {
-    const { error } = await supabase.from("blog_comments" as any).update({ status: data.status }).eq("id", data.id);
-    if (error) throw error;
-    return { success: true };
+  .inputValidator((d: { id: string; status: "approved" | "pending" | "spam" | "trash" }) => d)
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("blog_comments").update({ status: data.status }).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
+
+export const blogSubmitCommentFn = createServerFn({ method: "POST" })
+  .inputValidator((d: { post_id: string; body: string; guest_name?: string; guest_email?: string; parent_id?: string }) => d)
+  .handler(async ({ data }) => {
+    const sb = pubClient();
+    const { error } = await sb.from("blog_comments").insert({
+      post_id: data.post_id,
+      body: data.body,
+      guest_name: data.guest_name ?? null,
+      guest_email: data.guest_email ?? null,
+      parent_id: data.parent_id ?? null,
+      status: "pending",
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// -------- Category admin --------
+export const blogAdminListCategoriesFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.from("blog_categories").select("*").order("sort_order").order("name");
+    if (error) throw new Error(error.message);
+    const cats = data ?? [];
+    const { data: counts } = await context.supabase.from("blog_posts").select("category_id");
+    const map = new Map<string, number>();
+    (counts ?? []).forEach((r: { category_id: string | null }) => {
+      if (r.category_id) map.set(r.category_id, (map.get(r.category_id) ?? 0) + 1);
+    });
+    return cats.map((c) => ({ ...c, post_count: map.get(c.id) ?? 0 }));
+  });
+
+export const blogAdminUpsertCategoryFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: Record<string, unknown>) => d)
+  .handler(async ({ data, context }) => {
+    const row = { ...data } as Record<string, unknown>;
+    if (!row.id) delete row.id;
+    if (!row.kind) row.kind = "blog";
+    const { data: saved, error } = await context.supabase.from("blog_categories").upsert(row as never).select().single();
+    if (error) throw new Error(error.message);
+    return saved;
+  });
+
+export const blogAdminDeleteCategoryFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string }) => d)
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("blog_categories").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// -------- Tag admin --------
+export const blogAdminListTagsFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.from("blog_tags").select("*").order("name");
+    if (error) throw new Error(error.message);
+    const tags = data ?? [];
+    const { data: posts } = await context.supabase.from("blog_posts").select("tag_ids");
+    const map = new Map<string, number>();
+    (posts ?? []).forEach((p: { tag_ids: string[] | null }) => {
+      (p.tag_ids ?? []).forEach((t) => map.set(t, (map.get(t) ?? 0) + 1));
+    });
+    return tags.map((t) => ({ ...t, post_count: map.get(t.id) ?? 0 }));
+  });
+
+export const blogAdminUpsertTagFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id?: string; name: string; slug: string }) => d)
+  .handler(async ({ data, context }) => {
+    const row: Record<string, unknown> = { name: data.name, slug: data.slug };
+    if (data.id) row.id = data.id;
+    const { data: saved, error } = await context.supabase.from("blog_tags").upsert(row as never).select().single();
+    if (error) throw new Error(error.message);
+    return saved;
+  });
+
+export const blogAdminDeleteTagFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string }) => d)
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("blog_tags").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+

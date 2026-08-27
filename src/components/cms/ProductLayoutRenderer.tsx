@@ -1,6 +1,5 @@
 import type { ProductSectionCommonStyle } from "@/lib/cms/product-section-types";
 import { cn } from "@/lib/utils";
-import { formatDescription } from "@/lib/content-utils";
 import { ReviewsSection } from "@/components/site/ReviewsSection";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Breadcrumbs } from "@/components/site/PageHero";
@@ -160,7 +159,7 @@ function RenderProductSection({ section, product }: { section: ProductLayoutSect
       return (
         <SectionWrap style={style}>
           {section.title && <h2 className="text-2xl font-bold mb-3">{section.title}</h2>}
-          <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: formatDescription(section.json_content?.html ?? product.description ?? product.short ?? "") }} />
+          <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: product.description ?? product.short ?? "" }} />
         </SectionWrap>
       );
 

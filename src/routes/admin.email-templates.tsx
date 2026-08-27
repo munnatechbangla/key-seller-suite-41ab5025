@@ -71,27 +71,27 @@ function TemplatesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs font-mono text-muted-foreground">{active.template_key}</div>
-                <Input name="name" defaultValue={active.name ?? ""} className="text-lg font-semibold mt-1" />
+                <Input name="name" defaultValue={active.name} className="text-lg font-semibold mt-1" />
               </div>
               <label className="flex items-center gap-2 text-sm">
-                <Switch name="enabled" defaultChecked={active.enabled ?? false} />
+                <Switch name="enabled" defaultChecked={active.enabled} />
                 Enabled
               </label>
             </div>
             <div>
               <label className="text-xs font-semibold uppercase text-muted-foreground">Subject</label>
-              <Input name="subject" defaultValue={active.subject ?? ""} />
+              <Input name="subject" defaultValue={active.subject} />
             </div>
             <div>
               <label className="text-xs font-semibold uppercase text-muted-foreground">HTML body</label>
-              <Textarea name="html_body" defaultValue={active.html_body ?? ""} rows={12} className="font-mono text-xs" />
+              <Textarea name="html_body" defaultValue={active.html_body} rows={12} className="font-mono text-xs" />
             </div>
             <div>
               <label className="text-xs font-semibold uppercase text-muted-foreground">Text body (optional)</label>
               <Textarea name="text_body" defaultValue={active.text_body ?? ""} rows={4} className="font-mono text-xs" />
             </div>
             <div className="text-xs text-muted-foreground">
-              Available variables: {((active as any).variables as string[] || []).map((v) => `{{${v}}}`).join(", ")}
+              Available variables: {(active.variables as string[]).map((v) => `{{${v}}}`).join(", ")}
             </div>
             <Button type="submit" disabled={save.isPending}>Save template</Button>
           </form>

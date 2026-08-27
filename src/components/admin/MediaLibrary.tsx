@@ -143,7 +143,7 @@ export function MediaLibrary({
   });
 
   const syncMutation = useMutation({
-    mutationFn: () => syncStorage({ data: undefined }),
+    mutationFn: () => syncStorage({ data: {} }),
     onSuccess: (r: any) => {
       toast.success(`Synced storage — ${r.inserted} new asset(s) of ${r.scanned} scanned`);
       invalidate();
@@ -151,7 +151,7 @@ export function MediaLibrary({
     onError: (e: any) => toast.error(e.message),
   });
 
-  const items = ((data as any)?.items ?? []) as any[];
+  const items = (data?.items ?? []) as any[];
 
   return (
     <div className="space-y-4">

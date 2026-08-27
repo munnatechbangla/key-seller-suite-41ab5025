@@ -8,7 +8,7 @@ export const Route = createFileRoute("/l/$slug")({
   loader: async ({ params }) => {
     const result = await landingPublicGetBySlugFn({ data: { slug: params.slug } });
     if (!result) throw notFound();
-    return result as any;
+    return result as { page: any; sections: CmsSection[] };
   },
   head: ({ loaderData }) => {
     const p = (loaderData as any)?.page;

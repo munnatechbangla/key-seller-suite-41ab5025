@@ -41,39 +41,20 @@ export const adminListProductsFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context);
-    const baseSelect = "id, title, slug, short_description, description, thumbnail_url, regular_price, sale_price, status, stock_status, is_featured, sales_count, created_at, delivery_type, visibility, external_url, is_digital, is_license_key, category_id";
-    
-    // Try with SMM columns first
-    let { data, error } = await context.supabase
+    const { data, error } = await context.supabase
       .from("products")
-      .select(`${baseSelect}, product_type, smm_config`)
+      .select("id, title, slug, short_description, description, thumbnail_url, regular_price, sale_price, status, stock_status, is_featured, sales_count, created_at, product_type, delivery_type, visibility, external_url, is_digital, is_license_key, category_id")
       .order("created_at", { ascending: false });
-    
-    if (error && (error.code === "42703" || error.message.includes("smm_config") || error.message.includes("product_type"))) {
-      const retry = await context.supabase
-        .from("products")
-        .select(baseSelect)
-        .order("created_at", { ascending: false });
-      
-      data = (retry.data ?? []).map(r => ({
-        ...r,
-        product_type: null,
-        smm_config: null
-      })) as any;
-      error = retry.error;
-    }
-
     if (error) throw new Error(error.message);
     return data ?? [];
   });
 
 const productTypeEnum = z.enum([
-  "downloadable", "license_key", "subscription", "account", "external", "manual", "smm_service",
+  "downloadable", "license_key", "subscription", "account", "external", "manual",
 ]);
 const deliveryTypeEnum = z.enum([
-  "download", "license_key", "account", "manual", "external_url", "smm_fulfillment",
+  "download", "license_key", "account", "manual", "external_url",
 ]);
-
 const productVisibilityEnum = z.enum(["public", "members_only", "hidden"]);
 const productStatusEnum = z.enum(["draft", "published", "private", "archived"]);
 
@@ -95,20 +76,6 @@ const productSchema = z.object({
   visibility: productVisibilityEnum.nullable().optional(),
   external_url: z.string().nullable().optional(),
   category_id: z.string().uuid().nullable().optional(),
-  smm_config: z.object({
-    platform: z.string(),
-    service_type: z.string(),
-    min_quantity: z.number().gt(0).or(z.string().transform(v => parseInt(v)).pipe(z.number().gt(0))),
-    max_quantity: z.number().nonnegative().or(z.string().transform(v => parseInt(v)).pipe(z.number().nonnegative())),
-    quantity_step: z.number().gt(0).or(z.string().transform(v => parseInt(v)).pipe(z.number().gt(0))),
-    pricing_mode: z.enum(["per_unit", "per_1000", "quantity_tier"]),
-    price: z.number().nonnegative().or(z.string().transform(v => parseFloat(v)).pipe(z.number().nonnegative())),
-    tiers: z.array(z.object({
-      min: z.number().nonnegative(),
-      price: z.number().nonnegative(),
-    })).optional().nullable(),
-  }).nullable().optional(),
-
 });
 
 export const adminUpsertProductFn = createServerFn({ method: "POST" })
@@ -149,27 +116,14 @@ export const adminListOrdersFn = createServerFn({ method: "GET" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const selectWithSmm = "id, order_number, email, customer_name, total, currency, status, payment_method, created_at, order_items(*, smm_fulfillment)";
-    const selectWithoutSmm = "id, order_number, email, customer_name, total, currency, status, payment_method, created_at, order_items(*)";
-
-    const fetchOrders = async (select: string) => {
-      let q = context.supabase
-        .from("orders")
-        .select(select)
-        .order("created_at", { ascending: false })
-        .limit(200);
-      if (data.status) q = q.eq("status", data.status as any);
-      if (data.search) q = q.or(`order_number.ilike.%${data.search}%,email.ilike.%${data.search}%`);
-      return q;
-    };
-
-    let { data: rows, error } = await fetchOrders(selectWithSmm);
-    
-    if (error && (error.code === "42703" || error.message.includes("smm_fulfillment"))) {
-      const retry = await fetchOrders(selectWithoutSmm);
-      rows = retry.data;
-      error = retry.error;
-    }
+    let q = context.supabase
+      .from("orders")
+      .select("id, order_number, email, customer_name, total, currency, status, payment_method, created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (data.status) q = q.eq("status", data.status as any);
+    if (data.search) q = q.or(`order_number.ilike.%${data.search}%,email.ilike.%${data.search}%`);
+    const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
     return rows ?? [];
   });
@@ -669,4 +623,3 @@ export const adminAssignLicenseKeyFn = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
-

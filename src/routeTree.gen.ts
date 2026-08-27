@@ -76,7 +76,6 @@ import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminProductsIndexRouteImport } from './routes/admin.products.index'
 import { Route as AdminPagesIndexRouteImport } from './routes/admin.pages.index'
 import { Route as AdminBlogIndexRouteImport } from './routes/admin.blog.index'
-import { Route as ApiPublicApplyMigrationRouteImport } from './routes/api/public/apply-migration'
 import { Route as AdminProductsIdRouteImport } from './routes/admin.products.$id'
 import { Route as AdminPagesSlugRouteImport } from './routes/admin.pages.$slug'
 import { Route as AdminCmsProductLayoutsRouteImport } from './routes/admin.cms.product-layouts'
@@ -426,11 +425,6 @@ const AdminBlogIndexRoute = AdminBlogIndexRouteImport.update({
   path: '/blog/',
   getParentRoute: () => AdminRoute,
 } as any)
-const ApiPublicApplyMigrationRoute = ApiPublicApplyMigrationRouteImport.update({
-  id: '/api/public/apply-migration',
-  path: '/api/public/apply-migration',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminProductsIdRoute = AdminProductsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -574,7 +568,6 @@ export interface FileRoutesByFullPath {
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/pages/$slug': typeof AdminPagesSlugRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
-  '/api/public/apply-migration': typeof ApiPublicApplyMigrationRoute
   '/admin/blog/': typeof AdminBlogIndexRoute
   '/admin/pages/': typeof AdminPagesIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
@@ -655,7 +648,6 @@ export interface FileRoutesByTo {
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/pages/$slug': typeof AdminPagesSlugRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
-  '/api/public/apply-migration': typeof ApiPublicApplyMigrationRoute
   '/admin/blog': typeof AdminBlogIndexRoute
   '/admin/pages': typeof AdminPagesIndexRoute
   '/admin/products': typeof AdminProductsIndexRoute
@@ -739,7 +731,6 @@ export interface FileRoutesById {
   '/admin/cms/product-layouts': typeof AdminCmsProductLayoutsRoute
   '/admin/pages/$slug': typeof AdminPagesSlugRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
-  '/api/public/apply-migration': typeof ApiPublicApplyMigrationRoute
   '/admin/blog/': typeof AdminBlogIndexRoute
   '/admin/pages/': typeof AdminPagesIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
@@ -824,7 +815,6 @@ export interface FileRouteTypes {
     | '/admin/cms/product-layouts'
     | '/admin/pages/$slug'
     | '/admin/products/$id'
-    | '/api/public/apply-migration'
     | '/admin/blog/'
     | '/admin/pages/'
     | '/admin/products/'
@@ -905,7 +895,6 @@ export interface FileRouteTypes {
     | '/admin/cms/product-layouts'
     | '/admin/pages/$slug'
     | '/admin/products/$id'
-    | '/api/public/apply-migration'
     | '/admin/blog'
     | '/admin/pages'
     | '/admin/products'
@@ -988,7 +977,6 @@ export interface FileRouteTypes {
     | '/admin/cms/product-layouts'
     | '/admin/pages/$slug'
     | '/admin/products/$id'
-    | '/api/public/apply-migration'
     | '/admin/blog/'
     | '/admin/pages/'
     | '/admin/products/'
@@ -1036,7 +1024,6 @@ export interface RootRouteChildren {
   ProductsSlugRoute: typeof ProductsSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
   ProductsIndexRoute: typeof ProductsIndexRoute
-  ApiPublicApplyMigrationRoute: typeof ApiPublicApplyMigrationRoute
   ApiPublicNotificationsProcessRoute: typeof ApiPublicNotificationsProcessRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicPaymentsCustomWebhookSlugRoute: typeof ApiPublicPaymentsCustomWebhookSlugRoute
@@ -1515,13 +1502,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBlogIndexRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/api/public/apply-migration': {
-      id: '/api/public/apply-migration'
-      path: '/api/public/apply-migration'
-      fullPath: '/api/public/apply-migration'
-      preLoaderRoute: typeof ApiPublicApplyMigrationRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin/products/$id': {
       id: '/admin/products/$id'
       path: '/$id'
@@ -1769,7 +1749,6 @@ const rootRouteChildren: RootRouteChildren = {
   ProductsSlugRoute: ProductsSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
   ProductsIndexRoute: ProductsIndexRoute,
-  ApiPublicApplyMigrationRoute: ApiPublicApplyMigrationRoute,
   ApiPublicNotificationsProcessRoute: ApiPublicNotificationsProcessRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicPaymentsCustomWebhookSlugRoute:

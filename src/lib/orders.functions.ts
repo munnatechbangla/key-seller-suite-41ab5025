@@ -8,10 +8,6 @@ const itemSchema = z.object({
   qty: z.number().int().positive(),
   variant_id: z.string().uuid().nullable().optional(),
   selected_attributes: z.record(z.string(), z.any()).optional(),
-  product_slug: z.string(),
-  price: z.number().optional(),
-  smm_config_snapshot: z.any().optional(),
-  smm_quantity: z.number().optional(),
 });
 
 const customerSchema = z.object({

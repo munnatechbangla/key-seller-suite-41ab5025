@@ -30,7 +30,6 @@ import { ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, Star, AlertTriangle, Check
 import { CustomFieldsTab } from "@/components/admin/CustomFieldsTab";
 import { MediaPicker } from "@/components/admin/MediaLibrary";
 import { RichContentTab } from "@/components/admin/RichContentTab";
-import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { ProductSeoTab } from "@/components/admin/ProductSeoTab";
 import { AttributesTab } from "@/components/admin/AttributesTab";
 import { VariantsTab } from "@/components/admin/VariantsTab";
@@ -168,7 +167,6 @@ function ManageProduct() {
       delivery_type: p.delivery_type ?? null,
       visibility: p.visibility ?? null,
       external_url: p.external_url ?? null,
-      smm_config: p.smm_config ?? null,
       ...patch,
     };
   };
@@ -400,72 +398,7 @@ function ManageProduct() {
 
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild><Link to="/admin/products"><ArrowLeft className="h-4 w-4 mr-1" /> Products</Link></Button>
-        <h1 className="text-2xl font-bold flex-1">URGENT: Restore the website homepage first. Do not work on SMM features.
-
-The Lovable Preview is still showing:
-
-"This page didn't load"
-"Something went wrong on our end."
-
-The homepage was working before the recent SMM workflow changes.
-
-For this task, do not change any Admin Products display text.
-
-First diagnose the actual runtime failure:
-
-Open the Homepage route in Preview and inspect the actual runtime/server error.
-
-Check the browser console, server logs, route loader, and failed Supabase requests.
-
-Find the FIRST real exception that causes the Homepage error boundary to render.
-
-Compare the recent SMM-related changes with the last known working implementation.
-
-Pay particular attention to shared catalog/product queries and recently added SMM fields such as smm_config, product_type, and smm_fulfillment.
-
-Check for missing database columns, invalid queries, failed imports, server-function errors, or runtime TypeErrors.
-
-If the crash was introduced by a recent SMM change, revert or isolate ONLY the specific change responsible for the crash. Do not remove unrelated working functionality.
-
-Do not create a new database, reset the database, delete data, drop tables, or recreate existing tables.
-
-Do not add another large migration unless the actual error proves that a specific schema change is required.
-
-Do not make broad refactors or UI changes.
-
-Priority:
-The existing website must load first. Existing Simple, Variable, License, Subscription, Downloadable, Payment, Order, and Customer Product Field workflows must remain intact.
-
-After identifying and fixing the root cause, verify:
-
-Homepage loads in Preview.
-
-Homepage loads after refresh.
-
-Product listing loads.
-
-Product detail loads.
-
-Admin Products loads.
-
-No fatal runtime error remains.
-
-No missing-column/schema-cache error remains.
-
-IMPORTANT:
-Do not report success just because the project builds. The Homepage must actually render successfully in Preview.
-
-Report:
-
-The exact root error
-
-The file/function causing it
-
-The minimal fix applied
-
-The verification result
-
-Do not proceed to any SMM development until the Homepage is confirmed working.</h1>
+        <h1 className="text-2xl font-bold flex-1">{product?.title ?? "Manage product"}</h1>
       </div>
 
       {/* Wizard steps */}
@@ -831,7 +764,6 @@ function BasicInfoTab({
     product_type: "",
     delivery_type: "",
     category_id: "",
-    smm_config: null,
   }));
   const loadedFor = useRef<string | null>(null);
   useEffect(() => {
@@ -851,7 +783,6 @@ function BasicInfoTab({
       product_type: product.product_type ?? "",
       delivery_type: product.delivery_type ?? "",
       category_id: product.category_id ?? "",
-      smm_config: product.smm_config ?? null,
     });
   }, [product]);
 
@@ -879,13 +810,6 @@ function BasicInfoTab({
         product_type: form.product_type || null,
         delivery_type: form.delivery_type || null,
         category_id: form.category_id ? form.category_id : null,
-        smm_config: form.product_type === 'smm_service' && form.smm_config ? {
-          ...form.smm_config,
-          min_quantity: Number(form.smm_config.min_quantity ?? 1),
-          max_quantity: Number(form.smm_config.max_quantity ?? 1),
-          quantity_step: Number(form.smm_config.quantity_step ?? 1),
-          price: Number(form.smm_config.price ?? 0),
-        } : null,
       };
       return upsert({ data: payload });
     },
@@ -922,13 +846,11 @@ function BasicInfoTab({
 
       <div>
         <Label>Full description</Label>
-        <div className="mt-2">
-          <RichTextEditor
-            value={form.description}
-            onChange={(html) => set({ description: html })}
-            placeholder="Enter detailed product description..."
-          />
-        </div>
+        <textarea
+          className="w-full min-h-[180px] rounded-md border bg-background px-3 py-2 text-sm"
+          value={form.description}
+          onChange={(e) => set({ description: e.target.value })}
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -971,7 +893,6 @@ function BasicInfoTab({
             <option value="account">account</option>
             <option value="external">external</option>
             <option value="manual">manual</option>
-            <option value="smm_service">smm_service</option>
           </select>
         </div>
         <div>
@@ -987,202 +908,9 @@ function BasicInfoTab({
             <option value="account">account</option>
             <option value="manual">manual</option>
             <option value="external_url">external_url</option>
-            <option value="smm_fulfillment">smm_fulfillment</option>
           </select>
-
         </div>
       </div>
-      
-      {form.product_type === "smm_service" && (
-        <div className="space-y-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="font-semibold text-lg">SMM Service Configuration</h3>
-            <Badge variant="outline">Phase 1</Badge>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="smm-platform">Platform</Label>
-              <Input 
-                id="smm-platform"
-                placeholder="e.g. Facebook, Instagram"
-                value={form.smm_config?.platform ?? ""}
-                onChange={(e) => {
-                  const cfg = form.smm_config || {};
-                  set({ smm_config: { ...cfg, platform: e.target.value } });
-                }}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="smm-type">Service Type</Label>
-              <Input 
-                id="smm-type"
-                placeholder="e.g. Followers, Likes"
-                value={form.smm_config?.service_type ?? ""}
-                onChange={(e) => {
-                  const cfg = form.smm_config || {};
-                  set({ smm_config: { ...cfg, service_type: e.target.value } });
-                }}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="smm-min">Minimum Quantity</Label>
-              <Input 
-                id="smm-min"
-                type="number"
-                min="1"
-                value={form.smm_config?.min_quantity ?? ""}
-                onChange={(e) => {
-                  const cfg = form.smm_config || {};
-                  set({ smm_config: { ...cfg, min_quantity: parseInt(e.target.value) } });
-                }}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="smm-max">Maximum Quantity</Label>
-              <Input 
-                id="smm-max"
-                type="number"
-                min="1"
-                value={form.smm_config?.max_quantity ?? ""}
-                onChange={(e) => {
-                  const cfg = form.smm_config || {};
-                  set({ smm_config: { ...cfg, max_quantity: parseInt(e.target.value) } });
-                }}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="smm-step">Quantity Step</Label>
-              <Input 
-                id="smm-step"
-                type="number"
-                min="1"
-                value={form.smm_config?.quantity_step ?? ""}
-                onChange={(e) => {
-                  const cfg = form.smm_config || {};
-                  set({ smm_config: { ...cfg, quantity_step: parseInt(e.target.value) } });
-                }}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="smm-mode">Pricing Mode</Label>
-              <select 
-                id="smm-mode"
-                className="w-full h-10 rounded-md border bg-background px-3 text-sm"
-                value={form.smm_config?.pricing_mode ?? "per_1000"}
-                onChange={(e) => {
-                  const cfg = form.smm_config || {};
-                  set({ smm_config: { ...cfg, pricing_mode: e.target.value } });
-                }}
-              >
-                <option value="per_unit">Per Unit</option>
-                <option value="per_1000">Per 1,000</option>
-                <option value="quantity_tier">Quantity Tier</option>
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="smm-price">Base Price</Label>
-              <div className="relative">
-                <Input 
-                  id="smm-price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  className="pl-8"
-                  value={form.smm_config?.price ?? ""}
-                  onChange={(e) => {
-                    const cfg = form.smm_config || {};
-                    set({ smm_config: { ...cfg, price: parseFloat(e.target.value) } });
-                  }}
-                />
-                <span className="absolute left-3 top-2.5 text-muted-foreground">৳</span>
-              </div>
-            </div>
-          </div>
-          
-          {form.smm_config?.pricing_mode === "quantity_tier" && (
-            <div className="mt-4 space-y-3 pt-4 border-t border-primary/10">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-semibold">Pricing Tiers</Label>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => {
-                    const cfg = form.smm_config || {};
-                    const tiers = Array.isArray(cfg.tiers) ? cfg.tiers : [];
-                    set({ smm_config: { ...cfg, tiers: [...tiers, { min: 0, price: 0 }] } });
-                  }}
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Tier
-                </Button>
-              </div>
-              
-              <div className="space-y-2">
-                {(Array.isArray(form.smm_config?.tiers) ? form.smm_config.tiers : []).map((tier: any, idx: number) => (
-                  <div key={idx} className="flex items-end gap-2 p-2 rounded border bg-background/50">
-                    <div className="flex-1 space-y-1">
-                      <Label className="text-[10px]">Min Quantity</Label>
-                      <Input 
-                        type="number" 
-                        value={tier.min} 
-                        onChange={(e) => {
-                          const cfg = { ...form.smm_config };
-                          cfg.tiers[idx].min = parseInt(e.target.value) || 0;
-                          set({ smm_config: cfg });
-                        }}
-                      />
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <Label className="text-[10px]">Price (৳)</Label>
-                      <Input 
-                        type="number" 
-                        step="0.01"
-                        value={tier.price} 
-                        onChange={(e) => {
-                          const cfg = { ...form.smm_config };
-                          cfg.tiers[idx].price = parseFloat(e.target.value) || 0;
-                          set({ smm_config: cfg });
-                        }}
-                      />
-                    </div>
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => {
-                        const cfg = { ...form.smm_config };
-                        cfg.tiers = cfg.tiers.filter((_: any, i: number) => i !== idx);
-                        set({ smm_config: cfg });
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-                {(Array.isArray(form.smm_config?.tiers) ? form.smm_config.tiers : []).length === 0 && (
-                  <div className="text-xs text-muted-foreground text-center py-2 italic">
-                    No tiers added yet. Using base price.
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {form.smm_config?.max_quantity < form.smm_config?.min_quantity && (
-            <div className="text-xs text-destructive flex items-center gap-1 mt-2">
-              <AlertTriangle className="h-3 w-3" />
-              Max quantity must be greater than or equal to min quantity
-            </div>
-          )}
-        </div>
-
-      )}
 
       {productMode === "simple" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

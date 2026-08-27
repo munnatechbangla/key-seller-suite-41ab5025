@@ -1,24 +1,14 @@
-import { useMemo, useState, lazy, Suspense, useEffect } from "react";
+import { useMemo, useState, lazy, Suspense } from "react";
 const ProductThumb = lazy(() => import("@/components/site/ProductThumb").then(m => ({ default: m.ProductThumb })));
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import {
   Loader2, RefreshCw, RotateCcw, XCircle, CheckCircle2, Clock, AlertTriangle,
-  PackageSearch, PackageCheck, ShieldAlert, Circle, Send, KeyRound, Activity, Save, BarChart3
+  PackageSearch, PackageCheck, ShieldAlert, Circle, Send, KeyRound,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ManualLicenseDeliveryPanel } from "@/components/admin/ManualLicenseDeliveryPanel";
 import { adminListManualLicenseDeliveriesFn } from "@/lib/manual-license.functions";
-import { updateSmmFulfillmentFn } from "@/lib/smm-fulfillment.functions";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 import {
   getOrderFulfillmentsAuthFn,
@@ -40,7 +30,6 @@ const STATUS_META: Record<FulfillmentStatus, { label: string; color: string; ico
   waiting_inventory: { label: "Waiting Inventory", color: "bg-amber-500/15 text-amber-700 dark:text-amber-300", icon: PackageSearch },
   manual_review:     { label: "Manual Review",     color: "bg-purple-500/15 text-purple-700 dark:text-purple-300", icon: ShieldAlert },
   delivered:         { label: "Delivered",         color: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300", icon: PackageCheck },
-  partial:           { label: "Partial",           color: "bg-blue-500/15 text-blue-700 dark:text-blue-300", icon: BarChart3 },
   failed:            { label: "Failed",            color: "bg-red-500/15 text-red-700 dark:text-red-300",   icon: AlertTriangle },
   cancelled:         { label: "Cancelled",         color: "bg-muted text-muted-foreground",                icon: XCircle },
 };
@@ -118,19 +107,19 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
 
   const licenseItemsQ = useQuery({
     queryKey: ["admin-manual-license", orderId],
-    queryFn: () => listManualLicenses({ data: { orderId } } as any),
+    queryFn: () => listManualLicenses({ data: { orderId } }),
     enabled: isAdmin,
   });
   const licenseOrderItemIds = useMemo(() => {
     const set = new Set<string>();
-    for (const it of ((licenseItemsQ.data as any)?.items ?? []) as Array<{ order_item_id: string }>) {
+    for (const it of (licenseItemsQ.data?.items ?? []) as Array<{ order_item_id: string }>) {
       set.add(it.order_item_id);
     }
     return set;
   }, [licenseItemsQ.data]);
   const licenseProductIds = useMemo(() => {
     const set = new Set<string>();
-    for (const it of ((licenseItemsQ.data as any)?.items ?? []) as Array<{ product_id: string }>) {
+    for (const it of (licenseItemsQ.data?.items ?? []) as Array<{ product_id: string }>) {
       if (it.product_id) set.add(it.product_id);
     }
     return set;
@@ -142,7 +131,7 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
       orderId,
       licenseItemsQStatus: licenseItemsQ.status,
       licenseItemsError: (licenseItemsQ.error as any)?.message,
-      licenseItems: (licenseItemsQ.data as any)?.items,
+      licenseItems: licenseItemsQ.data?.items,
       fulfillmentRows: (q.data ?? []).map((r: any) => ({
         id: r.id,
         product_id: r.product_id,
@@ -203,22 +192,7 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
   }
 
   return (
-    <div className="space-y-4">
-      {isAdmin && (
-        <div className="space-y-4">
-          {rows
-            .filter((f) => f.product_type === "smm_service" && f.order_item_id)
-            .map((f) => (
-              <SmmFulfillmentPanel
-                key={`smm-${f.id}`}
-                orderItemId={f.order_item_id!}
-                qty={f.qty || 1}
-                current={f.smm_fulfillment}
-                onUpdated={invalidate}
-              />
-            ))}
-        </div>
-      )}
+    <div className="space-y-3">
       {!compact && (
         <div className="flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -226,20 +200,12 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
         </div>
       )}
       {rows.map((f) => {
-        const isSubscription = f.delivery_type === "subscription" || f.product_type === "subscription" || f.product_delivery_type === "subscription";
-        const isDownloadable = f.delivery_type === "download" || f.product_type === "download" || f.product_delivery_type === "download";
-        const isSmm = f.product_type === "smm_service";
-
-        if (isSmm) return null; // Rendered above in specialized panel
-
-
-        if (isSubscription || (isDownloadable && !isAdmin)) {
+        if (f.delivery_type === "subscription" || f.product_type === "subscription" || f.product_delivery_type === "subscription") {
           return (
-            <ChecklistCard
+            <SubscriptionCard
               key={f.id}
               f={f}
-              isAdmin={isAdmin && isSubscription}
-              type={isSubscription ? "subscription" : "download"}
+              isAdmin={isAdmin}
               onDelivered={() => {
                 invalidate();
                 qc.invalidateQueries({ queryKey: ["fulfillment-timeline"] });
@@ -251,7 +217,7 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
           !!(f as any).product_id && licenseProductIds.has((f as any).product_id);
         const resolvedOrderItemId =
           f.order_item_id ??
-          (((licenseItemsQ.data as any)?.items ?? []) as Array<{ order_item_id: string; product_id: string }>)
+          ((licenseItemsQ.data?.items ?? []) as Array<{ order_item_id: string; product_id: string }>)
             .find((it) => it.product_id === (f as any).product_id)?.order_item_id ??
           null;
         const isLicense =
@@ -349,142 +315,23 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
 }
 
 // ============================================================
-// SMM Fulfillment Panel (Admin-only controls)
-// ============================================================
-function SmmFulfillmentPanel({ 
-  orderItemId, 
-  qty, 
-  current, 
-  onUpdated 
-}: { 
-  orderItemId: string; 
-  qty: number; 
-  current: any; 
-  onUpdated: () => void;
-}) {
-  const update = useServerFn(updateSmmFulfillmentFn);
-  const [status, setStatus] = useState<string>(current?.status || "pending");
-  const [delivered, setDelivered] = useState<number>(current?.delivered_quantity || 0);
-  const [notes, setNotes] = useState<string>(current?.admin_notes || "");
-
-  const mut = useMutation({
-    mutationFn: () => update({ data: { 
-      orderItemId, 
-      status: status as any, 
-      deliveredQuantity: delivered, 
-      adminNotes: notes 
-    }}),
-    onSuccess: () => {
-      toast.success("SMM fulfillment updated");
-      onUpdated();
-    },
-    onError: (e: any) => toast.error(e.message),
-  });
-
-  const remaining = Math.max(0, qty - delivered);
-
-  return (
-    <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-4">
-      <div className="flex items-center gap-2 text-primary">
-        <Activity className="h-4 w-4" />
-        <h4 className="font-bold text-sm uppercase tracking-wider">SMM Fulfillment Control</h4>
-      </div>
-
-      <div className="grid sm:grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold uppercase text-muted-foreground">Fulfillment Status</label>
-          <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="h-9 bg-background">
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="partial">Partial</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-              <SelectItem value="refunded">Refunded</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold uppercase text-muted-foreground">Delivered Quantity</label>
-          <div className="flex items-center gap-2">
-            <Input 
-              type="number" 
-              value={delivered} 
-              onChange={(e) => {
-                const val = parseInt(e.target.value) || 0;
-                setDelivered(Math.min(qty, Math.max(0, val)));
-              }}
-              className="h-9 bg-background"
-            />
-            <div className="text-[10px] whitespace-nowrap text-muted-foreground">/ {qty}</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 text-xs">
-        <div className="p-2 rounded bg-background border border-border">
-          <div className="text-muted-foreground mb-0.5 text-[10px] uppercase">Ordered</div>
-          <div className="font-bold">{qty.toLocaleString()}</div>
-        </div>
-        <div className="p-2 rounded bg-background border border-border">
-          <div className="text-muted-foreground mb-0.5 text-[10px] uppercase">Remaining</div>
-          <div className="font-bold text-primary">{remaining.toLocaleString()}</div>
-        </div>
-      </div>
-
-      <div className="space-y-1.5">
-        <label className="text-[10px] font-bold uppercase text-muted-foreground">Admin Notes (Internal)</label>
-        <Textarea 
-          value={notes} 
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Internal notes about this SMM delivery..."
-          className="min-h-[60px] text-xs bg-background"
-        />
-      </div>
-
-      <button
-        type="button"
-        onClick={() => mut.mutate()}
-        disabled={mut.isPending}
-        className="w-full inline-flex items-center justify-center gap-2 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-xs hover:opacity-90 disabled:opacity-50 transition-all"
-      >
-        {mut.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
-        Update SMM Fulfillment
-      </button>
-
-      {current?.updated_at && (
-        <div className="text-[10px] text-center text-muted-foreground italic">
-          Last updated: {new Date(current.updated_at).toLocaleString()}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================
 // Subscription-only card: fixed 5-step checklist + admin deliver
 // ============================================================
-function ChecklistCard({
+function SubscriptionCard({
   f,
   isAdmin,
   onDelivered,
-  type,
 }: {
   f: FulfillmentRow;
   isAdmin: boolean;
   onDelivered: () => void;
-  type: "subscription" | "download";
 }) {
   const markDelivered = useServerFn(adminMarkSubscriptionDeliveredFn);
   const [note, setNote] = useState("");
   const mut = useMutation({
     mutationFn: () => markDelivered({ data: { fulfillmentId: f.id, note: note || undefined } }),
     onSuccess: () => {
-      toast.success(`${type === "subscription" ? "Subscription" : "Download"} marked delivered`);
+      toast.success("Subscription marked delivered");
       setNote("");
       onDelivered();
     },
@@ -500,10 +347,7 @@ function ChecklistCard({
     { label: "Payment Submitted", done: true },
     { label: "Under Verification", done: underVerification },
     { label: "Payment Approved", done: paymentApproved },
-    { 
-      label: type === "subscription" ? "Subscription Delivered" : "Download Available", 
-      done: delivered 
-    },
+    { label: "Subscription Delivered", done: delivered },
   ];
 
   const deliveredAt = (f.metadata as any)?.delivered_at ?? f.completed_at;
@@ -513,8 +357,8 @@ function ChecklistCard({
     <div className="rounded-xl border border-border p-4 space-y-3 bg-card">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <div className="text-sm font-semibold">{f.product_title ?? (type === "subscription" ? "Subscription" : "Download")}</div>
-          <div className="text-[11px] text-muted-foreground">{type === "subscription" ? "Subscription product" : "Downloadable product"}</div>
+          <div className="text-sm font-semibold">{f.product_title ?? "Subscription"}</div>
+          <div className="text-[11px] text-muted-foreground">Subscription product</div>
         </div>
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
@@ -524,9 +368,7 @@ function ChecklistCard({
           }`}
         >
           {delivered ? <PackageCheck className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
-          {delivered 
-            ? (type === "subscription" ? "Subscription Delivered" : "Download Available") 
-            : "Payment Approved"}
+          {delivered ? "Subscription Delivered" : "Payment Approved"}
         </span>
       </div>
 
@@ -572,7 +414,7 @@ function ChecklistCard({
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
           >
             {mut.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
-            Mark {type === "subscription" ? "Subscription" : "Download"} Delivered
+            Mark Subscription Delivered
           </button>
         </div>
       )}

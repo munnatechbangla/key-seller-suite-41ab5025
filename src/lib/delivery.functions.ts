@@ -51,16 +51,6 @@ export type DeliveryItem = {
     completed_at: string | null;
     metadata: Record<string, any> | null;
     thumbnail_url?: string | null;
-    qty?: number | null;
-    smm_fulfillment?: any | null;
-  } | null;
-  smm_fulfillment?: {
-    status: string;
-    delivered_quantity: number;
-    remaining_quantity: number;
-    ordered_quantity?: number;
-    admin_notes: string;
-    updated_at: string;
   } | null;
 };
 
@@ -82,7 +72,7 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
   const orderIds = orderRows.map((o) => o.id);
   const { data: items } = await sb
     .from("order_items")
-    .select("id, order_id, product_id, product_slug, product_name, qty, smm_fulfillment")
+    .select("id, order_id, product_id, product_slug, product_name, qty")
     .in("order_id", orderIds);
   const itemRows = (items ?? []) as any[];
   if (itemRows.length === 0) return [];
@@ -91,7 +81,7 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
   const { data: products } = productIds.length
     ? await sb
         .from("products")
-        .select("id, slug, title, product_type, delivery_type, external_url, thumbnail_url, smm_config")
+        .select("id, slug, title, product_type, delivery_type, external_url, thumbnail_url")
         .in("id", productIds)
     : { data: [] };
   const productMap = new Map((products ?? []).map((p: any) => [p.id, p]));
@@ -127,8 +117,6 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
       completed_at: f.completed_at ?? null,
       metadata: f.metadata ?? null,
       thumbnail_url: (f.metadata as any)?.thumbnail_snapshot || (f.metadata as any)?.thumbnail_url || null,
-      qty: (f as any).qty || null,
-      smm_fulfillment: (f as any).smm_fulfillment || null,
     });
   }
 
@@ -186,8 +174,6 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
     const ord = orderMap.get(it.order_id) as any;
     const fulfillment = fulfillmentByItem.get(it.id) ?? null;
     const productType = p?.product_type ?? (fulfillment?.delivery_type === "subscription" ? "subscription" : null);
-    const sType = p?.smm_config ? "smm_service" : null;
-    const finalProductType = sType ?? productType;
     const deliveryType = productType === "subscription"
       ? "subscription"
       : (p?.delivery_type ?? fulfillment?.delivery_type ?? null);
@@ -201,7 +187,7 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
         id: it.product_id,
         slug: it.product_slug ?? p?.slug ?? "",
         name: it.product_name ?? p?.title ?? "Product",
-        product_type: finalProductType ?? "manual",
+        product_type: productType ?? "manual",
         delivery_type: deliveryType ?? "manual",
         external_url: p?.external_url ?? null,
         thumbnail_url: p?.thumbnail_url ?? null,
@@ -212,12 +198,6 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
 
       custom_fields: fieldsByKey.get(`${it.order_id}::${it.product_id}`) ?? [],
       fulfillment,
-      smm_fulfillment: (it.smm_fulfillment || fulfillment?.smm_fulfillment)
-        ? {
-            ...(it.smm_fulfillment || fulfillment?.smm_fulfillment),
-            ordered_quantity: it.qty || fulfillment?.qty,
-          }
-        : null,
     } as DeliveryItem;
   });
 }

@@ -49,7 +49,7 @@ export function MyReviewsTab() {
           {(items.data ?? []).map((it) => (
             <NewReviewCard
               key={it.id}
-              item={it as any}
+              item={it}
               onSubmit={async (rating, title, body) => {
                 await submit({ data: { productId: it.product_id!, rating, title: title || null, body: body || null, orderItemId: it.id } });
                 toast.success("Submitted — pending moderation");
@@ -68,8 +68,8 @@ export function MyReviewsTab() {
           <div className="rounded-2xl bg-card border border-border p-5 text-sm text-muted-foreground">You haven't written any reviews yet.</div>
         )}
         <div className="space-y-3">
-          {(mine.data ?? []).map((r: any) => {
-            const prod = (r as any).products;
+          {(mine.data ?? []).map((r) => {
+            const prod = (r as unknown as { products?: { slug?: string; title?: string; emoji?: string } }).products;
             return (
               <div key={r.id} className="rounded-2xl bg-card border border-border p-5">
                 <div className="flex items-start justify-between gap-3 flex-wrap">

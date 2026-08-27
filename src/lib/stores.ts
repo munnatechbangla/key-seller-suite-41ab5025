@@ -23,7 +23,6 @@ export type CartVariantMeta = {
   inventory_pool_id: string | null;
   subscription_pool_id: string | null;
   license_pool_id: string | null;
-  smm_config_snapshot?: any | null;
 };
 
 type CartItem = {
@@ -32,16 +31,10 @@ type CartItem = {
   qty: number;
   product: Product;
   variant?: CartVariantMeta;
-  smm_config_snapshot?: any;
-  smm_quantity?: number;
 };
 
 function effectiveUnitPrice(i: CartItem): number {
   if (i.variant) return i.variant.sale_price != null && i.variant.sale_price > 0 ? i.variant.sale_price : i.variant.price;
-  if (i.product.product_type === "smm_service" && i.smm_quantity && i.smm_config_snapshot) {
-    const { calculateSMMPrice } = require("./catalog");
-    return calculateSMMPrice(i.smm_quantity, i.smm_config_snapshot) / i.smm_quantity;
-  }
   return i.product.price;
 }
 
@@ -50,7 +43,7 @@ type CartState = {
   coupon: string | null;
   couponDiscount: number;
   productFieldValues: Record<string, Record<string, string>>; // productSlug -> field_id -> value
-  add: (p: Product, qty?: number, variant?: CartVariantMeta, smmConfig?: any, smmQty?: number) => void;
+  add: (p: Product, qty?: number, variant?: CartVariantMeta) => void;
   remove: (slug: string) => void;
   setQty: (slug: string, qty: number) => void;
   clear: () => void;
@@ -71,17 +64,12 @@ export const useCart = create<CartState>()(
       coupon: null,
       couponDiscount: 0,
       productFieldValues: {},
-      add: (p, qty = 1, variant, smmConfig, smmQty) =>
+      add: (p, qty = 1, variant) =>
         set((s) => {
           const lineKey = variant ? `${p.slug}::${variant.variant_id}` : p.slug;
-          let unit = variant
+          const unit = variant
             ? (variant.sale_price != null && variant.sale_price > 0 ? variant.sale_price : variant.price)
             : p.price;
-            
-          if (p.product_type === "smm_service" && smmQty && smmConfig) {
-            const { calculateSMMPrice } = require("./catalog");
-            unit = calculateSMMPrice(smmQty, smmConfig) / smmQty;
-          }
           track("add_to_cart", {
             currency: "USD",
             value: unit * qty,
@@ -93,15 +81,7 @@ export const useCart = create<CartState>()(
           const ex = s.items.find((i) => i.slug === lineKey);
           if (ex) return { items: s.items.map((i) => (i.slug === lineKey ? { ...i, qty: i.qty + qty } : i)) };
           return {
-            items: [...s.items, { 
-              slug: lineKey, 
-              productSlug: p.slug, 
-              qty: smmQty || qty, 
-              product: p, 
-              variant,
-              smm_config_snapshot: smmConfig,
-              smm_quantity: smmQty
-            }],
+            items: [...s.items, { slug: lineKey, productSlug: p.slug, qty, product: p, variant }],
           };
         }),
       remove: (slug) => set((s) => ({ items: s.items.filter((i) => i.slug !== slug) })),

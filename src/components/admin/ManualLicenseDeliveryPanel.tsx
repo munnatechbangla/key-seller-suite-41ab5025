@@ -42,7 +42,7 @@ export function ManualLicenseDeliveryPanel({
   const list = useServerFn(adminListManualLicenseDeliveriesFn);
   const q = useQuery({
     queryKey: ["admin-manual-license", orderId],
-    queryFn: () => list({ data: { orderId } } as any),
+    queryFn: () => list({ data: { orderId } }),
   });
 
   if (q.isLoading) {
@@ -53,11 +53,11 @@ export function ManualLicenseDeliveryPanel({
     );
   }
 
-  const all = ((q.data as any)?.items ?? []) as Item[];
+  const all = (q.data?.items ?? []) as Item[];
   const items = orderItemId ? all.filter((i) => i.order_item_id === orderItemId) : all;
   if (!items.length) return null;
 
-  const eligible = (q.data as any)?.order.eligible ?? false;
+  const eligible = q.data?.order.eligible ?? false;
 
   return (
     <div className={hideHeader ? "space-y-3" : "rounded-xl border border-border p-3 space-y-3 bg-card"}>

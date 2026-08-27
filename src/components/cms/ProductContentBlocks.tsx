@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import { formatDescription } from "@/lib/content-utils";
 import { Button } from "@/components/ui/button";
 import { Check, Star, Info, AlertTriangle, ShieldCheck, Download, Zap, KeyRound, Repeat, Clock } from "lucide-react";
 import * as LucideIcons from "lucide-react";
@@ -32,7 +31,7 @@ function RenderBlock({ block, product }: { block: ProductBlock; product?: any })
     case "rich_text":
       return (
         <div 
-          className="prose prose-sm max-w-none dark:prose-invert" 
+          className="prose prose-sm max-w-none dark:prose-invert prose-p:my-2 prose-headings:mb-2 prose-ul:my-2 prose-li:my-0" 
           dangerouslySetInnerHTML={{ __html: c.html ?? "" }} 
         />
       );
@@ -52,7 +51,7 @@ function RenderBlock({ block, product }: { block: ProductBlock; product?: any })
       );
 
     case "markdown":
-      return <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: formatDescription(c.md ?? "") }} />;
+      return <pre className="whitespace-pre-wrap font-sans">{c.md}</pre>;
 
     case "code":
       return (

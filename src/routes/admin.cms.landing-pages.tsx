@@ -43,7 +43,7 @@ function LandingPagesAdmin() {
   const [editing, setEditing] = useState<Partial<Row> | null>(null);
   const [open, setOpen] = useState(false);
 
-  const refresh = () => list().then((r) => setRows(r as any));
+  const refresh = () => list().then((r) => setRows(r as Row[]));
   useEffect(() => { refresh(); }, []);
 
   const openNew = () => {

@@ -28,7 +28,7 @@ import { initPaymentFn } from "@/lib/payments/init.functions";
 import {
   listEnabledGatewaysFn,
   submitManualPaymentFn,
-  getMySubmissionsFn,
+  getMySubmissionForOrderFn,
   type GatewayRow,
 } from "@/lib/payments/gateways.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,12 +57,8 @@ function buildTimeline(opts: {
   hasLicense: boolean;
   isSubscription: boolean;
   subscriptionDelivered: boolean;
-  isDownloadable: boolean;
-  isSmm?: boolean;
-  smmDelivered?: boolean;
-  anyDelivered: boolean;
 }): TimelineStep[] {
-  const { submitted, underReview, rejected, approved, hasLicense, isSubscription, subscriptionDelivered, isDownloadable, isSmm, smmDelivered, anyDelivered } = opts;
+  const { submitted, underReview, rejected, approved, hasLicense, isSubscription, subscriptionDelivered } = opts;
   const s = (cond: "done" | "current" | "todo" | "error"): "done" | "current" | "todo" | "error" => cond;
   return [
     { key: "created", label: "Order Created", state: s("done") },
@@ -77,16 +73,16 @@ function buildTimeline(opts: {
       state: rejected ? "error" : approved ? "done" : underReview ? "current" : "todo",
     },
     {
+      key: "approved",
+      label: "Payment Approved",
+      state: approved ? "done" : rejected ? "todo" : "todo",
+    },
+    {
       key: "delivered",
-      label: isSubscription ? "Subscription Delivered"
-        : isSmm ? "Service Delivered"
-        : isDownloadable ? "Download Available"
-        : "License Delivered",
+      label: isSubscription ? "Subscription Delivered" : "License Delivered",
       state: isSubscription
-        ? (subscriptionDelivered ? "done" : approved ? "current" : "todo")
-        : isSmm
-        ? (smmDelivered ? "done" : approved ? "current" : "todo")
-        : (approved && (hasLicense || anyDelivered) ? "done" : approved ? "current" : "todo"),
+        ? subscriptionDelivered ? "done" : approved ? "current" : "todo"
+        : approved && hasLicense ? "done" : approved ? "current" : "todo",
     },
   ];
 }
@@ -131,7 +127,7 @@ function PayPage() {
   const simulate = useServerFn(simulateGatewayPaymentFn);
   const initPayment = useServerFn(initPaymentFn);
   const listGateways = useServerFn(listEnabledGatewaysFn);
-  const fetchSubmission = useServerFn(getMySubmissionsFn);
+  const fetchSubmission = useServerFn(getMySubmissionForOrderFn);
   const support = useSettings((s) => s.settings.support);
   const contact = useSettings((s) => s.settings.contact);
   const loadSettings = useSettings((s) => s.load);
@@ -160,7 +156,7 @@ function PayPage() {
 
   const subQ = useQuery({
     queryKey: ["submission", orderNumber],
-    queryFn: () => fetchSubmission() as any,
+    queryFn: () => fetchSubmission({ data: { orderNumber } }),
     enabled: !!user,
     refetchInterval: (query) => {
       const s = (query.state.data as { submission?: { status?: string } } | undefined)?.submission?.status;
@@ -188,7 +184,7 @@ function PayPage() {
   const assignments = (q.data?.assignments as unknown as Array<unknown>) || (q.data as any)?.order_items?.filter((it: any) => it.license_assignments)?.flatMap((it: any) => it.license_assignments) || [];
   const submission = subQ.data?.submission ?? (subQ.data as any)?.[0] ?? null;
   const slug: string = order?.payment_method ?? "";
-  const gateway: any = (gw.data as any)?.gateways?.find((g: any) => g.slug === slug);
+  const gateway: GatewayRow | undefined = gw.data?.gateways.find((g) => g.slug === slug);
   const isManual = gateway?.type === "manual";
   const isCustomAuto = gateway?.type === "custom_auto";
   const isBuiltinAuto = gateway?.type === "builtin" && BUILTIN_AUTO.has(slug);
@@ -196,8 +192,6 @@ function PayPage() {
   const orderStatus = order?.status ?? "pending";
   const orderItems = (q.data?.items as any[]) || (q.data as any)?.order_items || [];
   const isSubscriptionOrder = orderItems.some((it: any) => it.product_type === "subscription" || it.delivery_type === "subscription" || it.product?.product_type === "subscription");
-  const isDownloadableOrder = orderItems.some((it: any) => it.product_type === "download" || it.delivery_type === "download" || it.product?.product_type === "download" || it.product?.delivery_type === "download");
-  const anyDelivered = (deliveryQ.data ?? []).some((it: any) => it?.manual_license || it?.fulfillment?.fulfillment_status === "delivered" || (it?.downloads?.length > 0));
   const approved = orderStatus === "paid" || orderStatus === "completed";
   const rejected = submission?.status === "rejected";
   const pendingSubmission = submission?.status === "pending" || submission?.status === "under_review";
@@ -213,11 +207,6 @@ function PayPage() {
     }
   }, [approved, orderNumber]);
 
-  const deliveryItems = deliveryQ.data ?? [];
-  const isSmmOrder = deliveryItems.some((it: any) => it.product?.product_type === 'smm_service' || it.product_type === 'smm_service');
-  const smmFulfillment = deliveryItems.find((it: any) => it.product?.product_type === 'smm_service' || it.product_type === 'smm_service')?.smm_fulfillment;
-  const smmDelivered = (smmFulfillment as any)?.status === 'completed' || (smmFulfillment as any)?.status === 'partial';
-
   const timeline = buildTimeline({
     submitted,
     underReview,
@@ -225,15 +214,11 @@ function PayPage() {
     approved,
     hasLicense:
       assignments.length > 0 ||
-      deliveryItems.some(
-        (it: any) => it?.manual_license || (it?.fulfillment?.fulfillment_status === "delivered" && (it.product?.product_type === 'license_key' || it.product?.delivery_type === 'license_key')),
+      (deliveryQ.data ?? []).some(
+        (it: any) => it?.manual_license || it?.fulfillment?.fulfillment_status === "delivered",
       ),
     isSubscription: isSubscriptionOrder,
     subscriptionDelivered: isSubscriptionOrder && orderStatus === "completed",
-    isDownloadable: isDownloadableOrder,
-    isSmm: isSmmOrder,
-    smmDelivered: smmDelivered,
-    anyDelivered,
   });
 
   const redirectToGateway = async () => {

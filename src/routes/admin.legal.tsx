@@ -43,14 +43,14 @@ function AdminLegalPages() {
   async function createNew(slug?: string) {
     const s = slug ?? prompt("Page slug (e.g. shipping, cookies)")?.trim();
     if (!s) return;
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from("legal_pages")
       .insert({
         slug: s,
         title: s.charAt(0).toUpperCase() + s.slice(1),
-        content: { sections: [{ h: "Section", p: "Content..." }] } as any,
-        is_published: false as any,
-      } as any)
+        content: { sections: [{ h: "Section", p: "Content..." }] },
+        is_published: false,
+      })
       .select("*")
       .single();
     if (error) return toast.error(error.message);
@@ -62,7 +62,7 @@ function AdminLegalPages() {
   async function save(patch: Partial<LegalPage>) {
     if (!selected) return;
     setSaving(true);
-    const { error } = await supabase.from("legal_pages").update(patch as any).eq("id", selected.id);
+    const { error } = await supabase.from("legal_pages").update(patch).eq("id", selected.id);
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Saved");
