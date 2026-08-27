@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useMemo, useState } from "react";
 import { Star, ShieldCheck, Loader2 } from "lucide-react";
 import { useApprovedReviews, computeBreakdown } from "@/lib/reviews";

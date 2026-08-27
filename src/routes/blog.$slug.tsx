@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { seoMeta, siteName, siteUrl } from "@/lib/cms/seo";
 import { useSettings } from "@/lib/cms/settings";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";

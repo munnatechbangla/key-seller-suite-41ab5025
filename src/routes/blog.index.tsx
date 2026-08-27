@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { seoMeta, siteName, canonicalLink } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";

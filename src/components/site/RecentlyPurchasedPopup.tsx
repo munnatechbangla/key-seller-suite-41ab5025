@@ -70,7 +70,14 @@ export function RecentlyPurchasedPopup() {
       try {
         const { data } = await supabase.rpc("list_recent_public_purchases", { _limit: 20 });
         if (data && (data as any[]).length > 0) {
-          pool.current = data as Purchase[];
+          pool.current = (data as Array<{ customer_name?: string | null; product_name?: string | null; product_slug?: string | null; product_thumbnail?: string | null; purchased_at?: string | null; country?: string | null }>).map((p) => ({
+            first_name: p.customer_name ?? "Someone",
+            country: p.country ?? null,
+            product_name: p.product_name ?? "a product",
+            product_slug: p.product_slug ?? "",
+            product_thumbnail: p.product_thumbnail ?? null,
+            purchased_at: p.purchased_at ?? new Date().toISOString(),
+          }));
         } else {
           pool.current = Array.from({ length: 10 }, genDemo);
         }

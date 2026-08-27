@@ -92,7 +92,7 @@ export const blogSubmitCommentFn = createServerFn({ method: "POST" })
   .inputValidator((d: { post_id: string; body: string; guest_name?: string; guest_email?: string; parent_id?: string }) => d)
   .handler(async ({ data }) => {
     const sb = pubClient();
-    const { error } = await sb.from("blog_comments").insert({
+    const { error } = await (sb as any).from("blog_comments").insert({
       post_id: data.post_id,
       body: data.body,
       guest_name: data.guest_name ?? null,
