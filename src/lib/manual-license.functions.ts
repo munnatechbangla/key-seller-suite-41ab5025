@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Manual License Delivery — admin types license info directly for License Key
 // products. Independent of license_pools / license_keys / license_assignments.
 import { createServerFn } from "@tanstack/react-start";

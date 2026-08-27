@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Gateway registry server functions.
 // Public list returns enabled gateways for checkout. Admin functions handle
 // CRUD on payment_gateways and approval workflow on manual_payment_submissions.

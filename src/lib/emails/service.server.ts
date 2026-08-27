@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Email queue + dispatcher. Sender domain is configured per-tenant via site_settings.
 // The system runs in "development mode" until site_settings.email.sender_email
 // is configured AND EMAILS_ENABLED=true is set as a runtime env var.

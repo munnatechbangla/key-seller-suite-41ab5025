@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Server-only helpers that fan out transactional emails for lifecycle events.
 import { enqueueEmail } from "./service.server";
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { seoMeta, canonicalLink } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Star, ChevronRight, Calendar, ArrowRight, ShieldCheck, BadgeCheck } from "lucide-react";

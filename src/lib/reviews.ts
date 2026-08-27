@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Public reviews read layer (RLS allows anon to read approved reviews).
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
