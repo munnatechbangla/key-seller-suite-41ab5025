@@ -50,7 +50,7 @@ export type FulfillmentLog = {
 };
 
 async function assertAdmin(ctx: { supabase: any; userId: string }) {
-  const { data, error } = await ctx.(supabase as any).rpc("has_role", {
+  const { data, error } = await (ctx.supabase as any).rpc("has_role", {
     _user_id: ctx.userId,
     _role: "admin",
   });

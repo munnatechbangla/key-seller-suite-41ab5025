@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10; // 10 years
 
 async function assertAdmin(ctx: any) {
-  const { data: isAdmin } = await ctx.(supabase as any).rpc("has_role", {
+  const { data: isAdmin } = await (ctx.supabase as any).rpc("has_role", {
     _user_id: ctx.userId,
     _role: "admin",
   });
