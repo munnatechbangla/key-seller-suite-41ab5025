@@ -76,8 +76,8 @@ export const adminUpsertCouponFn = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const payload = { ...data, code: data.code.trim().toUpperCase(), created_by: context.userId };
     const { data: row, error } = data.id
-      ? await context.supabase.from("coupons").update(payload).eq("id", data.id).select().single()
-      : await context.supabase.from("coupons").insert(payload).select().single();
+      ? await (context.supabase as any).from("coupons").update(payload).eq("id", data.id).select().single()
+      : await (context.supabase as any).from("coupons").insert(payload).select().single();
     if (error) throw new Error(error.message);
     return row;
   });
@@ -97,7 +97,7 @@ export const adminToggleCouponFn = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), is_active: z.boolean() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const { error } = await context.supabase.from("coupons").update({ is_active: data.is_active }).eq("id", data.id);
+    const { error } = await (context.supabase as any).from("coupons").update({ is_active: data.is_active }).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

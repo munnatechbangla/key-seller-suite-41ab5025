@@ -49,7 +49,7 @@ export function MyReviewsTab() {
           {(items.data ?? []).map((it) => (
             <NewReviewCard
               key={it.id}
-              item={it}
+               item={{ id: it.id, product_id: it.product_id, product_name: it.product_name ?? "Product", product_slug: it.product_slug ?? "" }}
               onSubmit={async (rating, title, body) => {
                 await submit({ data: { productId: it.product_id!, rating, title: title || null, body: body || null, orderItemId: it.id } });
                 toast.success("Submitted — pending moderation");
