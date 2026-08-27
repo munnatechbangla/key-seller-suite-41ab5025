@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10; // 10 years
 
 async function assertAdmin(ctx: any) {
-  const { data: isAdmin } = await ctx.supabase.rpc("has_role", {
+  const { data: isAdmin } = await ctx.(supabase as any).rpc("has_role", {
     _user_id: ctx.userId,
     _role: "admin",
   });
@@ -16,7 +16,7 @@ export const listAssetsFn = createServerFn({ method: "POST" })
   .inputValidator((d: { folder?: string; search?: string; mime_prefix?: string; limit?: number; offset?: number }) => d)
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const { data: res, error } = await context.supabase.rpc("admin_list_media_assets", {
+    const { data: res, error } = await (context.supabase as any).rpc("admin_list_media_assets", {
       _folder: data.folder ?? undefined,
       _search: data.search ?? undefined,
       _mime_prefix: data.mime_prefix ?? undefined,
@@ -42,13 +42,13 @@ export const registerAssetFn = createServerFn({ method: "POST" })
   }) => d)
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const { data: signed, error: sErr } = await context.supabase.storage
+    const { data: signed, error: sErr } = await (context.supabase as any).storage
       .from("media")
       .createSignedUrl(data.storage_path, SIGNED_URL_TTL);
     if (sErr) throw new Error(sErr.message);
     const public_url = signed?.signedUrl ?? null;
 
-    const { data: row, error } = await context.supabase
+    const { data: row, error } = await (context.supabase as any)
       .from("media_assets")
       .insert({
         storage_path: data.storage_path,
@@ -73,7 +73,7 @@ export const renameAssetFn = createServerFn({ method: "POST" })
   .inputValidator((d: { id: string; filename: string }) => d)
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const { error } = await context.supabase
+    const { error } = await (context.supabase as any)
       .from("media_assets")
       .update({ filename: data.filename })
       .eq("id", data.id);
@@ -86,7 +86,7 @@ export const deleteAssetFn = createServerFn({ method: "POST" })
   .inputValidator((d: { id: string; force?: boolean }) => d)
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const { data: asset, error: aErr } = await context.supabase
+    const { data: asset, error: aErr } = await (context.supabase as any)
       .from("media_assets")
       .select("id, storage_path")
       .eq("id", data.id)
@@ -94,7 +94,7 @@ export const deleteAssetFn = createServerFn({ method: "POST" })
     if (aErr || !asset) throw new Error("Asset not found");
 
     if (!data.force) {
-      const { count } = await context.supabase
+      const { count } = await (context.supabase as any)
         .from("media_asset_usage")
         .select("id", { count: "exact", head: true })
         .eq("asset_id", data.id);
@@ -102,8 +102,8 @@ export const deleteAssetFn = createServerFn({ method: "POST" })
         throw new Error("This asset is currently in use.");
       }
     }
-    await context.supabase.storage.from("media").remove([asset.storage_path]);
-    const { error } = await context.supabase.from("media_assets").delete().eq("id", data.id);
+    await (context.supabase as any).storage.from("media").remove([asset.storage_path]);
+    const { error } = await (context.supabase as any).from("media_assets").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -113,7 +113,7 @@ export const getAssetUsageFn = createServerFn({ method: "POST" })
   .inputValidator((d: { id: string }) => d)
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const { data: res, error } = await context.supabase.rpc("admin_get_asset_usage", { _asset_id: data.id });
+    const { data: res, error } = await (context.supabase as any).rpc("admin_get_asset_usage", { _asset_id: data.id });
     if (error) throw new Error(error.message);
     return res as any[];
   });
@@ -123,17 +123,17 @@ export const refreshAssetUrlFn = createServerFn({ method: "POST" })
   .inputValidator((d: { id: string }) => d)
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const { data: asset } = await context.supabase
+    const { data: asset } = await (context.supabase as any)
       .from("media_assets")
       .select("storage_path")
       .eq("id", data.id)
       .single();
     if (!asset) throw new Error("Not found");
-    const { data: signed, error } = await context.supabase.storage
+    const { data: signed, error } = await (context.supabase as any).storage
       .from("media")
       .createSignedUrl(asset.storage_path, SIGNED_URL_TTL);
     if (error) throw new Error(error.message);
-    await context.supabase
+    await (context.supabase as any)
       .from("media_assets")
       .update({ public_url: signed?.signedUrl })
       .eq("id", data.id);
@@ -154,7 +154,7 @@ export const syncStorageAssetsFn = createServerFn({ method: "POST" })
       ? data.folders
       : ["products", "categories", "brands", "hero", "banners", "blog", "logos", "icons", "screenshots", "downloads", "invoices", "general", ""];
 
-    const { data: existing } = await context.supabase.from("media_assets").select("storage_path");
+    const { data: existing } = await (context.supabase as any).from("media_assets").select("storage_path");
     const known = new Set((existing ?? []).map((r: any) => r.storage_path));
 
     let scanned = 0;
@@ -162,7 +162,7 @@ export const syncStorageAssetsFn = createServerFn({ method: "POST" })
     for (const folder of folders) {
       let offset = 0;
       for (;;) {
-        const { data: objects, error } = await context.supabase.storage
+        const { data: objects, error } = await (context.supabase as any).storage
           .from("media")
           .list(folder, { limit: 100, offset, sortBy: { column: "name", order: "asc" } });
         if (error) break;
@@ -173,10 +173,10 @@ export const syncStorageAssetsFn = createServerFn({ method: "POST" })
           scanned++;
           if (known.has(storage_path)) continue;
           const meta: any = obj.metadata ?? {};
-          const { data: signed } = await context.supabase.storage
+          const { data: signed } = await (context.supabase as any).storage
             .from("media")
             .createSignedUrl(storage_path, SIGNED_URL_TTL);
-          const { error: insErr } = await context.supabase.from("media_assets").insert({
+          const { error: insErr } = await (context.supabase as any).from("media_assets").insert({
             storage_path,
             filename: obj.name,
             original_filename: obj.name,

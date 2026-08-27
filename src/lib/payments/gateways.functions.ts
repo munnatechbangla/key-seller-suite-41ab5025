@@ -34,7 +34,7 @@ export const listEnabledGatewaysFn = createServerFn({ method: "GET" }).handler(a
   // credentials from `config` (only safe fields exposed for manual methods).
   const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
   const supabase = createServerSupabaseClient();
-  const { data, error } = await supabase.rpc("list_public_payment_gateways");
+  const { data, error } = await (supabase as any).rpc("list_public_payment_gateways");
   if (error) throw new Error(error.message);
   return { gateways: (data ?? []) as unknown as GatewayRow[] };
 });
@@ -42,7 +42,7 @@ export const listEnabledGatewaysFn = createServerFn({ method: "GET" }).handler(a
 // ---------------- Admin: CRUD ----------------
 
 async function assertAdmin(ctx: { supabase: ReturnType<typeof createClient<Database>>; userId: string }) {
-  const { data, error } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "admin" });
+  const { data, error } = await ctx.(supabase as any).rpc("has_role", { _user_id: ctx.userId, _role: "admin" });
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Forbidden");
 }
@@ -51,7 +51,7 @@ export const listAllGatewaysFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context as never);
-    const { data, error } = await context.supabase
+    const { data, error } = await (context.supabase as any)
       .from("payment_gateways")
       .select("*")
       .order("type", { ascending: true })
@@ -88,14 +88,14 @@ export const upsertGatewayFn = createServerFn({ method: "POST" })
       config: (data.config ?? {}) as never,
     };
     if (data.id) {
-      const { data: row, error } = await context.supabase
+      const { data: row, error } = await (context.supabase as any)
         .from("payment_gateways").update(payload).eq("id", data.id).select("*").single();
       if (error) throw new Error(error.message);
       return { gateway: row };
     }
     // New gateway: append to bottom of its type by using max(sort_order)+10
     if (data.sort_order == null) {
-      const { data: maxRow } = await context.supabase
+      const { data: maxRow } = await (context.supabase as any)
         .from("payment_gateways")
         .select("sort_order")
         .eq("type", data.type)
@@ -104,7 +104,7 @@ export const upsertGatewayFn = createServerFn({ method: "POST" })
         .maybeSingle();
       payload.sort_order = ((maxRow?.sort_order ?? 0) as number) + 10;
     }
-    const { data: row, error } = await context.supabase
+    const { data: row, error } = await (context.supabase as any)
       .from("payment_gateways").insert(payload).select("*").single();
     if (error) throw new Error(error.message);
     return { gateway: row };
@@ -115,7 +115,7 @@ export const deleteGatewayFn = createServerFn({ method: "POST" })
   .inputValidator((d: { id: string }) => d)
   .handler(async ({ data, context }) => {
     await assertAdmin(context as never);
-    const { error } = await context.supabase.from("payment_gateways").delete().eq("id", data.id);
+    const { error } = await (context.supabase as any).from("payment_gateways").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -125,7 +125,7 @@ export const toggleGatewayFn = createServerFn({ method: "POST" })
   .inputValidator((d: { id: string; is_enabled: boolean }) => d)
   .handler(async ({ data, context }) => {
     await assertAdmin(context as never);
-    const { error } = await context.supabase
+    const { error } = await (context.supabase as any)
       .from("payment_gateways").update({ is_enabled: data.is_enabled }).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -138,7 +138,7 @@ export const reorderGatewaysFn = createServerFn({ method: "POST" })
     await assertAdmin(context as never);
     // Update each row's sort_order. Small set (typically <20), sequential is fine.
     for (const it of data.items) {
-      const { error } = await context.supabase
+      const { error } = await (context.supabase as any)
         .from("payment_gateways")
         .update({ sort_order: it.sort_order })
         .eq("id", it.id);
@@ -201,7 +201,7 @@ export const submitManualPaymentFn = createServerFn({ method: "POST" })
 export const getMySubmissionsFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
+    const { data, error } = await (context.supabase as any)
       .from("manual_payment_submissions")
       .select("id, gateway_slug, status, transaction_id, amount, currency, screenshot_url, admin_note, reviewed_at, created_at, order_id, orders!inner(order_number, total, currency, status)")
       .order("created_at", { ascending: false })
@@ -216,7 +216,7 @@ export const getMySubmissionForOrderFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { orderNumber: string }) => d)
   .handler(async ({ data, context }) => {
-    const { data: rows, error } = await context.supabase
+    const { data: rows, error } = await (context.supabase as any)
       .from("manual_payment_submissions")
       .select("id, status, admin_note, gateway_slug, transaction_id, screenshot_url, reviewed_at, created_at, orders!inner(order_number)")
       .eq("orders.order_number", data.orderNumber)
@@ -232,7 +232,7 @@ export const listSubmissionsFn = createServerFn({ method: "GET" })
   .inputValidator((d: { status?: "pending" | "approved" | "rejected" | "all" }) => d ?? {})
   .handler(async ({ data, context }) => {
     await assertAdmin(context as never);
-    let q = context.supabase
+    let q = (context.supabase as any)
       .from("manual_payment_submissions")
       .select("*, orders!inner(order_number, total, currency, status)")
       .order("created_at", { ascending: false })
@@ -248,12 +248,12 @@ export const reviewSubmissionFn = createServerFn({ method: "POST" })
   .inputValidator((d: { id: string; action: "approve" | "reject"; admin_note?: string }) => d)
   .handler(async ({ data, context }) => {
     await assertAdmin(context as never);
-    const { data: sub, error: sErr } = await context.supabase
+    const { data: sub, error: sErr } = await (context.supabase as any)
       .from("manual_payment_submissions").select("*").eq("id", data.id).single();
     if (sErr) throw new Error(sErr.message);
 
     const newStatus = data.action === "approve" ? "approved" : "rejected";
-    const { error: uErr } = await context.supabase
+    const { error: uErr } = await (context.supabase as any)
       .from("manual_payment_submissions")
       .update({
         status: newStatus,

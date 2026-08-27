@@ -72,7 +72,7 @@ export async function enqueueEmail(args: EnqueueArgs) {
     .eq("template_key", args.templateKey)
     .maybeSingle();
   if (!tpl) {
-    await supabaseAdmin.from("email_logs").insert({
+    await (supabaseAdmin as any).from("email_logs").insert({
       template_key: args.templateKey,
       recipient: args.recipient,
       subject: args.subject ?? args.templateKey,
@@ -96,7 +96,7 @@ export async function enqueueEmail(args: EnqueueArgs) {
     (process.env.EMAILS_ENABLED ?? "false").toLowerCase() === "true";
 
   const status = sendingEnabled ? "pending" : "skipped";
-  await supabaseAdmin.from("email_logs").insert({
+  await (supabaseAdmin as any).from("email_logs").insert({
     template_key: args.templateKey,
     recipient: args.recipient,
     subject,

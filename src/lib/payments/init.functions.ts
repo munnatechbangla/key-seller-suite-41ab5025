@@ -87,7 +87,7 @@ export const initPaymentFn = createServerFn({ method: "POST" })
       });
 
       if (!result.ok) {
-        await supabaseAdmin.from("payment_intents").insert({
+        await (supabaseAdmin as any).from("payment_intents").insert({
           order_id: order.id,
           order_number: order.order_number,
           gateway: "sslcommerz",
@@ -100,7 +100,7 @@ export const initPaymentFn = createServerFn({ method: "POST" })
         throw new Error(result.reason);
       }
 
-      await supabaseAdmin.from("payment_intents").insert({
+      await (supabaseAdmin as any).from("payment_intents").insert({
         order_id: order.id,
         order_number: order.order_number,
         gateway: "sslcommerz",
@@ -146,7 +146,7 @@ export const initPaymentFn = createServerFn({ method: "POST" })
         baseUrl,
       });
 
-      await supabaseAdmin.from("payment_intents").insert({
+      await (supabaseAdmin as any).from("payment_intents").insert({
         order_id: order.id,
         order_number: order.order_number,
         gateway: gw.slug,

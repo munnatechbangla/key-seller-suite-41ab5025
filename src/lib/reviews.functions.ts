@@ -36,7 +36,7 @@ export const submitReviewFn = createServerFn({ method: "POST" })
     if ((recent ?? 0) > 0) throw new Error("Please wait a moment before submitting another review.");
 
     // Verified purchase check (and one-review-per-product guard)
-    const { data: purchased } = await supabase.rpc("user_purchased_product", {
+    const { data: purchased } = await (supabase as any).rpc("user_purchased_product", {
       _user_id: userId,
       _product_id: data.productId,
     });
@@ -88,7 +88,7 @@ export const updateMyReviewFn = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => updateSchema.parse(d))
   .handler(async ({ data, context }) => {
     // Editing resets to pending for re-moderation
-    const { error } = await context.supabase
+    const { error } = await (context.supabase as any)
       .from("product_reviews")
       .update({
         rating: data.rating,
@@ -106,7 +106,7 @@ export const deleteMyReviewFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
+    const { error } = await (context.supabase as any)
       .from("product_reviews")
       .delete()
       .eq("id", data.id)
@@ -118,7 +118,7 @@ export const deleteMyReviewFn = createServerFn({ method: "POST" })
 export const getMyReviewsFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
+    const { data, error } = await (context.supabase as any)
       .from("product_reviews")
       .select("id, product_id, rating, title, body, status, is_verified, admin_reply, created_at, products(slug, title, thumbnail_url, emoji)")
       .eq("user_id", context.userId)
@@ -131,14 +131,14 @@ export const getReviewableItemsFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     // Items the user purchased (paid/completed) but hasn't reviewed yet
-    const { data: items, error } = await context.supabase
+    const { data: items, error } = await (context.supabase as any)
       .from("order_items")
       .select("id, product_id, product_name, product_slug, created_at, orders!inner(status, user_id)")
       .eq("orders.user_id", context.userId)
       .in("orders.status", ["paid", "completed"])
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    const { data: reviewed } = await context.supabase
+    const { data: reviewed } = await (context.supabase as any)
       .from("product_reviews")
       .select("product_id")
       .eq("user_id", context.userId);
@@ -149,7 +149,7 @@ export const getReviewableItemsFn = createServerFn({ method: "GET" })
 // ----- Admin moderation -----
 
 async function assertAdmin(supabase: import("@supabase/supabase-js").SupabaseClient, userId: string) {
-  const { data } = await (supabase.rpc as unknown as (n: string, p: Record<string, unknown>) => Promise<{ data: boolean | null }>)("has_role", { _user_id: userId, _role: "admin" });
+  const { data } = await ((supabase as any).rpc as unknown as (n: string, p: Record<string, unknown>) => Promise<{ data: boolean | null }>)("has_role", { _user_id: userId, _role: "admin" });
   if (!data) throw new Error("Forbidden");
 }
 
@@ -165,8 +165,8 @@ export const adminListReviewsFn = createServerFn({ method: "GET" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    let q = context.supabase
+    await assertAdmin((context.supabase as any), context.userId);
+    let q = (context.supabase as any)
       .from("product_reviews")
       .select("id, product_id, user_id, rating, title, body, status, is_verified, admin_reply, admin_reply_at, display_name, created_at, products(slug, title)")
       .order("created_at", { ascending: false })
@@ -189,8 +189,8 @@ export const adminSetReviewStatusFn = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { error } = await context.supabase
+    await assertAdmin((context.supabase as any), context.userId);
+    const { error } = await (context.supabase as any)
       .from("product_reviews")
       .update({ status: data.status })
       .in("id", data.ids);
@@ -204,8 +204,8 @@ export const adminReplyReviewFn = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), reply: z.string().trim().max(2000) }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { error } = await context.supabase
+    await assertAdmin((context.supabase as any), context.userId);
+    const { error } = await (context.supabase as any)
       .from("product_reviews")
       .update({ admin_reply: data.reply || null, admin_reply_at: data.reply ? new Date().toISOString() : null })
       .eq("id", data.id);
@@ -217,8 +217,8 @@ export const adminDeleteReviewFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { error } = await context.supabase.from("product_reviews").delete().eq("id", data.id);
+    await assertAdmin((context.supabase as any), context.userId);
+    const { error } = await (context.supabase as any).from("product_reviews").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 async function assertAdmin(context: { supabase: any; userId: string }) {
-  const { data, error } = await context.supabase.rpc("has_role", {
+  const { data, error } = await (context.supabase as any).rpc("has_role", {
     _user_id: context.userId,
     _role: "admin",
   });
@@ -29,7 +29,7 @@ export const adminListManualLicenseDeliveriesFn = createServerFn({ method: "GET"
   .inputValidator((d: unknown) => z.object({ orderId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const sb = context.supabase as any;
+    const sb = (context.supabase as any) as any;
 
     const { data: order, error: oErr } = await sb
       .from("orders")
@@ -87,7 +87,7 @@ export const adminSaveManualLicenseDeliveryFn = createServerFn({ method: "POST" 
   .inputValidator((d: unknown) => saveSchema.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const sb = context.supabase as any;
+    const sb = (context.supabase as any) as any;
 
     // Validate item + order
     const { data: item, error: iErr } = await sb
@@ -185,7 +185,7 @@ export const adminSaveManualLicenseDeliveryFn = createServerFn({ method: "POST" 
         { fulfillment_id: fulfillmentId, event: "manual_delivery_started", message: "Admin started manual license delivery", performed_by: context.userId, metadata: {} },
         { fulfillment_id: fulfillmentId, event: "license_delivered", message: `License "${saved.license_name}" delivered manually`, performed_by: context.userId, metadata: { license_key_masked: maskKey(saved.license_key) } },
       ];
-      await supabaseAdmin.from("fulfillment_logs").insert(logs);
+      await (supabaseAdmin as any).from("fulfillment_logs").insert(logs);
     }
 
     // Email
@@ -205,7 +205,7 @@ export const adminSaveManualLicenseDeliveryFn = createServerFn({ method: "POST" 
         });
         notified = true;
         if (fulfillmentId) {
-          await supabaseAdmin.from("fulfillment_logs").insert({
+          await (supabaseAdmin as any).from("fulfillment_logs").insert({
             fulfillment_id: fulfillmentId,
             event: "customer_notified",
             message: `License delivery email sent to ${recipient}`,
@@ -224,7 +224,7 @@ export const adminSaveManualLicenseDeliveryFn = createServerFn({ method: "POST" 
 export const getMyManualLicensesFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const sb = context.supabase as any;
+    const sb = (context.supabase as any) as any;
     // RLS restricts to the current customer. Only surface deliveries whose
     // fulfillment row has been marked delivered (drafts stay hidden).
     const { data, error } = await sb
