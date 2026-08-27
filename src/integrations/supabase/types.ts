@@ -1389,6 +1389,7 @@ export type Database = {
       product_reviews: {
         Row: {
           admin_reply: string | null
+          avatar_url: string | null
           body: string | null
           created_at: string
           display_name: string | null
@@ -1406,6 +1407,7 @@ export type Database = {
         }
         Insert: {
           admin_reply?: string | null
+          avatar_url?: string | null
           body?: string | null
           created_at?: string
           display_name?: string | null
@@ -1423,6 +1425,7 @@ export type Database = {
         }
         Update: {
           admin_reply?: string | null
+          avatar_url?: string | null
           body?: string | null
           created_at?: string
           display_name?: string | null
@@ -1741,44 +1744,59 @@ export type Database = {
         Row: {
           created_at: string | null
           destination: string
+          enabled: boolean
           id: string
           is_active: boolean | null
           source: string
+          source_path: string | null
           status_code: number | null
+          target_path: string | null
         }
         Insert: {
           created_at?: string | null
           destination: string
+          enabled?: boolean
           id?: string
           is_active?: boolean | null
           source: string
+          source_path?: string | null
           status_code?: number | null
+          target_path?: string | null
         }
         Update: {
           created_at?: string | null
           destination?: string
+          enabled?: boolean
           id?: string
           is_active?: boolean | null
           source?: string
+          source_path?: string | null
           status_code?: number | null
+          target_path?: string | null
         }
         Relationships: []
       }
       setup_state: {
         Row: {
+          completed_at: string | null
           id: number
           is_completed: boolean | null
           updated_at: string | null
+          version: number
         }
         Insert: {
+          completed_at?: string | null
           id: number
           is_completed?: boolean | null
           updated_at?: string | null
+          version?: number
         }
         Update: {
+          completed_at?: string | null
           id?: number
           is_completed?: boolean | null
           updated_at?: string | null
+          version?: number
         }
         Relationships: []
       }
