@@ -1389,6 +1389,7 @@ export type Database = {
       product_reviews: {
         Row: {
           admin_reply: string | null
+          avatar_url: string | null
           body: string | null
           created_at: string
           display_name: string | null
@@ -1406,6 +1407,7 @@ export type Database = {
         }
         Insert: {
           admin_reply?: string | null
+          avatar_url?: string | null
           body?: string | null
           created_at?: string
           display_name?: string | null
@@ -1423,6 +1425,7 @@ export type Database = {
         }
         Update: {
           admin_reply?: string | null
+          avatar_url?: string | null
           body?: string | null
           created_at?: string
           display_name?: string | null
@@ -1536,12 +1539,21 @@ export type Database = {
       }
       products: {
         Row: {
+          badge: string | null
+          breadcrumb_schema_enabled: boolean
+          canonical_url: string | null
           category_id: string | null
           created_at: string
+          delivery_time: string | null
           delivery_type: Database["public"]["Enums"]["delivery_type"] | null
           description: string | null
+          emoji: string | null
           external_url: string | null
+          faq_schema_enabled: boolean
+          features: Json
+          focus_keyword: string | null
           id: string
+          included: Json
           is_best_seller: boolean | null
           is_digital: boolean
           is_external: boolean
@@ -1549,28 +1561,52 @@ export type Database = {
           is_license_key: boolean
           is_subscription: boolean
           is_trending: boolean | null
+          meta_description: string | null
+          meta_title: string | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          product_schema_enabled: boolean
           product_type: Database["public"]["Enums"]["product_type"] | null
+          rating: number
           regular_price: number
+          reviews_count: number
+          robots: string | null
           sale_price: number | null
           sales_count: number
+          schema_enabled: boolean
+          secondary_keywords: Json
           short_description: string | null
           sku: string | null
           slug: string
           smm_config: Json | null
+          specs: Json
           status: Database["public"]["Enums"]["product_status"]
           stock_status: Database["public"]["Enums"]["stock_state"]
           thumbnail_url: string | null
           title: string
+          twitter_description: string | null
+          twitter_image: string | null
+          twitter_title: string | null
           updated_at: string
           visibility: Database["public"]["Enums"]["product_visibility"]
         }
         Insert: {
+          badge?: string | null
+          breadcrumb_schema_enabled?: boolean
+          canonical_url?: string | null
           category_id?: string | null
           created_at?: string
+          delivery_time?: string | null
           delivery_type?: Database["public"]["Enums"]["delivery_type"] | null
           description?: string | null
+          emoji?: string | null
           external_url?: string | null
+          faq_schema_enabled?: boolean
+          features?: Json
+          focus_keyword?: string | null
           id?: string
+          included?: Json
           is_best_seller?: boolean | null
           is_digital?: boolean
           is_external?: boolean
@@ -1578,28 +1614,52 @@ export type Database = {
           is_license_key?: boolean
           is_subscription?: boolean
           is_trending?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          product_schema_enabled?: boolean
           product_type?: Database["public"]["Enums"]["product_type"] | null
+          rating?: number
           regular_price?: number
+          reviews_count?: number
+          robots?: string | null
           sale_price?: number | null
           sales_count?: number
+          schema_enabled?: boolean
+          secondary_keywords?: Json
           short_description?: string | null
           sku?: string | null
           slug: string
           smm_config?: Json | null
+          specs?: Json
           status?: Database["public"]["Enums"]["product_status"]
           stock_status?: Database["public"]["Enums"]["stock_state"]
           thumbnail_url?: string | null
           title: string
+          twitter_description?: string | null
+          twitter_image?: string | null
+          twitter_title?: string | null
           updated_at?: string
           visibility?: Database["public"]["Enums"]["product_visibility"]
         }
         Update: {
+          badge?: string | null
+          breadcrumb_schema_enabled?: boolean
+          canonical_url?: string | null
           category_id?: string | null
           created_at?: string
+          delivery_time?: string | null
           delivery_type?: Database["public"]["Enums"]["delivery_type"] | null
           description?: string | null
+          emoji?: string | null
           external_url?: string | null
+          faq_schema_enabled?: boolean
+          features?: Json
+          focus_keyword?: string | null
           id?: string
+          included?: Json
           is_best_seller?: boolean | null
           is_digital?: boolean
           is_external?: boolean
@@ -1607,18 +1667,33 @@ export type Database = {
           is_license_key?: boolean
           is_subscription?: boolean
           is_trending?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          product_schema_enabled?: boolean
           product_type?: Database["public"]["Enums"]["product_type"] | null
+          rating?: number
           regular_price?: number
+          reviews_count?: number
+          robots?: string | null
           sale_price?: number | null
           sales_count?: number
+          schema_enabled?: boolean
+          secondary_keywords?: Json
           short_description?: string | null
           sku?: string | null
           slug?: string
           smm_config?: Json | null
+          specs?: Json
           status?: Database["public"]["Enums"]["product_status"]
           stock_status?: Database["public"]["Enums"]["stock_state"]
           thumbnail_url?: string | null
           title?: string
+          twitter_description?: string | null
+          twitter_image?: string | null
+          twitter_title?: string | null
           updated_at?: string
           visibility?: Database["public"]["Enums"]["product_visibility"]
         }
@@ -1669,44 +1744,59 @@ export type Database = {
         Row: {
           created_at: string | null
           destination: string
+          enabled: boolean
           id: string
           is_active: boolean | null
           source: string
+          source_path: string | null
           status_code: number | null
+          target_path: string | null
         }
         Insert: {
           created_at?: string | null
           destination: string
+          enabled?: boolean
           id?: string
           is_active?: boolean | null
           source: string
+          source_path?: string | null
           status_code?: number | null
+          target_path?: string | null
         }
         Update: {
           created_at?: string | null
           destination?: string
+          enabled?: boolean
           id?: string
           is_active?: boolean | null
           source?: string
+          source_path?: string | null
           status_code?: number | null
+          target_path?: string | null
         }
         Relationships: []
       }
       setup_state: {
         Row: {
+          completed_at: string | null
           id: number
           is_completed: boolean | null
           updated_at: string | null
+          version: number
         }
         Insert: {
+          completed_at?: string | null
           id: number
           is_completed?: boolean | null
           updated_at?: string | null
+          version?: number
         }
         Update: {
+          completed_at?: string | null
           id?: number
           is_completed?: boolean | null
           updated_at?: string | null
+          version?: number
         }
         Relationships: []
       }
