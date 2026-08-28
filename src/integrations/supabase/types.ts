@@ -77,28 +77,45 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
+          icon: string | null
           id: string
           kind: string | null
           name: string
+          parent_id: string | null
           slug: string
+          sort_order: number
         }
         Insert: {
           created_at?: string | null
           description?: string | null
+          icon?: string | null
           id?: string
           kind?: string | null
           name: string
+          parent_id?: string | null
           slug: string
+          sort_order?: number
         }
         Update: {
           created_at?: string | null
           description?: string | null
+          icon?: string | null
           id?: string
           kind?: string | null
           name?: string
+          parent_id?: string | null
           slug?: string
+          sort_order?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "blog_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "blog_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       blog_comments: {
         Row: {
@@ -140,10 +157,13 @@ export type Database = {
           author_id: string | null
           category_id: string | null
           content: string | null
+          cover_url: string | null
           created_at: string | null
           excerpt: string | null
           id: string
           post_type: string | null
+          published_at: string | null
+          scheduled_at: string | null
           slug: string
           status: string | null
           tag_ids: string[] | null
@@ -155,10 +175,13 @@ export type Database = {
           author_id?: string | null
           category_id?: string | null
           content?: string | null
+          cover_url?: string | null
           created_at?: string | null
           excerpt?: string | null
           id?: string
           post_type?: string | null
+          published_at?: string | null
+          scheduled_at?: string | null
           slug: string
           status?: string | null
           tag_ids?: string[] | null
@@ -170,10 +193,13 @@ export type Database = {
           author_id?: string | null
           category_id?: string | null
           content?: string | null
+          cover_url?: string | null
           created_at?: string | null
           excerpt?: string | null
           id?: string
           post_type?: string | null
+          published_at?: string | null
+          scheduled_at?: string | null
           slug?: string
           status?: string | null
           tag_ids?: string[] | null
