@@ -71,6 +71,7 @@ function Home() {
           <HomepageRenderer sections={cmsHome.data.sections as any} />
         </main>
         <Footer />
+        <SupportCenter />
       </div>
     );
   }
