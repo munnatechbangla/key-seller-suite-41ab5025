@@ -37,6 +37,7 @@ import { cmsPublicGetPageBySlugFn } from "@/lib/cms.functions";
 import { HomepageRenderer } from "@/components/cms/SectionRenderer";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
+import { SupportCenter } from "@/components/site/SupportCenter";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -70,6 +71,7 @@ function Home() {
           <HomepageRenderer sections={cmsHome.data.sections as any} />
         </main>
         <Footer />
+        <SupportCenter />
       </div>
     );
   }
@@ -105,6 +107,7 @@ function Home() {
         })}
       </main>
       <Footer />
+      <SupportCenter />
     </div>
   );
 }
