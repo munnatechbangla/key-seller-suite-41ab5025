@@ -98,7 +98,7 @@ export function SupportCenter() {
   if (channels.length === 0) return null;
 
   return (
-    <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50 lg:bottom-8 lg:right-8">
+    <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-50 lg:bottom-8 lg:right-8">
       {/* Support menu */}
       <div
         ref={panelRef}
