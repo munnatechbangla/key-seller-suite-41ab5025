@@ -39,28 +39,31 @@ export function RecentlyPurchasedPopup() {
     let cancelled = false;
 
     async function loadPool() {
-      if (cfg.demo_mode) {
-        pool.current = Array.from({ length: 10 }, genDemo);
-        return;
-      }
       try {
         const { data } = await supabase.rpc("list_recent_public_purchases", { _limit: 20 });
-        if (data && (data as any[]).length > 0) {
-          pool.current = (data as Array<{ customer_name?: string | null; product_name?: string | null; product_slug?: string | null; product_thumbnail?: string | null; purchased_at?: string | null; country?: string | null }>).map((p) => ({
-            first_name: p.customer_name ?? "Someone",
+        const rows = (data ?? []) as Array<{
+          first_name?: string | null;
+          product_name?: string | null;
+          product_slug?: string | null;
+          product_thumbnail?: string | null;
+          purchased_at?: string | null;
+          country?: string | null;
+        }>;
+        pool.current = rows
+          .filter((p) => p.product_name && p.product_slug && p.purchased_at)
+          .map((p) => ({
+            first_name: p.first_name || "A customer",
             country: p.country ?? null,
-            product_name: p.product_name ?? "a product",
-            product_slug: p.product_slug ?? "",
+            product_name: p.product_name as string,
+            product_slug: p.product_slug as string,
             product_thumbnail: p.product_thumbnail ?? null,
-            purchased_at: p.purchased_at ?? new Date().toISOString(),
+            purchased_at: p.purchased_at as string,
           }));
-        } else {
-          pool.current = Array.from({ length: 10 }, genDemo);
-        }
       } catch {
-        pool.current = Array.from({ length: 10 }, genDemo);
+        pool.current = [];
       }
     }
+
 
     function schedule() {
       const min = Math.max(2, cfg.min_delay_seconds);
