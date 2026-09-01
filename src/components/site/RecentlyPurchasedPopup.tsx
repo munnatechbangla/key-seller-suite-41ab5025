@@ -13,17 +13,6 @@ type Purchase = {
   purchased_at: string;
 };
 
-const DEMO_NAMES = ["Rahim", "Aisha", "James", "Maria", "Karim", "Sofia", "Liam", "Noor", "Diego", "Yuki"];
-const DEMO_COUNTRIES = ["BD", "US", "UK", "DE", "AE", "IN", "BR", "JP", "ES", "CA"];
-const DEMO_PRODUCTS = [
-  { name: "ChatGPT Plus", slug: "chatgpt-plus" },
-  { name: "Canva Pro", slug: "canva-pro" },
-  { name: "Netflix Premium", slug: "netflix-premium" },
-  { name: "Spotify Premium", slug: "spotify-premium" },
-  { name: "CapCut Pro", slug: "capcut-pro" },
-  { name: "Adobe Creative Cloud", slug: "adobe-creative-cloud" },
-];
-
 function timeAgo(iso: string): string {
   const diff = Math.max(1, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
   if (diff < 60) return `${diff}s ago`;
@@ -32,19 +21,6 @@ function timeAgo(iso: string): string {
   return `${Math.floor(diff / 86400)} days ago`;
 }
 
-function rand<T>(a: T[]): T { return a[Math.floor(Math.random() * a.length)]; }
-
-function genDemo(): Purchase {
-  const p = rand(DEMO_PRODUCTS);
-  return {
-    first_name: rand(DEMO_NAMES),
-    country: rand(DEMO_COUNTRIES),
-    product_name: p.name,
-    product_slug: p.slug,
-    product_thumbnail: null,
-    purchased_at: new Date(Date.now() - Math.floor(Math.random() * 30 * 60 * 1000)).toISOString(),
-  };
-}
 
 const CLOSE_KEY = `${STORAGE_SLUG}_rp_closed`;
 
