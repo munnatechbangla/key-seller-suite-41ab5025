@@ -44,6 +44,7 @@ import { Route as AuthResetRouteImport } from './routes/auth.reset'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as AuthForgotRouteImport } from './routes/auth.forgot'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ArticlesSlugRouteImport } from './routes/articles.$slug'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminSetupRouteImport } from './routes/admin.setup'
@@ -263,6 +264,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
 const AuthForgotRoute = AuthForgotRouteImport.update({
   id: '/auth/forgot',
   path: '/auth/forgot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ArticlesSlugRoute = ArticlesSlugRouteImport.update({
@@ -550,6 +556,7 @@ export interface FileRoutesByFullPath {
   '/admin/setup': typeof AdminSetupRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/articles/$slug': typeof ArticlesSlugRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -630,6 +637,7 @@ export interface FileRoutesByTo {
   '/admin/setup': typeof AdminSetupRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/articles/$slug': typeof ArticlesSlugRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -713,6 +721,7 @@ export interface FileRoutesById {
   '/admin/setup': typeof AdminSetupRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/articles/$slug': typeof ArticlesSlugRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -797,6 +806,7 @@ export interface FileRouteTypes {
     | '/admin/setup'
     | '/admin/subscriptions'
     | '/articles/$slug'
+    | '/auth/callback'
     | '/auth/forgot'
     | '/auth/login'
     | '/auth/register'
@@ -877,6 +887,7 @@ export interface FileRouteTypes {
     | '/admin/setup'
     | '/admin/subscriptions'
     | '/articles/$slug'
+    | '/auth/callback'
     | '/auth/forgot'
     | '/auth/login'
     | '/auth/register'
@@ -959,6 +970,7 @@ export interface FileRouteTypes {
     | '/admin/setup'
     | '/admin/subscriptions'
     | '/articles/$slug'
+    | '/auth/callback'
     | '/auth/forgot'
     | '/auth/login'
     | '/auth/register'
@@ -1014,6 +1026,7 @@ export interface RootRouteChildren {
   TrackOrderRoute: typeof TrackOrderRoute
   WishlistRoute: typeof WishlistRoute
   ArticlesSlugRoute: typeof ArticlesSlugRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   AuthForgotRoute: typeof AuthForgotRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
@@ -1276,6 +1289,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/forgot'
       fullPath: '/auth/forgot'
       preLoaderRoute: typeof AuthForgotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/articles/$slug': {
@@ -1739,6 +1759,7 @@ const rootRouteChildren: RootRouteChildren = {
   TrackOrderRoute: TrackOrderRoute,
   WishlistRoute: WishlistRoute,
   ArticlesSlugRoute: ArticlesSlugRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   AuthForgotRoute: AuthForgotRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,

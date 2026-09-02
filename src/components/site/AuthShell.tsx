@@ -38,14 +38,24 @@ export function AuthShell({ title, subtitle, children, footer }: { title: string
 
 export function SocialButtons() {
   const handleGoogle = async () => {
-    const { lovable } = await import("@/integrations/lovable");
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      (await import("sonner")).toast.error(result.error.message ?? "Sign-in failed");
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      // Remember where to land after the round-trip (same-origin paths only).
+      const next = window.location.pathname.startsWith("/auth") ? "/account" : window.location.pathname;
+      sessionStorage.setItem("auth:redirect", next);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: { prompt: "select_account" },
+        },
+      });
+      if (error) throw error;
+    } catch (e) {
+      (await import("sonner")).toast.error(e instanceof Error ? e.message : "Sign-in failed");
     }
   };
+
   return (
     <div className="grid grid-cols-1 gap-3">
       <button
