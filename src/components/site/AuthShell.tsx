@@ -40,13 +40,15 @@ export function SocialButtons() {
   const handleGoogle = async () => {
     try {
       const { supabase } = await import("@/integrations/supabase/client");
+      const { siteUrl } = await import("@/lib/site-url");
       // Remember where to land after the round-trip (same-origin paths only).
       const next = window.location.pathname.startsWith("/auth") ? "/account" : window.location.pathname;
       sessionStorage.setItem("auth:redirect", next);
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: siteUrl("/auth/callback"),
+
           queryParams: { prompt: "select_account" },
         },
       });
