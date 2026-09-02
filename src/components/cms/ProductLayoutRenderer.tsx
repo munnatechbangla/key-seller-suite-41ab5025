@@ -1,3 +1,4 @@
+import { RichText } from "@/components/site/RichText";
 import type { ProductSectionCommonStyle } from "@/lib/cms/product-section-types";
 import { cn } from "@/lib/utils";
 import { ReviewsSection } from "@/components/site/ReviewsSection";

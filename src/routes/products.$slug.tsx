@@ -1,3 +1,4 @@
+import { RichText } from "@/components/site/RichText";
 import { seoMeta, canonicalLink, productJsonLd, breadcrumbJsonLd, faqJsonLd, jsonLdScript } from "@/lib/cms/seo";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";

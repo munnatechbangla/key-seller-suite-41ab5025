@@ -1,3 +1,4 @@
+import { RichText } from "@/components/site/RichText";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Check, Star, Info, AlertTriangle, ShieldCheck, Download, Zap, KeyRound, Repeat, Clock } from "lucide-react";
