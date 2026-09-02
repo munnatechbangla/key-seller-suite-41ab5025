@@ -252,3 +252,36 @@ mark.blog-highlight { background: color-mix(in oklab, var(--primary) 30%, transp
   article { max-width: 100% !important; }
 }
 
+
+/* Product rich-text description */
+.rich-content { color: color-mix(in oklab, var(--foreground) 88%, transparent); line-height: 1.75; word-wrap: break-word; }
+.rich-content > *:first-child { margin-top: 0; }
+.rich-content p { margin: 0.9em 0; }
+.rich-content h1, .rich-content h2, .rich-content h3, .rich-content h4, .rich-content h5, .rich-content h6 { color: var(--foreground); font-weight: 700; line-height: 1.3; margin: 1.4em 0 0.5em; }
+.rich-content h1 { font-size: 1.6rem; }
+.rich-content h2 { font-size: 1.35rem; }
+.rich-content h3 { font-size: 1.15rem; }
+.rich-content h4, .rich-content h5, .rich-content h6 { font-size: 1rem; }
+.rich-content strong, .rich-content b { color: var(--foreground); font-weight: 600; }
+.rich-content em, .rich-content i { font-style: italic; }
+.rich-content u { text-decoration: underline; }
+.rich-content s { text-decoration: line-through; }
+.rich-content a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+.rich-content ul, .rich-content ol { padding-left: 1.5rem; margin: 0.9em 0; }
+.rich-content ul { list-style: disc; }
+.rich-content ol { list-style: decimal; }
+.rich-content li { margin: 0.35em 0; }
+.rich-content li::marker { color: var(--primary); }
+.rich-content li > p { margin: 0.2em 0; }
+.rich-content blockquote { border-left: 3px solid var(--primary); padding: 0.5em 1em; margin: 1.2em 0; font-style: italic; background: color-mix(in oklab, var(--primary) 6%, transparent); border-radius: 0 0.6rem 0.6rem 0; }
+.rich-content pre { background: color-mix(in oklab, var(--foreground) 92%, transparent); color: color-mix(in oklab, var(--background) 92%, transparent); padding: 0.9rem 1.1rem; border-radius: 0.7rem; overflow-x: auto; font-size: 0.875rem; margin: 1.1em 0; }
+.rich-content code { background: color-mix(in oklab, var(--primary) 10%, transparent); color: var(--primary); padding: 0.12em 0.4em; border-radius: 0.3rem; font-size: 0.9em; }
+.rich-content pre code { background: transparent; color: inherit; padding: 0; }
+.rich-content img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1.1em 0; }
+.rich-content table { width: 100%; border-collapse: collapse; margin: 1.1em 0; font-size: 0.95rem; }
+.rich-content th, .rich-content td { border: 1px solid var(--border); padding: 0.55em 0.8em; text-align: left; }
+.rich-content th { background: color-mix(in oklab, var(--primary) 8%, transparent); font-weight: 600; color: var(--foreground); }
+.rich-content hr { border: 0; height: 1px; background: var(--border); margin: 1.8em 0; }
+.rich-content iframe { width: 100%; aspect-ratio: 16/9; border-radius: 0.75rem; border: 0; margin: 1.1em 0; }
+/* Plain-text descriptions saved without HTML markup keep their line breaks */
+.rich-content.is-plain { white-space: pre-line; }
