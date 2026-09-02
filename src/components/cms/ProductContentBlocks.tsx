@@ -1,3 +1,4 @@
+import { RichText } from "@/components/site/RichText";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Check, Star, Info, AlertTriangle, ShieldCheck, Download, Zap, KeyRound, Repeat, Clock } from "lucide-react";
@@ -29,12 +30,7 @@ function RenderBlock({ block, product }: { block: ProductBlock; product?: any })
   const c = block.json_content ?? {};
   switch (block.block_type) {
     case "rich_text":
-      return (
-        <div 
-          className="prose prose-sm max-w-none dark:prose-invert prose-p:my-2 prose-headings:mb-2 prose-ul:my-2 prose-li:my-0" 
-          dangerouslySetInnerHTML={{ __html: c.html ?? "" }} 
-        />
-      );
+      return <RichText html={c.html ?? ""} className="max-w-none" />;
 
     case "heading": {
       const level = Math.min(Math.max(Number(c.level ?? 2), 1), 6);

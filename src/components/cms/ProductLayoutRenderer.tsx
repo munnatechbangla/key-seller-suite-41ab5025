@@ -1,3 +1,4 @@
+import { RichText } from "@/components/site/RichText";
 import type { ProductSectionCommonStyle } from "@/lib/cms/product-section-types";
 import { cn } from "@/lib/utils";
 import { ReviewsSection } from "@/components/site/ReviewsSection";
@@ -159,7 +160,7 @@ function RenderProductSection({ section, product }: { section: ProductLayoutSect
       return (
         <SectionWrap style={style}>
           {section.title && <h2 className="text-2xl font-bold mb-3">{section.title}</h2>}
-          <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: product.description ?? product.short ?? "" }} />
+          <RichText html={product.description ?? product.short ?? ""} className="max-w-none" />
         </SectionWrap>
       );
 
