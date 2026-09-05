@@ -42,7 +42,7 @@ export function ProductThumb({ src, emoji, alt = "", size = 64, className }: Pro
         <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 text-2xl">
           <span aria-hidden>{emoji || "📦"}</span>
         </div>
-      ) : (
+      ) : url ? (
         <img
           src={url}
           alt={alt}
@@ -51,7 +51,8 @@ export function ProductThumb({ src, emoji, alt = "", size = 64, className }: Pro
           className="h-full w-full object-contain"
           onError={() => setFailed(true)}
         />
-      )}
+      ) : null}
+
       {/* Invisible spacer to maintain aspect ratio if no dimensions are provided via className */}
       {!className?.includes("w-") && !className?.includes("h-") && (
         <div style={{ width: size, height: size }} className="pointer-events-none invisible" />
