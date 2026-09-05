@@ -88,7 +88,7 @@ export function MediaLibrary({
     setProgress({ done: 0, total: arr.length });
     try {
       for (let i = 0; i < arr.length; i++) {
-        const file = arr[i];
+        const file = await optimizeImageFile(arr[i]);
         const safe = sanitize(file.name);
         const stamp = Date.now() + "-" + Math.random().toString(36).slice(2, 8);
         const path = `${uploadFolder}/${stamp}-${safe}`;
