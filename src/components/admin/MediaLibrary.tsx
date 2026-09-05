@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { toast } from "sonner";
 import { Upload, Copy, Trash2, Pencil, Search, Loader2, Check, RefreshCw } from "lucide-react";
 import { resolveMediaUrl } from "@/lib/media/resolve";
+import { optimizeImageFile } from "@/lib/media/optimize";
 import { ProductThumb } from "@/components/site/ProductThumb";
 import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
 
@@ -88,7 +89,7 @@ export function MediaLibrary({
     setProgress({ done: 0, total: arr.length });
     try {
       for (let i = 0; i < arr.length; i++) {
-        const file = arr[i];
+        const file = await optimizeImageFile(arr[i]);
         const safe = sanitize(file.name);
         const stamp = Date.now() + "-" + Math.random().toString(36).slice(2, 8);
         const path = `${uploadFolder}/${stamp}-${safe}`;
