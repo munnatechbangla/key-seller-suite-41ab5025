@@ -94,7 +94,7 @@ export function MediaLibrary({
         const path = `${uploadFolder}/${stamp}-${safe}`;
         const { error: upErr } = await supabase.storage
           .from("media")
-          .upload(path, file, { contentType: file.type, upsert: false });
+          .upload(path, file, { contentType: file.type, upsert: false, cacheControl: "31536000" });
         if (upErr) throw upErr;
         const dims = await readImageSize(file);
         await register({ data: {
