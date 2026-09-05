@@ -27,19 +27,44 @@ export function extractMediaPath(value: string | null | undefined): string | nul
   return null;
 }
 
-/** Async resolve a stored value into a URL the browser can load. Signs `media://` tokens on demand. */
-export async function resolveStoredUrlAsync(value: string | null | undefined): Promise<string> {
-  if (!value) return "";
-  const path = extractMediaPath(value);
-  if (path) {
+/**
+ * In-memory signed-URL cache (per browser tab / server instance).
+ * Prevents generating a brand-new signed URL on every render or mount, which
+ * defeats browser/CDN caching and drives storage egress up. Never persisted.
+ */
+const URL_CACHE_TTL_MS = 1000 * 60 * 60 * 12; // reuse each signed URL for 12h
+const urlCache = new Map<string, { url: string; expiresAt: number }>();
+const inFlight = new Map<string, Promise<string>>();
+
+async function signPath(path: string): Promise<string> {
+  const cached = urlCache.get(path);
+  if (cached && cached.expiresAt > Date.now()) return cached.url;
+
+  const pending = inFlight.get(path);
+  if (pending) return pending;
+
+  const promise = (async () => {
     try {
       const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(path, SIGNED_TTL_SECONDS);
       if (error || !data?.signedUrl) return "";
+      urlCache.set(path, { url: data.signedUrl, expiresAt: Date.now() + URL_CACHE_TTL_MS });
       return data.signedUrl;
     } catch {
       return "";
+    } finally {
+      inFlight.delete(path);
     }
-  }
+  })();
+
+  inFlight.set(path, promise);
+  return promise;
+}
+
+/** Async resolve a stored value into a URL the browser can load. Signs `media://` tokens on demand (cached + deduped). */
+export async function resolveStoredUrlAsync(value: string | null | undefined): Promise<string> {
+  if (!value) return "";
+  const path = extractMediaPath(value);
+  if (path) return signPath(path);
   if (/^(https?:|data:|blob:)/i.test(value)) return value;
   return "";
 }
