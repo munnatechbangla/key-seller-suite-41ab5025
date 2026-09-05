@@ -14,21 +14,25 @@ type Props = {
 export function ProductThumb({ src, emoji, alt = "", size = 64, className }: Props) {
   const [url, setUrl] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  const [resolving, setResolving] = useState(!!src);
 
   useEffect(() => {
     let alive = true;
     setFailed(false);
     setUrl(null);
-    if (!src) return;
+    if (!src) { setResolving(false); return; }
+    setResolving(true);
     if (/^(https?:|data:|blob:)/i.test(src) && !src.includes("/storage/v1/object/")) {
       setUrl(src);
+      setResolving(false);
       return;
     }
-    resolveStoredUrlAsync(src).then((u) => { if (alive) setUrl(u || null); });
+    resolveStoredUrlAsync(src).then((u) => { if (alive) { setUrl(u || null); setResolving(false); } });
     return () => { alive = false; };
   }, [src]);
 
-  const showFallback = !src || failed || !url;
+  const showFallback = !resolving && (!src || failed || !url);
+
 
   return (
     <div
