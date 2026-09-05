@@ -14,21 +14,25 @@ type Props = {
 export function ProductThumb({ src, emoji, alt = "", size = 64, className }: Props) {
   const [url, setUrl] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  const [resolving, setResolving] = useState(!!src);
 
   useEffect(() => {
     let alive = true;
     setFailed(false);
     setUrl(null);
-    if (!src) return;
+    if (!src) { setResolving(false); return; }
+    setResolving(true);
     if (/^(https?:|data:|blob:)/i.test(src) && !src.includes("/storage/v1/object/")) {
       setUrl(src);
+      setResolving(false);
       return;
     }
-    resolveStoredUrlAsync(src).then((u) => { if (alive) setUrl(u || null); });
+    resolveStoredUrlAsync(src).then((u) => { if (alive) { setUrl(u || null); setResolving(false); } });
     return () => { alive = false; };
   }, [src]);
 
-  const showFallback = !src || failed || !url;
+  const showFallback = !resolving && (!src || failed || !url);
+
 
   return (
     <div
@@ -38,7 +42,7 @@ export function ProductThumb({ src, emoji, alt = "", size = 64, className }: Pro
         <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 text-2xl">
           <span aria-hidden>{emoji || "📦"}</span>
         </div>
-      ) : (
+      ) : url ? (
         <img
           src={url}
           alt={alt}
@@ -47,7 +51,8 @@ export function ProductThumb({ src, emoji, alt = "", size = 64, className }: Pro
           className="h-full w-full object-contain"
           onError={() => setFailed(true)}
         />
-      )}
+      ) : null}
+
       {/* Invisible spacer to maintain aspect ratio if no dimensions are provided via className */}
       {!className?.includes("w-") && !className?.includes("h-") && (
         <div style={{ width: size, height: size }} className="pointer-events-none invisible" />
