@@ -83,3 +83,39 @@ export async function optimizeImageFile(file: File): Promise<File> {
     return file;
   }
 }
+
+/**
+ * Re-encode an already-stored image blob to WebP (max 1200px longest side, q0.85).
+ * Returns null when WebP isn't supported, decoding fails, or there is no size gain.
+ */
+export async function optimizeBlobToWebp(
+  blob: Blob,
+): Promise<{ blob: Blob; width: number; height: number } | null> {
+  if (typeof document === "undefined") return null;
+  if (!canEncodeWebp()) return null;
+  try {
+    const img = await loadImage(new File([blob], "src", { type: blob.type || "image/png" }));
+    const { naturalWidth: w, naturalHeight: h } = img;
+    if (!w || !h) return null;
+
+    const scale = Math.min(1, MAX_DIMENSION / Math.max(w, h));
+    const targetW = Math.max(1, Math.round(w * scale));
+    const targetH = Math.max(1, Math.round(h * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = targetW;
+    canvas.height = targetH;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, 0, 0, targetW, targetH);
+
+    const out = await toBlob(canvas);
+    if (!out || out.size === 0) return null;
+    if (out.size >= blob.size) return null;
+    return { blob: out, width: targetW, height: targetH };
+  } catch {
+    return null;
+  }
+}

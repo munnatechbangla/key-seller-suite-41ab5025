@@ -68,3 +68,10 @@ export async function resolveStoredUrlAsync(value: string | null | undefined): P
   if (/^(https?:|data:|blob:)/i.test(value)) return value;
   return "";
 }
+
+/** Drop the cached signed URL for one storage path (used after re-uploading that object). */
+export function clearMediaUrlCache(path: string | null | undefined): void {
+  if (!path) return;
+  urlCache.delete(path);
+  inFlight.delete(path);
+}
