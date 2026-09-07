@@ -81,6 +81,24 @@ export const renameAssetFn = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const updateAssetMetaFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string; mime_type: string; file_size: number; width?: number | null; height?: number | null }) => d)
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { error } = await (context.supabase as any)
+      .from("media_assets")
+      .update({
+        mime_type: data.mime_type,
+        file_size: data.file_size,
+        width: data.width ?? null,
+        height: data.height ?? null,
+      })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 export const deleteAssetFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { id: string; force?: boolean }) => d)

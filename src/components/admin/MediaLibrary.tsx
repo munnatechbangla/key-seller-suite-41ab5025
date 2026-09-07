@@ -9,15 +9,16 @@ import {
   renameAssetFn,
   getAssetUsageFn,
   syncStorageAssetsFn,
+  updateAssetMetaFn,
 } from "@/lib/media.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Upload, Copy, Trash2, Pencil, Search, Loader2, Check, RefreshCw } from "lucide-react";
-import { resolveMediaUrl } from "@/lib/media/resolve";
-import { optimizeImageFile } from "@/lib/media/optimize";
+import { Upload, Copy, Trash2, Pencil, Search, Loader2, Check, RefreshCw, Wand2 } from "lucide-react";
+import { resolveMediaUrl, clearMediaUrlCache, resolveStoredUrlAsync } from "@/lib/media/resolve";
+import { optimizeImageFile, optimizeBlobToWebp } from "@/lib/media/optimize";
 import { ProductThumb } from "@/components/site/ProductThumb";
 import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
 
@@ -143,6 +144,45 @@ export function MediaLibrary({
     onError: (e: any) => toast.error(e.message),
   });
 
+  const updateMeta = useServerFn(updateAssetMetaFn);
+
+  const optimizeMutation = useMutation({
+    mutationFn: async (a: any) => {
+      const url = await resolveStoredUrlAsync(resolveMediaUrl(a));
+      if (!url) throw new Error("Could not read the current image");
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Could not download the current image");
+      const original = await res.blob();
+      const out = await optimizeBlobToWebp(original);
+      if (!out) return { skipped: true as const };
+
+      const { error: upErr } = await supabase.storage
+        .from("media")
+        .upload(a.storage_path, out.blob, {
+          contentType: "image/webp",
+          upsert: true,
+          cacheControl: "31536000",
+        });
+      if (upErr) throw upErr;
+
+      await updateMeta({ data: {
+        id: a.id,
+        mime_type: "image/webp",
+        file_size: out.blob.size,
+        width: out.width,
+        height: out.height,
+      } });
+      clearMediaUrlCache(a.storage_path);
+      return { skipped: false as const, before: original.size, after: out.blob.size };
+    },
+    onSuccess: (r: any) => {
+      if (r.skipped) toast.info("Already optimized — left unchanged");
+      else toast.success(`Optimized: ${(r.before/1024).toFixed(0)} KB → ${(r.after/1024).toFixed(0)} KB`);
+      invalidate();
+    },
+    onError: (e: any) => toast.error(e.message ?? "Optimize failed"),
+  });
+
   const syncMutation = useMutation({
     mutationFn: () => syncStorage({ data: {} }),
     onSuccess: (r: any) => {
@@ -249,6 +289,20 @@ export function MediaLibrary({
                   }}>
                     <Copy className="h-3 w-3" />
                   </Button>
+                  {String(a.mime_type ?? "").startsWith("image/") && !String(a.mime_type).includes("svg") && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7"
+                      title="Optimize image in place"
+                      disabled={optimizeMutation.isPending}
+                      onClick={() => confirm(`Optimize ${a.filename} in place? The file is replaced at the same link.`) && optimizeMutation.mutate(a)}
+                    >
+                      {optimizeMutation.isPending && optimizeMutation.variables?.id === a.id
+                        ? <Loader2 className="h-3 w-3 animate-spin" />
+                        : <Wand2 className="h-3 w-3" />}
+                    </Button>
+                  )}
                   <Button size="icon" variant="ghost" className="h-7 w-7" title="Rename" onClick={() => setEditing(a)}>
                     <Pencil className="h-3 w-3" />
                   </Button>
