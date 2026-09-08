@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { setResponseHeaders } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 async function assertAdmin(context: { supabase: any; userId: string }) {
@@ -9,6 +10,14 @@ async function assertAdmin(context: { supabase: any; userId: string }) {
   });
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Forbidden");
+}
+
+function setAdminNoCacheHeaders() {
+  setResponseHeaders({
+    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0",
+  });
 }
 
 export type AdminCategory = {
@@ -30,6 +39,7 @@ export const adminListCategoriesFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context);
+    setAdminNoCacheHeaders();
     const [catsRes, countsRes] = await Promise.all([
       context.supabase
         .from("product_categories")

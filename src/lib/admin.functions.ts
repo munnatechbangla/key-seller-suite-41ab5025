@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { setResponseHeaders } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 async function assertAdmin(context: { supabase: any; userId: string }) {
@@ -11,11 +12,20 @@ async function assertAdmin(context: { supabase: any; userId: string }) {
   if (!data) throw new Error("Forbidden");
 }
 
+function setAdminNoCacheHeaders() {
+  setResponseHeaders({
+    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0",
+  });
+}
+
 // ---------- KPIs ----------
 export const adminGetKpisFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context);
+    setAdminNoCacheHeaders();
     const sb = context.supabase;
     const [revenue, ordersCount, customers, productsCount, paidOrders, allOrders] = await Promise.all([
       sb.from("orders").select("total").eq("status", "paid"),
@@ -41,6 +51,7 @@ export const adminListProductsFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context);
+    setAdminNoCacheHeaders();
     const { data, error } = await context.supabase
       .from("products")
       .select("id, title, slug, short_description, description, thumbnail_url, regular_price, sale_price, status, stock_status, is_featured, sales_count, created_at, product_type, delivery_type, visibility, external_url, is_digital, is_license_key, category_id")
@@ -116,6 +127,7 @@ export const adminListOrdersFn = createServerFn({ method: "GET" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    setAdminNoCacheHeaders();
     let q = context.supabase
       .from("orders")
       .select("id, order_number, email, customer_name, total, currency, status, payment_method, created_at")
@@ -152,6 +164,7 @@ export const adminListCustomersFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context);
+    setAdminNoCacheHeaders();
     const { data: profiles, error } = await context.supabase
       .from("profiles")
       .select("id, email, full_name, avatar_url, created_at")
@@ -181,6 +194,7 @@ export const adminListLicensePoolsFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context);
+    setAdminNoCacheHeaders();
     const { data: pools, error } = await context.supabase
       .from("license_pools")
       .select("id, product_id, name, created_at, products(title, slug)")
@@ -243,6 +257,7 @@ export const adminListProductDownloadsFn = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ product_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    setAdminNoCacheHeaders();
     const { data: rows, error } = await (context.supabase as any)
       .from("product_downloads")
       .select("id, product_id, file_name, file_url, version, file_size, sort_order, created_at")
@@ -267,6 +282,7 @@ export const adminUpsertProductDownloadFn = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => downloadSchema.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    setAdminNoCacheHeaders();
     const sb = context.supabase as any;
     if (data.id) {
       const { error } = await sb.from("product_downloads").update(data).eq("id", data.id);
@@ -294,6 +310,7 @@ export const adminListVariationsFn = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ product_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    setAdminNoCacheHeaders();
     const { data: rows, error } = await (context.supabase as any)
       .from("product_variations")
       .select("id, product_id, name, sku, price, sale_price, compare_price, stock, status, sort_order")
@@ -347,6 +364,7 @@ export const adminListProductImagesFn = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ product_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    setAdminNoCacheHeaders();
     const { data: rows, error } = await (context.supabase as any)
       .from("product_images")
       .select("id, product_id, url, alt, sort_order, is_primary")
@@ -494,6 +512,7 @@ export const adminListAvailableLicenseKeysFn = createServerFn({ method: "GET" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    setAdminNoCacheHeaders();
     let q = (context.supabase as any)
       .from("license_keys")
       .select("id, key_value, pool_id, product_id, status, created_at, license_pools(name)")
