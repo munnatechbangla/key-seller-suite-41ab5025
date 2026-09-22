@@ -139,7 +139,12 @@ function RootComponent() {
   const loadSettings = useSettings((s) => s.load);
   const favicon = useSiteFavicon();
   useEffect(() => initAuth(), [initAuth]);
-  useEffect(() => { loadSettings(); }, [loadSettings]);
+  useEffect(() => {
+    void loadSettings().then(() => {
+      const siteTitle = useSettings.getState().settings.seo.site_title;
+      if (siteTitle) document.title = siteTitle;
+    });
+  }, [loadSettings]);
   useEffect(() => { import("@/lib/cms/homepage").then((m) => m.useHomepage.getState().load()); }, []);
   useEffect(() => { import("@/lib/cms/marketplace").then((m) => m.useMarketplace.getState().load()); }, []);
   useEffect(() => { import("@/lib/sentry").then((m) => m.initSentry()); }, []);
