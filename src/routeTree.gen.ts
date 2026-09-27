@@ -89,6 +89,7 @@ import { Route as AdminCmsLandingPagesIdRouteImport } from './routes/admin.cms.l
 import { Route as ApiPublicPaymentsSslcommerzReturnRouteImport } from './routes/api/public/payments.sslcommerz.return'
 import { Route as ApiPublicPaymentsSslcommerzIpnRouteImport } from './routes/api/public/payments.sslcommerz.ipn'
 import { Route as ApiPublicPaymentsCustomWebhookSlugRouteImport } from './routes/api/public/payments.custom-webhook.$slug'
+import { Route as ApiPublicPaymentsBkashCallbackRouteImport } from './routes/api/public/payments.bkash.callback'
 
 const WishlistRoute = WishlistRouteImport.update({
   id: '/wishlist',
@@ -495,6 +496,12 @@ const ApiPublicPaymentsCustomWebhookSlugRoute =
     path: '/api/public/payments/custom-webhook/$slug',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPaymentsBkashCallbackRoute =
+  ApiPublicPaymentsBkashCallbackRouteImport.update({
+    id: '/api/public/payments/bkash/callback',
+    path: '/api/public/payments/bkash/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -574,6 +581,7 @@ export interface FileRoutesByFullPath {
   '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/payments/bkash/callback': typeof ApiPublicPaymentsBkashCallbackRoute
   '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
   '/api/public/payments/sslcommerz/ipn': typeof ApiPublicPaymentsSslcommerzIpnRoute
   '/api/public/payments/sslcommerz/return': typeof ApiPublicPaymentsSslcommerzReturnRoute
@@ -654,6 +662,7 @@ export interface FileRoutesByTo {
   '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/payments/bkash/callback': typeof ApiPublicPaymentsBkashCallbackRoute
   '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
   '/api/public/payments/sslcommerz/ipn': typeof ApiPublicPaymentsSslcommerzIpnRoute
   '/api/public/payments/sslcommerz/return': typeof ApiPublicPaymentsSslcommerzReturnRoute
@@ -737,6 +746,7 @@ export interface FileRoutesById {
   '/admin/cms/landing-pages/$id': typeof AdminCmsLandingPagesIdRoute
   '/api/public/notifications/process': typeof ApiPublicNotificationsProcessRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/payments/bkash/callback': typeof ApiPublicPaymentsBkashCallbackRoute
   '/api/public/payments/custom-webhook/$slug': typeof ApiPublicPaymentsCustomWebhookSlugRoute
   '/api/public/payments/sslcommerz/ipn': typeof ApiPublicPaymentsSslcommerzIpnRoute
   '/api/public/payments/sslcommerz/return': typeof ApiPublicPaymentsSslcommerzReturnRoute
@@ -821,6 +831,7 @@ export interface FileRouteTypes {
     | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
+    | '/api/public/payments/bkash/callback'
     | '/api/public/payments/custom-webhook/$slug'
     | '/api/public/payments/sslcommerz/ipn'
     | '/api/public/payments/sslcommerz/return'
@@ -901,6 +912,7 @@ export interface FileRouteTypes {
     | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
+    | '/api/public/payments/bkash/callback'
     | '/api/public/payments/custom-webhook/$slug'
     | '/api/public/payments/sslcommerz/ipn'
     | '/api/public/payments/sslcommerz/return'
@@ -983,6 +995,7 @@ export interface FileRouteTypes {
     | '/admin/cms/landing-pages/$id'
     | '/api/public/notifications/process'
     | '/api/public/payments/webhook'
+    | '/api/public/payments/bkash/callback'
     | '/api/public/payments/custom-webhook/$slug'
     | '/api/public/payments/sslcommerz/ipn'
     | '/api/public/payments/sslcommerz/return'
@@ -1026,6 +1039,7 @@ export interface RootRouteChildren {
   ProductsIndexRoute: typeof ProductsIndexRoute
   ApiPublicNotificationsProcessRoute: typeof ApiPublicNotificationsProcessRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  ApiPublicPaymentsBkashCallbackRoute: typeof ApiPublicPaymentsBkashCallbackRoute
   ApiPublicPaymentsCustomWebhookSlugRoute: typeof ApiPublicPaymentsCustomWebhookSlugRoute
   ApiPublicPaymentsSslcommerzIpnRoute: typeof ApiPublicPaymentsSslcommerzIpnRoute
   ApiPublicPaymentsSslcommerzReturnRoute: typeof ApiPublicPaymentsSslcommerzReturnRoute
@@ -1593,6 +1607,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsCustomWebhookSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payments/bkash/callback': {
+      id: '/api/public/payments/bkash/callback'
+      path: '/api/public/payments/bkash/callback'
+      fullPath: '/api/public/payments/bkash/callback'
+      preLoaderRoute: typeof ApiPublicPaymentsBkashCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1751,6 +1772,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProductsIndexRoute: ProductsIndexRoute,
   ApiPublicNotificationsProcessRoute: ApiPublicNotificationsProcessRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  ApiPublicPaymentsBkashCallbackRoute: ApiPublicPaymentsBkashCallbackRoute,
   ApiPublicPaymentsCustomWebhookSlugRoute:
     ApiPublicPaymentsCustomWebhookSlugRoute,
   ApiPublicPaymentsSslcommerzIpnRoute: ApiPublicPaymentsSslcommerzIpnRoute,
