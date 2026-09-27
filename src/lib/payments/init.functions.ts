@@ -56,6 +56,113 @@ export const initPaymentFn = createServerFn({ method: "POST" })
 
     const baseUrl = baseUrlFromRequest();
 
+    if (data.gateway === "bkash") {
+      if (!settings.bkash_enabled) throw new Error("bKash is disabled");
+      const mode: "sandbox" | "live" = settings.bkash_mode === "live" ? "live" : "sandbox";
+      if (settings.currency !== "BDT" || order.currency !== "BDT") {
+        throw new Error("bKash requires a BDT store and BDT order");
+      }
+
+      const { createBkashPayment, isBkashConfigured } = await import("./bkash.server");
+      if (!isBkashConfigured(mode)) {
+        throw new Error(`bKash ${mode} credentials are not configured`);
+      }
+
+      const { data: activeIntent, error: activeIntentError } = await supabaseAdmin
+        .from("payment_intents")
+        .select("status, redirect_url")
+        .eq("order_id", order.id)
+        .eq("gateway", "bkash")
+        .in("status", ["bkash_active", "initiated", "redirected", "processing", "pending"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (activeIntentError) throw new Error("Could not check the existing bKash payment session");
+      if ((activeIntent?.status === "redirected" || activeIntent?.status === "bkash_active") && activeIntent.redirect_url) {
+        try {
+          const checkoutUrl = new URL(activeIntent.redirect_url);
+          if (checkoutUrl.protocol === "https:" && checkoutUrl.hostname.endsWith(".bka.sh")) {
+            return { ok: true as const, gateway: "bkash", redirectUrl: activeIntent.redirect_url };
+          }
+        } catch {
+          // Keep the active intent reserved; never create a replacement session.
+        }
+      }
+      if (activeIntent) {
+        throw new Error("A bKash payment is already processing. Please check your order status before trying again.");
+      }
+
+      const callback = new URL(`${baseUrl}/api/public/payments/bkash/callback`);
+      callback.searchParams.set("order", order.order_number);
+      const { data: intentRow, error: intentInsertError } = await supabaseAdmin
+        .from("payment_intents")
+        .insert({
+          order_id: order.id,
+          order_number: order.order_number,
+          gateway: "bkash",
+          mode,
+          amount: Number(order.total),
+          currency: "BDT",
+          status: "bkash_active",
+        })
+        .select("id")
+        .single();
+      if (intentInsertError || !intentRow) {
+        if (intentInsertError?.code === "23505") {
+          throw new Error("A bKash payment is already active for this order. Please check the order status before retrying.");
+        }
+        throw new Error("Could not reserve a bKash payment attempt");
+      }
+
+      const result = await createBkashPayment({
+        orderNumber: order.order_number,
+        amount: Number(order.total),
+        payerReference: order.phone || order.order_number,
+        callbackURL: callback.toString(),
+        mode,
+        persistPaymentID: async (paymentID, response) => {
+          const { error } = await supabaseAdmin.from("payment_intents").update({
+            gateway_session_id: paymentID,
+            gateway_payment_id: paymentID,
+            response_payload: response as never,
+          }).eq("id", intentRow.id);
+          if (error) throw new Error("Could not persist bKash payment ID");
+        },
+      });
+
+      if (!result.ok) {
+        const intentStatus = result.uncertain ? "bkash_active" : "failed";
+        const { error } = await supabaseAdmin.from("payment_intents").update({
+          status: intentStatus,
+          ...(result.paymentID ? {
+            gateway_session_id: result.paymentID,
+            gateway_payment_id: result.paymentID,
+          } : {}),
+          response_payload: (result.response ?? { reason: result.reason }) as never,
+        }).eq("id", intentRow.id);
+        if (error) {
+          throw new Error("bKash may have created this payment, but its status could not be saved. Please contact support before retrying.");
+        }
+        if (result.uncertain) {
+          throw new Error("We could not confirm whether bKash started this payment. Please contact support before retrying.");
+        }
+        throw new Error("Could not start bKash payment. Please try again or choose another payment method.");
+      }
+
+      const { error } = await supabaseAdmin.from("payment_intents").update({
+        gateway_session_id: result.paymentID,
+        gateway_payment_id: result.paymentID,
+        redirect_url: result.bkashURL,
+        status: "bkash_active",
+        response_payload: result.response as never,
+      }).eq("id", intentRow.id);
+      if (error) {
+        throw new Error("bKash may have created this payment, but the checkout session could not be saved. Please contact support before retrying.");
+      }
+
+      return { ok: true as const, gateway: "bkash", redirectUrl: result.bkashURL };
+    }
+
     if (data.gateway === "sslcommerz") {
       if (!settings.sslcommerz_enabled) throw new Error("SSLCommerz is disabled");
       const mode: "sandbox" | "live" = settings.sslcommerz_mode === "live" ? "live" : "sandbox";

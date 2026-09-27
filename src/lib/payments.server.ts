@@ -11,9 +11,11 @@ export type GatewayCallback = {
   raw?: Record<string, unknown>;
 };
 
-export async function processPaymentCallback(cb: GatewayCallback) {
-  const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
-  const sb: any = createServerSupabaseClient();
+export async function processPaymentCallback(cb: GatewayCallback, rpcClient?: any) {
+  const sb: any = rpcClient ?? await (async () => {
+    const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
+    return createServerSupabaseClient();
+  })();
   const { data, error } = await sb.rpc("process_payment_callback", {
     _order_number: cb.orderNumber,
     _transaction_id: cb.transactionId,
