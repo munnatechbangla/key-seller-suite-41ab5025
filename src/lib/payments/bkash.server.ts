@@ -157,7 +157,7 @@ export async function createBkashPayment(input: {
   payerReference: string;
   callbackURL: string;
   mode: BkashMode;
-  persistPaymentID: (paymentID: string, response: ApiResponse) => Promise<void>;
+  persistPaymentID: (paymentID: string, response: ApiResponse, checkoutURL?: string) => Promise<void>;
 }): Promise<
   | { ok: true; paymentID: string; bkashURL: string; response: ApiResponse }
   | { ok: false; reason: string; uncertain: boolean; paymentID?: string; response?: ApiResponse }
@@ -215,25 +215,33 @@ export async function createBkashPayment(input: {
   const returnedPaymentID = result.data.paymentID;
   const paymentID = typeof returnedPaymentID === "string" && returnedPaymentID ? returnedPaymentID : undefined;
   const response = safeResponse(result.data);
+  const returnedURL = typeof result.data.bkashURL === "string" && result.data.bkashURL
+    ? result.data.bkashURL
+    : typeof result.data.paymentURL === "string" && result.data.paymentURL
+      ? result.data.paymentURL
+      : undefined;
+  let checkoutURL: string | undefined;
+  if (returnedURL) {
+    try {
+      const parsedURL = new URL(returnedURL);
+      if (parsedURL.protocol === "https:" && parsedURL.hostname.endsWith(".bka.sh")) {
+        checkoutURL = returnedURL;
+      }
+    } catch {
+      // Do not persist or redirect to an invalid provider URL.
+    }
+  }
+
   if (paymentID) {
     try {
-      await input.persistPaymentID(paymentID, response);
+      await input.persistPaymentID(paymentID, response, result.ok ? checkoutURL : undefined);
     } catch {
       return { ok: false, reason: "bkash_payment_id_persist_failed", uncertain: true, paymentID, response };
     }
   }
 
-  const bkashURL = result.data.bkashURL;
-  if (!paymentID || typeof bkashURL !== "string" || !bkashURL) {
+  if (!paymentID || !checkoutURL) {
     return { ok: false, reason: "bkash_create_response_incomplete", uncertain: true, paymentID, response };
-  }
-  try {
-    const checkoutUrl = new URL(bkashURL);
-    if (checkoutUrl.protocol !== "https:" || !checkoutUrl.hostname.endsWith(".bka.sh")) {
-      return { ok: false, reason: "bkash_create_response_invalid_url", uncertain: true, paymentID, response };
-    }
-  } catch {
-    return { ok: false, reason: "bkash_create_response_invalid_url", uncertain: true, paymentID, response };
   }
 
   await logPaymentEvent({
@@ -247,7 +255,7 @@ export async function createBkashPayment(input: {
     request_body: { mode: input.mode, currency: "BDT", amount: input.amount.toFixed(2) },
     response_body: response,
   });
-  return { ok: true, paymentID, bkashURL, response };
+  return { ok: true, paymentID, bkashURL: checkoutURL, response };
 }
 
 async function paymentOperation(paymentID: string, mode: BkashMode, operation: "execute" | "status"): Promise<OperationResult> {

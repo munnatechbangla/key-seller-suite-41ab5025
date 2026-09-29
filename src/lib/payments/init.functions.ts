@@ -70,7 +70,7 @@ export const initPaymentFn = createServerFn({ method: "POST" })
 
       const { data: activeIntent, error: activeIntentError } = await supabaseAdmin
         .from("payment_intents")
-        .select("status, redirect_url")
+        .select("id, mode, status, gateway_session_id, redirect_url")
         .eq("order_id", order.id)
         .eq("gateway", "bkash")
         .in("status", ["bkash_active", "initiated", "redirected", "processing", "pending"])
@@ -89,7 +89,33 @@ export const initPaymentFn = createServerFn({ method: "POST" })
         }
       }
       if (activeIntent) {
-        throw new Error("A bKash payment is already processing. Please check your order status before trying again.");
+        if (!activeIntent.gateway_session_id) {
+          throw new Error("A bKash payment is already processing. Please check the order status before trying again.");
+        }
+
+        const { queryBkashPayment } = await import("./bkash.server");
+        const previousMode = activeIntent.mode === "live" ? "live" : "sandbox";
+        const previousStatus = await queryBkashPayment(activeIntent.gateway_session_id, previousMode);
+        if (!previousStatus.ok) {
+          throw new Error("Could not verify the previous bKash session. Please contact support before retrying.");
+        }
+        const transactionStatus = previousStatus.data.transactionStatus;
+        if (transactionStatus === "Completed") {
+          throw new Error("bKash reports this payment as completed. Please contact support to verify your order before retrying.");
+        }
+        if (!["Initiated", "Failed", "Canceled", "Cancelled"].includes(String(transactionStatus))) {
+          throw new Error("The previous bKash session has an unknown status. Please contact support before retrying.");
+        }
+
+        const { error: staleIntentError } = await supabaseAdmin
+          .from("payment_intents")
+          .update({ status: "failed" })
+          .eq("id", activeIntent.id)
+          .eq("gateway", "bkash")
+          .eq("status", activeIntent.status);
+        if (staleIntentError) {
+          throw new Error("Could not reconcile the previous bKash session. Please contact support before retrying.");
+        }
       }
 
       const callback = new URL(`${baseUrl}/api/public/payments/bkash/callback`);
@@ -120,10 +146,11 @@ export const initPaymentFn = createServerFn({ method: "POST" })
         payerReference: order.phone || order.order_number,
         callbackURL: callback.toString(),
         mode,
-        persistPaymentID: async (paymentID, response) => {
+        persistPaymentID: async (paymentID, response, checkoutURL) => {
           const { error } = await supabaseAdmin.from("payment_intents").update({
             gateway_session_id: paymentID,
             gateway_payment_id: paymentID,
+            ...(checkoutURL ? { redirect_url: checkoutURL } : {}),
             response_payload: response as never,
           }).eq("id", intentRow.id);
           if (error) throw new Error("Could not persist bKash payment ID");
