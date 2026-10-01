@@ -224,7 +224,8 @@ export async function createBkashPayment(input: {
   if (returnedURL) {
     try {
       const parsedURL = new URL(returnedURL);
-      if (parsedURL.protocol === "https:" && parsedURL.hostname.endsWith(".bka.sh")) {
+      if (parsedURL.protocol === "https:"
+        && ["payment.bkash.com", "sandbox.payment.bkash.com"].includes(parsedURL.hostname)) {
         checkoutURL = returnedURL;
       }
     } catch {
