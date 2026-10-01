@@ -86,6 +86,9 @@ async function postJson(
     return { ok: false, reason: "bkash_invalid_response", uncertain: true };
   }
 
+  if (data.statusCode === "0000") {
+    return { ok: true, data };
+  }
   if (!response.ok) {
     return {
       ok: false,
@@ -94,10 +97,7 @@ async function postJson(
       data,
     };
   }
-  if (data.statusCode !== "0000") {
-    return { ok: false, reason: "bkash_provider_rejected", uncertain: false, data };
-  }
-  return { ok: true, data };
+  return { ok: false, reason: "bkash_provider_rejected", uncertain: false, data };
 }
 
 async function grantToken(mode: BkashMode): Promise<{ ok: true; token: string } | { ok: false; reason: string }> {
