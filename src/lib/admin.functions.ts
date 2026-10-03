@@ -142,6 +142,18 @@ export const adminUpdateOrderStatusFn = createServerFn({ method: "POST" })
     const status = data.status as
       | "pending" | "paid" | "processing" | "completed" | "cancelled" | "refunded" | "failed";
     await assertAdmin(context);
+    if (status === "completed") {
+      const { data: fulfillments, error: fulfillmentError } = await context.supabase
+        .from("order_fulfillments")
+        .select("fulfillment_status")
+        .eq("order_id", data.orderId);
+      if (fulfillmentError) throw new Error(fulfillmentError.message);
+      if ((fulfillments ?? []).some((row: { fulfillment_status: string }) =>
+        !["delivered", "cancelled"].includes(row.fulfillment_status),
+      )) {
+        throw new Error("Order cannot be completed while fulfillment is outstanding");
+      }
+    }
     const { error } = await context.supabase.from("orders").update({ status: data.status }).eq("id", data.orderId);
     if (error) throw new Error(error.message);
     return { ok: true };

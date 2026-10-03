@@ -181,6 +181,18 @@ export const adminStartFulfillmentForOrderFn = createServerFn({ method: "POST" }
     return { ok: true, created: (res as number) ?? 0 };
   });
 
+export const adminMarkManualFulfillmentDeliveredFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => idSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: res, error } = await (context.supabase as any).rpc("admin_mark_manual_fulfillment_delivered", {
+      _fulfillment_id: data.fulfillmentId,
+    });
+    if (error) throw new Error(error.message);
+    return res as { ok: boolean; order_completed: boolean };
+  });
+
 /** Subscription-only: admin marks the fulfillment delivered. Never touches
  *  license or download flows — guarded server-side by product_type. */
 export const adminMarkSubscriptionDeliveredFn = createServerFn({ method: "POST" })

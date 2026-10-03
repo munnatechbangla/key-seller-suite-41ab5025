@@ -18,6 +18,7 @@ import {
   adminRestartFulfillmentFn,
   adminCancelFulfillmentFn,
   adminStartFulfillmentForOrderFn,
+  adminMarkManualFulfillmentDeliveredFn,
   adminMarkSubscriptionDeliveredFn,
   type FulfillmentRow,
   type FulfillmentStatus,
@@ -102,6 +103,7 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
   const restart = useServerFn(adminRestartFulfillmentFn);
   const cancel = useServerFn(adminCancelFulfillmentFn);
   const startForOrder = useServerFn(adminStartFulfillmentForOrderFn);
+  const markManualDelivered = useServerFn(adminMarkManualFulfillmentDeliveredFn);
   const listManualLicenses = useServerFn(adminListManualLicenseDeliveriesFn);
 
   const licenseItemsQ = useQuery({
@@ -164,6 +166,16 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
     mutationFn: () => startForOrder({ data: { orderId } }),
     onSuccess: () => { toast.success("Fulfillment started"); invalidate(); },
     onError: (e: any) => toast.error(e?.message ?? "Failed to start"),
+  });
+  const manualDeliveredMut = useMutation({
+    mutationFn: (fulfillmentId: string) => markManualDelivered({ data: { fulfillmentId } }),
+    onSuccess: () => {
+      toast.success("Manual fulfillment marked delivered");
+      invalidate();
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      qc.invalidateQueries({ queryKey: ["fulfillment-timeline"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not mark fulfillment delivered"),
   });
 
   const rows = useMemo(() => q.data ?? [], [q.data]);
@@ -274,6 +286,16 @@ export function FulfillmentPanel({ orderId, email, authed, isAdmin = false, comp
 
           {isAdmin && (
             <div className="flex gap-2 pt-1">
+              {f.product_delivery_type === "manual" && !["delivered", "cancelled"].includes(f.fulfillment_status) && (
+                <button
+                  onClick={() => manualDeliveredMut.mutate(f.id)}
+                  disabled={manualDeliveredMut.isPending}
+                  className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11px] font-medium hover:bg-muted disabled:opacity-50"
+                >
+                  {manualDeliveredMut.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <PackageCheck className="h-3 w-3" />}
+                  Mark as Delivered
+                </button>
+              )}
               <button
                 onClick={() => retryMut.mutate(f.id)}
                 disabled={retryMut.isPending || f.fulfillment_status === "delivered" || f.fulfillment_status === "cancelled"}
