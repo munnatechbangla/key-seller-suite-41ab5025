@@ -93,11 +93,10 @@ const saveSchema = z.object({
 
 /** Guest: save values (RPC verifies email matches order). */
 export const saveOrderCustomFieldsGuestFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => saveSchema.parse(d))
-  .handler(async ({ data }) => {
-    const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
-    const sb = createServerSupabaseClient() as any;
-    const { data: r, error } = await sb.rpc("save_order_custom_field_values", {
+  .handler(async ({ data, context }) => {
+    const { data: r, error } = await (context.supabase as any).rpc("save_order_custom_field_values", {
       _order_id: data.orderId,
       _values: data.values,
       _email: data.email ?? null,
@@ -105,7 +104,6 @@ export const saveOrderCustomFieldsGuestFn = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return r;
   });
-
 /** Authenticated: save values as the signed-in user. */
 export const saveOrderCustomFieldsAuthFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

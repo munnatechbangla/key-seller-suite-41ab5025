@@ -9,6 +9,8 @@ import { Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/auth/login")({
   head: () => ({ meta: [{ title: `Sign in — ${siteName()}` }] }),
+  validateSearch: (s: Record<string, unknown>) =>
+    typeof s.returnTo === "string" ? { returnTo: s.returnTo } : {},
   component: LoginPage,
 });
 
@@ -16,6 +18,7 @@ function LoginPage() {
   const login = useAuth((s) => s.login);
   const name = useSettings((s) => s.settings.branding.name);
   const navigate = useNavigate();
+  const { returnTo } = Route.useSearch();
   const [show, setShow] = useState(false);
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -27,7 +30,7 @@ function LoginPage() {
     const { error } = await login(email, password);
     if (error) return toast.error(error);
     toast.success("Welcome back!");
-    navigate({ to: "/account" });
+    navigate({ to: returnTo || "/account" });
   };
 
   return (

@@ -6,12 +6,15 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth/register")({
   head: () => ({ meta: [{ title: `Create account — ${siteName()}` }] }),
+  validateSearch: (s: Record<string, unknown>) =>
+    typeof s.returnTo === "string" ? { returnTo: s.returnTo } : {},
   component: RegisterPage,
 });
 
 function RegisterPage() {
   const register = useAuth((s) => s.register);
   const navigate = useNavigate();
+  const { returnTo } = Route.useSearch();
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
@@ -22,7 +25,7 @@ function RegisterPage() {
     const { error } = await register(name, email, password);
     if (error) return toast.error(error);
     toast.success("Account created! Check your email to verify.");
-    navigate({ to: "/account" });
+    navigate({ to: returnTo || "/account" });
   };
 
   return (

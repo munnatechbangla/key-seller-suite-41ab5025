@@ -8,7 +8,7 @@ import { useCart, useAuth } from "@/lib/stores";
 import { useState, useEffect } from "react";
 import { Lock, Tag, Wallet } from "lucide-react";
 import { toast } from "sonner";
-import { placeOrderAuthFn, placeOrderGuestFn } from "@/lib/orders.functions";
+import { placeOrderAuthFn } from "@/lib/orders.functions";
 import { validateCouponFn } from "@/lib/coupons.functions";
 import { couponReason } from "@/routes/cart";
 import { listEnabledGatewaysFn } from "@/lib/payments/gateways.functions";
@@ -16,7 +16,7 @@ import { GatewayLogo } from "@/components/site/GatewayLogo";
 import { seoMeta } from "@/lib/cms/seo";
 import { track } from "@/lib/analytics/track";
 import { useCheckoutFields } from "@/components/checkout/CheckoutCustomFields";
-import { saveOrderCustomFieldsAuthFn, saveOrderCustomFieldsGuestFn } from "@/lib/order-custom-fields.functions";
+import { saveOrderCustomFieldsAuthFn } from "@/lib/order-custom-fields.functions";
 import { resolveLineImage } from "@/lib/cart-image";
 
 export const Route = createFileRoute("/checkout")({
@@ -27,9 +27,10 @@ export const Route = createFileRoute("/checkout")({
 function CheckoutPage() {
   const cart = useCart();
   const user = useAuth((s) => s.user);
+  const authLoading = useAuth((s) => s.loading);
   const navigate = useNavigate();
   const listGateways = useServerFn(listEnabledGatewaysFn);
-  const gwQuery = useQuery({ queryKey: ["enabled-gateways"], queryFn: () => listGateways() });
+  const gwQuery = useQuery({ queryKey: ["enabled-gateways"], queryFn: () => listGateways(), enabled: !authLoading && Boolean(user) });
   const gateways = gwQuery.data?.gateways ?? [];
   const [gateway, setGateway] = useState<string>("");
   useEffect(() => { if (!gateway && gateways[0]) setGateway(gateways[0].slug); }, [gateways, gateway]);
@@ -39,11 +40,9 @@ function CheckoutPage() {
   const [code, setCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [applying, setApplying] = useState(false);
-  const placeGuest = useServerFn(placeOrderGuestFn);
   const placeAuth = useServerFn(placeOrderAuthFn);
   const validate = useServerFn(validateCouponFn);
   const saveFieldsAuth = useServerFn(saveOrderCustomFieldsAuthFn);
-  const saveFieldsGuest = useServerFn(saveOrderCustomFieldsGuestFn);
 
   const cartSlugs = cart.items.map((i) => i.productSlug ?? i.slug);
   const fieldsQuery = useCheckoutFields(cartSlugs);
@@ -76,6 +75,42 @@ function CheckoutPage() {
     );
   }
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <main className="container mx-auto px-4 py-20 text-center">
+          <p className="text-muted-foreground">Checking your account...</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen">
+        <Header />
+        <PageHero title="Sign in required" crumbs={[{ label: "Home", to: "/" }, { label: "Cart", to: "/cart" }, { label: "Checkout" }]} />
+        <main className="container mx-auto px-4 py-16">
+          <section className="mx-auto max-w-xl rounded-3xl border bg-card p-8 text-center shadow-sm sm:p-10">
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Lock className="h-7 w-7" />
+            </div>
+            <h2 className="text-2xl font-bold">Sign in to continue</h2>
+            <p className="mt-3 text-muted-foreground">Please sign in or create an account before placing your order. Your cart will be saved.</p>
+            <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+              <Link to="/auth/login" search={{ returnTo: "/checkout" }} className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-3 font-semibold text-primary-foreground">Sign in</Link>
+              <Link to="/auth/register" search={{ returnTo: "/checkout" }} className="inline-flex items-center justify-center rounded-xl border px-6 py-3 font-semibold hover:bg-muted">Create account</Link>
+            </div>
+            <p className="mt-5 text-sm text-muted-foreground">Google sign-in and password recovery are available on the sign-in page.</p>
+            <Link to="/cart" className="mt-4 inline-block text-sm text-primary underline">Return to cart</Link>
+          </section>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agree || !privacy) { toast.error("Please accept the terms"); return; }
@@ -116,7 +151,7 @@ function CheckoutPage() {
       },
     };
     try {
-      const result = user ? await placeAuth(payload) : await placeGuest(payload);
+      const result = await placeAuth(payload);
 
       // Persist custom field values (best-effort; server re-validates)
       if (customFields.length > 0) {
@@ -124,8 +159,7 @@ function CheckoutPage() {
           .map((f) => ({ field_id: f.id, value: storedFieldValues[f.product_slug]?.[f.id] ?? "" }));
         try {
           const saveArgs = { data: { orderId: result.orderId, email: customer.email, values } };
-          if (user) await saveFieldsAuth(saveArgs);
-          else await saveFieldsGuest(saveArgs);
+          await saveFieldsAuth(saveArgs);
         } catch (err) {
           console.error("[custom-fields] save failed", err);
           toast.error(err instanceof Error ? err.message : "Could not save product details");

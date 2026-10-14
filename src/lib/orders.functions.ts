@@ -54,13 +54,9 @@ async function placeOrderViaRpc(input: z.infer<typeof placeSchema>, sb: any) {
 }
 
 export const placeOrderGuestFn = createServerFn({ method: "POST" })
-  .middleware([csrfGuard])
+  .middleware([csrfGuard, requireSupabaseAuth])
   .inputValidator((d: unknown) => placeSchema.parse(d))
-  .handler(async ({ data }) => {
-    const { createServerSupabaseClient } = await import("@/integrations/supabase/server-client");
-    return placeOrderViaRpc(data, createServerSupabaseClient());
-  });
-
+  .handler(async ({ data, context }) => placeOrderViaRpc(data, context.supabase));
 export const placeOrderAuthFn = createServerFn({ method: "POST" })
   .middleware([csrfGuard, requireSupabaseAuth])
   .inputValidator((d: unknown) => placeSchema.parse(d))
