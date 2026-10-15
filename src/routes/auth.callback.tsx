@@ -26,7 +26,7 @@ function AuthCallbackPage() {
 
         // Supabase's PKCE flow requires exchanging the returned authorization code.
         if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(url.toString());
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
         }
 
