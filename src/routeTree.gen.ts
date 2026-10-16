@@ -40,6 +40,7 @@ import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as PayOrderNumberRouteImport } from './routes/pay.$orderNumber'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AuthResetRouteImport } from './routes/auth.reset'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
@@ -244,6 +245,11 @@ const LSlugRoute = LSlugRouteImport.update({
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/blog/$slug',
   path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthResetRoute = AuthResetRouteImport.update({
@@ -504,6 +510,7 @@ const ApiPublicPaymentsBkashCallbackRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/auth/callback': typeof AuthCallbackRoute
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
   '/about': typeof AboutRoute
@@ -587,6 +594,7 @@ export interface FileRoutesByFullPath {
   '/api/public/payments/sslcommerz/return': typeof ApiPublicPaymentsSslcommerzReturnRoute
 }
 export interface FileRoutesByTo {
+  '/auth/callback': typeof AuthCallbackRoute
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
   '/about': typeof AboutRoute
@@ -668,6 +676,7 @@ export interface FileRoutesByTo {
   '/api/public/payments/sslcommerz/return': typeof ApiPublicPaymentsSslcommerzReturnRoute
 }
 export interface FileRoutesById {
+  '/auth/callback': typeof AuthCallbackRoute
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$slug': typeof SlugRoute
@@ -757,6 +766,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$slug'
     | '/about'
+    | '/auth/callback'
     | '/account'
     | '/admin'
     | '/cart'
@@ -807,6 +817,7 @@ export interface FileRouteTypes {
     | '/admin/setup'
     | '/admin/subscriptions'
     | '/articles/$slug'
+    | '/auth/callback'
     | '/auth/forgot'
     | '/auth/login'
     | '/auth/register'
@@ -1002,6 +1013,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
   IndexRoute: typeof IndexRoute
   SlugRoute: typeof SlugRoute
   AboutRoute: typeof AboutRoute
@@ -1027,6 +1039,7 @@ export interface RootRouteChildren {
   TrackOrderRoute: typeof TrackOrderRoute
   WishlistRoute: typeof WishlistRoute
   ArticlesSlugRoute: typeof ArticlesSlugRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   AuthForgotRoute: typeof AuthForgotRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
@@ -1735,6 +1748,7 @@ const AdminRouteChildren: AdminRouteChildren = {
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
   IndexRoute: IndexRoute,
   SlugRoute: SlugRoute,
   AboutRoute: AboutRoute,
@@ -1760,6 +1774,7 @@ const rootRouteChildren: RootRouteChildren = {
   TrackOrderRoute: TrackOrderRoute,
   WishlistRoute: WishlistRoute,
   ArticlesSlugRoute: ArticlesSlugRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   AuthForgotRoute: AuthForgotRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
