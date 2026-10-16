@@ -69,7 +69,7 @@ export const initPaymentFn = createServerFn({ method: "POST" })
 
       const { data: activeIntent, error: activeIntentError } = await supabaseAdmin
         .from("payment_intents")
-        .select("id, status, redirect_url, gateway_payment_id, gateway_session_id")
+        .select("id, status, redirect_url, gateway_payment_id, gateway_session_id, response_payload")
         .eq("order_id", order.id)
         .eq("gateway", "bkash")
         .in("status", ["bkash_active", "initiated", "redirected", "processing", "pending"])
@@ -100,7 +100,7 @@ export const initPaymentFn = createServerFn({ method: "POST" })
               .update({
                 status: "failed",
                 response_payload: {
-                  ...(typeof activeIntent === "object" ? {} : {}),
+                  ...(activeIntent.response_payload && typeof activeIntent.response_payload === "object" ? activeIntent.response_payload : {}),
                   reconciliation: "provider_confirmed_initiated_without_saved_checkout_url",
                   providerStatus: status.data.transactionStatus,
                 } as never,
