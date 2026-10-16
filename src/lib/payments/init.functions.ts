@@ -62,14 +62,14 @@ export const initPaymentFn = createServerFn({ method: "POST" })
         throw new Error("bKash requires a BDT store and BDT order");
       }
 
-      const { createBkashPayment, isBkashConfigured } = await import("./bkash.server");
+      const { createBkashPayment, isBkashConfigured, queryBkashPayment } = await import("./bkash.server");
       if (!isBkashConfigured(mode)) {
         throw new Error(`bKash ${mode} credentials are not configured`);
       }
 
       const { data: activeIntent, error: activeIntentError } = await supabaseAdmin
         .from("payment_intents")
-        .select("status, redirect_url")
+        .select("id, status, redirect_url, gateway_payment_id, gateway_session_id")
         .eq("order_id", order.id)
         .eq("gateway", "bkash")
         .in("status", ["bkash_active", "initiated", "redirected", "processing", "pending"])
@@ -88,7 +88,37 @@ export const initPaymentFn = createServerFn({ method: "POST" })
         }
       }
       if (activeIntent) {
-        throw new Error("A bKash payment is already processing. Please check your order status before trying again.");
+        // Earlier builds incorrectly rejected the official https://payment.bkash.com
+        // host, leaving an Initiated intent with no saved redirect URL. Verify that
+        // exact provider payment before releasing that orphaned reservation.
+        const existingPaymentID = activeIntent.gateway_payment_id || activeIntent.gateway_session_id;
+        if (!activeIntent.redirect_url && existingPaymentID) {
+          const status = await queryBkashPayment(existingPaymentID, mode);
+          if (status.ok && status.data.transactionStatus === "Initiated") {
+            const { error: releaseError } = await supabaseAdmin
+              .from("payment_intents")
+              .update({
+                status: "failed",
+                response_payload: {
+                  ...(typeof activeIntent === "object" ? {} : {}),
+                  reconciliation: "provider_confirmed_initiated_without_saved_checkout_url",
+                  providerStatus: status.data.transactionStatus,
+                } as never,
+              })
+              .eq("id", activeIntent.id)
+              .eq("status", activeIntent.status)
+              .is("redirect_url", null);
+            if (releaseError) {
+              throw new Error("The old bKash session was verified but could not be released. Please retry shortly.");
+            }
+          } else {
+            // Never start a second payment if provider status is completed, unknown,
+            // or cannot be verified.
+            throw new Error("An earlier bKash session still exists. Its payment status could not be safely cleared; please check order status or contact support.");
+          }
+        } else {
+          throw new Error("A bKash payment is already processing. Please check your order status before trying again.");
+        }
       }
 
       const callback = new URL(`${baseUrl}/api/public/payments/bkash/callback`);
