@@ -245,18 +245,26 @@ export async function createBkashPayment(input: {
   const rawCheckoutUrl = findCheckoutUrl(result.data);
   const bkashURL = rawCheckoutUrl ?? "";
   if (!paymentID || !bkashURL) {
-    return {
-      ok: false,
-      reason: !paymentID ? "bkash_create_response_missing_payment_id" : "bkash_create_response_missing_checkout_url",
-      uncertain: true,
-      paymentID,
-      response: {
-        ...response,
-        reason: !paymentID ? "bkash_create_response_missing_payment_id" : "bkash_create_response_missing_checkout_url",
-        responseKeys: Object.keys(result.data),
-        checkoutUrlFieldFound: Boolean(rawCheckoutUrl),
-      },
+    const reason = !paymentID ? "bkash_create_response_missing_payment_id" : "bkash_create_response_missing_checkout_url";
+    const diagnostic = {
+      ...response,
+      reason,
+      responseKeys: Object.keys(result.data),
+      checkoutUrlFieldFound: Boolean(rawCheckoutUrl),
     };
+    await logPaymentEvent({
+      gateway: "bkash",
+      event_type: "init",
+      order_number: input.orderNumber,
+      transaction_id: paymentID ?? null,
+      amount: input.amount,
+      currency: "BDT",
+      status: "uncertain",
+      request_body: { mode: input.mode, currency: "BDT", amount: input.amount.toFixed(2) },
+      error_message: reason,
+      response_body: diagnostic,
+    });
+    return { ok: false, reason, uncertain: true, paymentID, response: diagnostic };
   }
   try {
     const checkoutUrl = new URL(bkashURL);
