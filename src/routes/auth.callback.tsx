@@ -23,18 +23,25 @@ function AuthCallbackPage() {
       try {
         const url = new URL(window.location.href);
         const code = url.searchParams.get("code");
+        const hash = new URLSearchParams(url.hash.replace(/^#/, ""));
+        const accessToken = hash.get("access_token");
+        const refreshToken = hash.get("refresh_token");
 
-        // Supabase's PKCE flow requires exchanging the returned authorization code.
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
+        } else if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (error) throw error;
         }
 
-        // Also supports a session already restored by supabase-js from the callback URL.
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
         if (!data.session) {
-          throw new Error(url.searchParams.get("error_description") || "Google sign-in did not complete. Please try again.");
+          throw new Error(url.searchParams.get("error_description") || hash.get("error_description") || "Google sign-in did not complete. Please try again.");
         }
 
         const next = safeReturnPath(sessionStorage.getItem("auth:redirect"));
@@ -42,9 +49,7 @@ function AuthCallbackPage() {
         if (!cancelled) window.location.replace(next);
       } catch (error) {
         sessionStorage.removeItem("auth:redirect");
-        if (!cancelled) {
-          setMessage(error instanceof Error ? error.message : "Google sign-in failed. Please try again.");
-        }
+        if (!cancelled) setMessage(error instanceof Error ? error.message : "Google sign-in failed. Please try again.");
       }
     }
 
@@ -58,9 +63,7 @@ function AuthCallbackPage() {
         <h1 className="text-xl font-bold">Google sign-in</h1>
         <p className="mt-3 text-sm text-muted-foreground">{message}</p>
         {message !== "Completing Google sign-in…" && (
-          <a href="/auth/login" className="mt-6 inline-flex rounded-xl bg-primary px-5 py-2.5 font-semibold text-primary-foreground">
-            Back to sign in
-          </a>
+          <a href="/auth/login" className="mt-6 inline-flex rounded-xl bg-primary px-5 py-2.5 font-semibold text-primary-foreground">Back to sign in</a>
         )}
       </section>
     </main>
