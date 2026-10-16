@@ -223,24 +223,60 @@ export async function createBkashPayment(input: {
     }
   }
 
-  // Providers/proxies may vary the casing of the checkout URL field.
-  // Accept only known URL field names, then apply the same strict host validation.
-  const rawCheckoutUrl =
-    result.data.bkashURL ??
-    result.data.bkashUrl ??
-    result.data.redirectURL ??
-    result.data.redirectUrl;
-  const bkashURL = typeof rawCheckoutUrl === "string" ? rawCheckoutUrl : "";
+  // bKash's documented response uses bkashURL. Some gateway proxies/versions
+  // return a differently-cased or nested checkout URL, so normalize known names
+  // without accepting arbitrary external destinations.
+  const urlKeys = new Set(["bkashurl", "redirecturl", "paymenturl", "checkouturl", "url"]);
+  const findCheckoutUrl = (value: unknown, depth = 0): string | undefined => {
+    if (!value || typeof value !== "object" || Array.isArray(value) || depth > 2) return undefined;
+    const record = value as Record<string, unknown>;
+    for (const [key, candidate] of Object.entries(record)) {
+      if (urlKeys.has(key.toLowerCase()) && typeof candidate === "string" && candidate.trim()) {
+        return candidate.trim();
+      }
+    }
+    for (const key of ["data", "response", "result"]) {
+      const nested = record[key];
+      const found = findCheckoutUrl(nested, depth + 1);
+      if (found) return found;
+    }
+    return undefined;
+  };
+  const rawCheckoutUrl = findCheckoutUrl(result.data);
+  const bkashURL = rawCheckoutUrl ?? "";
   if (!paymentID || !bkashURL) {
-    return { ok: false, reason: "bkash_create_response_incomplete", uncertain: true, paymentID, response };
+    return {
+      ok: false,
+      reason: !paymentID ? "bkash_create_response_missing_payment_id" : "bkash_create_response_missing_checkout_url",
+      uncertain: true,
+      paymentID,
+      response: {
+        ...response,
+        reason: !paymentID ? "bkash_create_response_missing_payment_id" : "bkash_create_response_missing_checkout_url",
+        responseKeys: Object.keys(result.data),
+        checkoutUrlFieldFound: Boolean(rawCheckoutUrl),
+      },
+    };
   }
   try {
     const checkoutUrl = new URL(bkashURL);
     if (checkoutUrl.protocol !== "https:" || !(checkoutUrl.hostname === "payment.bkash.com" || checkoutUrl.hostname.endsWith(".bka.sh"))) {
-      return { ok: false, reason: "bkash_create_response_invalid_url", uncertain: true, paymentID, response };
+      return {
+        ok: false,
+        reason: "bkash_create_response_invalid_url",
+        uncertain: true,
+        paymentID,
+        response: { ...response, reason: "bkash_create_response_invalid_url", checkoutUrlHost: checkoutUrl.hostname },
+      };
     }
   } catch {
-    return { ok: false, reason: "bkash_create_response_invalid_url", uncertain: true, paymentID, response };
+    return {
+      ok: false,
+      reason: "bkash_create_response_invalid_url",
+      uncertain: true,
+      paymentID,
+      response: { ...response, reason: "bkash_create_response_invalid_url", checkoutUrlPresent: true },
+    };
   }
 
   await logPaymentEvent({
