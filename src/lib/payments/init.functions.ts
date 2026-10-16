@@ -80,7 +80,7 @@ export const initPaymentFn = createServerFn({ method: "POST" })
       if ((activeIntent?.status === "redirected" || activeIntent?.status === "bkash_active") && activeIntent.redirect_url) {
         try {
           const checkoutUrl = new URL(activeIntent.redirect_url);
-          if (checkoutUrl.protocol === "https:" && checkoutUrl.hostname.endsWith(".bka.sh")) {
+          if (checkoutUrl.protocol === "https:" && (checkoutUrl.hostname === "payment.bkash.com" || checkoutUrl.hostname.endsWith(".bka.sh"))) {
             return { ok: true as const, gateway: "bkash", redirectUrl: activeIntent.redirect_url };
           }
         } catch {
