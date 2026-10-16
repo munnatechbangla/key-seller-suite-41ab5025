@@ -223,8 +223,15 @@ export async function createBkashPayment(input: {
     }
   }
 
-  const bkashURL = result.data.bkashURL;
-  if (!paymentID || typeof bkashURL !== "string" || !bkashURL) {
+  // Providers/proxies may vary the casing of the checkout URL field.
+  // Accept only known URL field names, then apply the same strict host validation.
+  const rawCheckoutUrl =
+    result.data.bkashURL ??
+    result.data.bkashUrl ??
+    result.data.redirectURL ??
+    result.data.redirectUrl;
+  const bkashURL = typeof rawCheckoutUrl === "string" ? rawCheckoutUrl : "";
+  if (!paymentID || !bkashURL) {
     return { ok: false, reason: "bkash_create_response_incomplete", uncertain: true, paymentID, response };
   }
   try {
