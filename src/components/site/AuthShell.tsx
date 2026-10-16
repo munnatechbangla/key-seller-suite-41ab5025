@@ -44,13 +44,19 @@ export function SocialButtons() {
         : "/account";
       sessionStorage.setItem("auth:redirect", safeReturn);
 
-      const { lovable } = await import("@/integrations/lovable");
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/auth/callback`,
+      // Use Supabase OAuth directly. The Lovable cloud-auth wrapper redirects
+      // custom domains to /~oauth/initiate, which is not a route on topuphut.com.
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: { prompt: "select_account" },
+        },
       });
-      if (result.error) {
+      if (error) {
         sessionStorage.removeItem("auth:redirect");
-        (await import("sonner")).toast.error(result.error.message ?? "Sign-in failed");
+        (await import("sonner")).toast.error(error.message ?? "Sign-in failed");
       }
     } catch (error) {
       sessionStorage.removeItem("auth:redirect");
