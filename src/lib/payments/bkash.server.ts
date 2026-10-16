@@ -236,7 +236,7 @@ export async function createBkashPayment(input: {
   }
   try {
     const checkoutUrl = new URL(bkashURL);
-    if (checkoutUrl.protocol !== "https:" || !checkoutUrl.hostname.endsWith(".bka.sh")) {
+    if (checkoutUrl.protocol !== "https:" || !(checkoutUrl.hostname === "payment.bkash.com" || checkoutUrl.hostname.endsWith(".bka.sh"))) {
       return { ok: false, reason: "bkash_create_response_invalid_url", uncertain: true, paymentID, response };
     }
   } catch {
