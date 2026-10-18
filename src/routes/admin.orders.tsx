@@ -103,11 +103,50 @@ function OrderRow({ order: o, onStatusChange }: { order: any; onStatusChange: (s
       {open && (
         <TableRow>
           <TableCell colSpan={6} className="bg-muted/30 space-y-4">
+            <div className="rounded-lg border bg-background p-4 space-y-3">
+              <h3 className="font-semibold text-sm">Ordered products</h3>
+              {Array.isArray(o.order_items) && o.order_items.length > 0 ? (
+                <div className="space-y-3">
+                  {o.order_items.map((item: any) => {
+                    const attributes = item.selected_attributes && typeof item.selected_attributes === "object"
+                      ? Object.entries(item.selected_attributes as Record<string, unknown>).filter(([, value]) => value != null && String(value).trim() !== "")
+                      : [];
+                    return (
+                      <div key={item.id} className="rounded-md border p-3 space-y-1.5">
+                        <div className="font-medium">{item.product_name ?? item.product_slug ?? "Product"}</div>
+                        {item.variant_name ? (
+                          <div className="text-sm">
+                            <span className="text-muted-foreground">Selected variant: </span>
+                            <span className="font-semibold">{item.variant_name}</span>
+                          </div>
+                        ) : null}
+                        {attributes.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {attributes.map(([key, value]) => (
+                              <span key={key} className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs">
+                                <span className="text-muted-foreground">{key.replace(/[-_]/g, " ")}:</span>
+                                <span className="font-medium">{String(value)}</span>
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
+                        {item.sku_snapshot ? <div className="text-xs text-muted-foreground">SKU: {item.sku_snapshot}</div> : null}
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm pt-1">
+                          <span>Quantity: <strong>{item.qty}</strong></span>
+                          <span>Unit price: <strong>{Number(item.unit_price ?? 0).toFixed(2)} BDT</strong></span>
+                          <span>Line total: <strong>{Number(item.line_total ?? 0).toFixed(2)} BDT</strong></span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No order item details were returned for this order.</p>
+              )}
+            </div>
             <FulfillmentPanel orderId={o.id} authed isAdmin />
             <LicenseAssignmentPanel orderId={o.id} />
-
             <OrderCustomFieldValues orderId={o.id} authed compact />
-
           </TableCell>
         </TableRow>
       )}
