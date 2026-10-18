@@ -118,7 +118,7 @@ export const adminListOrdersFn = createServerFn({ method: "GET" })
     await assertAdmin(context);
     let q = context.supabase
       .from("orders")
-      .select("id, order_number, email, customer_name, total, currency, status, payment_method, created_at")
+      .select("id, order_number, email, customer_name, total, currency, status, payment_method, created_at, order_items(id, product_name, product_slug, qty, unit_price, line_total, variant_name, selected_attributes, sku_snapshot)")
       .order("created_at", { ascending: false })
       .limit(200);
     if (data.status) q = q.eq("status", data.status as any);
