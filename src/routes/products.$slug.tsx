@@ -305,7 +305,7 @@ function LegacyProductPage() {
             <LiveVisitorsCounter surface="product" seed={product.slug} />
           </div>
 
-          <p className="text-muted-foreground leading-relaxed">{product.short}</p>
+          <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap break-words">{product.short}</p>
 
           {hasAttrs ? (
             <VariantSelector
@@ -406,7 +406,7 @@ function LegacyProductPage() {
             ) : (
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                  <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+                  <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap break-words">{product.description}</p>
                   <h3 className="font-semibold mt-6">Key features</h3>
                   <ul className="space-y-2">
                     {product.features?.map((f) => (
