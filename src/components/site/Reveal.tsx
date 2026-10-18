@@ -21,27 +21,39 @@ export function Reveal({
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
-    const reduce =
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
+
+    // On small/mobile viewports, never leave content hidden while waiting
+    // for an intersection callback. Some mobile browsers can delay or miss
+    // the callback for sections inside animated/scrolling layouts.
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isMobile || reduceMotion || typeof IntersectionObserver === "undefined") {
       setShown(true);
       return;
     }
+
+    const reveal = () => setShown(true);
     const io = new IntersectionObserver(
       (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            setShown(true);
-            io.disconnect();
-            break;
-          }
+        if (entries.some((entry) => entry.isIntersecting)) {
+          reveal();
+          io.disconnect();
         }
       },
       { threshold: 0.12, rootMargin: "0px 0px -60px 0px" },
     );
     io.observe(node);
-    return () => io.disconnect();
+
+    // Fail open rather than keeping a homepage section invisible indefinitely.
+    const fallbackId = window.setTimeout(() => {
+      reveal();
+      io.disconnect();
+    }, 1800);
+
+    return () => {
+      io.disconnect();
+      window.clearTimeout(fallbackId);
+    };
   }, []);
 
   const Comp = Tag as "div";
