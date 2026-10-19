@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
+import { formatPrice } from "@/lib/product-price";
 import { useCategories, useProducts, type ProductSort, categoriesQuery, productsQuery } from "@/lib/catalog";
 import { useState } from "react";
 import { Filter, Grid3x3, List } from "lucide-react";
@@ -76,7 +77,7 @@ function ProductsPage() {
             <div className="font-semibold mb-3">Price range</div>
             <input type="range" min={0} max={100} defaultValue={50} className="w-full accent-[var(--primary)]" />
             <div className="flex justify-between text-xs text-muted-foreground mt-2">
-              <span>$0</span><span>$100+</span>
+              <span>{formatPrice(0)}</span><span>{formatPrice(100)}+</span>
             </div>
           </div>
         </aside>
