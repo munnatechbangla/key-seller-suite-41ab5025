@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { OrderCustomFieldValues } from "@/components/orders/OrderCustomFieldValues";
 import { FulfillmentPanel } from "@/components/fulfillment/FulfillmentPanel";
 import { LicenseAssignmentPanel } from "@/components/admin/LicenseAssignmentPanel";
+import { formatPrice } from "@/lib/product-price";
 
 
 export const Route = createFileRoute("/admin/orders")({ component: AdminOrders });
@@ -87,7 +88,7 @@ function OrderRow({ order: o, onStatusChange }: { order: any; onStatusChange: (s
           <div className="font-medium">{o.customer_name ?? "—"}</div>
           <div className="text-xs text-muted-foreground">{o.email}</div>
         </TableCell>
-        <TableCell>${Number(o.total).toFixed(2)} {o.currency}</TableCell>
+        <TableCell>{formatPrice(Number(o.total))} {o.currency !== "BDT" ? `(${o.currency})` : ""}</TableCell>
         <TableCell className="text-sm">{o.payment_method ?? "—"}</TableCell>
         <TableCell>
           <select
@@ -133,8 +134,8 @@ function OrderRow({ order: o, onStatusChange }: { order: any; onStatusChange: (s
                         {item.sku_snapshot ? <div className="text-xs text-muted-foreground">SKU: {item.sku_snapshot}</div> : null}
                         <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm pt-1">
                           <span>Quantity: <strong>{item.qty}</strong></span>
-                          <span>Unit price: <strong>{Number(item.unit_price ?? 0).toFixed(2)} BDT</strong></span>
-                          <span>Line total: <strong>{Number(item.line_total ?? 0).toFixed(2)} BDT</strong></span>
+                          <span>Unit price: <strong>{formatPrice(Number(item.unit_price ?? 0))}</strong></span>
+                          <span>Line total: <strong>{formatPrice(Number(item.line_total ?? 0))}</strong></span>
                         </div>
                       </div>
                     );
