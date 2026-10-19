@@ -171,6 +171,7 @@ function ProductPage() {
 function LegacyProductPage() {
   const { slug } = Route.useParams();
   const product = useProduct(slug)!;
+  const { url: resolvedThumbnail } = useResolvedMediaUrl(product.thumbnailUrl);
   const related = useRelated(slug, 4);
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<"desc" | "specs" | "reviews" | "faq">("desc");
@@ -230,7 +231,7 @@ function LegacyProductPage() {
   const featuredImage =
     galleryImages.find((g) => g.is_primary)?.url ??
     galleryImages[0]?.url ??
-    product.thumbnailUrl ??
+    resolvedThumbnail ||
     null;
   const [activeImage, setActiveImage] = useState<string | null>(null);
   useEffect(() => { setActiveImage(null); }, [product.id]);
