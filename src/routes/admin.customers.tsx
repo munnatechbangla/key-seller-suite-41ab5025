@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { formatPrice } from "@/lib/product-price";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { adminListCustomersFn } from "@/lib/admin.functions";
@@ -40,7 +41,7 @@ function AdminCustomers() {
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">{c.email}</TableCell>
                 <TableCell>{c.orders}</TableCell>
-                <TableCell>${Number(c.spent).toFixed(2)}</TableCell>
+                <TableCell>{formatPrice(Number(c.spent))}</TableCell>
                 <TableCell className="text-xs text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</TableCell>
               </TableRow>
             ))}
