@@ -31,8 +31,7 @@ export function resolveProductPrice(product: Product): ResolvedProductPrice {
 }
 
 export function formatPrice(n: number): string {
-  const payment = useSettings.getState().settings.payment;
-  const currency = (payment.currency || "BDT").toUpperCase();
-  const symbol = payment.currency_symbol || (currency === "BDT" ? "৳" : currency === "USD" ? "$" : `${currency} `);
-  return `${symbol}${n.toFixed(2)}`;
+  // TopupHut displays all product/order amounts in Bangladeshi Taka.
+  // Do not let a stale payment setting change storefront/admin price symbols.
+  return `৳${n.toFixed(2)}`;
 }
