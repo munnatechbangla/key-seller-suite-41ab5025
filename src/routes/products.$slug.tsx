@@ -331,7 +331,7 @@ function LegacyProductPage() {
                   )}
                 </div>
                 <div className="sm:ml-auto inline-flex min-w-0 items-center gap-2 text-sm font-semibold text-accent">
-                  <Zap className="h-4 w-4" /> {product.delivery} delivery
+                  <Zap className="h-4 w-4" /> {product.deliveryMode === "instant" ? "Instant Delivery" : product.deliveryMode === "fast" ? `Fast Delivery${product.delivery ? ` · ${product.delivery}` : ""}` : product.deliveryMode === "manual" ? `Manual Delivery${product.delivery ? ` · ${product.delivery}` : ""}` : product.deliveryMode === "extended" ? `Extended Delivery${product.delivery ? ` · ${product.delivery}` : ""}` : "Delivery time varies"}
                 </div>
               </div>
 
@@ -380,7 +380,7 @@ function LegacyProductPage() {
           </div>
 
           <div className="grid grid-cols-3 gap-3 pt-4 border-t border-border">
-            {[{ Icon: Truck, t: "Instant Delivery" }, { Icon: Shield, t: "Full Warranty" }, { Icon: Lock, t: "Secure Payment" }].map((b) => (
+            {[{ Icon: Truck, t: product.deliveryMode === "instant" ? "Instant Delivery" : product.deliveryMode === "fast" ? "Fast Delivery" : product.deliveryMode === "manual" ? "Manual Delivery" : product.deliveryMode === "extended" ? "Extended Delivery" : "Delivery time varies" }, { Icon: Shield, t: "Full Warranty" }, { Icon: Lock, t: "Secure Payment" }].map((b) => (
               <div key={b.t} className="text-center text-xs">
                 <b.Icon className="h-5 w-5 text-primary mx-auto mb-1" />
                 <div className="font-semibold">{b.t}</div>
@@ -426,7 +426,7 @@ function LegacyProductPage() {
                     ))}
                   </ul>
                   <h3 className="font-semibold flex items-center gap-2 pt-3 border-t border-border"><Truck className="h-4 w-4 text-primary" /> Delivery info</h3>
-                  <p className="text-sm text-muted-foreground">Delivered in {product.delivery} after payment confirmation, sent directly to your email.</p>
+                  <p className="text-sm text-muted-foreground">{product.deliveryMode === "instant" ? "Delivered automatically after payment confirmation." : product.deliveryMode === "fast" ? `Usually delivered within ${product.delivery || "the estimated delivery window"} after payment confirmation.` : product.deliveryMode === "manual" ? `Manually processed after payment confirmation. Estimated time: ${product.delivery || "varies by product"}.` : product.deliveryMode === "extended" ? `This product may require additional processing time. Estimated time: ${product.delivery || "varies by product"}.` : "Delivery timing has not been specified. Please contact support before ordering if timing is important."}</p>
                 </div>
               </div>
             )
