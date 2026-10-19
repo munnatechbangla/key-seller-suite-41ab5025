@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { getOrderByNumberFn, getMyOrderByNumberFn, simulateGatewayPaymentFn } from "@/lib/orders.functions";
 import { getOrderDeliveryAuthFn, getOrderDeliveryGuestFn } from "@/lib/delivery.functions";
+import { formatPrice } from "@/lib/product-price";
 import { useAuth } from "@/lib/stores";
 import { useSettings } from "@/lib/cms/settings";
 import { initPaymentFn } from "@/lib/payments/init.functions";
@@ -277,7 +278,7 @@ function PayPage() {
           ) : (
             <>
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <SummaryRow label="Amount" value={`${Number(order.total).toFixed(2)} ${order.currency}`} />
+                <SummaryRow label="Amount" value={formatPrice(Number(order.total))} />
                 <SummaryRow label="Method" value={gateway?.name ?? slug ?? "—"} />
               </div>
 
@@ -342,7 +343,7 @@ function PayPage() {
                       className="inline-flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow disabled:opacity-60"
                     >
                       {working === "paid" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-                      Pay ${Number(order.total).toFixed(2)}
+                      Pay {formatPrice(Number(order.total))}
                     </button>
                     <button
                       type="button"
