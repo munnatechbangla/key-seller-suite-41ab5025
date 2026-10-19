@@ -7,6 +7,7 @@ import type { Product } from "@/lib/catalog";
 import { resolveProductPrice } from "@/lib/product-price";
 import type { ProductVariant } from "@/lib/product-variants.functions";
 import { addProductSelectionToCart, getVariantCompareAt, getVariantUnitPrice, isVariantAvailable } from "@/lib/cart-product";
+import { ProductThumb } from "@/components/site/ProductThumb";
 
 function unitPrice(p: Product): { price: number; oldPrice: number | null; available: boolean; cartReady: boolean; image: string | null } {
   const r = resolveProductPrice(p);
@@ -129,12 +130,7 @@ export function FrequentlyBoughtTogether({
                     className={`h-16 w-16 sm:h-auto sm:w-full sm:aspect-square shrink-0 rounded-xl border-2 grid place-items-center text-4xl sm:text-5xl overflow-hidden transition-smooth ${checked ? "border-primary" : "border-border opacity-60"}`}
                   >
                     {pr.image ? (
-                      <img
-                        src={pr.image}
-                        alt={p.name}
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                      />
+                      <ProductThumb src={pr.image} emoji={p.emoji} alt={p.name} size={144} className="h-full w-full rounded-none bg-transparent" />
                     ) : (
                       <span>{p.emoji}</span>
                     )}
