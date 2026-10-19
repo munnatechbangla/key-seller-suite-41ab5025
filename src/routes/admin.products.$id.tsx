@@ -645,7 +645,7 @@ function VariationsTab({ productId }: { productId: string }) {
           <div key={v.id} className="p-3 flex items-center gap-3">
             <div className="flex-1">
               <div className="font-medium">{v.name} <span className="text-xs text-muted-foreground">{v.sku ?? ""}</span></div>
-              <div className="text-xs text-muted-foreground">${formatPrice(Number(v.price))}{v.compare_price ? ` (was ${formatPrice(Number(v.compare_price))})` : ""} · stock {v.stock ?? "—"} · {v.status}</div>
+              <div className="text-xs text-muted-foreground">{formatPrice(Number(v.price))}{v.compare_price ? ` (was ${formatPrice(Number(v.compare_price))})` : ""} · stock {v.stock ?? "—"} · {v.status}</div>
             </div>
             <Button variant="ghost" size="icon" onClick={() => confirm("Delete?") && remove.mutate(v.id)}><Trash2 className="h-4 w-4" /></Button>
           </div>
