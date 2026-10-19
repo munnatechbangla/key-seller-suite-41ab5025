@@ -1,4 +1,5 @@
 import type { Product } from "@/lib/catalog";
+import { useSettings } from "@/lib/cms/settings";
 
 /**
  * Single source of truth for the price shown on product tiles / mini cards.
@@ -30,5 +31,8 @@ export function resolveProductPrice(product: Product): ResolvedProductPrice {
 }
 
 export function formatPrice(n: number): string {
-  return `$${n.toFixed(2)}`;
+  const payment = useSettings.getState().settings.payment;
+  const currency = (payment.currency || "BDT").toUpperCase();
+  const symbol = payment.currency_symbol || (currency === "BDT" ? "৳" : currency === "USD" ? "$" : `${currency} `);
+  return `${symbol}${n.toFixed(2)}`;
 }
