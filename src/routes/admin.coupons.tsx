@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { formatPrice } from "@/lib/product-price";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -94,9 +95,9 @@ function AdminCoupons() {
               <TableRow key={c.id}>
                 <TableCell className="font-mono font-semibold">{c.code}</TableCell>
                 <TableCell><Badge variant="secondary">{c.type}</Badge></TableCell>
-                <TableCell>{c.type === "percent" ? `${c.value}%` : `$${Number(c.value).toFixed(2)}`}</TableCell>
+                <TableCell>{c.type === "percent" ? `${c.value}%` : formatPrice(Number(c.value))}</TableCell>
                 <TableCell>{c.used_count}{c.usage_limit ? ` / ${c.usage_limit}` : ""}</TableCell>
-                <TableCell>${Number(c.revenue_generated).toFixed(2)}</TableCell>
+                <TableCell>{formatPrice(Number(c.revenue_generated))}</TableCell>
                 <TableCell>
                   <Switch checked={c.is_active} onCheckedChange={(v) => tog.mutate({ id: c.id, is_active: v })} />
                 </TableCell>
