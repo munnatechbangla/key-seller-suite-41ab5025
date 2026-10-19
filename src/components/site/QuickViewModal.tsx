@@ -101,7 +101,7 @@ export function QuickViewModal({ slug, open, onOpenChange }: { slug: string | nu
                 <span className="text-destructive font-medium">Out of stock</span>
               )}
               <span className="inline-flex items-center gap-1 text-accent font-medium">
-                <Zap className="h-3.5 w-3.5" /> {product.delivery} delivery
+                <Zap className="h-3.5 w-3.5" /> {product.deliveryMode === "instant" ? "Instant Delivery" : product.deliveryMode === "fast" ? `Fast Delivery${product.delivery ? ` · ${product.delivery}` : ""}` : product.deliveryMode === "manual" ? `Manual Delivery${product.delivery ? ` · ${product.delivery}` : ""}` : product.deliveryMode === "extended" ? `Extended Delivery${product.delivery ? ` · ${product.delivery}` : ""}` : "Delivery time varies"}
               </span>
               <LiveVisitorsCounter surface="product" seed={`qv-${product.slug}`} />
             </div>
