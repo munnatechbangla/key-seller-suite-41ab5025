@@ -18,6 +18,7 @@ import { track } from "@/lib/analytics/track";
 import { useCheckoutFields } from "@/components/checkout/CheckoutCustomFields";
 import { saveOrderCustomFieldsAuthFn } from "@/lib/order-custom-fields.functions";
 import { resolveLineImage } from "@/lib/cart-image";
+import { formatPrice } from "@/lib/product-price";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: seoMeta({ title: "Checkout" }) }),
@@ -57,7 +58,7 @@ function CheckoutPage() {
       const r = await validate({
         data: { code: code.trim(), subtotal: cart.subtotal(), productSlugs: cart.items.map((i) => i.slug) },
       });
-      if (r.ok) { cart.setCoupon(r.code, r.discount); toast.success(`Saved $${r.discount.toFixed(2)}`); setCode(""); }
+      if (r.ok) { cart.setCoupon(r.code, r.discount); toast.success(`Saved ${formatPrice(r.discount)}`); setCode(""); }
       else { cart.clearCoupon(); toast.error(couponReason(r.reason, r)); }
     } finally { setApplying(false); }
   };
@@ -122,7 +123,7 @@ function CheckoutPage() {
 
     setSubmitting(true);
     track("begin_checkout", {
-      currency: "USD",
+      currency: "BDT",
       value: cart.total(),
       coupon: cart.coupon ?? undefined,
       items: cart.items.map((i) => ({ item_id: i.slug, item_name: i.product.name, price: i.product.price, quantity: i.qty })),
@@ -274,19 +275,19 @@ function CheckoutPage() {
                     <div className="text-xs text-muted-foreground">Qty {it.qty}</div>
                   </div>
                   <span className="font-semibold">
-                    ${(((it.variant ? (it.variant.sale_price != null && it.variant.sale_price > 0 ? it.variant.sale_price : it.variant.price) : it.product.price)) * it.qty).toFixed(2)}
+                    {formatPrice((((it.variant ? (it.variant.sale_price != null && it.variant.sale_price > 0 ? it.variant.sale_price : it.variant.price) : it.product.price)) * it.qty))}
                   </span>
                 </div>
                 );
               })}
             </div>
             <div className="pt-3 border-t border-border space-y-1.5 text-sm">
-              <Row label="Subtotal" value={`$${cart.subtotal().toFixed(2)}`} />
-              {cart.coupon && <Row label={`Coupon (${cart.coupon})`} value={`-$${cart.discount().toFixed(2)}`} />}
+              <Row label="Subtotal" value={formatPrice(cart.subtotal())} />
+              {cart.coupon && <Row label={`Coupon (${cart.coupon})`} value={`-${formatPrice(cart.discount())}`} />}
               <Row label="Delivery" value="Free" />
             </div>
             <div className="flex justify-between font-bold text-lg pt-2 border-t border-border">
-              <span>Total</span><span className="text-primary">${cart.total().toFixed(2)}</span>
+              <span>Total</span><span className="text-primary">{formatPrice(cart.total())}</span>
             </div>
             <div className="flex min-w-0 gap-2">
               <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Coupon" className="min-w-0 flex-1 px-3 py-2 rounded-lg bg-muted/60 border border-border text-sm outline-none" />
