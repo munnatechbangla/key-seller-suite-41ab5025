@@ -8,6 +8,7 @@ import { useState } from "react";
 import { LiveVisitorsCounter } from "./LiveVisitorsCounter";
 import { SaleBadges } from "./SaleBadges";
 import { formatPrice } from "@/lib/product-price";
+import { ProductThumb } from "@/components/site/ProductThumb";
 
 export function QuickViewModal({ slug, open, onOpenChange }: { slug: string | null; open: boolean; onOpenChange: (v: boolean) => void }) {
   const product = useProduct(slug ?? "");
@@ -53,7 +54,7 @@ export function QuickViewModal({ slug, open, onOpenChange }: { slug: string | nu
         <div className="grid md:grid-cols-2 max-h-[88vh] overflow-y-auto">
           <div className="relative aspect-square md:aspect-auto bg-gradient-to-br from-primary/15 via-secondary/15 to-accent/15 grid place-items-center">
             {product.thumbnailUrl ? (
-              <img src={product.thumbnailUrl} alt={product.name} className="h-full w-full object-cover" />
+              <ProductThumb src={product.thumbnailUrl} emoji={product.emoji} alt={product.name} size={480} className="h-full w-full rounded-none bg-transparent" />
             ) : (
               <span className="text-[8rem]">{product.emoji}</span>
             )}
