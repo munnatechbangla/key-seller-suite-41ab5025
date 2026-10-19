@@ -85,12 +85,18 @@ export function ProductCard({ product }: { product: Product }) {
         )}
       </div>
       <div className="p-4 space-y-2">
+        {product.deliveryMode && product.deliveryMode !== "instant" && product.delivery ? (
+          <div className="flex items-center gap-1 text-[10px] leading-tight text-muted-foreground">
+            <span className="truncate">{product.delivery}</span>
+          </div>
+        ) : null}
         <div className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
           <Star className="h-3.5 w-3.5 fill-accent text-accent" />
           <span className="font-semibold text-foreground">{product.rating}</span>
           <span>({product.reviews.toLocaleString()})</span>
-          <span className="ml-auto inline-flex min-w-0 items-center gap-1 text-accent font-medium">
-            <Zap className="h-3 w-3" /> {product.deliveryMode === "instant" ? "Instant Delivery" : product.deliveryMode === "fast" ? `Fast Delivery${product.delivery ? ` · ${product.delivery}` : ""}` : product.deliveryMode === "manual" ? `Manual Delivery${product.delivery ? ` · ${product.delivery}` : ""}` : product.deliveryMode === "extended" ? `Extended Delivery${product.delivery ? ` · ${product.delivery}` : ""}` : "Delivery time varies"}
+          <span className={`ml-auto inline-flex min-w-0 max-w-[58%] items-center justify-end gap-1 font-medium whitespace-nowrap ${product.deliveryMode === "instant" ? "text-emerald-500" : product.deliveryMode === "fast" ? "text-blue-500" : product.deliveryMode === "manual" ? "text-amber-600" : product.deliveryMode === "extended" ? "text-violet-500" : "text-muted-foreground"}`}>
+            {product.deliveryMode === "instant" ? <Zap className="h-3 w-3 shrink-0" /> : <span className="h-1.5 w-1.5 rounded-full bg-current shrink-0" />}
+            <span className="truncate text-[11px]">{product.deliveryMode === "instant" ? "Instant" : product.deliveryMode === "fast" ? "Fast Delivery" : product.deliveryMode === "manual" ? "Manual" : product.deliveryMode === "extended" ? "Extended" : "Delivery varies"}</span>
           </span>
         </div>
         <Link to="/products/$slug" params={{ slug: product.slug }} className="block">
