@@ -1,4 +1,5 @@
 import { siteName } from "@/lib/cms/seo";
+import { formatPrice } from "@/lib/product-price";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -128,7 +129,7 @@ function DashboardTab() {
   const totalSpent = list.filter((o) => o.status === "paid" || o.status === "completed").reduce((s, o) => s + Number(o.total), 0);
   const stats = [
     { label: "Total orders", value: String(list.length), Icon: Package, color: "text-primary bg-primary/10" },
-    { label: "Total spent", value: `$${totalSpent.toFixed(2)}`, Icon: DollarSign, color: "text-emerald-600 bg-emerald-500/10" },
+    { label: "Total spent", value: formatPrice(totalSpent), Icon: DollarSign, color: "text-emerald-600 bg-emerald-500/10" },
     { label: "Active orders", value: String(list.filter((o) => o.status === "paid" || o.status === "processing").length), Icon: CheckCircle2, color: "text-accent bg-accent/10" },
     { label: "Loyalty pts", value: String(Math.floor(totalSpent * 5)), Icon: TrendingUp, color: "text-secondary bg-secondary/10" },
   ];
@@ -188,7 +189,7 @@ function OrdersList({ orders }: { orders: OrderRow[] }) {
                 <div className="text-xs text-muted-foreground">{date} · {itemCount} item{itemCount !== 1 ? "s" : ""}</div>
               </div>
               <div className="text-right space-y-1">
-                <div className="font-bold">${Number(o.total).toFixed(2)}</div>
+                <div className="font-bold">{formatPrice(Number(o.total))}</div>
                 <div className="flex gap-1 justify-end">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[o.status] ?? palette.pending}`}>{o.status}</span>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[payStatus] ?? palette.pending}`}>{payStatus}</span>
@@ -327,7 +328,7 @@ function SubmissionsTab() {
                     <div className="text-xs text-muted-foreground">Submitted {date}{s.transaction_id ? ` · Txn ${s.transaction_id}` : ""}</div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-sm">${Number(s.amount ?? 0).toFixed(2)}</div>
+                    <div className="font-bold text-sm">{formatPrice(Number(s.amount ?? 0))}</div>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${palette[s.status] ?? palette.pending}`}>{s.status}</span>
                   </div>
                 </div>
@@ -358,7 +359,7 @@ function WishlistTab() {
           {items.map((p) => p && (
             <Link key={p.slug} to="/products/$slug" params={{ slug: p.slug }} className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary transition-smooth">
               <span className="text-3xl">{p.emoji}</span>
-              <div className="flex-1 min-w-0"><div className="font-semibold text-sm truncate">{p.name}</div><div className="text-primary font-bold text-sm">${p.price}</div></div>
+              <div className="flex-1 min-w-0"><div className="font-semibold text-sm truncate">{p.name}</div><div className="text-primary font-bold text-sm">{formatPrice(p.price)}</div></div>
             </Link>
           ))}
         </div>}
