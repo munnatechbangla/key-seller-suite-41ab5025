@@ -229,8 +229,8 @@ function LegacyProductPage() {
   });
   const galleryImages = galleryQuery.data ?? [];
   const featuredImage =
-    galleryImages.find((g) => g.is_primary)?.url ??
-    galleryImages[0]?.url ??
+    galleryImages.find((g) => g.is_primary)?.url ||
+    galleryImages[0]?.url ||
     resolvedThumbnail ||
     null;
   const [activeImage, setActiveImage] = useState<string | null>(null);
