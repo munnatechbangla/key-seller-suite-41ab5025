@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { LiveVisitorsCounter } from "./LiveVisitorsCounter";
 import { SaleBadges } from "./SaleBadges";
+import { formatPrice } from "@/lib/product-price";
 
 export function QuickViewModal({ slug, open, onOpenChange }: { slug: string | null; open: boolean; onOpenChange: (v: boolean) => void }) {
   const product = useProduct(slug ?? "");
@@ -84,9 +85,9 @@ export function QuickViewModal({ slug, open, onOpenChange }: { slug: string | nu
             <p className="text-sm text-muted-foreground line-clamp-3">{product.short}</p>
 
             <div className="flex items-end gap-3 flex-wrap">
-              <div className="text-3xl font-bold text-primary">${product.price}</div>
+              <div className="text-3xl font-bold text-primary">{formatPrice(product.price)}</div>
               {product.oldPrice && (
-                <div className="text-sm text-muted-foreground line-through mb-1">${product.oldPrice}</div>
+                <div className="text-sm text-muted-foreground line-through mb-1">{formatPrice(product.oldPrice)}</div>
               )}
             </div>
 
