@@ -2,6 +2,7 @@ import { useMemo, useState, Fragment } from "react";
 import { toast } from "sonner";
 import { Check, ShoppingCart, Plus } from "lucide-react";
 import { useCart } from "@/lib/stores";
+import { formatPrice } from "@/lib/product-price";
 import type { Product } from "@/lib/catalog";
 import { resolveProductPrice } from "@/lib/product-price";
 import type { ProductVariant } from "@/lib/product-variants.functions";
@@ -150,10 +151,10 @@ export function FrequentlyBoughtTogether({
                     <div className="text-xs mt-1">
                       {pr.available ? (
                         <>
-                          <span className="font-bold text-primary">${pr.price.toFixed(2)}</span>
+                          <span className="font-bold text-primary">{formatPrice(pr.price)}</span>
                           {pr.oldPrice && pr.oldPrice > pr.price && (
                             <span className="ml-1 line-through text-muted-foreground">
-                              ${pr.oldPrice.toFixed(2)}
+                              {formatPrice(pr.oldPrice)}
                             </span>
                           )}
                         </>
@@ -185,10 +186,10 @@ export function FrequentlyBoughtTogether({
             {picked.length} item{picked.length === 1 ? "" : "s"} selected
           </div>
           <div>
-            <div className="text-3xl font-bold text-primary">${total.toFixed(2)}</div>
+            <div className="text-3xl font-bold text-primary">{formatPrice(total)}</div>
             {savings > 0 && (
               <div className="text-xs text-emerald-600 font-semibold inline-flex items-center gap-1 mt-1">
-                <Check className="h-3.5 w-3.5" /> Save ${savings.toFixed(2)}
+                <Check className="h-3.5 w-3.5" /> Save {formatPrice(savings)}
               </div>
             )}
           </div>
