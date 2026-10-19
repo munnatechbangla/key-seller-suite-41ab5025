@@ -8,6 +8,7 @@ import { PageHero } from "@/components/site/PageHero";
 import { useCart } from "@/lib/stores";
 import { useCheckoutFields } from "@/components/checkout/CheckoutCustomFields";
 import { resolveLineImage } from "@/lib/cart-image";
+import { ProductThumb } from "@/components/site/ProductThumb";
 import { formatPrice } from "@/lib/product-price";
 import { useFeatured, featuredQuery } from "@/lib/catalog";
 import { validateCouponFn } from "@/lib/coupons.functions";
@@ -92,7 +93,7 @@ function CartPage() {
                 {(() => {
                   const img = resolveLineImage(it.product, it.variant);
                   return img ? (
-                    <img src={img} alt="" className="h-full w-full object-cover" />
+                    <ProductThumb src={img} emoji={it.product.emoji} alt={it.product.name} size={64} className="h-full w-full" />
                   ) : (
                     <span className="text-4xl">{it.product.emoji}</span>
                   );
