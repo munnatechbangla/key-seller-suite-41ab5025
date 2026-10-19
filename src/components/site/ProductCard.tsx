@@ -7,6 +7,7 @@ import { SaleBadges } from "@/components/site/SaleBadges";
 import { useMarketplace } from "@/lib/cms/marketplace";
 import { toast } from "sonner";
 import { useState, lazy, Suspense } from "react";
+import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
 
 const QuickViewModal = lazy(() =>
   import("@/components/site/QuickViewModal").then((m) => ({ default: m.QuickViewModal })),
@@ -14,6 +15,7 @@ const QuickViewModal = lazy(() =>
 
 
 export function ProductCard({ product }: { product: Product }) {
+  const { url: thumbnailSrc } = useResolvedMediaUrl(product.thumbnailUrl);
   const isVariable = !!product.hasAttributes;
   const hasVariantPrice = product.priceFrom != null && product.priceFrom > 0;
   const displayPrice = isVariable ? (hasVariantPrice ? product.priceFrom! : null) : product.price;
