@@ -20,6 +20,7 @@ import { MediaPicker } from "@/components/admin/MediaLibrary";
 import { BatchActionsBar } from "@/components/admin/BatchActionsBar";
 import { exportProducts, parseImport, diffImport } from "@/lib/admin/product-io";
 import { logActivity } from "@/lib/admin/activity-log";
+import { formatPrice } from "@/lib/product-price";
 
 export const Route = createFileRoute("/admin/products/")({ component: AdminProducts });
 
@@ -294,7 +295,7 @@ function AdminProducts() {
                 </TableCell>
                 <TableCell className="font-medium">{p.title}</TableCell>
                 <TableCell className="text-muted-foreground text-sm">{p.slug}</TableCell>
-                <TableCell>${Number(p.sale_price ?? p.regular_price).toFixed(2)}</TableCell>
+                <TableCell>{formatPrice(Number(p.sale_price ?? p.regular_price))}</TableCell>
                 <TableCell><Badge variant={p.status === "published" ? "default" : "secondary"}>{p.status}</Badge></TableCell>
                 <TableCell>{p.sales_count ?? 0}</TableCell>
                 <TableCell>
