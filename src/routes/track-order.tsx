@@ -1,4 +1,5 @@
 import { siteName } from "@/lib/cms/seo";
+import { formatPrice } from "@/lib/product-price";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Header } from "@/components/site/Header";
@@ -95,7 +96,7 @@ function TrackOrder() {
 
             <div className="pt-3 border-t border-border text-sm">
               <div className="flex justify-between"><span className="text-muted-foreground">Items</span><span>{result.items.length}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Total</span><span className="font-bold">${Number(result.order.total).toFixed(2)}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Total</span><span className="font-bold">{formatPrice(Number(result.order.total))}</span></div>
             </div>
           </div>
         )}
