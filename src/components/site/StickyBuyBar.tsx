@@ -7,6 +7,7 @@ import { useMarketplace } from "@/lib/cms/marketplace";
 import { toast } from "sonner";
 import type { ProductVariant } from "@/lib/product-variants.functions";
 import { addProductSelectionToCart, getVariantCompareAt, getVariantUnitPrice, isVariantAvailable } from "@/lib/cart-product";
+import { formatPrice } from "@/lib/product-price";
 
 type Props = {
   product: Product;
@@ -72,10 +73,10 @@ export function StickyBuyBar({ product, threshold = 480, variant, hasAttributes 
         <div className="min-w-0 flex-1">
           <div className="text-xs font-semibold truncate">{label}</div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-sm font-bold text-primary">${unitPrice.toFixed(2)}</span>
+            <span className="text-sm font-bold text-primary">{formatPrice(unitPrice)}</span>
             {compareAt && compareAt > unitPrice && (
               <>
-                <span className="text-[11px] text-muted-foreground line-through">${compareAt.toFixed(2)}</span>
+                <span className="text-[11px] text-muted-foreground line-through">{formatPrice(compareAt)}</span>
                 {off > 0 && <span className="text-[10px] font-bold text-accent">-{off}%</span>}
               </>
             )}
