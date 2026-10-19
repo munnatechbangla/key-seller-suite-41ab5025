@@ -1,5 +1,4 @@
 import type { Product } from "@/lib/catalog";
-import { useSettings } from "@/lib/cms/settings";
 
 /**
  * Single source of truth for the price shown on product tiles / mini cards.
