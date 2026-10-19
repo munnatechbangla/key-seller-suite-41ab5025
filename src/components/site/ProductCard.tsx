@@ -90,7 +90,7 @@ export function ProductCard({ product }: { product: Product }) {
           <span className="font-semibold text-foreground">{product.rating}</span>
           <span>({product.reviews.toLocaleString()})</span>
           <span className="ml-auto inline-flex min-w-0 items-center gap-1 text-accent font-medium">
-            <Zap className="h-3 w-3" /> {product.delivery}
+            <Zap className="h-3 w-3" /> {product.deliveryMode === "instant" ? "Instant Delivery" : product.deliveryMode === "fast" ? `Fast Delivery${product.delivery ? ` · ${product.delivery}` : ""}` : product.deliveryMode === "manual" ? `Manual Delivery${product.delivery ? ` · ${product.delivery}` : ""}` : product.deliveryMode === "extended" ? `Extended Delivery${product.delivery ? ` · ${product.delivery}` : ""}` : "Delivery time varies"}
           </span>
         </div>
         <Link to="/products/$slug" params={{ slug: product.slug }} className="block">
