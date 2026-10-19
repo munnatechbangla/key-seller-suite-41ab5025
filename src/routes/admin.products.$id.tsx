@@ -761,6 +761,8 @@ function BasicInfoTab({
     visibility: "public",
     product_type: "",
     delivery_type: "",
+    customer_delivery_mode: "",
+    delivery_time: "",
     category_id: "",
   }));
   const loadedFor = useRef<string | null>(null);
@@ -780,6 +782,8 @@ function BasicInfoTab({
       visibility: product.visibility ?? "public",
       product_type: product.product_type ?? "",
       delivery_type: product.delivery_type ?? "",
+      customer_delivery_mode: product.customer_delivery_mode ?? "",
+      delivery_time: product.delivery_time ?? "",
       category_id: product.category_id ?? "",
     });
   }, [product]);
@@ -807,6 +811,8 @@ function BasicInfoTab({
         visibility: form.visibility || null,
         product_type: form.product_type || null,
         delivery_type: form.delivery_type || null,
+        customer_delivery_mode: form.customer_delivery_mode || null,
+        delivery_time: form.delivery_time.trim() || null,
         category_id: form.category_id ? form.category_id : null,
       };
       return upsert({ data: payload });
@@ -907,6 +913,30 @@ function BasicInfoTab({
             <option value="manual">manual</option>
             <option value="external_url">external_url</option>
           </select>
+        </div>
+        <div>
+          <Label>Customer delivery label</Label>
+          <select
+            className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+            value={form.customer_delivery_mode}
+            onChange={(e) => set({ customer_delivery_mode: e.target.value })}
+          >
+            <option value="">Not specified (no Instant badge)</option>
+            <option value="instant">Instant Delivery</option>
+            <option value="fast">Fast Delivery</option>
+            <option value="manual">Manual Delivery</option>
+            <option value="extended">Extended Delivery</option>
+          </select>
+        </div>
+        <div>
+          <Label>Estimated delivery time</Label>
+          <Input
+            value={form.delivery_time}
+            onChange={(e) => set({ delivery_time: e.target.value })}
+            placeholder="e.g. 5–30 minutes or up to 12 hours"
+            maxLength={120}
+          />
+          <p className="text-xs text-muted-foreground mt-1">Customer-facing estimate only; does not change fulfillment automation.</p>
         </div>
       </div>
 
