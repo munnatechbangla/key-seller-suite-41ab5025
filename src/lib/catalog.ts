@@ -26,6 +26,7 @@ export type Product = {
   reviews: number;
   badge?: ProductBadge;
   delivery: string;
+  deliveryMode?: "instant" | "fast" | "manual" | "extended" | null;
   short: string;
   description?: string;
   features?: string[];
@@ -72,6 +73,7 @@ type ProductRow = {
   thumbnail_url: string | null;
   emoji: string | null;
   delivery_time: string | null;
+  customer_delivery_mode: "instant" | "fast" | "manual" | "extended" | null;
   badge: string | null;
   rating: number;
   reviews_count: number;
@@ -100,7 +102,7 @@ type ProductRow = {
 
 const SELECT_PRODUCT = `
   id, slug, title, short_description, description,
-  regular_price, sale_price, thumbnail_url, emoji, delivery_time, badge,
+  regular_price, sale_price, thumbnail_url, emoji, delivery_time, customer_delivery_mode, badge,
   rating, reviews_count, features, included, specs, stock_status,
   meta_title, meta_description, focus_keyword, secondary_keywords, canonical_url, robots,
   og_title, og_description, og_image, twitter_title, twitter_description, twitter_image,
@@ -123,7 +125,8 @@ export function mapProduct(row: ProductRow): Product {
     rating: Number(row.rating ?? 0),
     reviews: row.reviews_count ?? 0,
     badge: row.badge ?? undefined,
-    delivery: row.delivery_time ?? "Instant",
+    delivery: row.delivery_time ?? "",
+    deliveryMode: row.customer_delivery_mode ?? null,
     short: row.short_description ?? "",
     description: row.description ?? undefined,
     features: row.features ?? [],
