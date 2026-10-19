@@ -1,4 +1,5 @@
 import { siteName } from "@/lib/cms/seo";
+import { formatPrice } from "@/lib/product-price";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -64,7 +65,7 @@ function ThankYou() {
     fired.current = true;
     track("purchase", {
       transaction_id: order,
-      currency: q.data.order?.currency ?? "USD",
+      currency: q.data.order?.currency ?? "BDT",
       value: Number(q.data.order?.total ?? 0),
       items: q.data.items.map((it) => ({
         item_id: it.id,
@@ -109,7 +110,7 @@ function ThankYou() {
           </p>
           {q.data?.order && (
             <p className="mt-1 text-sm text-muted-foreground">
-              Total <b>${Number(q.data.order.total).toFixed(2)}</b> · {q.data.items.length} item{q.data.items.length !== 1 ? "s" : ""}
+              Total <b>{formatPrice(Number(q.data.order.total))}</b> · {q.data.items.length} item{q.data.items.length !== 1 ? "s" : ""}
             </p>
           )}
           {isPending && order && (
@@ -168,7 +169,7 @@ function ThankYou() {
                       <div className="h-10 w-10 rounded-lg bg-primary/10 grid place-items-center text-primary font-bold">{it.qty}×</div>
                       <div className="flex-1">
                         <div className="font-semibold text-sm">{it.product_name}</div>
-                        <div className="text-xs text-muted-foreground">${Number(it.unit_price).toFixed(2)} each</div>
+                        <div className="text-xs text-muted-foreground">{formatPrice(Number(it.unit_price))} each</div>
                       </div>
                     </div>
                   ))}
