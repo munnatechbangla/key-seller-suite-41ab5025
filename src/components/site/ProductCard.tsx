@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Star, ShoppingCart, Zap, Heart, Eye } from "lucide-react";
 import type { Product } from "@/lib/catalog";
 import { useCart, useWishlist } from "@/lib/stores";
+import { formatPrice } from "@/lib/product-price";
 import { SaleBadges } from "@/components/site/SaleBadges";
 import { useMarketplace } from "@/lib/cms/marketplace";
 import { toast } from "sonner";
@@ -103,10 +104,10 @@ export function ProductCard({ product }: { product: Product }) {
                 <>
                   <div className="text-lg font-bold text-primary">
                     <span className="text-xs font-medium text-muted-foreground mr-1">From</span>
-                    ${(displayPrice ?? 0).toFixed(2)}
+                    {formatPrice(displayPrice ?? 0)}
                   </div>
                   {displayOld && displayOld > (displayPrice ?? 0) && (
-                    <div className="text-xs text-muted-foreground line-through">${displayOld.toFixed(2)}</div>
+                    <div className="text-xs text-muted-foreground line-through">{formatPrice(displayOld)}</div>
                   )}
                 </>
               )}
@@ -123,9 +124,9 @@ export function ProductCard({ product }: { product: Product }) {
         ) : (
           <div className="flex flex-wrap items-end justify-between gap-2 pt-2">
             <div className="min-w-0 flex-1">
-              <div className="text-lg font-bold text-primary">${(displayPrice ?? 0).toFixed(2)}</div>
+              <div className="text-lg font-bold text-primary">{formatPrice(displayPrice ?? 0)}</div>
               {displayOld && displayOld > (displayPrice ?? 0) && (
-                <div className="text-xs text-muted-foreground line-through">${displayOld.toFixed(2)}</div>
+                <div className="text-xs text-muted-foreground line-through">{formatPrice(displayOld)}</div>
               )}
             </div>
             <button
