@@ -43,7 +43,7 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="relative aspect-square bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center overflow-hidden">
           {product.thumbnailUrl ? (
             <img
-              src={product.thumbnailUrl}
+              src={thumbnailSrc}
               alt={product.name}
               loading="lazy"
               className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
