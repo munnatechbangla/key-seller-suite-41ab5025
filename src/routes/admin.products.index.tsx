@@ -414,6 +414,16 @@ function AdminProducts() {
                     <option value="external_url">External URL</option>
                   </select>
                 </div>
+                <div><Label>Customer delivery label</Label>
+                  <select className="w-full h-10 rounded-md border bg-background px-3 text-sm" value={(editing as any).customer_delivery_mode ?? ""} onChange={(e) => setEditing({ ...editing, customer_delivery_mode: e.target.value || null } as any)}>
+                    <option value="">Not specified (no Instant badge)</option>
+                    <option value="instant">Instant Delivery</option>
+                    <option value="fast">Fast Delivery</option>
+                    <option value="manual">Manual Delivery</option>
+                    <option value="extended">Extended Delivery</option>
+                  </select>
+                </div>
+                <div><Label>Estimated delivery time</Label><Input value={(editing as any).delivery_time ?? ""} onChange={(e) => setEditing({ ...editing, delivery_time: e.target.value } as any)} placeholder="e.g. 5–30 minutes or up to 12 hours" maxLength={120} /></div>
                 <div className="col-span-2"><MediaPicker label="Thumbnail" value={(editing as any).thumbnail_url ?? ""} onChange={(url) => setEditing({ ...editing, thumbnail_url: url } as any)} /></div>
               </div>
               <div><Label>Short description</Label><Textarea rows={2} value={(editing as any).short_description ?? ""} onChange={(e) => setEditing({ ...editing, short_description: e.target.value } as any)} /></div>
@@ -439,6 +449,8 @@ function AdminProducts() {
                   visibility: (editing as any).visibility ?? "public",
                   product_type: (editing as any).product_type || null,
                   delivery_type: (editing as any).delivery_type || null,
+                  customer_delivery_mode: (editing as any).customer_delivery_mode || null,
+                  delivery_time: (editing as any).delivery_time?.trim() || null,
                 });
               }}
             >
