@@ -38,6 +38,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { productBlocksPublicFn } from "@/lib/product-blocks.functions";
 import { ProductContentBlocks, type ProductBlock } from "@/components/cms/ProductContentBlocks";
+import { resolveStoredUrlAsync } from "@/lib/media/resolve";
+import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
 
 export const Route = createFileRoute("/products/$slug")({
   validateSearch: zodValidator(productSearchSchema),
@@ -220,7 +222,7 @@ function LegacyProductPage() {
         .order("is_primary", { ascending: false })
         .order("sort_order", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as { id: string; url: string; alt: string | null; is_primary: boolean; sort_order: number }[];
+      return Promise.all((data ?? []).map(async (image) => ({ ...image, url: await resolveStoredUrlAsync(image.url) }))) as Promise<{ id: string; url: string; alt: string | null; is_primary: boolean; sort_order: number }[]>;
     },
     staleTime: 60_000,
   });
