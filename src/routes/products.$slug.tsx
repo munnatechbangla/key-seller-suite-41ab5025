@@ -20,6 +20,7 @@ import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelate
 import { supabase } from "@/integrations/supabase/client";
 import { reviewsQuery } from "@/lib/reviews";
 import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
+import { formatPrice } from "@/lib/product-price";
 import { useEffect, useRef, useState } from "react";
 import { VariantSelector } from "@/components/site/VariantSelector";
 import { ProductCustomFields, type ProductCustomFieldsHandle } from "@/components/site/ProductCustomFields";
@@ -105,9 +106,9 @@ export const Route = createFileRoute("/products/$slug")({
     if (seo?.twitter_image) meta.push({ name: "twitter:image", content: seo.twitter_image });
     meta.push(
       { property: "product:price:amount", content: p.price.toFixed(2) },
-      { property: "product:price:currency", content: "USD" },
+      { property: "product:price:currency", content: "BDT" },
       { property: "og:price:amount", content: p.price.toFixed(2) },
-      { property: "og:price:currency", content: "USD" },
+      { property: "og:price:currency", content: "BDT" },
       { property: "product:availability", content: (p.stock ?? 1) > 0 ? "in stock" : "out of stock" },
     );
     const canonicalHref = seo?.canonical_url || undefined;
@@ -146,7 +147,7 @@ function ProductPage() {
   useEffect(() => { push(product.slug); }, [product.slug, push]);
   useEffect(() => {
     track("view_item", {
-      currency: "USD",
+      currency: "BDT",
       value: product.price,
       items: [{ item_id: product.slug, item_name: product.name, price: product.price, item_category: product.category }],
     });
@@ -318,11 +319,11 @@ function LegacyProductPage() {
             <>
               <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 p-5 flex items-end gap-4 flex-wrap">
                 <div>
-                  <div className="text-4xl font-bold text-primary">${product.price}</div>
+                  <div className="text-4xl font-bold text-primary">{formatPrice(product.price)}</div>
                   {product.oldPrice && (
                     <div className="flex gap-2 items-center mt-1">
-                      <span className="text-sm text-muted-foreground line-through">${product.oldPrice}</span>
-                      <span className="text-xs font-bold text-accent">Save ${(product.oldPrice - product.price).toFixed(2)}</span>
+                      <span className="text-sm text-muted-foreground line-through">{formatPrice(product.oldPrice)}</span>
+                      <span className="text-xs font-bold text-accent">Save {formatPrice(product.oldPrice - product.price)}</span>
                     </div>
                   )}
                 </div>
