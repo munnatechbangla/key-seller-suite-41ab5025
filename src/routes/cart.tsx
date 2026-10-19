@@ -8,6 +8,7 @@ import { PageHero } from "@/components/site/PageHero";
 import { useCart } from "@/lib/stores";
 import { useCheckoutFields } from "@/components/checkout/CheckoutCustomFields";
 import { resolveLineImage } from "@/lib/cart-image";
+import { formatPrice } from "@/lib/product-price";
 import { useFeatured, featuredQuery } from "@/lib/catalog";
 import { validateCouponFn } from "@/lib/coupons.functions";
 import { Trash2, Tag, ShoppingBag, ArrowRight, X } from "lucide-react";
@@ -41,7 +42,7 @@ function CartPage() {
       });
       if (r.ok) {
         cart.setCoupon(r.code, r.discount);
-        toast.success(`Saved $${r.discount.toFixed(2)}`);
+        toast.success(`Saved ${formatPrice(r.discount)}`);
         setCode("");
       } else {
         cart.clearCoupon();
@@ -132,8 +133,8 @@ function CartPage() {
                 </div>
               </div>
               <div className="shrink-0 text-right">
-                <div className="font-bold text-primary">${(unit * it.qty).toFixed(2)}</div>
-                {!it.variant && it.product.oldPrice && <div className="text-xs text-muted-foreground line-through">${(it.product.oldPrice * it.qty).toFixed(2)}</div>}
+                <div className="font-bold text-primary">{formatPrice(unit * it.qty)}</div>
+                {!it.variant && it.product.oldPrice && <div className="text-xs text-muted-foreground line-through">{formatPrice(it.product.oldPrice * it.qty)}</div>}
               </div>
 
             </div>
@@ -151,19 +152,19 @@ function CartPage() {
         <aside className="space-y-4 lg:sticky lg:top-24 self-start">
           <div className="rounded-2xl bg-card border border-border p-5 space-y-3">
             <h3 className="font-bold text-lg">Order summary</h3>
-            <Row label="Subtotal" value={`$${cart.subtotal().toFixed(2)}`} />
+            <Row label="Subtotal" value={formatPrice(cart.subtotal())} />
             {cart.coupon && (
               <div className="flex justify-between text-sm items-center">
                 <span className="text-muted-foreground inline-flex items-center gap-1">Coupon ({cart.coupon})
                   <button onClick={() => cart.clearCoupon()} className="text-muted-foreground hover:text-destructive"><X className="h-3 w-3" /></button>
                 </span>
-                <span className="text-accent font-semibold">-${cart.discount().toFixed(2)}</span>
+                <span className="text-accent font-semibold">-{formatPrice(cart.discount())}</span>
               </div>
             )}
             <Row label="Delivery" value="Free" />
             <div className="border-t border-border pt-3 flex justify-between font-bold text-lg">
               <span>Total</span>
-              <span className="text-primary">${cart.total().toFixed(2)}</span>
+              <span className="text-primary">{formatPrice(cart.total())}</span>
             </div>
             <Link to="/checkout" className="block text-center w-full py-3 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:opacity-95">
               Proceed to checkout
