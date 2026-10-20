@@ -279,7 +279,7 @@ function PoolDetail({ poolId, pool, onBack }: { poolId: string; pool: any; onBac
   const [showAdd, setShowAdd] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [newItem, setNewItem] = useState({ value: "", username: "", password: "", notes: "" });
+  const [newItem, setNewItem] = useState({ value: "", username: "", password: "", notes: "", credential_fields: [] as { label: string; value: string }[] });
   const [importText, setImportText] = useState("");
 
   const filters = useMemo(
@@ -315,7 +315,7 @@ function PoolDetail({ poolId, pool, onBack }: { poolId: string; pool: any; onBac
     mutationFn: () => addItem({ data: { pool_id: poolId, ...newItem } }),
     onSuccess: () => {
       toast.success("Item added");
-      setNewItem({ value: "", username: "", password: "", notes: "" });
+      setNewItem({ value: "", username: "", password: "", notes: "", credential_fields: [] });
       setShowAdd(false);
       invalidate();
     },
@@ -604,13 +604,13 @@ function PoolDetail({ poolId, pool, onBack }: { poolId: string; pool: any; onBac
               </p>
             )}
             <div>
-              <Label>{pool?.inventory_type === "account" ? "Account details (required)" : "Value (required)"}</Label>
+              <Label>{pool?.inventory_type === "account" ? "Account details (optional, shown first to customer)" : "Value (required)"}</Label>
               {pool?.inventory_type === "account" ? (
                 <Textarea
                   rows={3}
                   value={newItem.value}
                   onChange={(e) => setNewItem({ ...newItem, value: e.target.value })}
-                  placeholder="Account information, recovery details, or other delivery instructions"
+                  placeholder="Optional overview or instructions for the customer"
                 />
               ) : (
                 <Input
@@ -630,6 +630,21 @@ function PoolDetail({ poolId, pool, onBack }: { poolId: string; pool: any; onBac
                 <Input type="password" value={newItem.password} onChange={(e) => setNewItem({ ...newItem, password: e.target.value })} autoComplete="new-password" />
               </div>
             </div>
+            {pool?.inventory_type === "account" && (
+              <div className="space-y-2 rounded-md border p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <Label>Custom credential fields (optional)</Label>
+                  <Button type="button" size="sm" variant="outline" onClick={() => setNewItem({ ...newItem, credential_fields: [...newItem.credential_fields, { label: "", value: "" }] })}><Plus className="h-3 w-3 mr-1" /> Add field</Button>
+                </div>
+                {newItem.credential_fields.map((field, index) => (
+                  <div key={index} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2">
+                    <Input value={field.label} onChange={(e) => setNewItem({ ...newItem, credential_fields: newItem.credential_fields.map((x, i) => i === index ? { ...x, label: e.target.value } : x) })} placeholder="Field name (e.g. Authenticator Code)" />
+                    <Input value={field.value} onChange={(e) => setNewItem({ ...newItem, credential_fields: newItem.credential_fields.map((x, i) => i === index ? { ...x, value: e.target.value } : x) })} placeholder="Value" />
+                    <Button type="button" size="icon" variant="ghost" onClick={() => setNewItem({ ...newItem, credential_fields: newItem.credential_fields.filter((_, i) => i !== index) })}><Trash2 className="h-4 w-4" /></Button>
+                  </div>
+                ))}
+              </div>
+            )}
             <div>
               <Label>{pool?.inventory_type === "account" ? "Recovery information / Notes (optional)" : "Notes (optional)"}</Label>
               <Textarea rows={2} value={newItem.notes} onChange={(e) => setNewItem({ ...newItem, notes: e.target.value })} placeholder={pool?.inventory_type === "account" ? "Recovery email, backup code, or other information to deliver with this account" : "Optional notes"} />
@@ -639,7 +654,7 @@ function PoolDetail({ poolId, pool, onBack }: { poolId: string; pool: any; onBac
             <Button variant="outline" onClick={() => setShowAdd(false)}>
               Cancel
             </Button>
-            <Button disabled={!newItem.value || addMut.isPending} onClick={() => addMut.mutate()}>
+            <Button disabled={addMut.isPending || (pool?.inventory_type === "account" ? !(newItem.value.trim() || newItem.username.trim() || newItem.password.trim() || newItem.notes.trim() || newItem.credential_fields.some((f) => f.label.trim() && f.value.trim())) : !newItem.value.trim())} onClick={() => addMut.mutate()}>
               Add
             </Button>
           </DialogFooter>
