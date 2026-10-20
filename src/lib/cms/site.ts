@@ -7,8 +7,8 @@ export type PaymentBadge = { code: string; label: string };
 export type AnnouncementBar = { enabled: boolean; icon: IconName; html: string };
 
 export const siteConfig = {
-  name: "DigitalNest",
-  brandSplit: { lead: "Digital", accent: "Nest" },
+  name: "TopupHut",
+  brandSplit: { lead: "Topup", accent: "Hut" },
   tagline: "Premium digital products at unbeatable prices.",
   description:
     "Premium digital products at unbeatable prices. Instant delivery, secure payments, and 24/7 support — trusted by 200,000+ customers worldwide.",
