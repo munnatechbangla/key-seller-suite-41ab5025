@@ -34,6 +34,7 @@ export type DeliveryItem = {
   };
   downloads: DeliveryDownload[];
   license_keys: string[];
+  account_credentials?: { value: string | null; username: string | null; password: string | null; notes: string | null }[];
   manual_license?: {
     license_name: string;
     license_key: string;
@@ -132,6 +133,23 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
     keysByItem.set(a.order_item_id, arr);
   }
 
+  const { data: accountAssignments, error: accountAssignmentError } = itemIds.length
+    ? await sb
+        .from("inventory_assignments")
+        .select("order_item_id, inventory_items(value, username, password, notes)")
+        .in("order_item_id", itemIds)
+        .eq("status", "active")
+    : { data: [], error: null };
+  if (accountAssignmentError) throw new Error(accountAssignmentError.message);
+  const accountsByItem = new Map<string, NonNullable<DeliveryItem["account_credentials"]>>();
+  for (const assignment of (accountAssignments ?? []) as any[]) {
+    const credential = assignment.inventory_items;
+    if (!credential) continue;
+    const list = accountsByItem.get(assignment.order_item_id) ?? [];
+    list.push({ value: credential.value ?? null, username: credential.username ?? null, password: credential.password ?? null, notes: credential.notes ?? null });
+    accountsByItem.set(assignment.order_item_id, list);
+  }
+
   const { data: cfvs } = await sb
     .from("order_custom_field_values")
     .select("order_id, product_id, field_name, field_label, field_type, value")
@@ -190,6 +208,7 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
       },
       downloads: downloadsByProduct.get(it.product_id) ?? [],
       license_keys: keysByItem.get(it.id) ?? [],
+      account_credentials: accountsByItem.get(it.id) ?? [],
       manual_license: mldByItem.get(it.id) ?? null,
 
       custom_fields: fieldsByKey.get(`${it.order_id}::${it.product_id}`) ?? [],
