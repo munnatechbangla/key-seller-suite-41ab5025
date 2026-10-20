@@ -10,7 +10,7 @@ import { useAuth, useWishlist } from "@/lib/stores";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard, ShoppingBag, Download, Heart, Bell, Settings,
-  MapPin, LifeBuoy, KeyRound, LogOut, Package, DollarSign, CheckCircle2, TrendingUp, Loader2, Receipt, Star,
+  MapPin, LifeBuoy, KeyRound, LogOut, Package, DollarSign, CheckCircle2, TrendingUp, Loader2, Receipt, Star, UserRoundCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProductsBySlugs, featuredQuery } from "@/lib/catalog";
@@ -36,6 +36,7 @@ const tabs = [
   { id: "subscriptions", label: "Subscriptions", Icon: Package },
   { id: "downloads", label: "My Downloads", Icon: Download },
   { id: "licenses", label: "My Licenses", Icon: KeyRound },
+  { id: "accounts", label: "My Accounts", Icon: UserRoundCheck },
   { id: "submissions", label: "Manual Payments", Icon: Receipt },
   { id: "reviews", label: "My Reviews", Icon: Star },
   { id: "wishlist", label: "Wishlist", Icon: Heart },
@@ -87,6 +88,7 @@ function AccountPage() {
           {active === "subscriptions" && <SubscriptionsTab />}
           {active === "downloads" && <DownloadsTab />}
           {active === "licenses" && <LicensesTab />}
+          {active === "accounts" && <AccountsTab />}
           {active === "submissions" && <SubmissionsTab />}
           {active === "reviews" && <MyReviewsTab />}
           {active === "wishlist" && <WishlistTab />}
@@ -224,6 +226,30 @@ function DownloadsTab() {
         <p className="text-sm text-muted-foreground">No delivered items yet. Purchases will appear here once payment is confirmed.</p>
       ) : (
         <DeliveryPanel items={items} showHeader={false} />
+      )}
+    </Card>
+  );
+}
+
+function AccountsTab() {
+  const fn = useServerFn(getMyDeliveriesFn);
+  const q = useQuery({
+    queryKey: ["my-deliveries"],
+    queryFn: () => fn({}),
+    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+  });
+  const accounts = (q.data ?? []).filter((item) =>
+    item.product?.delivery_type === "account" || item.product?.product_type === "account"
+  );
+  return (
+    <Card>
+      <h3 className="font-bold mb-1">My Accounts</h3>
+      <p className="text-xs text-muted-foreground mb-4">Your purchased account products and their delivery credentials.</p>
+      {q.isLoading ? <Loader /> : accounts.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No delivered accounts yet. Your account products will appear here after payment is confirmed and delivery is available.</p>
+      ) : (
+        <DeliveryPanel items={accounts} showHeader={false} />
       )}
     </Card>
   );
