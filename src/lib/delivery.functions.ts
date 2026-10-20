@@ -34,7 +34,7 @@ export type DeliveryItem = {
   };
   downloads: DeliveryDownload[];
   license_keys: string[];
-  account_credentials?: { value: string | null; username: string | null; password: string | null; notes: string | null }[];
+  account_credentials?: { value: string | null; username: string | null; password: string | null; notes: string | null; credential_fields: { label: string; value: string }[] }[];
   manual_license?: {
     license_name: string;
     license_key: string;
@@ -136,7 +136,7 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
   const { data: accountAssignments, error: accountAssignmentError } = itemIds.length
     ? await sb
         .from("inventory_assignments")
-        .select("order_item_id, inventory_items(value, username, password, notes)")
+        .select("order_item_id, inventory_items(value, username, password, notes, credential_fields)")
         .in("order_item_id", itemIds)
         .eq("status", "active")
     : { data: [], error: null };
@@ -146,7 +146,7 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
     const credential = assignment.inventory_items;
     if (!credential) continue;
     const list = accountsByItem.get(assignment.order_item_id) ?? [];
-    list.push({ value: credential.value ?? null, username: credential.username ?? null, password: credential.password ?? null, notes: credential.notes ?? null });
+    list.push({ value: credential.value ?? null, username: credential.username ?? null, password: credential.password ?? null, notes: credential.notes ?? null, credential_fields: Array.isArray(credential.credential_fields) ? credential.credential_fields : [] });
     accountsByItem.set(assignment.order_item_id, list);
   }
 
