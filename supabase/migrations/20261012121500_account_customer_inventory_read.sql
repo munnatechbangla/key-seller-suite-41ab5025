@@ -1,4 +1,6 @@
--- Account-only customer read access: users can see only inventory assigned to their own account orders.
+-- Account-only customer read access: users can see only their own active assignments
+-- and the assigned account items themselves. Avoid joining inventory_pools in the
+-- item policy because that table is admin-only under RLS.
 DROP POLICY IF EXISTS "Customers view own account assignments" ON public.inventory_assignments;
 CREATE POLICY "Customers view own account assignments"
 ON public.inventory_assignments
@@ -10,11 +12,7 @@ CREATE POLICY "Customers view own assigned account items"
 ON public.inventory_items
 FOR SELECT TO authenticated
 USING (
-  status = 'assigned'
+  inventory_type = 'account'
+  AND status = 'assigned'
   AND assigned_user_id = auth.uid()
-  AND EXISTS (
-    SELECT 1 FROM public.inventory_pools p
-    WHERE p.id = inventory_items.pool_id
-      AND p.inventory_type = 'account'
-  )
 );
