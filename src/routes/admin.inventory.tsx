@@ -598,23 +598,41 @@ function PoolDetail({ poolId, pool, onBack }: { poolId: string; pool: any; onBac
             <DialogTitle>Add item</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
+            {pool?.inventory_type === "account" && (
+              <p className="text-sm text-muted-foreground rounded-md bg-muted/50 p-3">
+                Each item you add here is one separate account in stock. Pool Description is only a note about the pool; it does not add account inventory.
+              </p>
+            )}
             <div>
-              <Label>Value</Label>
-              <Input value={newItem.value} onChange={(e) => setNewItem({ ...newItem, value: e.target.value })} />
+              <Label>{pool?.inventory_type === "account" ? "Account details (required)" : "Value (required)"}</Label>
+              {pool?.inventory_type === "account" ? (
+                <Textarea
+                  rows={3}
+                  value={newItem.value}
+                  onChange={(e) => setNewItem({ ...newItem, value: e.target.value })}
+                  placeholder="Account information, recovery details, or other delivery instructions"
+                />
+              ) : (
+                <Input
+                  value={newItem.value}
+                  onChange={(e) => setNewItem({ ...newItem, value: e.target.value })}
+                  placeholder="Enter the item value"
+                />
+              )}
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label>Username (optional)</Label>
-                <Input value={newItem.username} onChange={(e) => setNewItem({ ...newItem, username: e.target.value })} />
+                <Label>{pool?.inventory_type === "account" ? "Username / Email (optional)" : "Username (optional)"}</Label>
+                <Input value={newItem.username} onChange={(e) => setNewItem({ ...newItem, username: e.target.value })} autoComplete="off" />
               </div>
               <div>
                 <Label>Password (optional)</Label>
-                <Input value={newItem.password} onChange={(e) => setNewItem({ ...newItem, password: e.target.value })} />
+                <Input type="password" value={newItem.password} onChange={(e) => setNewItem({ ...newItem, password: e.target.value })} autoComplete="new-password" />
               </div>
             </div>
             <div>
-              <Label>Notes</Label>
-              <Textarea rows={2} value={newItem.notes} onChange={(e) => setNewItem({ ...newItem, notes: e.target.value })} />
+              <Label>{pool?.inventory_type === "account" ? "Recovery information / Notes (optional)" : "Notes (optional)"}</Label>
+              <Textarea rows={2} value={newItem.notes} onChange={(e) => setNewItem({ ...newItem, notes: e.target.value })} placeholder={pool?.inventory_type === "account" ? "Recovery email, backup code, or other information to deliver with this account" : "Optional notes"} />
             </div>
           </div>
           <DialogFooter>
