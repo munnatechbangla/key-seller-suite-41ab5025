@@ -1,0 +1,112 @@
+CREATE OR REPLACE FUNCTION public.fulfill_account_inventory_for_order(_order_id uuid)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  ord public.orders%ROWTYPE;
+  it RECORD;
+  pool_row public.inventory_pools%ROWTYPE;
+  inv RECORD;
+  assignment_id uuid;
+  fulfillment_id uuid;
+  assigned_count integer := 0;
+  missing_count integer := 0;
+  i integer;
+BEGIN
+  SELECT * INTO ord FROM public.orders WHERE id = _order_id FOR UPDATE;
+  IF NOT FOUND OR ord.status NOT IN ('paid','processing','completed') THEN
+    RETURN jsonb_build_object('ok', false, 'reason', 'order_not_paid');
+  END IF;
+
+  FOR it IN
+    SELECT oi.*, p.product_type, p.delivery_type
+    FROM public.order_items oi
+    JOIN public.products p ON p.id = oi.product_id
+    WHERE oi.order_id = _order_id AND p.product_type = 'account'
+    FOR UPDATE OF oi
+  LOOP
+    pool_row := NULL;
+    IF it.inventory_pool_id_snapshot IS NOT NULL THEN
+      SELECT * INTO pool_row FROM public.inventory_pools
+      WHERE id = it.inventory_pool_id_snapshot AND is_active = true LIMIT 1;
+    END IF;
+    IF pool_row.id IS NULL THEN
+      SELECT * INTO pool_row FROM public.inventory_pools
+      WHERE product_id = it.product_id AND is_active = true
+      ORDER BY created_at ASC LIMIT 1;
+    END IF;
+
+    FOR i IN 1..it.qty LOOP
+      SELECT ia.id INTO assignment_id
+      FROM public.inventory_assignments ia
+      WHERE ia.order_item_id = it.id AND ia.status = 'active'
+      ORDER BY ia.created_at ASC
+      OFFSET (i - 1) LIMIT 1;
+      IF assignment_id IS NOT NULL THEN
+        assignment_id := NULL;
+        CONTINUE;
+      END IF;
+
+      IF pool_row.id IS NULL THEN
+        missing_count := missing_count + 1;
+        CONTINUE;
+      END IF;
+
+      SELECT * INTO inv FROM public.inventory_items
+      WHERE pool_id = pool_row.id AND inventory_type = 'account' AND status = 'available'
+      ORDER BY created_at ASC LIMIT 1 FOR UPDATE SKIP LOCKED;
+      IF NOT FOUND THEN
+        missing_count := missing_count + 1;
+        CONTINUE;
+      END IF;
+
+      UPDATE public.inventory_items
+      SET status = 'assigned', assigned_order_id = _order_id,
+          assigned_user_id = ord.user_id, assigned_at = now()
+      WHERE id = inv.id;
+
+      INSERT INTO public.inventory_assignments(order_id, order_item_id, product_id, pool_id, item_id, user_id, email)
+      VALUES (_order_id, it.id, it.product_id, pool_row.id, inv.id, ord.user_id, ord.email)
+      RETURNING id INTO assignment_id;
+
+      INSERT INTO public.inventory_logs(pool_id, item_id, assignment_id, action, actor_id, metadata)
+      VALUES (pool_row.id, inv.id, assignment_id, 'assign', NULL,
+        jsonb_build_object('order_id', _order_id, 'order_item_id', it.id, 'workflow', 'account'));
+
+      assigned_count := assigned_count + 1;
+    END LOOP;
+
+    SELECT id INTO fulfillment_id FROM public.order_fulfillments
+    WHERE order_id = _order_id AND order_item_id = it.id LIMIT 1;
+
+    IF fulfillment_id IS NULL THEN
+      INSERT INTO public.order_fulfillments(order_id, order_item_id, product_id, fulfillment_status, delivery_type)
+      VALUES (_order_id, it.id, it.product_id,
+        CASE WHEN (SELECT count(*) FROM public.inventory_assignments WHERE order_item_id = it.id AND status = 'active') >= it.qty THEN 'delivered'::public.fulfillment_status ELSE 'waiting_inventory'::public.fulfillment_status END,
+        'account')
+      RETURNING id INTO fulfillment_id;
+    ELSE
+      UPDATE public.order_fulfillments
+      SET fulfillment_status = CASE WHEN (SELECT count(*) FROM public.inventory_assignments WHERE order_item_id = it.id AND status = 'active') >= it.qty THEN 'delivered'::public.fulfillment_status ELSE 'waiting_inventory'::public.fulfillment_status END,
+          delivery_type = 'account',
+          inventory_assignment_id = (SELECT id FROM public.inventory_assignments WHERE order_item_id = it.id AND status = 'active' ORDER BY created_at LIMIT 1),
+          completed_at = CASE WHEN (SELECT count(*) FROM public.inventory_assignments WHERE order_item_id = it.id AND status = 'active') >= it.qty THEN now() ELSE NULL END,
+          failure_reason = CASE WHEN (SELECT count(*) FROM public.inventory_assignments WHERE order_item_id = it.id AND status = 'active') >= it.qty THEN NULL ELSE 'Waiting for available account inventory' END
+      WHERE id = fulfillment_id;
+    END IF;
+
+    UPDATE public.order_fulfillments
+    SET inventory_assignment_id = (SELECT id FROM public.inventory_assignments WHERE order_item_id = it.id AND status = 'active' ORDER BY created_at LIMIT 1),
+        completed_at = CASE WHEN (SELECT count(*) FROM public.inventory_assignments WHERE order_item_id = it.id AND status = 'active') >= it.qty THEN now() ELSE NULL END,
+        failure_reason = CASE WHEN (SELECT count(*) FROM public.inventory_assignments WHERE order_item_id = it.id AND status = 'active') >= it.qty THEN NULL ELSE 'Waiting for available account inventory' END
+    WHERE id = fulfillment_id;
+  END LOOP;
+
+  RETURN jsonb_build_object('ok', true, 'assigned', assigned_count, 'waiting_inventory', missing_count);
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.fulfill_account_inventory_for_order(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.fulfill_account_inventory_for_order(uuid) TO authenticated, service_role;
