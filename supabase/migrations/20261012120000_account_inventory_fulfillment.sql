@@ -85,12 +85,12 @@ BEGIN
       INSERT INTO public.order_fulfillments(order_id, order_item_id, product_id, fulfillment_status, delivery_type)
       VALUES (_order_id, it.id, it.product_id,
         CASE WHEN (SELECT count(*) FROM public.inventory_assignments WHERE order_item_id = it.id AND status = 'active') >= it.qty THEN 'delivered'::public.fulfillment_status ELSE 'waiting_inventory'::public.fulfillment_status END,
-        'account')
+        'inventory')
       RETURNING id INTO fulfillment_id;
     ELSE
       UPDATE public.order_fulfillments
       SET fulfillment_status = CASE WHEN (SELECT count(*) FROM public.inventory_assignments WHERE order_item_id = it.id AND status = 'active') >= it.qty THEN 'delivered'::public.fulfillment_status ELSE 'waiting_inventory'::public.fulfillment_status END,
-          delivery_type = 'account',
+          delivery_type = 'inventory',
           inventory_assignment_id = (SELECT id FROM public.inventory_assignments WHERE order_item_id = it.id AND status = 'active' ORDER BY created_at LIMIT 1),
           completed_at = CASE WHEN (SELECT count(*) FROM public.inventory_assignments WHERE order_item_id = it.id AND status = 'active') >= it.qty THEN now() ELSE NULL END,
           failure_reason = CASE WHEN (SELECT count(*) FROM public.inventory_assignments WHERE order_item_id = it.id AND status = 'active') >= it.qty THEN NULL ELSE 'Waiting for available account inventory' END
