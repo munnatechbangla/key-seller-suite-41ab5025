@@ -244,8 +244,8 @@ function FloatingCard({ product, delay = "0s", duration = "10s", size = "md", cl
           <div className="flex-1 min-w-0">
             <div className={`${isMd ? "text-sm" : "text-[13px]"} font-semibold truncate text-white leading-tight`}>{product.name}</div>
             <div className={`mt-1 inline-flex max-w-full items-center gap-1.5 text-[10px] font-semibold ${product.deliveryMode === "instant" ? "text-emerald-300/95" : product.deliveryMode === "fast" ? "text-sky-300" : product.deliveryMode === "manual" ? "text-amber-300" : product.deliveryMode === "extended" ? "text-violet-300" : "text-white/60"}`}>
-              <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${product.deliveryMode === "instant" ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" : "bg-current"}`} />
-              <span className="tracking-wide uppercase truncate">{product.deliveryMode === "instant" ? "Instant" : product.deliveryMode === "fast" ? "Fast Delivery" : product.deliveryMode === "manual" ? "Manual" : product.deliveryMode === "extended" ? "Extended" : "Delivery varies"}</span>
+              <Zap className={`h-3 w-3 shrink-0 ${product.deliveryMode === "instant" ? "text-emerald-300" : product.deliveryMode === "fast" ? "text-sky-300" : product.deliveryMode === "manual" ? "text-amber-300" : product.deliveryMode === "extended" ? "text-violet-300" : "text-white/60"}`} />
+              <span className="tracking-wide uppercase truncate">{product.deliveryMode === "instant" ? "Instant" : product.deliveryMode === "fast" ? "Fast" : product.deliveryMode === "manual" ? "Manual" : product.deliveryMode === "extended" ? "Extended" : "Delivery varies"}</span>
               {product.deliveryMode && product.deliveryMode !== "instant" && product.delivery ? <span className="truncate text-white/55 font-medium normal-case">· {product.delivery}</span> : null}
             </div>
           </div>
