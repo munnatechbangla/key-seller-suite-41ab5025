@@ -239,10 +239,11 @@ function AccountBody({ item }: { item: DeliveryItem }) {
         {inventoryAccounts.map((account, index) => (
           <div key={index} className="rounded-xl border border-emerald-500/30 p-3 space-y-2">
             {inventoryAccounts.length > 1 && <div className="text-xs font-semibold text-muted-foreground">Account {index + 1}</div>}
-            {account.username && <CredentialRow icon={UserIcon} label="Username" value={account.username} />}
-            {account.password && <CredentialRow icon={Lock} label="Password" value={account.password} secret />}
             {account.value && <CredentialRow icon={Package} label="Account details" value={account.value} />}
-            {account.notes && <div className="text-xs text-muted-foreground whitespace-pre-wrap">{account.notes}</div>}
+            {account.username && <CredentialRow icon={UserIcon} label="Username / Email" value={account.username} />}
+            {account.password && <CredentialRow icon={Lock} label="Password" value={account.password} secret />}
+            {(account.credential_fields ?? []).filter((f) => f.label?.trim() && f.value?.trim()).map((field, fieldIndex) => <CredentialRow key={fieldIndex} icon={KeyRound} label={field.label} value={field.value} secret={/password|code|token|secret/i.test(field.label)} />)}
+            {account.notes && <CredentialRow icon={Package} label="Recovery information / Notes" value={account.notes} />}
           </div>
         ))}
       </div>
