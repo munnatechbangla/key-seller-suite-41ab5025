@@ -141,10 +141,11 @@ export const addInventoryItemFn = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z.object({
       pool_id: z.string().uuid(),
-      value: z.string().min(1),
+      value: z.string(),
       username: z.string().optional().nullable(),
       password: z.string().optional().nullable(),
       notes: z.string().optional().nullable(),
+      credential_fields: z.array(z.object({ label: z.string().min(1), value: z.string() })).optional(),
       expires_at: z.string().optional().nullable(),
     }).parse(d),
   )
@@ -164,6 +165,7 @@ export const addInventoryItemFn = createServerFn({ method: "POST" })
       username: data.username ?? null,
       password: data.password ?? null,
       notes: data.notes ?? null,
+      credential_fields: data.credential_fields ?? [],
       expires_at: data.expires_at ?? null,
       created_by: context.userId,
     });
