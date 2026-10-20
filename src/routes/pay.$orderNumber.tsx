@@ -76,10 +76,12 @@ function buildTimeline(opts: {
     },
     {
       key: "delivered",
-      label: isSubscription ? "Subscription Delivered" : "License Delivered",
-      state: isSubscription
-        ? subscriptionDelivered ? "done" : approved ? "current" : "todo"
-        : approved && hasLicense ? "done" : approved ? "current" : "todo",
+      label: isAccount ? "Account Delivery" : isSubscription ? "Subscription Delivery" : "License Delivery",
+      state: isAccount
+        ? accountDelivered ? "done" : approved ? "current" : "todo"
+        : isSubscription
+          ? subscriptionDelivered ? "done" : approved ? "current" : "todo"
+          : approved && hasLicense ? "done" : approved ? "current" : "todo",
     },
   ];
 }
@@ -162,7 +164,10 @@ function PayPage() {
 
   const orderStatus = order?.status ?? "pending";
   const orderItems = (q.data?.items as any[]) ?? [];
+  const isAccountOrder = orderItems.some((it) => it.product_type === "account" || it.delivery_type === "account");
   const isSubscriptionOrder = orderItems.some((it) => it.product_type === "subscription" || it.delivery_type === "subscription");
+  const accountDeliveryItems = ((deliveryQ.data ?? []) as any[]).filter((it) => it?.product?.product_type === "account" || it?.product?.delivery_type === "account");
+  const accountDelivered = accountDeliveryItems.length > 0 && accountDeliveryItems.every((it) => it?.fulfillment?.fulfillment_status === "delivered");
   const approved = orderStatus === "paid" || orderStatus === "completed";
   const rejected = submission?.status === "rejected";
   const pendingSubmission = submission?.status === "pending" || submission?.status === "under_review";
@@ -188,8 +193,10 @@ function PayPage() {
       (deliveryQ.data ?? []).some(
         (it: any) => it?.manual_license || it?.fulfillment?.fulfillment_status === "delivered",
       ),
-    isSubscription: isSubscriptionOrder,
+    isSubscription: isSubscriptionOrder && !isAccountOrder,
     subscriptionDelivered: isSubscriptionOrder && orderStatus === "completed",
+    isAccount: isAccountOrder,
+    accountDelivered,
   });
 
   const redirectToGateway = async () => {
