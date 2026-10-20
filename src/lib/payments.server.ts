@@ -32,6 +32,23 @@ export async function processPaymentCallback(cb: GatewayCallback, rpcClient?: an
       const { data: ord } = await sb.rpc("get_order_basic_by_number", { _order_number: cb.orderNumber });
       const orderId = (ord as any)?.id as string | undefined;
       if (orderId) {
+        // Account-only fulfillment: keep every other product workflow untouched.
+        try {
+          const { data: items, error: itemsError } = await sb
+            .from("order_items")
+            .select("id, product_id, products!inner(product_type)")
+            .eq("order_id", orderId)
+            .eq("products.product_type", "account");
+          if (itemsError) throw new Error(itemsError.message);
+          if ((items ?? []).length > 0) {
+            const { error: fulfillmentError } = await sb.rpc("fulfill_account_inventory_for_order", {
+              _order_id: orderId,
+            });
+            if (fulfillmentError) throw new Error(fulfillmentError.message);
+          }
+        } catch (e) {
+          console.error("[account-fulfillment] automatic assignment failed", e);
+        }
         const { sendPostPaymentEmails } = await import("@/lib/emails/triggers.server");
         await sendPostPaymentEmails(orderId);
       }
