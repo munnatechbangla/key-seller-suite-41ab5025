@@ -232,6 +232,22 @@ function SubscriptionBody({ item }: { item: DeliveryItem }) {
 }
 
 function AccountBody({ item }: { item: DeliveryItem }) {
+  const inventoryAccounts = item.account_credentials ?? [];
+  if (inventoryAccounts.length > 0) {
+    return (
+      <div className="space-y-3">
+        {inventoryAccounts.map((account, index) => (
+          <div key={index} className="rounded-xl border border-emerald-500/30 p-3 space-y-2">
+            {inventoryAccounts.length > 1 && <div className="text-xs font-semibold text-muted-foreground">Account {index + 1}</div>}
+            {account.username && <CredentialRow icon={UserIcon} label="Username" value={account.username} />}
+            {account.password && <CredentialRow icon={Lock} label="Password" value={account.password} secret />}
+            {account.value && <CredentialRow icon={Package} label="Account details" value={account.value} />}
+            {account.notes && <div className="text-xs text-muted-foreground whitespace-pre-wrap">{account.notes}</div>}
+          </div>
+        ))}
+      </div>
+    );
+  }
   const username = pickCF(item, "username", "email", "account_email");
   const password = pickCF(item, "password", "account_password");
   const portal = pickCF(item, "login_url", "portal_url") ?? item.product.external_url;
