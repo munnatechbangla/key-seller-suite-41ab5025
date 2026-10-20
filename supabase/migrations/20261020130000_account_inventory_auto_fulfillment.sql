@@ -26,10 +26,17 @@ $$;
 
 REVOKE ALL ON FUNCTION public.trg_auto_fulfill_account_order() FROM PUBLIC, anon, authenticated;
 
-DROP TRIGGER IF EXISTS trg_auto_fulfill_account_order ON public.orders;
-CREATE TRIGGER trg_auto_fulfill_account_order
-AFTER INSERT OR UPDATE OF status ON public.orders
+DROP TRIGGER IF EXISTS trg_auto_fulfill_account_order_insert ON public.orders;
+CREATE TRIGGER trg_auto_fulfill_account_order_insert
+AFTER INSERT ON public.orders
 FOR EACH ROW
+EXECUTE FUNCTION public.trg_auto_fulfill_account_order();
+
+DROP TRIGGER IF EXISTS trg_auto_fulfill_account_order_update ON public.orders;
+CREATE TRIGGER trg_auto_fulfill_account_order_update
+AFTER UPDATE OF status ON public.orders
+FOR EACH ROW
+WHEN (OLD.status IS DISTINCT FROM NEW.status)
 EXECUTE FUNCTION public.trg_auto_fulfill_account_order();
 
 CREATE OR REPLACE FUNCTION public.trg_retry_account_orders_when_stock_added()
