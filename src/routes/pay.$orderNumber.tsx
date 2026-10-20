@@ -54,8 +54,13 @@ function buildTimeline(opts: {
   hasLicense: boolean;
   isSubscription: boolean;
   subscriptionDelivered: boolean;
+  isAccount: boolean;
+  accountDelivered: boolean;
 }): TimelineStep[] {
-  const { submitted, underReview, rejected, approved, hasLicense, isSubscription, subscriptionDelivered } = opts;
+  const {
+    submitted, underReview, rejected, approved, hasLicense,
+    isSubscription, subscriptionDelivered, isAccount, accountDelivered,
+  } = opts;
   const s = (cond: "done" | "current" | "todo" | "error"): "done" | "current" | "todo" | "error" => cond;
   return [
     { key: "created", label: "Order Created", state: s("done") },
