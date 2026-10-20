@@ -239,11 +239,11 @@ function AccountBody({ item }: { item: DeliveryItem }) {
         {inventoryAccounts.map((account, index) => (
           <div key={index} className="rounded-xl border border-emerald-500/30 p-3 space-y-2">
             {inventoryAccounts.length > 1 && <div className="text-xs font-semibold text-muted-foreground">Account {index + 1}</div>}
-            {account.value && <CredentialRow icon={Package} label="Account details" value={account.value} />}
-            {account.username && <CredentialRow icon={UserIcon} label="Username / Email" value={account.username} />}
-            {account.password && <CredentialRow icon={Lock} label="Password" value={account.password} secret />}
-            {(account.credential_fields ?? []).filter((f) => f.label?.trim() && f.value?.trim()).map((field, fieldIndex) => <CredentialRow key={fieldIndex} icon={KeyRound} label={field.label} value={field.value} secret={/password|code|token|secret/i.test(field.label)} />)}
-            {account.notes && <CredentialRow icon={Package} label="Recovery information / Notes" value={account.notes} />}
+            {account.value && <AccountCredentialRow icon={Package} label="Account details" value={account.value} />}
+            {account.username && <AccountCredentialRow icon={UserIcon} label="Username / Email" value={account.username} />}
+            {account.password && <AccountCredentialRow icon={Lock} label="Password" value={account.password} secret />}
+            {(account.credential_fields ?? []).filter((f) => f.label?.trim() && f.value?.trim()).map((field, fieldIndex) => <AccountCredentialRow key={fieldIndex} icon={KeyRound} label={field.label} value={field.value} secret={/password|code|token|secret/i.test(field.label)} />)}
+            {account.notes && <AccountCredentialRow icon={Package} label="Recovery information / Notes" value={account.notes} />}
           </div>
         ))}
       </div>
@@ -322,6 +322,28 @@ function CredentialRow({ icon: Icon, label, value, secret = false }: { icon: any
       <button type="button" onClick={() => copyText(value, `${label} copied`)} className="px-3 py-2 rounded-lg bg-card border border-border text-xs font-semibold hover:bg-muted inline-flex items-center gap-1">
         <Copy className="h-3.5 w-3.5" /> Copy
       </button>
+    </div>
+  );
+}
+
+function AccountCredentialRow({ icon: Icon, label, value, secret = false }: { icon: any; label: string; value: string; secret?: boolean }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-2 rounded-xl border border-border p-3 sm:p-4">
+      <div className="flex min-w-0 items-center gap-2">
+        <Icon className="h-4 w-4 text-primary shrink-0" />
+        <div className="min-w-0 flex-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground break-words">{label}</div>
+        <button
+          type="button"
+          onClick={() => copyText(value, `${label} copied`)}
+          className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold hover:bg-muted"
+          aria-label={`Copy ${label}`}
+        >
+          <Copy className="h-3.5 w-3.5" /> Copy
+        </button>
+      </div>
+      <div className="min-w-0 rounded-lg bg-muted/40 px-3 py-2.5">
+        <code className="block w-full whitespace-pre-wrap break-all font-mono text-sm leading-relaxed">{secret ? "•".repeat(Math.min(12, value.length)) : value}</code>
+      </div>
     </div>
   );
 }
