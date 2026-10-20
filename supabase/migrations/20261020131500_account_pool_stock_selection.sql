@@ -100,5 +100,5 @@ BEGIN
   RETURN jsonb_build_object('ok',true,'assigned',assigned_count,'waiting_inventory',missing_count);
 END;
 $$;
-REVOKE ALL ON FUNCTION public.fulfill_account_inventory_for_order(uuid) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.fulfill_account_inventory_for_order(uuid) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.fulfill_account_inventory_for_order(uuid) TO service_role;
