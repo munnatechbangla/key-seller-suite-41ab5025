@@ -101,4 +101,4 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.fulfill_account_inventory_for_order(uuid) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.fulfill_account_inventory_for_order(uuid) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.fulfill_account_inventory_for_order(uuid) TO service_role;
