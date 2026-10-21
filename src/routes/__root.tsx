@@ -23,6 +23,7 @@ import { SeoCenterInjector } from "@/components/site/SeoCenterInjector";
 import { seoMeta, organizationJsonLd, websiteJsonLd, jsonLdScript } from "@/lib/cms/seo";
 import { SetupGate } from "@/components/setup/SetupGate";
 import { RecentlyPurchasedPopup } from "@/components/site/RecentlyPurchasedPopup";
+import { SupportWidget } from "@/components/site/SupportWidget";
 
 function NotFoundComponent() {
   return (
@@ -163,6 +164,7 @@ function RootComponent() {
       </div>
       <MobileBottomNav />
       <RecentlyPurchasedPopup />
+      <SupportWidget />
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
   );
