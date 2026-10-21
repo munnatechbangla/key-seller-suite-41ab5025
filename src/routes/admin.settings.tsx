@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, Plus, Trash2 } from "lucide-react";
 import { adminListSettingsFn, adminUpsertSettingFn } from "@/lib/admin-settings.functions";
-import { defaultSettings, useSettings, type AllSettings } from "@/lib/cms/settings";
+import { defaultSettings, useSettings, type AllSettings, type SupportChannel, type SupportChannelType } from "@/lib/cms/settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -145,10 +145,59 @@ function AdminSettings() {
           </div>
           <Area label="Greeting / Prefilled Message Template" value={data.support.greeting_message} onChange={(v) => set("support", "greeting_message", v)} />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <Toggle label="Enable WhatsApp" value={data.support.enable_whatsapp} onChange={(v) => set("support", "enable_whatsapp", v)} />
-            <Toggle label="Enable Telegram" value={data.support.enable_telegram} onChange={(v) => set("support", "enable_telegram", v)} />
-            <Toggle label="Enable Email" value={data.support.enable_email} onChange={(v) => set("support", "enable_email", v)} />
+            <Toggle label="Enable WhatsApp (legacy channel)" value={data.support.enable_whatsapp} onChange={(v) => set("support", "enable_whatsapp", v)} />
+            <Toggle label="Enable Telegram (legacy channel)" value={data.support.enable_telegram} onChange={(v) => set("support", "enable_telegram", v)} />
+            <Toggle label="Enable Email (legacy channel)" value={data.support.enable_email} onChange={(v) => set("support", "enable_email", v)} />
             <Toggle label="Enable Live Chat" value={data.support.enable_live_chat} onChange={(v) => set("support", "enable_live_chat", v)} />
+          </div>
+
+          <div className="space-y-3 rounded-lg border p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 className="font-semibold">Floating Support Widget Channels</h3>
+                <p className="text-xs text-muted-foreground">Add multiple contact options. Existing WhatsApp, Telegram, and Email settings continue to work if no matching channel is added here.</p>
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={() => set("support", "channels", [...(data.support.channels ?? []), { id: `support-${Date.now()}`, label: "", type: "whatsapp", url: "", enabled: true }])}>
+                <Plus className="mr-1 h-4 w-4" /> Add channel
+              </Button>
+            </div>
+            {(data.support.channels ?? []).length === 0 && (
+              <p className="text-sm text-muted-foreground">No custom channels yet. Add WhatsApp, Telegram, Facebook Messenger, Email, or a custom link.</p>
+            )}
+            {(data.support.channels ?? []).map((channel, index) => (
+              <div key={channel.id} className="grid grid-cols-1 gap-2 rounded-md border p-3 md:grid-cols-[1fr_1fr_1.5fr_auto]">
+                <div className="space-y-1">
+                  <Label>Display name</Label>
+                  <Input value={channel.label} onChange={(e) => set("support", "channels", data.support.channels.map((item, i) => i === index ? { ...item, label: e.target.value } : item))} placeholder="e.g. WhatsApp Support" />
+                </div>
+                <div className="space-y-1">
+                  <Label>Channel type</Label>
+                  <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={channel.type} onChange={(e) => {
+                    const type = e.target.value as SupportChannelType;
+                    set("support", "channels", data.support.channels.map((item, i) => i === index ? { ...item, type } : item));
+                  }}>
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="telegram">Telegram</option>
+                    <option value="messenger">Facebook Messenger</option>
+                    <option value="email">Email</option>
+                    <option value="custom">Custom link</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <Label>{channel.type === "whatsapp" ? "Phone number or wa.me link" : channel.type === "telegram" ? "Telegram username or link" : channel.type === "messenger" ? "Messenger page link" : channel.type === "email" ? "Email address or mailto link" : "Full URL"}</Label>
+                  <Input value={channel.url} onChange={(e) => set("support", "channels", data.support.channels.map((item, i) => i === index ? { ...item, url: e.target.value } : item))} placeholder={channel.type === "whatsapp" ? "+8801XXXXXXXXX" : channel.type === "telegram" ? "@yourusername" : channel.type === "messenger" ? "https://m.me/yourpage" : channel.type === "email" ? "support@example.com" : "https://example.com"} />
+                </div>
+                <div className="flex items-end gap-2">
+                  <label className="flex h-10 items-center gap-2 text-sm">
+                    <Switch checked={channel.enabled} onCheckedChange={(checked) => set("support", "channels", data.support.channels.map((item, i) => i === index ? { ...item, enabled: checked } : item))} />
+                    On
+                  </label>
+                  <Button type="button" size="icon" variant="ghost" aria-label="Remove support channel" onClick={() => set("support", "channels", data.support.channels.filter((_, i) => i !== index))}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
           <SaveBtn onClick={() => save("support")} saving={saving === "support"} />
         </TabsContent>
