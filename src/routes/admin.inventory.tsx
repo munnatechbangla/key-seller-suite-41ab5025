@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   listInventoryPoolsFn,
+  listProductVariationsFn,
   upsertInventoryPoolFn,
   deleteInventoryPoolFn,
   listInventoryItemsFn,
@@ -63,6 +64,7 @@ function AdminInventory() {
   const upsertPool = useServerFn(upsertInventoryPoolFn);
   const deletePool = useServerFn(deleteInventoryPoolFn);
   const listProducts = useServerFn(adminListProductsFn);
+  const listVariations = useServerFn(listProductVariationsFn);
   const qc = useQueryClient();
 
   const { data: pools, isLoading } = useQuery({
@@ -73,6 +75,14 @@ function AdminInventory() {
     queryKey: ["admin-products"],
     queryFn: () => listProducts(),
   });
+  const { data: variations } = useQuery({
+    queryKey: ["admin-product-variations"],
+    queryFn: () => listVariations({ data: {} }),
+  });
+  const variationById = useMemo(
+    () => new Map((variations ?? []).map((v: any) => [v.id, v])),
+    [variations],
+  );
 
   const [editing, setEditing] = useState<any | null>(null);
   const [activePoolId, setActivePoolId] = useState<string | null>(null);
@@ -128,7 +138,7 @@ function AdminInventory() {
             <TableRow>
               <TableHead>Pool</TableHead>
               <TableHead>Type</TableHead>
-              <TableHead>Product</TableHead>
+              <TableHead>Product / Variant</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Available</TableHead>
               <TableHead>Assigned</TableHead>
@@ -155,7 +165,7 @@ function AdminInventory() {
                   <Badge variant="outline">{p.inventory_type}</Badge>
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {p.product_title ?? "—"}
+                  <>{p.product_title ?? "—"}{p.variation_id && <span className="block text-xs text-primary">{variationById.get(p.variation_id)?.name ?? "Variant"}</span>}</>
                 </TableCell>
                 <TableCell>{p.total_items}</TableCell>
                 <TableCell>{p.available_items}</TableCell>
@@ -230,7 +240,7 @@ function AdminInventory() {
                     className="w-full h-10 rounded-md border bg-background px-3 text-sm"
                     value={editing.product_id ?? ""}
                     onChange={(e) =>
-                      setEditing({ ...editing, product_id: e.target.value || null })
+                      setEditing({ ...editing, product_id: e.target.value || null, variation_id: null })
                     }
                   >
                     <option value="">— None —</option>
@@ -242,6 +252,30 @@ function AdminInventory() {
                   </select>
                 </div>
               </div>
+              {editing.inventory_type === "account" && editing.product_id && (
+                <div>
+                  <Label>Product variant (Account inventory)</Label>
+                  <select
+                    className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+                    value={editing.variation_id ?? ""}
+                    onChange={(e) =>
+                      setEditing({ ...editing, variation_id: e.target.value || null })
+                    }
+                  >
+                    <option value="">Simple product / no variant</option>
+                    {(variations ?? [])
+                      .filter((v: any) => v.product_id === editing.product_id)
+                      .map((v: any) => (
+                        <option key={v.id} value={v.id}>
+                          {v.name}{v.sku ? ` — ${v.sku}` : ""}
+                        </option>
+                      ))}
+                  </select>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Create a separate Account inventory pool for each variant. Orders only receive accounts from the matching variant pool.
+                  </p>
+                </div>
+              )}
             </div>
           )}
           <DialogFooter>
