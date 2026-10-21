@@ -230,7 +230,7 @@ function CheckoutPage() {
                     <div className="min-w-0 flex-1">
                       <div className="font-semibold text-sm flex min-w-0 flex-wrap items-center gap-2">
                         {g.name}
-                        {g.type === "manual" && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600">MANUAL</span>}
+                        {g.type === "manual" ? <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600">MANUAL</span> : <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600">AUTOMATIC</span>}
                       </div>
                       {g.description && <div className="text-xs text-muted-foreground">{g.description}</div>}
                     </div>
