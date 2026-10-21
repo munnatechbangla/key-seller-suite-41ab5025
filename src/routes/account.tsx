@@ -507,24 +507,3 @@ function SubscriptionsTab() {
     <DeliveryPanel items={subscriptions} showHeader={false} />
   );
 }
-
-
-function AccountsTab() {
-  const fn = useServerFn(getMyDeliveriesFn);
-  const { data = [], isLoading, isError } = useQuery({
-    queryKey: ["my-deliveries"],
-    queryFn: () => fn({}),
-    refetchOnWindowFocus: true,
-    refetchOnMount: "always",
-  });
-  const accounts = data.filter((it) =>
-    it.product.product_type === "account" ||
-    it.product.delivery_type === "account" ||
-    it.fulfillment?.delivery_type === "account"
-  );
-  if (isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
-  if (isError) return <div className="text-sm text-destructive">Could not load your accounts. Please refresh and try again.</div>;
-  if (accounts.length === 0)
-    return <div className="text-sm text-muted-foreground">No purchased accounts yet.</div>;
-  return <DeliveryPanel items={accounts} showHeader={false} />;
-}
