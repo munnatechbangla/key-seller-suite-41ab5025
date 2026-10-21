@@ -22,6 +22,21 @@ const inventoryTypeEnum = z.enum([
 const itemStatusEnum = z.enum(["available", "reserved", "assigned", "expired", "disabled"]);
 
 // ---------- Pools ----------
+export const listProductVariationsFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ product_id: z.string().uuid().optional() }).parse(d ?? {}))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    let query = (context.supabase as any)
+      .from("product_variations")
+      .select("id, product_id, name, sku, attributes")
+      .order("sort_order", { ascending: true });
+    if (data.product_id) query = query.eq("product_id", data.product_id);
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
 export const listInventoryPoolsFn = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -49,7 +64,33 @@ export const upsertInventoryPoolFn = createServerFn({ method: "POST" })
     await assertAdmin(context);
     const sb = context.supabase as any;
     const payload: any = { ...data };
+    if (data.variation_id) {
+      if (!data.product_id) throw new Error("Select a product before selecting a variant");
+      const { data: variation, error: variationError } = await sb
+        .from("product_variations")
+        .select("id")
+        .eq("id", data.variation_id)
+        .eq("product_id", data.product_id)
+        .maybeSingle();
+      if (variationError) throw new Error(variationError.message);
+      if (!variation) throw new Error("Selected variant does not belong to the selected product");
+      if (data.inventory_type !== "account") throw new Error("Variant-specific inventory pools are currently supported only for Account inventory");
+    }
     if (data.id) {
+      const { data: existing, error: existingError } = await sb
+        .from("inventory_pools")
+        .select("variation_id")
+        .eq("id", data.id)
+        .maybeSingle();
+      if (existingError) throw new Error(existingError.message);
+      if (existing?.variation_id !== (data.variation_id ?? null)) {
+        const { count, error: itemCountError } = await sb
+          .from("inventory_items")
+          .select("id", { count: "exact", head: true })
+          .eq("pool_id", data.id);
+        if (itemCountError) throw new Error(itemCountError.message);
+        if ((count ?? 0) > 0) throw new Error("Cannot change a pool's variant after inventory items have been added. Create a separate pool for the new variant.");
+      }
       const { error } = await sb.from("inventory_pools").update(payload).eq("id", data.id);
       if (error) throw new Error(error.message);
       return { ok: true, id: data.id };
