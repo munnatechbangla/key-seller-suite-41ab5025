@@ -97,6 +97,14 @@ export type ThemeConfig = {
   font_url: string;
 };
 
+export type SupportChannelType = "whatsapp" | "telegram" | "messenger" | "email" | "custom";
+export type SupportChannel = {
+  id: string;
+  label: string;
+  type: SupportChannelType;
+  url: string;
+  enabled: boolean;
+};
 export type SupportConfig = {
   whatsapp_number: string;
   whatsapp_button_text: string;
@@ -107,6 +115,7 @@ export type SupportConfig = {
   enable_telegram: boolean;
   enable_email: boolean;
   enable_live_chat: boolean;
+  channels: SupportChannel[];
 };
 
 export type SeoCenterConfig = {
@@ -259,6 +268,7 @@ export const defaultSettings: AllSettings = {
     enable_telegram: false,
     enable_email: true,
     enable_live_chat: false,
+    channels: [],
   },
   seo_center: {
     organization_type: "Organization",
