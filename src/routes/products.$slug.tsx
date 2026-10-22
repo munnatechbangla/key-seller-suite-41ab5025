@@ -168,6 +168,27 @@ function ProductPage() {
   return <LegacyProductPage />;
 }
 
+function GalleryThumbnail({ url, alt, emoji }: { url: string; alt: string; emoji: string }) {
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => { setLoaded(false); setFailed(false); }, [url]);
+  if (!url || failed) {
+    return <span className="absolute inset-0 grid place-items-center text-3xl">{emoji}</span>;
+  }
+  return (
+    <>
+      {!loaded && <span className="absolute inset-0 animate-pulse bg-muted/70" aria-label="Loading product image" />}
+      <img
+        src={url}
+        alt={alt}
+        onLoad={() => setLoaded(true)}
+        onError={() => setFailed(true)}
+        className={`relative w-full h-full object-cover transition-opacity ${loaded ? "opacity-100" : "opacity-0"}`}
+      />
+    </>
+  );
+}
+
 function LegacyProductPage() {
   const { slug } = Route.useParams();
   const product = useProduct(slug)!;
@@ -248,7 +269,11 @@ function LegacyProductPage() {
   useEffect(() => { setActiveImage(null); }, [product.id]);
   const heroImage = activeImage ?? resolvedVariantThumbnail ?? featuredImage;
   const [heroImageFailed, setHeroImageFailed] = useState(false);
-  useEffect(() => { setHeroImageFailed(false); }, [heroImage]);
+  const [heroImageLoaded, setHeroImageLoaded] = useState(false);
+  useEffect(() => {
+    setHeroImageFailed(false);
+    setHeroImageLoaded(false);
+  }, [heroImage]);
 
   return (
     <div className="min-h-screen">
@@ -263,12 +288,16 @@ function LegacyProductPage() {
         <div className="min-w-0 space-y-4">
           <div className="relative aspect-square rounded-3xl bg-gradient-to-br from-primary/15 via-secondary/15 to-accent/15 grid place-items-center overflow-hidden shadow-elegant">
             {heroImage && !heroImageFailed ? (
-              <img
-                src={heroImage}
-                alt={activeVariant?.name || product.name}
-                onError={() => setHeroImageFailed(true)}
-                className="h-full w-full object-cover animate-fade-in"
-              />
+              <>
+                {!heroImageLoaded && <div className="absolute inset-0 animate-pulse bg-muted/70" aria-label="Loading product image" />}
+                <img
+                  src={heroImage}
+                  alt={activeVariant?.name || product.name}
+                  onLoad={() => setHeroImageLoaded(true)}
+                  onError={() => { setHeroImageFailed(true); setHeroImageLoaded(false); }}
+                  className={`h-full w-full object-cover animate-fade-in transition-opacity ${heroImageLoaded ? "opacity-100" : "opacity-0"}`}
+                />
+              </>
             ) : (
               <span className="text-[12rem]">{product.emoji}</span>
             )}
@@ -294,8 +323,7 @@ function LegacyProductPage() {
                     onClick={() => setActiveImage(img.url)}
                     className={`aspect-square rounded-xl overflow-hidden bg-card border transition-smooth ${isActive ? "border-primary ring-2 ring-primary/40" : "border-border hover:border-primary"}`}
                   >
-                    <span className="absolute inset-0 grid place-items-center text-3xl">{product.emoji}</span>
-                    {img.url && <img src={img.url} alt={img.alt ?? product.name} onError={(event) => { event.currentTarget.style.display = "none"; }} className="relative w-full h-full object-cover" />}
+                    <GalleryThumbnail url={img.url} alt={img.alt ?? product.name} emoji={product.emoji} />
                   </button>
                 );
               })}
