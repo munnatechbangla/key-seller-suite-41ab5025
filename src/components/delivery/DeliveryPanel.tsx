@@ -222,9 +222,19 @@ function SubscriptionBody({ item }: { item: DeliveryItem }) {
           </p>
         )}
         {deliveryNote && (
-          <div className="rounded-lg border border-border bg-background/70 p-3 text-sm whitespace-pre-wrap break-words">
-            <div className="font-semibold mb-1">Message from the seller</div>
-            {deliveryNote}
+          <div className="rounded-lg border border-border bg-background/70 p-3 text-sm">
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <div className="font-semibold">Message from the seller</div>
+              <button
+                type="button"
+                onClick={() => copyText(deliveryNote, "Delivery note copied")}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs font-semibold hover:bg-muted"
+                aria-label="Copy delivery note"
+              >
+                <Copy className="h-3.5 w-3.5" /> Copy
+              </button>
+            </div>
+            <div className="whitespace-pre-wrap break-words">{deliveryNote}</div>
           </div>
         )}
       </div>
