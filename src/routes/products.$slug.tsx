@@ -194,7 +194,12 @@ function LegacyProductPage() {
   const product = useProduct(slug)!;
   const { url: resolvedThumbnail, loading: thumbnailResolving } = useResolvedMediaUrl(product.thumbnailUrl);
   const related = useRelated(slug, 4);
-  const [qty, setQty] = useState(1);
+  const [qty, setQty] = useState(() => Math.max(1, Number(product.minOrderQuantity ?? 1)));
+  useEffect(() => {
+    const min = Math.max(1, Number(product.minOrderQuantity ?? 1));
+    const max = product.maxOrderQuantity == null ? Number.POSITIVE_INFINITY : Number(product.maxOrderQuantity);
+    setQty((current) => Math.min(max, Math.max(min, current)));
+  }, [product.id, product.minOrderQuantity, product.maxOrderQuantity]);
   const [tab, setTab] = useState<"desc" | "specs" | "reviews" | "faq">("desc");
   const [activeVariant, setActiveVariant] = useState<ProductVariant | null>(null);
   const { url: resolvedVariantThumbnail, loading: variantThumbnailResolving } = useResolvedMediaUrl(activeVariant?.thumbnail_url);
@@ -388,11 +393,11 @@ function LegacyProductPage() {
             <>
               <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 p-5 flex items-end gap-4 flex-wrap">
                 <div>
-                  <div className="text-4xl font-bold text-primary">{formatPrice(product.price)}</div>
+                  <div className="text-4xl font-bold text-primary">{formatPrice(product.price * qty)}</div>
                   {product.oldPrice && (
                     <div className="flex gap-2 items-center mt-1">
-                      <span className="text-sm text-muted-foreground line-through">{formatPrice(product.oldPrice)}</span>
-                      <span className="text-xs font-bold text-accent">Save {formatPrice(product.oldPrice - product.price)}</span>
+                      <span className="text-sm text-muted-foreground line-through">{formatPrice(product.oldPrice * qty)}</span>
+                      <span className="text-xs font-bold text-accent">Save {formatPrice((product.oldPrice - product.price) * qty)}</span>
                     </div>
                   )}
                 </div>
@@ -413,10 +418,11 @@ function LegacyProductPage() {
 
               <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 sm:flex sm:flex-wrap sm:items-center">
                 <div className="inline-flex items-center rounded-xl border border-border bg-card">
-                  <button onClick={() => setQty(Math.max(1, qty - 1))} className="w-10 h-11 grid place-items-center hover:bg-muted rounded-l-xl">−</button>
+                  <button onClick={() => setQty(Math.max(Number(product.minOrderQuantity ?? 1), qty - 1))} disabled={qty <= Number(product.minOrderQuantity ?? 1)} className="w-10 h-11 grid place-items-center hover:bg-muted rounded-l-xl disabled:opacity-40 disabled:cursor-not-allowed">−</button>
                   <span className="w-10 text-center font-semibold">{qty}</span>
-                  <button onClick={() => setQty(qty + 1)} className="w-10 h-11 grid place-items-center hover:bg-muted rounded-r-xl">+</button>
+                  <button onClick={() => setQty(Math.min(product.maxOrderQuantity ?? Number.POSITIVE_INFINITY, qty + 1))} disabled={product.maxOrderQuantity != null && qty >= product.maxOrderQuantity} className="w-10 h-11 grid place-items-center hover:bg-muted rounded-r-xl disabled:opacity-40 disabled:cursor-not-allowed">+</button>
                 </div>
+                {(Number(product.minOrderQuantity ?? 1) > 1 || product.maxOrderQuantity != null) && <p className="col-span-2 sm:col-span-3 text-xs text-muted-foreground">Order quantity: minimum {Number(product.minOrderQuantity ?? 1)}{product.maxOrderQuantity != null ? ` · maximum ${product.maxOrderQuantity}` : ""}</p>}
                 <button onClick={addToCart} disabled={(product.stock ?? 1) <= 0} className="min-w-0 flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-card border border-primary text-primary font-semibold hover:bg-primary/5 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed">
                   <ShoppingCart className="h-4 w-4" /> {(product.stock ?? 1) <= 0 ? "Out of Stock" : "Add to Cart"}
                 </button>
