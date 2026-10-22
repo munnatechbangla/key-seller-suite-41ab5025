@@ -10,7 +10,7 @@ import { useAuth, useWishlist } from "@/lib/stores";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard, ShoppingBag, Download, Heart, Bell, Settings,
-  MapPin, LifeBuoy, KeyRound, LogOut, Package, DollarSign, CheckCircle2, TrendingUp, Loader2, Receipt, Star, UserRoundCheck,
+  MapPin, LifeBuoy, KeyRound, LogOut, Package, DollarSign, CheckCircle2, TrendingUp, Loader2, Receipt, Star, UserRoundCheck, ClipboardCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProductsBySlugs, featuredQuery } from "@/lib/catalog";
@@ -36,6 +36,7 @@ const tabs = [
   { id: "subscriptions", label: "Subscriptions", Icon: Package },
   { id: "downloads", label: "My Downloads", Icon: Download },
   { id: "licenses", label: "My Licenses", Icon: KeyRound },
+  { id: "services", label: "My Service", Icon: ClipboardCheck },
   { id: "accounts", label: "My Accounts", Icon: UserRoundCheck },
   { id: "submissions", label: "Manual Payments", Icon: Receipt },
   { id: "reviews", label: "My Reviews", Icon: Star },
@@ -88,6 +89,7 @@ function AccountPage() {
           {active === "subscriptions" && <SubscriptionsTab />}
           {active === "downloads" && <DownloadsTab />}
           {active === "licenses" && <LicensesTab />}
+          {active === "services" && <ServicesTab />}
           {active === "accounts" && <AccountsTab />}
           {active === "submissions" && <SubmissionsTab />}
           {active === "reviews" && <MyReviewsTab />}
@@ -226,6 +228,30 @@ function DownloadsTab() {
         <p className="text-sm text-muted-foreground">No delivered items yet. Purchases will appear here once payment is confirmed.</p>
       ) : (
         <DeliveryPanel items={items} showHeader={false} />
+      )}
+    </Card>
+  );
+}
+
+function ServicesTab() {
+  const fn = useServerFn(getMyDeliveriesFn);
+  const q = useQuery({
+    queryKey: ["my-deliveries"],
+    queryFn: () => fn({}),
+    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+  });
+  const services = (q.data ?? []).filter((item) =>
+    item.product?.delivery_type === "manual" || item.product?.product_type === "manual"
+  );
+  return (
+    <Card>
+      <h3 className="font-bold mb-1">My Service</h3>
+      <p className="text-xs text-muted-foreground mb-4">Your manually fulfilled service orders and their current status.</p>
+      {q.isLoading ? <Loader /> : services.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No manual service orders yet. Your service orders will appear here after payment is confirmed.</p>
+      ) : (
+        <DeliveryPanel items={services} showHeader={false} />
       )}
     </Card>
   );
