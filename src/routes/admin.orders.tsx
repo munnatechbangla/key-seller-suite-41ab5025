@@ -33,6 +33,8 @@ function AdminOrders() {
     onSuccess: () => {
       toast.success("Status updated");
       qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      qc.invalidateQueries({ queryKey: ["order-fulfillments"] });
+      qc.invalidateQueries({ queryKey: ["fulfillment-timeline"] });
     },
     onError: (e: any) => toast.error(e.message),
   });
