@@ -757,6 +757,7 @@ function BasicInfoTab({
     regular_price: 0,
     sale_price: "",
     thumbnail_url: "",
+    stock_status: "in_stock",
     status: "draft",
     visibility: "public",
     product_type: "",
@@ -778,6 +779,7 @@ function BasicInfoTab({
       regular_price: Number(product.regular_price ?? 0),
       sale_price: product.sale_price == null ? "" : Number(product.sale_price),
       thumbnail_url: product.thumbnail_url ?? "",
+      stock_status: product.stock_status ?? "in_stock",
       status: product.status ?? "draft",
       visibility: product.visibility ?? "public",
       product_type: product.product_type ?? "",
@@ -807,6 +809,7 @@ function BasicInfoTab({
             ? product.sale_price == null ? null : Number(product.sale_price)
             : form.sale_price === "" ? null : Number(form.sale_price),
         thumbnail_url: form.thumbnail_url || null,
+        ...(productMode === "simple" ? { stock_status: form.stock_status } : {}),
         status: form.status,
         visibility: form.visibility || null,
         product_type: form.product_type || null,
@@ -941,7 +944,20 @@ function BasicInfoTab({
       </div>
 
       {productMode === "simple" ? (
+        <>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label>Stock status</Label>
+            <select
+              className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+              value={form.stock_status}
+              onChange={(e) => set({ stock_status: e.target.value })}
+            >
+              <option value="in_stock">In Stock</option>
+              <option value="out_of_stock">Out of Stock</option>
+              <option value="on_backorder">On Backorder</option>
+            </select>
+          </div>
           <div>
             <Label>Regular price</Label>
             <Input
@@ -961,9 +977,10 @@ function BasicInfoTab({
             />
           </div>
         </div>
+        </>
       ) : (
         <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-          This is a Variable product. Pricing is set per variant in the Variants tab.
+          This is a Variable product. Stock and pricing are set per variant in the Variants tab.
         </div>
       )}
 
