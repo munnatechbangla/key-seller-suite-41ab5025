@@ -8,6 +8,8 @@ import { useMarketplace } from "@/lib/cms/marketplace";
 import { toast } from "sonner";
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
+import { supabase } from "@/integrations/supabase/client";
+import { resolveStoredUrlAsync } from "@/lib/media/resolve";
 
 const QuickViewModal = lazy(() =>
   import("@/components/site/QuickViewModal").then((m) => ({ default: m.QuickViewModal })),
@@ -18,10 +20,42 @@ export function ProductCard({ product }: { product: Product }) {
   const { url: thumbnailSrc, loading: thumbnailLoading } = useResolvedMediaUrl(product.thumbnailUrl);
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
+  const [thumbnailFallbackSrc, setThumbnailFallbackSrc] = useState<string | null>(null);
+  const [thumbnailFallbackTried, setThumbnailFallbackTried] = useState(false);
+  const displayThumbnailSrc = thumbnailFallbackSrc ?? thumbnailSrc;
   useEffect(() => {
     setThumbnailFailed(false);
     setThumbnailLoaded(false);
+    setThumbnailFallbackSrc(null);
+    setThumbnailFallbackTried(false);
   }, [product.id, product.thumbnailUrl, thumbnailSrc]);
+  const handleThumbnailError = async () => {
+    setThumbnailLoaded(false);
+    if (thumbnailFallbackTried) {
+      setThumbnailFailed(true);
+      return;
+    }
+    setThumbnailFallbackTried(true);
+    try {
+      const { data } = await supabase
+        .from("product_images")
+        .select("url")
+        .eq("product_id", product.id)
+        .order("is_primary", { ascending: false })
+        .order("sort_order", { ascending: true })
+        .limit(4);
+      for (const image of data ?? []) {
+        const url = await resolveStoredUrlAsync(image.url);
+        if (url && url !== thumbnailSrc) {
+          setThumbnailFallbackSrc(url);
+          return;
+        }
+      }
+    } catch {
+      // Keep the visual fallback if the gallery cannot be resolved.
+    }
+    setThumbnailFailed(true);
+  };
   const isVariable = !!product.hasAttributes;
   const hasVariantPrice = product.priceFrom != null && product.priceFrom > 0;
   const displayPrice = isVariable ? (hasVariantPrice ? product.priceFrom! : null) : product.price;
@@ -49,16 +83,16 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="relative aspect-square bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center overflow-hidden">
           {product.thumbnailUrl && !thumbnailFailed && thumbnailLoading ? (
             <div className="absolute inset-0 animate-pulse bg-muted/70" aria-label="Loading product image" />
-          ) : product.thumbnailUrl && thumbnailSrc && !thumbnailFailed ? (
+          ) : product.thumbnailUrl && displayThumbnailSrc && !thumbnailFailed ? (
             <>
               {!thumbnailLoaded && <div className="absolute inset-0 animate-pulse bg-muted/70" aria-label="Loading product image" />}
               <img
-                src={thumbnailSrc}
+                src={displayThumbnailSrc}
                 alt={product.name}
                 loading="lazy"
                 decoding="async"
                 onLoad={() => setThumbnailLoaded(true)}
-                onError={() => setThumbnailFailed(true)}
+                onError={handleThumbnailError}
                 className={`h-full w-full object-cover transition-opacity group-hover:scale-110 transition-transform duration-500 ease-out ${thumbnailLoaded ? "opacity-100" : "opacity-0"}`}
               />
             </>
