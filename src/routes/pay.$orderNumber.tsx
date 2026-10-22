@@ -56,10 +56,13 @@ function buildTimeline(opts: {
   subscriptionDelivered: boolean;
   isAccount: boolean;
   accountDelivered: boolean;
+  isManualService: boolean;
+  manualServiceDelivered: boolean;
 }): TimelineStep[] {
   const {
     submitted, underReview, rejected, approved, hasLicense,
     isSubscription, subscriptionDelivered, isAccount, accountDelivered,
+    isManualService, manualServiceDelivered,
   } = opts;
   const s = (cond: "done" | "current" | "todo" | "error"): "done" | "current" | "todo" | "error" => cond;
   return [
@@ -81,12 +84,16 @@ function buildTimeline(opts: {
     },
     {
       key: "delivered",
-      label: isAccount ? "Account Delivery" : isSubscription ? "Subscription Delivery" : "License Delivery",
-      state: isAccount
-        ? accountDelivered ? "done" : approved ? "current" : "todo"
-        : isSubscription
-          ? subscriptionDelivered ? "done" : approved ? "current" : "todo"
-          : approved && hasLicense ? "done" : approved ? "current" : "todo",
+      label: isManualService
+        ? "Service Fulfillment"
+        : isAccount ? "Account Delivery" : isSubscription ? "Subscription Delivery" : "License Delivery",
+      state: isManualService
+        ? manualServiceDelivered ? "done" : approved ? "current" : "todo"
+        : isAccount
+          ? accountDelivered ? "done" : approved ? "current" : "todo"
+          : isSubscription
+            ? subscriptionDelivered ? "done" : approved ? "current" : "todo"
+            : approved && hasLicense ? "done" : approved ? "current" : "todo",
     },
   ];
 }
@@ -171,6 +178,7 @@ function PayPage() {
   const orderItems = (q.data?.items as any[]) ?? [];
   const isAccountOrder = orderItems.some((it) => it.product_type === "account" || it.delivery_type === "account");
   const isSubscriptionOrder = orderItems.some((it) => it.product_type === "subscription" || it.delivery_type === "subscription");
+  const isManualServiceOrder = orderItems.some((it) => it.product_type === "manual" || it.delivery_type === "manual");
   const accountDeliveryItems = ((deliveryQ.data ?? []) as any[]).filter((it) => it?.product?.product_type === "account" || it?.product?.delivery_type === "account");
   const accountDelivered = accountDeliveryItems.length > 0 && accountDeliveryItems.every((it) => it?.fulfillment?.fulfillment_status === "delivered");
   const approved = orderStatus === "paid" || orderStatus === "completed";
@@ -202,6 +210,8 @@ function PayPage() {
     subscriptionDelivered: isSubscriptionOrder && orderStatus === "completed",
     isAccount: isAccountOrder,
     accountDelivered,
+    isManualService: isManualServiceOrder,
+    manualServiceDelivered: isManualServiceOrder && orderStatus === "completed",
   });
 
   const redirectToGateway = async () => {
@@ -297,7 +307,13 @@ function PayPage() {
               <Timeline steps={timeline} />
 
               {approved ? (
-                <ApprovedPanel orderNumber={orderNumber} isSubscription={isSubscriptionOrder} subscriptionDelivered={orderStatus === "completed"} />
+                <ApprovedPanel
+                  orderNumber={orderNumber}
+                  isSubscription={isSubscriptionOrder}
+                  subscriptionDelivered={orderStatus === "completed"}
+                  isManualService={isManualServiceOrder}
+                  manualServiceDelivered={orderStatus === "completed"}
+                />
               ) : rejected && !resubmit ? (
                 <RejectedPanel
                   reason={submission?.admin_note ?? null}
@@ -531,10 +547,14 @@ function ApprovedPanel({
   orderNumber,
   isSubscription,
   subscriptionDelivered,
+  isManualService,
+  manualServiceDelivered,
 }: {
   orderNumber: string;
   isSubscription: boolean;
   subscriptionDelivered: boolean;
+  isManualService: boolean;
+  manualServiceDelivered: boolean;
 }) {
   return (
     <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent p-5 sm:p-6 space-y-6 animate-in fade-in zoom-in-95 duration-500">
@@ -546,9 +566,11 @@ function ApprovedPanel({
           <div className="font-bold text-xl">Payment Approved</div>
           <div className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Order Verified Successfully</div>
           <p className="text-xs text-muted-foreground">
-            {isSubscription
-              ? subscriptionDelivered ? "Subscription delivered." : "Your subscription is awaiting admin delivery."
-              : "License delivery completed."}
+            {isManualService
+              ? manualServiceDelivered ? "Service fulfillment completed." : "Your service is awaiting admin fulfillment."
+              : isSubscription
+                ? subscriptionDelivered ? "Subscription delivered." : "Your subscription is awaiting admin delivery."
+                : "License delivery completed."}
           </p>
         </div>
       </div>
@@ -558,7 +580,7 @@ function ApprovedPanel({
         className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 active:scale-[.98] whitespace-nowrap"
         style={{ minHeight: 54 }}
       >
-        <ClipboardCheck className="h-5 w-5 shrink-0" /> {isSubscription ? "View Subscription Status" : "View Delivery"}
+        <ClipboardCheck className="h-5 w-5 shrink-0" /> {isManualService ? "View Service Status" : isSubscription ? "View Subscription Status" : "View Delivery"}
       </Link>
     </div>
   );
