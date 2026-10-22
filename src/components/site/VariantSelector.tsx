@@ -112,7 +112,9 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes, bef
   function isOptionEnabled(attrId: string, optId: string) {
     const trial = { ...selection, [attrId]: optId };
     return variants.some((v) => {
-      if (!isVariantAvailable(v)) return false;
+      // Keep sold-out variants selectable so customers can see their stock status.
+      // Disabled/invisible variants remain unavailable.
+      if (v.status !== "active" || (v.visibility && v.visibility !== "public")) return false;
       const set = new Set(v.attribute_option_ids ?? []);
       return Object.values(trial).every((id) => set.has(id));
     });
