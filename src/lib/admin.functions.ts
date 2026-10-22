@@ -43,7 +43,7 @@ export const adminListProductsFn = createServerFn({ method: "GET" })
     await assertAdmin(context);
     const { data, error } = await context.supabase
       .from("products")
-      .select("id, title, slug, short_description, description, thumbnail_url, regular_price, sale_price, status, stock_status, is_featured, sales_count, created_at, product_type, delivery_type, customer_delivery_mode, delivery_time, visibility, external_url, is_digital, is_license_key, category_id")
+      .select("id, title, slug, short_description, description, thumbnail_url, regular_price, sale_price, status, stock_status, min_order_quantity, max_order_quantity, is_featured, sales_count, created_at, product_type, delivery_type, customer_delivery_mode, delivery_time, visibility, external_url, is_digital, is_license_key, category_id")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -69,6 +69,8 @@ const productSchema = z.object({
   sale_price: z.number().nonnegative().nullable().optional(),
   thumbnail_url: z.string().nullable().optional(),
   stock_status: z.enum(["in_stock", "out_of_stock", "on_backorder"]).optional(),
+  min_order_quantity: z.number().int().min(1).optional(),
+  max_order_quantity: z.number().int().min(1).nullable().optional(),
   status: productStatusEnum.default("published"),
   is_featured: z.boolean().optional(),
   is_digital: z.boolean().optional(),
@@ -80,6 +82,10 @@ const productSchema = z.object({
   visibility: productVisibilityEnum.nullable().optional(),
   external_url: z.string().nullable().optional(),
   category_id: z.string().uuid().nullable().optional(),
+}).superRefine((value, ctx) => {
+  if (value.max_order_quantity != null && value.min_order_quantity != null && value.max_order_quantity < value.min_order_quantity) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["max_order_quantity"], message: "Maximum quantity must be greater than or equal to minimum quantity" });
+  }
 });
 
 export const adminUpsertProductFn = createServerFn({ method: "POST" })
