@@ -178,7 +178,8 @@ function PayPage() {
   const orderItems = (q.data?.items as any[]) ?? [];
   const isAccountOrder = orderItems.some((it) => it.product_type === "account" || it.delivery_type === "account");
   const isSubscriptionOrder = orderItems.some((it) => it.product_type === "subscription" || it.delivery_type === "subscription");
-  const isManualServiceOrder = orderItems.some((it) => it.product_type === "manual" || it.delivery_type === "manual");
+  const isManualServiceOrder = !isSubscriptionOrder && !isAccountOrder &&
+    orderItems.some((it) => it.product_type === "manual" || it.delivery_type === "manual");
   const accountDeliveryItems = ((deliveryQ.data ?? []) as any[]).filter((it) => it?.product?.product_type === "account" || it?.product?.delivery_type === "account");
   const accountDelivered = accountDeliveryItems.length > 0 && accountDeliveryItems.every((it) => it?.fulfillment?.fulfillment_status === "delivered");
   const approved = orderStatus === "paid" || orderStatus === "completed";
