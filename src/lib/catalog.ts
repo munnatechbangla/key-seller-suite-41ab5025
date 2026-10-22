@@ -34,6 +34,8 @@ export type Product = {
   specs?: Record<string, string>;
   faqs?: { q: string; a: string }[];
   stock?: number;
+  minOrderQuantity?: number;
+  maxOrderQuantity?: number | null;
   thumbnailUrl?: string | null;
   seo?: ProductSeo | null;
   hasAttributes?: boolean;
@@ -81,6 +83,8 @@ type ProductRow = {
   included: string[];
   specs: Record<string, string>;
   stock_status: "in_stock" | "out_of_stock" | "on_backorder";
+  min_order_quantity?: number | null;
+  max_order_quantity?: number | null;
   product_categories?: { slug: string; name: string } | null;
   meta_title?: string | null;
   meta_description?: string | null;
@@ -104,6 +108,7 @@ const SELECT_PRODUCT = `
   id, slug, title, short_description, description,
   regular_price, sale_price, thumbnail_url, emoji, delivery_time, customer_delivery_mode, badge,
   rating, reviews_count, features, included, specs, stock_status,
+  min_order_quantity, max_order_quantity,
   meta_title, meta_description, focus_keyword, secondary_keywords, canonical_url, robots,
   og_title, og_description, og_image, twitter_title, twitter_description, twitter_image,
   schema_enabled, faq_schema_enabled, breadcrumb_schema_enabled, product_schema_enabled,
@@ -133,6 +138,8 @@ export function mapProduct(row: ProductRow): Product {
     included: row.included ?? [],
     specs: row.specs ?? {},
     stock: row.stock_status === "in_stock" ? 50 : 0,
+    minOrderQuantity: Math.max(1, Number(row.min_order_quantity ?? 1)),
+    maxOrderQuantity: row.max_order_quantity == null ? null : Number(row.max_order_quantity),
     thumbnailUrl: row.thumbnail_url,
     seo: {
       meta_title: row.meta_title ?? null,
