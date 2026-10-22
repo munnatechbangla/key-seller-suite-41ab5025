@@ -192,12 +192,12 @@ function GalleryThumbnail({ url, alt, emoji }: { url: string; alt: string; emoji
 function LegacyProductPage() {
   const { slug } = Route.useParams();
   const product = useProduct(slug)!;
-  const { url: resolvedThumbnail } = useResolvedMediaUrl(product.thumbnailUrl);
+  const { url: resolvedThumbnail, loading: thumbnailResolving } = useResolvedMediaUrl(product.thumbnailUrl);
   const related = useRelated(slug, 4);
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<"desc" | "specs" | "reviews" | "faq">("desc");
   const [activeVariant, setActiveVariant] = useState<ProductVariant | null>(null);
-  const { url: resolvedVariantThumbnail } = useResolvedMediaUrl(activeVariant?.thumbnail_url);
+  const { url: resolvedVariantThumbnail, loading: variantThumbnailResolving } = useResolvedMediaUrl(activeVariant?.thumbnail_url);
   const fetchAttrs = useServerFn(listProductAttributesFn);
   const attrsProbe = useQuery({
     queryKey: ["variant-attrs", product.id],
@@ -268,6 +268,7 @@ function LegacyProductPage() {
   const [activeImage, setActiveImage] = useState<string | null>(null);
   useEffect(() => { setActiveImage(null); }, [product.id]);
   const heroImage = activeImage ?? resolvedVariantThumbnail ?? featuredImage;
+  const heroImageResolving = !heroImage && (thumbnailResolving || variantThumbnailResolving || galleryQuery.isLoading);
   const [heroImageFailed, setHeroImageFailed] = useState(false);
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
   useEffect(() => {
@@ -298,6 +299,8 @@ function LegacyProductPage() {
                   className={`h-full w-full object-cover animate-fade-in transition-opacity ${heroImageLoaded ? "opacity-100" : "opacity-0"}`}
                 />
               </>
+            ) : heroImageResolving ? (
+              <div className="absolute inset-0 animate-pulse bg-muted/70" aria-label="Loading product image" />
             ) : (
               <span className="text-[12rem]">{product.emoji}</span>
             )}
