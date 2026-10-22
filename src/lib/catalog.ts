@@ -223,15 +223,18 @@ async function augmentWithVariantPricing(products: Product[]): Promise<void> {
     supabase.from("product_attributes").select("product_id").in("product_id", ids),
     supabase
       .from("product_variations")
-      .select("product_id, price, sale_price, status, visibility")
+      .select("product_id, price, sale_price, stock, stock_status, status, visibility")
       .in("product_id", ids),
   ]);
   const attrSet = new Set<string>();
   (attrsRes.data ?? []).forEach((r: any) => attrSet.add(r.product_id));
   const byProduct = new Map<string, { price: number; old: number | null }[]>();
+  const availableVariantProducts = new Set<string>();
   (varsRes.data ?? []).forEach((v: any) => {
     if (v.status && v.status !== "active") return;
     if (v.visibility && v.visibility !== "public") return;
+    if (v.stock_status === "out_of_stock" || (v.stock != null && Number(v.stock) <= 0)) return;
+    availableVariantProducts.add(v.product_id);
     const sale = v.sale_price != null ? Number(v.sale_price) : null;
     const reg = v.price != null ? Number(v.price) : 0;
     const eff = sale != null && sale > 0 ? sale : reg;
@@ -244,6 +247,10 @@ async function augmentWithVariantPricing(products: Product[]): Promise<void> {
   for (const p of products) {
     const hasAttrs = attrSet.has(p.id);
     const list = byProduct.get(p.id);
+    if (hasAttrs && !varsRes.error) {
+      // Parent availability reflects whether at least one public, active variant can be purchased.
+      p.stock = availableVariantProducts.has(p.id) ? 50 : 0;
+    }
     if (list && list.length > 0) {
       const min = list.reduce((a, b) => (a.price <= b.price ? a : b));
       p.hasAttributes = true;
