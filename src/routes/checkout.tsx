@@ -262,7 +262,7 @@ function CheckoutPage() {
                 return (
                 <div key={it.slug} className="flex items-center gap-3 text-sm">
                   {img ? (
-                    <ProductThumb src={img} emoji={it.product.emoji} alt={it.product.name} size={40} className="rounded border border-border" />
+                    <ProductThumb src={img} productId={it.product.id} emoji={it.product.emoji} alt={it.product.name} size={40} className="rounded border border-border" />
                   ) : (
                     <span className="text-2xl">{it.product.emoji}</span>
                   )}
