@@ -30,6 +30,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, Star, AlertTriangle, CheckCircle2, Circle } from "lucide-react";
 import { CustomFieldsTab } from "@/components/admin/CustomFieldsTab";
 import { MediaPicker } from "@/components/admin/MediaLibrary";
+import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
 import { RichContentTab } from "@/components/admin/RichContentTab";
 import { ProductSeoTab } from "@/components/admin/ProductSeoTab";
 import { AttributesTab } from "@/components/admin/AttributesTab";
@@ -719,7 +720,7 @@ function GalleryTab({ productId }: { productId: string }) {
         {(data as any[]).map((img, idx) => (
           <div key={img.id} className="border rounded-lg overflow-hidden">
             <div className="aspect-square bg-muted">
-              <img src={img.url} alt={img.alt ?? ""} className="w-full h-full object-cover" />
+              <GalleryImagePreview url={img.url} alt={img.alt ?? ""} />
             </div>
             <div className="p-2 flex items-center gap-1">
               <Button size="icon" variant="ghost" onClick={() => move(idx, -1)}><ArrowUp className="h-4 w-4" /></Button>
@@ -733,6 +734,17 @@ function GalleryTab({ productId }: { productId: string }) {
         {!isLoading && (data as any[]).length === 0 && <div className="text-sm text-muted-foreground">No images yet.</div>}
       </div>
     </div>
+  );
+}
+
+function GalleryImagePreview({ url, alt }: { url: string; alt: string }) {
+  const { url: resolvedUrl } = useResolvedMediaUrl(url);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => { setFailed(false); }, [url, resolvedUrl]);
+  return resolvedUrl && !failed ? (
+    <img src={resolvedUrl} alt={alt} className="w-full h-full object-cover" onError={() => setFailed(true)} />
+  ) : (
+    <div className="w-full h-full min-h-24 grid place-items-center text-4xl bg-muted" aria-label={alt || "Product image preview"}>📦</div>
   );
 }
 
