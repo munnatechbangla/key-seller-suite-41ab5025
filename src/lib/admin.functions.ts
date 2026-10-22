@@ -151,13 +151,38 @@ export const adminUpdateOrderStatusFn = createServerFn({ method: "POST" })
     if (status === "completed") {
       const { data: fulfillments, error: fulfillmentError } = await context.supabase
         .from("order_fulfillments")
-        .select("fulfillment_status")
+        .select("id, product_id, fulfillment_status")
         .eq("order_id", data.orderId);
       if (fulfillmentError) throw new Error(fulfillmentError.message);
-      if ((fulfillments ?? []).some((row: { fulfillment_status: string }) =>
+
+      const outstanding = (fulfillments ?? []).filter((row: { fulfillment_status: string }) =>
         !["delivered", "cancelled"].includes(row.fulfillment_status),
-      )) {
-        throw new Error("Order cannot be completed while fulfillment is outstanding");
+      );
+
+      if (outstanding.length > 0) {
+        const productIds = [...new Set(outstanding.map((row: { product_id: string | null }) => row.product_id).filter(Boolean))] as string[];
+        const { data: products, error: productsError } = productIds.length
+          ? await context.supabase.from("products").select("id, delivery_type").in("id", productIds)
+          : { data: [], error: null };
+        if (productsError) throw new Error(productsError.message);
+
+        const deliveryTypes = new Map((products ?? []).map((product: { id: string; delivery_type: string | null }) => [product.id, product.delivery_type]));
+        const onlyManualOutstanding = outstanding.every((row: { product_id: string | null }) =>
+          !!row.product_id && deliveryTypes.get(row.product_id) === "manual",
+        );
+
+        if (!onlyManualOutstanding) {
+          throw new Error("Order cannot be completed while non-manual fulfillment is outstanding");
+        }
+
+        // Choosing Completed confirms the admin considers these manual services delivered.
+        // Reuse the guarded database workflow so delivery logs and order completion stay in sync.
+        for (const row of outstanding as Array<{ id: string }>) {
+          const { error: deliveryError } = await context.supabase.rpc("admin_mark_manual_fulfillment_delivered", {
+            _fulfillment_id: row.id,
+          });
+          if (deliveryError) throw new Error(deliveryError.message);
+        }
       }
     }
     const { error } = await context.supabase.from("orders").update({ status: data.status }).eq("id", data.orderId);
