@@ -416,18 +416,24 @@ function LegacyProductPage() {
 
               <ProductCustomFields ref={customFieldsRef} productSlug={product.slug} />
 
-              <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 sm:flex sm:flex-wrap sm:items-center">
-                <div className="inline-flex items-center rounded-xl border border-border bg-card">
-                  <button onClick={() => setQty(Math.max(Number(product.minOrderQuantity ?? 1), qty - 1))} disabled={qty <= Number(product.minOrderQuantity ?? 1)} className="w-10 h-11 grid place-items-center hover:bg-muted rounded-l-xl disabled:opacity-40 disabled:cursor-not-allowed">−</button>
-                  <span className="w-10 text-center font-semibold">{qty}</span>
-                  <button onClick={() => setQty(Math.min(product.maxOrderQuantity ?? Number.POSITIVE_INFINITY, qty + 1))} disabled={product.maxOrderQuantity != null && qty >= product.maxOrderQuantity} className="w-10 h-11 grid place-items-center hover:bg-muted rounded-r-xl disabled:opacity-40 disabled:cursor-not-allowed">+</button>
+              <div className="flex min-w-0 flex-wrap items-center gap-3">
+                <div className="flex min-w-0 flex-col gap-1">
+                  <div className="inline-flex w-fit items-center rounded-xl border border-border bg-card">
+                    <button onClick={() => setQty(Math.max(Number(product.minOrderQuantity ?? 1), qty - 1))} disabled={qty <= Number(product.minOrderQuantity ?? 1)} className="w-10 h-11 grid place-items-center hover:bg-muted rounded-l-xl disabled:opacity-40 disabled:cursor-not-allowed">−</button>
+                    <span className="w-10 text-center font-semibold">{qty}</span>
+                    <button onClick={() => setQty(Math.min(product.maxOrderQuantity ?? Number.POSITIVE_INFINITY, qty + 1))} disabled={product.maxOrderQuantity != null && qty >= product.maxOrderQuantity} className="w-10 h-11 grid place-items-center hover:bg-muted rounded-r-xl disabled:opacity-40 disabled:cursor-not-allowed">+</button>
+                  </div>
+                  {(Number(product.minOrderQuantity ?? 1) > 1 || product.maxOrderQuantity != null) && (
+                    <p className="max-w-full text-[11px] leading-tight text-muted-foreground sm:text-xs">
+                      Min {Number(product.minOrderQuantity ?? 1)}{product.maxOrderQuantity != null ? ` · Max ${product.maxOrderQuantity}` : ""}
+                    </p>
+                  )}
                 </div>
-                {(Number(product.minOrderQuantity ?? 1) > 1 || product.maxOrderQuantity != null) && <p className="col-span-2 sm:col-span-3 text-xs text-muted-foreground">Order quantity: minimum {Number(product.minOrderQuantity ?? 1)}{product.maxOrderQuantity != null ? ` · maximum ${product.maxOrderQuantity}` : ""}</p>}
-                <button onClick={addToCart} disabled={(product.stock ?? 1) <= 0} className="min-w-0 flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-card border border-primary text-primary font-semibold hover:bg-primary/5 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed">
-                  <ShoppingCart className="h-4 w-4" /> {(product.stock ?? 1) <= 0 ? "Out of Stock" : "Add to Cart"}
+                <button onClick={addToCart} disabled={(product.stock ?? 1) <= 0} className="min-w-[145px] flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-card border border-primary text-primary font-semibold hover:bg-primary/5 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed">
+                  <ShoppingCart className="h-4 w-4 shrink-0" /> {(product.stock ?? 1) <= 0 ? "Out of Stock" : "Add to Cart"}
                 </button>
-                <button onClick={buyNow} disabled={(product.stock ?? 1) <= 0} className="col-span-2 sm:col-span-1 min-w-0 flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:opacity-95 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed">
-                  <Zap className="h-4 w-4" /> {(product.stock ?? 1) <= 0 ? "Out of Stock" : "Buy Now"}
+                <button onClick={buyNow} disabled={(product.stock ?? 1) <= 0} className="min-w-[120px] flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:opacity-95 transition-smooth">
+                  <Zap className="h-4 w-4 shrink-0" /> {(product.stock ?? 1) <= 0 ? "Out of Stock" : "Buy Now"}
                 </button>
               </div>
             </>
