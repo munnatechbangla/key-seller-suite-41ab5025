@@ -525,7 +525,9 @@ function SubscriptionsTab() {
       return pending ? 8000 : false;
     },
   });
-  const subscriptions = data.filter((it) => it.product.product_type === "subscription" || it.product.delivery_type === "subscription" || (it as any).fulfillment?.delivery_type === "subscription");
+  const subscriptions = data
+    .filter((it) => it.product.product_type === "subscription" || it.product.delivery_type === "subscription" || (it as any).fulfillment?.delivery_type === "subscription")
+    .sort((a, b) => new Date(b.order_created_at).getTime() - new Date(a.order_created_at).getTime());
   if (isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
   if (subscriptions.length === 0)
     return <div className="text-sm text-muted-foreground">No subscriptions yet.</div>;
