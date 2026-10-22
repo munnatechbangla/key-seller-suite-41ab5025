@@ -292,13 +292,21 @@ function ExternalBody({ item }: { item: DeliveryItem }) {
   );
 }
 
-function ManualBody({ item: _item }: { item: DeliveryItem }) {
+function ManualBody({ item }: { item: DeliveryItem }) {
+  const isCompleted = item.order_status === "completed";
   return (
     <div className="space-y-2 text-sm">
       <div className="flex items-center gap-2 text-emerald-600 font-semibold">
-        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Order received
+        <div className="h-2 w-2 rounded-full bg-emerald-500" />
+        {isCompleted ? "Order completed" : "Order received"}
       </div>
-      <p className="text-muted-foreground">We are preparing your order manually. Estimated delivery within 24 hours.</p>
+      {!isCompleted && (
+        <p className="text-muted-foreground">
+          {item.product.delivery_time
+            ? `We are preparing your order manually. Estimated delivery: ${item.product.delivery_time}.`
+            : "We are preparing your order manually."}
+        </p>
+      )}
     </div>
   );
 }
