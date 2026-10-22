@@ -17,7 +17,11 @@ const QuickViewModal = lazy(() =>
 export function ProductCard({ product }: { product: Product }) {
   const { url: thumbnailSrc, loading: thumbnailLoading } = useResolvedMediaUrl(product.thumbnailUrl);
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
-  useEffect(() => { setThumbnailFailed(false); }, [product.id, product.thumbnailUrl, thumbnailSrc]);
+  const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
+  useEffect(() => {
+    setThumbnailFailed(false);
+    setThumbnailLoaded(false);
+  }, [product.id, product.thumbnailUrl, thumbnailSrc]);
   const isVariable = !!product.hasAttributes;
   const hasVariantPrice = product.priceFrom != null && product.priceFrom > 0;
   const displayPrice = isVariable ? (hasVariantPrice ? product.priceFrom! : null) : product.price;
@@ -43,7 +47,7 @@ export function ProductCard({ product }: { product: Product }) {
 
       <Link to="/products/$slug" params={{ slug: product.slug }} className="block">
         <div className="relative aspect-square bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center overflow-hidden">
-          {product.thumbnailUrl && thumbnailLoading && !thumbnailFailed ? (
+          {product.thumbnailUrl && !thumbnailFailed && (thumbnailLoading || (thumbnailSrc && !thumbnailLoaded)) ? (
             <div className="absolute inset-0 animate-pulse bg-muted/70" aria-label="Loading product image" />
           ) : product.thumbnailUrl && thumbnailSrc && !thumbnailFailed ? (
             <img
@@ -51,6 +55,7 @@ export function ProductCard({ product }: { product: Product }) {
               alt={product.name}
               loading="lazy"
               decoding="async"
+              onLoad={() => setThumbnailLoaded(true)}
               onError={() => setThumbnailFailed(true)}
               className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
             />
