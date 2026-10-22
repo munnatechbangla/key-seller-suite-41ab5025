@@ -10,25 +10,31 @@ type Props = {
   className?: string;
 };
 
-/** Square product thumbnail with media:// resolution and emoji fallback. Never shows a broken icon. */
+/** Square product thumbnail with media:// resolution, loading placeholder, and emoji fallback. */
 export function ProductThumb({ src, emoji, alt = "", size = 64, className }: Props) {
   const [url, setUrl] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  const [loading, setLoading] = useState(Boolean(src));
 
   useEffect(() => {
     let alive = true;
     setFailed(false);
     setUrl(null);
+    setLoading(Boolean(src));
     if (!src) return;
     if (/^(https?:|data:|blob:)/i.test(src) && !src.includes("/storage/v1/object/")) {
       setUrl(src);
-      return;
+      return () => { alive = false; };
     }
-    resolveStoredUrlAsync(src).then((u) => { if (alive) setUrl(u || null); });
+    resolveStoredUrlAsync(src).then((u) => {
+      if (!alive) return;
+      setUrl(u || null);
+      if (!u) setLoading(false);
+    });
     return () => { alive = false; };
   }, [src]);
 
-  const showFallback = !src || failed || !url;
+  const showFallback = !src || failed || (!url && !loading);
 
   return (
     <div
@@ -40,14 +46,20 @@ export function ProductThumb({ src, emoji, alt = "", size = 64, className }: Pro
           <span aria-hidden>{emoji || "📦"}</span>
         </div>
       ) : (
-        <img
-          src={url}
-          alt={alt}
-          loading="lazy"
-          decoding="async"
-          className="absolute inset-0 h-full w-full object-cover"
-          onError={() => setFailed(true)}
-        />
+        <>
+          {loading && <div className="absolute inset-0 animate-pulse bg-muted/80" aria-label="Loading product image" />}
+          {url && (
+            <img
+              src={url}
+              alt={alt}
+              loading="lazy"
+              decoding="async"
+              className={cn("absolute inset-0 h-full w-full object-cover transition-opacity", loading ? "opacity-0" : "opacity-100")}
+              onLoad={() => setLoading(false)}
+              onError={() => { setFailed(true); setLoading(false); }}
+            />
+          )}
+        </>
       )}
     </div>
   );
