@@ -67,26 +67,40 @@ export const useCart = create<CartState>()(
       add: (p, qty = 1, variant) =>
         set((s) => {
           const lineKey = variant ? `${p.slug}::${variant.variant_id}` : p.slug;
+          const minQty = Math.max(1, Math.floor(Number(p.minOrderQuantity ?? 1)));
+          const maxQty = p.maxOrderQuantity == null ? Number.POSITIVE_INFINITY : Math.max(minQty, Math.floor(Number(p.maxOrderQuantity)));
+          const existingProductQty = s.items.filter((i) => i.productSlug === p.slug).reduce((sum, i) => sum + i.qty, 0);
+          const requestedQty = Math.max(existingProductQty === 0 ? minQty : 1, Math.floor(Number(qty) || 1));
+          const qtyToAdd = Math.min(requestedQty, Math.max(0, maxQty - existingProductQty));
+          if (qtyToAdd < 1) return { items: s.items };
           const unit = variant
             ? (variant.sale_price != null && variant.sale_price > 0 ? variant.sale_price : variant.price)
             : p.price;
           track("add_to_cart", {
             currency: "USD",
-            value: unit * qty,
+            value: unit * qtyToAdd,
             items: [{
               item_id: lineKey, item_name: variant ? `${p.name} — ${variant.variant_name}` : p.name,
-              price: unit, quantity: qty, item_category: p.category,
+              price: unit, quantity: qtyToAdd, item_category: p.category,
             }],
           });
           const ex = s.items.find((i) => i.slug === lineKey);
-          if (ex) return { items: s.items.map((i) => (i.slug === lineKey ? { ...i, qty: i.qty + qty } : i)) };
+          if (ex) return { items: s.items.map((i) => (i.slug === lineKey ? { ...i, qty: i.qty + qtyToAdd } : i)) };
           return {
-            items: [...s.items, { slug: lineKey, productSlug: p.slug, qty, product: p, variant }],
+            items: [...s.items, { slug: lineKey, productSlug: p.slug, qty: qtyToAdd, product: p, variant }],
           };
         }),
       remove: (slug) => set((s) => ({ items: s.items.filter((i) => i.slug !== slug) })),
       setQty: (slug, qty) =>
-        set((s) => ({ items: s.items.map((i) => (i.slug === slug ? { ...i, qty: Math.max(1, qty) } : i)) })),
+        set((s) => ({ items: s.items.map((i) => {
+          if (i.slug !== slug) return i;
+          const minQty = Math.max(1, Math.floor(Number(i.product.minOrderQuantity ?? 1)));
+          const maxQty = i.product.maxOrderQuantity == null ? Number.POSITIVE_INFINITY : Math.max(minQty, Math.floor(Number(i.product.maxOrderQuantity)));
+          const otherQty = s.items.filter((other) => other.productSlug === i.productSlug && other.slug !== slug).reduce((sum, other) => sum + other.qty, 0);
+          const lineMin = Math.max(1, minQty - otherQty);
+          const lineMax = Math.max(lineMin, maxQty - otherQty);
+          return { ...i, qty: Math.min(lineMax, Math.max(lineMin, Math.floor(Number(qty) || 1))) };
+        }) })),
       clear: () => set({ items: [], coupon: null, couponDiscount: 0, productFieldValues: {} }),
       setCoupon: (code, discount) => {
         track("coupon_applied", { coupon: code.trim().toUpperCase(), discount });
