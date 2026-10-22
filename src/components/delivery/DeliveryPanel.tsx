@@ -208,9 +208,10 @@ function SubscriptionBody({ item }: { item: DeliveryItem }) {
   const f: any = (item as any).fulfillment;
   const delivered = f?.fulfillment_status === "delivered";
   const deliveredAt = f?.metadata?.delivered_at ?? f?.completed_at;
+  const deliveryNote = typeof f?.metadata?.delivery_note === "string" ? f.metadata.delivery_note.trim() : "";
   if (delivered) {
     return (
-      <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 space-y-1">
+      <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 space-y-2">
         <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-semibold">
           <div className="h-2 w-2 rounded-full bg-emerald-500" /> Subscription Delivered
         </div>
@@ -219,6 +220,12 @@ function SubscriptionBody({ item }: { item: DeliveryItem }) {
           <p className="text-xs text-muted-foreground">
             {new Date(deliveredAt).toLocaleString()}
           </p>
+        )}
+        {deliveryNote && (
+          <div className="rounded-lg border border-border bg-background/70 p-3 text-sm whitespace-pre-wrap break-words">
+            <div className="font-semibold mb-1">Message from the seller</div>
+            {deliveryNote}
+          </div>
         )}
       </div>
     );
