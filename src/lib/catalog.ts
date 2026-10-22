@@ -233,8 +233,9 @@ async function augmentWithVariantPricing(products: Product[]): Promise<void> {
   (varsRes.data ?? []).forEach((v: any) => {
     if (v.status && v.status !== "active") return;
     if (v.visibility && v.visibility !== "public") return;
-    if (v.stock_status === "out_of_stock" || (v.stock != null && Number(v.stock) <= 0)) return;
-    availableVariantProducts.add(v.product_id);
+    if (v.stock_status !== "out_of_stock" && (v.stock == null || Number(v.stock) > 0)) {
+      availableVariantProducts.add(v.product_id);
+    }
     const sale = v.sale_price != null ? Number(v.sale_price) : null;
     const reg = v.price != null ? Number(v.price) : 0;
     const eff = sale != null && sale > 0 ? sale : reg;
