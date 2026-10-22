@@ -71,6 +71,8 @@ const productSchema = z.object({
   stock_status: z.enum(["in_stock", "out_of_stock", "on_backorder"]).optional(),
   min_order_quantity: z.number().int().min(1).optional(),
   max_order_quantity: z.number().int().min(1).nullable().optional(),
+  features: z.array(z.string().max(500)).optional(),
+  included: z.array(z.string().max(500)).optional(),
   status: productStatusEnum.default("published"),
   is_featured: z.boolean().optional(),
   is_digital: z.boolean().optional(),
