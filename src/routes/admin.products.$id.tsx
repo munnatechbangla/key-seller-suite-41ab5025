@@ -738,11 +738,16 @@ function GalleryTab({ productId }: { productId: string }) {
 }
 
 function GalleryImagePreview({ url, alt }: { url: string; alt: string }) {
-  const { url: resolvedUrl } = useResolvedMediaUrl(url);
+  const { url: resolvedUrl, loading } = useResolvedMediaUrl(url);
   const [failed, setFailed] = useState(false);
   useEffect(() => { setFailed(false); }, [url, resolvedUrl]);
   return resolvedUrl && !failed ? (
-    <img src={resolvedUrl} alt={alt} className="w-full h-full object-cover" onError={() => setFailed(true)} />
+    <>
+      {loading && <div className="w-full h-full min-h-24 animate-pulse bg-muted/70" aria-label="Loading product image preview" />}
+      <img src={resolvedUrl} alt={alt} className={`w-full h-full object-cover ${loading ? "hidden" : ""}`} onError={() => setFailed(true)} />
+    </>
+  ) : loading && url ? (
+    <div className="w-full h-full min-h-24 animate-pulse bg-muted/70" aria-label="Loading product image preview" />
   ) : (
     <div className="w-full h-full min-h-24 grid place-items-center text-4xl bg-muted" aria-label={alt || "Product image preview"}>📦</div>
   );
