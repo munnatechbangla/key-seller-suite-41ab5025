@@ -771,6 +771,8 @@ function BasicInfoTab({
     slug: "",
     short_description: "",
     description: "",
+    features_text: "",
+    included_text: "",
     regular_price: 0,
     sale_price: "",
     min_order_quantity: 1,
@@ -795,6 +797,8 @@ function BasicInfoTab({
       slug: product.slug ?? "",
       short_description: product.short_description ?? "",
       description: product.description ?? "",
+      features_text: Array.isArray(product.features) ? product.features.join("\n") : "",
+      included_text: Array.isArray(product.included) ? product.included.join("\n") : "",
       regular_price: Number(product.regular_price ?? 0),
       sale_price: product.sale_price == null ? "" : Number(product.sale_price),
       min_order_quantity: Math.max(1, Number(product.min_order_quantity ?? 1)),
@@ -824,6 +828,8 @@ function BasicInfoTab({
         slug: form.slug.trim(),
         short_description: form.short_description || null,
         description: form.description || null,
+        features: String(form.features_text ?? "").split("\n").map((item: string) => item.trim()).filter(Boolean),
+        included: String(form.included_text ?? "").split("\n").map((item: string) => item.trim()).filter(Boolean),
         regular_price: productMode === "variable" ? Number(product.regular_price ?? 0) : Number(form.regular_price || 0),
         sale_price:
           productMode === "variable"
@@ -881,6 +887,29 @@ function BasicInfoTab({
           value={form.description}
           onChange={(e) => set({ description: e.target.value })}
         />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label>Product benefits / Key features</Label>
+          <textarea
+            className="w-full min-h-[140px] rounded-md border bg-background px-3 py-2 text-sm"
+            value={form.features_text}
+            onChange={(e) => set({ features_text: e.target.value })}
+            placeholder={"Instant delivery via email\n100% genuine subscription\nFull warranty coverage\n24/7 priority support"}
+          />
+          <p className="text-xs text-muted-foreground mt-1">Enter one feature per line. These appear below the product price and in Key features.</p>
+        </div>
+        <div>
+          <Label>What's included</Label>
+          <textarea
+            className="w-full min-h-[140px] rounded-md border bg-background px-3 py-2 text-sm"
+            value={form.included_text}
+            onChange={(e) => set({ included_text: e.target.value })}
+            placeholder={"Premium account access\nActivation instructions\nWarranty certificate\nFree support"}
+          />
+          <p className="text-xs text-muted-foreground mt-1">Enter one included item per line. These appear in the What's included section.</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
