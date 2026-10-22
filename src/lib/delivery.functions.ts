@@ -30,7 +30,10 @@ export type DeliveryItem = {
     product_type: string; // downloadable | license_key | subscription | account | external | manual
     delivery_type: string; // download | license_key | account | manual | external_url
     external_url: string | null;
+    delivery_time: string | null;
     thumbnail_url?: string | null;
+  };
+  order_status: string;
   };
   downloads: DeliveryDownload[];
   license_keys: string[];
@@ -80,7 +83,7 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
   const { data: products } = productIds.length
     ? await sb
         .from("products")
-        .select("id, slug, title, product_type, delivery_type, external_url, thumbnail_url")
+        .select("id, slug, title, product_type, delivery_type, external_url, thumbnail_url, delivery_time")
         .in("id", productIds)
     : { data: [] };
   const productMap = new Map((products ?? []).map((p: any) => [p.id, p]));
@@ -196,6 +199,7 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
       order_id: it.order_id,
       order_number: ord?.order_number ?? "",
       order_created_at: ord?.created_at ?? "",
+      order_status: ord?.status ?? "pending",
       qty: it.qty,
       product: {
         id: it.product_id,
@@ -204,6 +208,7 @@ async function runDelivery(sb: any, params: { orderId?: string; orderNumber?: st
         product_type: productType ?? "manual",
         delivery_type: deliveryType ?? "manual",
         external_url: p?.external_url ?? null,
+        delivery_time: p?.delivery_time ?? null,
         thumbnail_url: p?.thumbnail_url ?? null,
       },
       downloads: downloadsByProduct.get(it.product_id) ?? [],
