@@ -267,14 +267,22 @@ function LegacyProductPage() {
     null;
   const [activeImage, setActiveImage] = useState<string | null>(null);
   useEffect(() => { setActiveImage(null); }, [product.id]);
-  const heroImage = activeImage ?? resolvedVariantThumbnail ?? featuredImage;
-  const heroImageResolving = !heroImage && (thumbnailResolving || variantThumbnailResolving || galleryQuery.isLoading);
-  const [heroImageFailed, setHeroImageFailed] = useState(false);
+  // Keep a fallback chain so a broken variant/gallery URL never hides a valid product thumbnail.
+  const heroImageCandidates = [...new Set([
+    activeImage,
+    resolvedVariantThumbnail,
+    featuredImage,
+    resolvedThumbnail,
+  ].filter((url): url is string => Boolean(url)))];
+  const heroImageCandidatesKey = heroImageCandidates.join("|");
+  const [heroImageFallbackIndex, setHeroImageFallbackIndex] = useState(0);
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
   useEffect(() => {
-    setHeroImageFailed(false);
+    setHeroImageFallbackIndex(0);
     setHeroImageLoaded(false);
-  }, [heroImage]);
+  }, [heroImageCandidatesKey]);
+  const heroImage = heroImageCandidates[heroImageFallbackIndex] ?? null;
+  const heroImageResolving = !heroImage && (thumbnailResolving || variantThumbnailResolving || galleryQuery.isLoading);
 
   return (
     <div className="min-h-screen">
@@ -288,14 +296,18 @@ function LegacyProductPage() {
       <div className="container mx-auto px-4 py-10 grid grid-cols-[minmax(0,1fr)] lg:grid-cols-2 gap-10">
         <div className="min-w-0 space-y-4">
           <div className="relative aspect-square rounded-3xl bg-gradient-to-br from-primary/15 via-secondary/15 to-accent/15 grid place-items-center overflow-hidden shadow-elegant">
-            {heroImage && !heroImageFailed ? (
+            {heroImage ? (
               <>
                 {!heroImageLoaded && <div className="absolute inset-0 animate-pulse bg-muted/70" aria-label="Loading product image" />}
                 <img
+                  key={heroImage}
                   src={heroImage}
                   alt={activeVariant?.name || product.name}
                   onLoad={() => setHeroImageLoaded(true)}
-                  onError={() => { setHeroImageFailed(true); setHeroImageLoaded(false); }}
+                  onError={() => {
+                    setHeroImageLoaded(false);
+                    setHeroImageFallbackIndex((index) => Math.min(index + 1, heroImageCandidates.length));
+                  }}
                   className={`h-full w-full object-cover animate-fade-in transition-opacity ${heroImageLoaded ? "opacity-100" : "opacity-0"}`}
                 />
               </>
