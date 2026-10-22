@@ -58,11 +58,12 @@ function buildTimeline(opts: {
   accountDelivered: boolean;
   isManualService: boolean;
   manualServiceDelivered: boolean;
+  isDownloadable: boolean;
 }): TimelineStep[] {
   const {
     submitted, underReview, rejected, approved, hasLicense,
     isSubscription, subscriptionDelivered, isAccount, accountDelivered,
-    isManualService, manualServiceDelivered,
+    isManualService, manualServiceDelivered, isDownloadable,
   } = opts;
   const s = (cond: "done" | "current" | "todo" | "error"): "done" | "current" | "todo" | "error" => cond;
   return [
@@ -86,7 +87,7 @@ function buildTimeline(opts: {
       key: "delivered",
       label: isManualService
         ? "Service Fulfillment"
-        : isAccount ? "Account Delivery" : isSubscription ? "Subscription Delivered" : "License Delivery",
+        : isAccount ? "Account Delivery" : isSubscription ? "Subscription Delivered" : isDownloadable ? "Download Available" : "License Delivery",
       state: isManualService
         ? manualServiceDelivered ? "done" : approved ? "current" : "todo"
         : isAccount
@@ -180,6 +181,12 @@ function PayPage() {
   const isSubscriptionOrder = orderItems.some((it) => it.product_type === "subscription" || it.delivery_type === "subscription");
   const isManualServiceOrder = !isSubscriptionOrder && !isAccountOrder &&
     orderItems.some((it) => it.product_type === "manual" || it.delivery_type === "manual");
+  const isDownloadableOrder = !isSubscriptionOrder && !isAccountOrder && !isManualServiceOrder &&
+    orderItems.some((it) =>
+      it.product_type === "downloadable" ||
+      it.delivery_type === "download" ||
+      it.delivery_type === "downloadable"
+    );
   const accountDeliveryItems = ((deliveryQ.data ?? []) as any[]).filter((it) => it?.product?.product_type === "account" || it?.product?.delivery_type === "account");
   const accountDelivered = accountDeliveryItems.length > 0 && accountDeliveryItems.every((it) => it?.fulfillment?.fulfillment_status === "delivered");
   const approved = orderStatus === "paid" || orderStatus === "completed";
@@ -213,6 +220,7 @@ function PayPage() {
     accountDelivered,
     isManualService: isManualServiceOrder,
     manualServiceDelivered: isManualServiceOrder && orderStatus === "completed",
+    isDownloadable: isDownloadableOrder,
   });
 
   const redirectToGateway = async () => {
