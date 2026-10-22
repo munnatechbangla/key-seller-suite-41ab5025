@@ -68,6 +68,7 @@ const productSchema = z.object({
   regular_price: z.number().nonnegative(),
   sale_price: z.number().nonnegative().nullable().optional(),
   thumbnail_url: z.string().nullable().optional(),
+  stock_status: z.enum(["in_stock", "out_of_stock", "on_backorder"]).optional(),
   status: productStatusEnum.default("published"),
   is_featured: z.boolean().optional(),
   is_digital: z.boolean().optional(),
