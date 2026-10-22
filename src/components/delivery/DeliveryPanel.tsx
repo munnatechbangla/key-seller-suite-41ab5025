@@ -52,9 +52,13 @@ export function DeliveryPanel({
   showInvoice?: boolean;
 }) {
   if (items.length === 0) return null;
+  const isManualServiceOrder = items.every((item) =>
+    !item.manual_license &&
+    (item.product.delivery_type === "manual" || item.product.product_type === "manual"),
+  );
   return (
     <div className="space-y-4">
-      {showHeader && <h3 className="font-bold text-lg">Your delivery</h3>}
+      {showHeader && <h3 className="font-bold text-lg">{isManualServiceOrder ? "Your service" : "Your delivery"}</h3>}
       {items.map((it) => (
         <DeliveryCard key={it.order_item_id} item={it} showInvoice={showInvoice} />
       ))}
