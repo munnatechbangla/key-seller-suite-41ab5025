@@ -773,6 +773,8 @@ function BasicInfoTab({
     description: "",
     regular_price: 0,
     sale_price: "",
+    min_order_quantity: 1,
+    max_order_quantity: "",
     thumbnail_url: "",
     stock_status: "in_stock",
     status: "draft",
@@ -795,6 +797,8 @@ function BasicInfoTab({
       description: product.description ?? "",
       regular_price: Number(product.regular_price ?? 0),
       sale_price: product.sale_price == null ? "" : Number(product.sale_price),
+      min_order_quantity: Math.max(1, Number(product.min_order_quantity ?? 1)),
+      max_order_quantity: product.max_order_quantity == null ? "" : Number(product.max_order_quantity),
       thumbnail_url: product.thumbnail_url ?? "",
       stock_status: product.stock_status ?? "in_stock",
       status: product.status ?? "draft",
@@ -825,6 +829,8 @@ function BasicInfoTab({
           productMode === "variable"
             ? product.sale_price == null ? null : Number(product.sale_price)
             : form.sale_price === "" ? null : Number(form.sale_price),
+        min_order_quantity: Math.max(1, Math.floor(Number(form.min_order_quantity || 1))),
+        max_order_quantity: form.max_order_quantity === "" ? null : Math.floor(Number(form.max_order_quantity)),
         thumbnail_url: form.thumbnail_url || null,
         ...(productMode === "simple" ? { stock_status: form.stock_status } : {}),
         status: form.status,
@@ -999,6 +1005,19 @@ function BasicInfoTab({
           This is a Variable product. Stock and pricing are set per variant in the Variants tab.
         </div>
       )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label>Minimum order quantity</Label>
+          <Input type="number" min={1} step={1} value={form.min_order_quantity} onChange={(e) => set({ min_order_quantity: e.target.value })} />
+          <p className="text-xs text-muted-foreground mt-1">Smallest quantity a customer can order for this product.</p>
+        </div>
+        <div>
+          <Label>Maximum order quantity (optional)</Label>
+          <Input type="number" min={form.min_order_quantity || 1} step={1} value={form.max_order_quantity} onChange={(e) => set({ max_order_quantity: e.target.value })} placeholder="No limit" />
+          <p className="text-xs text-muted-foreground mt-1">Leave empty to allow any quantity above the minimum.</p>
+        </div>
+      </div>
 
       <div>
         <Label>Category</Label>
