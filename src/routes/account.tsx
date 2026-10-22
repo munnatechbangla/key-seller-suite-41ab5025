@@ -218,14 +218,25 @@ function OrdersTab() {
 
 function DownloadsTab() {
   const fn = useServerFn(getMyDeliveriesFn);
-  const q = useQuery({ queryKey: ["my-deliveries"], queryFn: () => fn({}) });
-  const items = q.data ?? [];
+  const q = useQuery({
+    queryKey: ["my-deliveries"],
+    queryFn: () => fn({}),
+    refetchOnWindowFocus: true,
+    refetchOnMount: "always",
+  });
+  const items = (q.data ?? [])
+    .filter((item) =>
+      item.product?.product_type === "downloadable" ||
+      item.product?.delivery_type === "download" ||
+      item.product?.delivery_type === "downloadable"
+    )
+    .sort((a, b) => new Date(b.order_created_at).getTime() - new Date(a.order_created_at).getTime());
   return (
     <Card>
       <h3 className="font-bold mb-1">Download Center</h3>
-      <p className="text-xs text-muted-foreground mb-4">All your delivered products — downloads, licenses, accounts and more.</p>
+      <p className="text-xs text-muted-foreground mb-4">Your downloadable products and files.</p>
       {q.isLoading ? <Loader /> : items.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No delivered items yet. Purchases will appear here once payment is confirmed.</p>
+        <p className="text-sm text-muted-foreground mb-4">No downloadable products yet. Your downloadable purchases will appear here after payment is confirmed.</p>
       ) : (
         <DeliveryPanel items={items} showHeader={false} />
       )}
