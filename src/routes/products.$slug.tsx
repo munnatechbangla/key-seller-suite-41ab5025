@@ -310,7 +310,7 @@ function LegacyProductPage() {
                 <span className="font-semibold ml-1">{product.rating}</span>
               </div>
               <span className="text-muted-foreground">({product.reviews.toLocaleString()} reviews)</span>
-              {!hasAttrs && (product.stock ?? 1) <= 0 ? (
+              (product.stock ?? 1) <= 0 ? (
                 <span className="text-destructive font-medium inline-flex items-center gap-1">Out of stock</span>
               ) : (
                 <span className="text-emerald-600 font-medium inline-flex items-center gap-1"><Check className="h-4 w-4" /> In stock</span>
