@@ -85,6 +85,7 @@ function DeliveryCard({ item, showInvoice }: { item: DeliveryItem; showInvoice: 
       <header className="flex items-start gap-3">
         <ProductThumb
           src={item.product.thumbnail_url}
+          productId={item.product.id}
           emoji="📦"
           alt={item.product.name}
           size={48}
