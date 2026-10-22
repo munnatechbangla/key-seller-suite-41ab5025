@@ -86,7 +86,7 @@ function buildTimeline(opts: {
       key: "delivered",
       label: isManualService
         ? "Service Fulfillment"
-        : isAccount ? "Account Delivery" : isSubscription ? "Subscription Delivery" : "License Delivery",
+        : isAccount ? "Account Delivery" : isSubscription ? "Subscription Delivered" : "License Delivery",
       state: isManualService
         ? manualServiceDelivered ? "done" : approved ? "current" : "todo"
         : isAccount
