@@ -208,9 +208,19 @@ function LegacyProductPage() {
     if (!validateCustomFields()) { toast.error("Please complete the product details"); return false; }
     return true;
   };
-  const addToCart = () => { if (!guardCustomFields()) return; cart.add(product, qty); toast.success(`${product.name} added to cart`); };
+  const addToCart = () => {
+    if ((product.stock ?? 1) <= 0) { toast.error("This product is out of stock"); return; }
+    if (!guardCustomFields()) return;
+    cart.add(product, qty);
+    toast.success(`${product.name} added to cart`);
+  };
   const navigate = useNavigate();
-  const buyNow = () => { if (!guardCustomFields()) return; cart.add(product, qty); navigate({ to: "/checkout" }); };
+  const buyNow = () => {
+    if ((product.stock ?? 1) <= 0) { toast.error("This product is out of stock"); return; }
+    if (!guardCustomFields()) return;
+    cart.add(product, qty);
+    navigate({ to: "/checkout" });
+  };
 
   // Gallery images (public read on product_images)
   const galleryQuery = useQuery({
@@ -300,7 +310,11 @@ function LegacyProductPage() {
                 <span className="font-semibold ml-1">{product.rating}</span>
               </div>
               <span className="text-muted-foreground">({product.reviews.toLocaleString()} reviews)</span>
-              <span className="text-emerald-600 font-medium inline-flex items-center gap-1"><Check className="h-4 w-4" /> In stock</span>
+              {!hasAttrs && (product.stock ?? 1) <= 0 ? (
+                <span className="text-destructive font-medium inline-flex items-center gap-1">Out of stock</span>
+              ) : (
+                <span className="text-emerald-600 font-medium inline-flex items-center gap-1"><Check className="h-4 w-4" /> In stock</span>
+              )}
             </div>
           </div>
 
@@ -351,11 +365,11 @@ function LegacyProductPage() {
                   <span className="w-10 text-center font-semibold">{qty}</span>
                   <button onClick={() => setQty(qty + 1)} className="w-10 h-11 grid place-items-center hover:bg-muted rounded-r-xl">+</button>
                 </div>
-                <button onClick={addToCart} className="min-w-0 flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-card border border-primary text-primary font-semibold hover:bg-primary/5 transition-smooth">
-                  <ShoppingCart className="h-4 w-4" /> Add to Cart
+                <button onClick={addToCart} disabled={(product.stock ?? 1) <= 0} className="min-w-0 flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-card border border-primary text-primary font-semibold hover:bg-primary/5 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed">
+                  <ShoppingCart className="h-4 w-4" /> {(product.stock ?? 1) <= 0 ? "Out of Stock" : "Add to Cart"}
                 </button>
-                <button onClick={buyNow} className="col-span-2 sm:col-span-1 min-w-0 flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:opacity-95 transition-smooth">
-                  <Zap className="h-4 w-4" /> Buy Now
+                <button onClick={buyNow} disabled={(product.stock ?? 1) <= 0} className="col-span-2 sm:col-span-1 min-w-0 flex-1 inline-flex items-center justify-center gap-2 h-11 px-4 sm:px-5 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-glow hover:opacity-95 transition-smooth disabled:opacity-50 disabled:cursor-not-allowed">
+                  <Zap className="h-4 w-4" /> {(product.stock ?? 1) <= 0 ? "Out of Stock" : "Buy Now"}
                 </button>
               </div>
             </>
