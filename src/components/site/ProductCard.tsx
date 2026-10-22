@@ -15,7 +15,7 @@ const QuickViewModal = lazy(() =>
 
 
 export function ProductCard({ product }: { product: Product }) {
-  const { url: thumbnailSrc } = useResolvedMediaUrl(product.thumbnailUrl);
+  const { url: thumbnailSrc, loading: thumbnailLoading } = useResolvedMediaUrl(product.thumbnailUrl);
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
   useEffect(() => { setThumbnailFailed(false); }, [product.id, product.thumbnailUrl, thumbnailSrc]);
   const isVariable = !!product.hasAttributes;
@@ -43,7 +43,9 @@ export function ProductCard({ product }: { product: Product }) {
 
       <Link to="/products/$slug" params={{ slug: product.slug }} className="block">
         <div className="relative aspect-square bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center overflow-hidden">
-          {product.thumbnailUrl && thumbnailSrc && !thumbnailFailed ? (
+          {product.thumbnailUrl && thumbnailLoading && !thumbnailFailed ? (
+            <div className="absolute inset-0 animate-pulse bg-muted/70" aria-label="Loading product image" />
+          ) : product.thumbnailUrl && thumbnailSrc && !thumbnailFailed ? (
             <img
               src={thumbnailSrc}
               alt={product.name}
