@@ -172,11 +172,11 @@ function LegacyProductPage() {
   const { slug } = Route.useParams();
   const product = useProduct(slug)!;
   const { url: resolvedThumbnail } = useResolvedMediaUrl(product.thumbnailUrl);
-  const { url: resolvedVariantThumbnail } = useResolvedMediaUrl(activeVariant?.thumbnail_url);
   const related = useRelated(slug, 4);
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<"desc" | "specs" | "reviews" | "faq">("desc");
   const [activeVariant, setActiveVariant] = useState<ProductVariant | null>(null);
+  const { url: resolvedVariantThumbnail } = useResolvedMediaUrl(activeVariant?.thumbnail_url);
   const fetchAttrs = useServerFn(listProductAttributesFn);
   const attrsProbe = useQuery({
     queryKey: ["variant-attrs", product.id],
