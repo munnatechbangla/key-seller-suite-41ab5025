@@ -3,6 +3,7 @@ import { Download, KeyRound, ExternalLink, Copy, User as UserIcon, Lock, Package
 import { toast } from "sonner";
 import { useSettings } from "@/lib/cms/settings";
 import type { DeliveryItem } from "@/lib/delivery.functions";
+import { ProductThumb } from "@/components/site/ProductThumb";
 
 function formatBytes(size: number | null): string | null {
   if (!size || size <= 0) return null;
@@ -82,11 +83,13 @@ function DeliveryCard({ item, showInvoice }: { item: DeliveryItem; showInvoice: 
   return (
     <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
       <header className="flex items-start gap-3">
-        {item.product.thumbnail_url ? (
-          <img src={item.product.thumbnail_url} alt="" className="h-12 w-12 rounded-lg object-cover" />
-        ) : (
-          <div className="h-12 w-12 rounded-lg bg-primary/10 grid place-items-center"><Package className="h-6 w-6 text-primary" /></div>
-        )}
+        <ProductThumb
+          src={item.product.thumbnail_url}
+          emoji="📦"
+          alt={item.product.name}
+          size={48}
+          className="rounded-lg"
+        />
         <div className="flex-1 min-w-0">
           <div className="font-bold text-base truncate">{item.product.name}</div>
           <div className="text-xs text-muted-foreground">
