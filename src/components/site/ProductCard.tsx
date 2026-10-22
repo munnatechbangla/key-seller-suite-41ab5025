@@ -6,7 +6,7 @@ import { formatPrice } from "@/lib/product-price";
 import { SaleBadges } from "@/components/site/SaleBadges";
 import { useMarketplace } from "@/lib/cms/marketplace";
 import { toast } from "sonner";
-import { useState, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useResolvedMediaUrl } from "@/lib/cms/site-logo";
 
 const QuickViewModal = lazy(() =>
@@ -16,6 +16,8 @@ const QuickViewModal = lazy(() =>
 
 export function ProductCard({ product }: { product: Product }) {
   const { url: thumbnailSrc } = useResolvedMediaUrl(product.thumbnailUrl);
+  const [thumbnailFailed, setThumbnailFailed] = useState(false);
+  useEffect(() => { setThumbnailFailed(false); }, [product.id, product.thumbnailUrl, thumbnailSrc]);
   const isVariable = !!product.hasAttributes;
   const hasVariantPrice = product.priceFrom != null && product.priceFrom > 0;
   const displayPrice = isVariable ? (hasVariantPrice ? product.priceFrom! : null) : product.price;
@@ -41,11 +43,13 @@ export function ProductCard({ product }: { product: Product }) {
 
       <Link to="/products/$slug" params={{ slug: product.slug }} className="block">
         <div className="relative aspect-square bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center overflow-hidden">
-          {product.thumbnailUrl ? (
+          {product.thumbnailUrl && thumbnailSrc && !thumbnailFailed ? (
             <img
               src={thumbnailSrc}
               alt={product.name}
               loading="lazy"
+              decoding="async"
+              onError={() => setThumbnailFailed(true)}
               className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
             />
           ) : (
