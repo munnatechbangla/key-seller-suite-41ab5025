@@ -47,18 +47,21 @@ export function ProductCard({ product }: { product: Product }) {
 
       <Link to="/products/$slug" params={{ slug: product.slug }} className="block">
         <div className="relative aspect-square bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center overflow-hidden">
-          {product.thumbnailUrl && !thumbnailFailed && (thumbnailLoading || (thumbnailSrc && !thumbnailLoaded)) ? (
+          {product.thumbnailUrl && !thumbnailFailed && thumbnailLoading ? (
             <div className="absolute inset-0 animate-pulse bg-muted/70" aria-label="Loading product image" />
           ) : product.thumbnailUrl && thumbnailSrc && !thumbnailFailed ? (
-            <img
-              src={thumbnailSrc}
-              alt={product.name}
-              loading="lazy"
-              decoding="async"
-              onLoad={() => setThumbnailLoaded(true)}
-              onError={() => setThumbnailFailed(true)}
-              className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
-            />
+            <>
+              {!thumbnailLoaded && <div className="absolute inset-0 animate-pulse bg-muted/70" aria-label="Loading product image" />}
+              <img
+                src={thumbnailSrc}
+                alt={product.name}
+                loading="lazy"
+                decoding="async"
+                onLoad={() => setThumbnailLoaded(true)}
+                onError={() => setThumbnailFailed(true)}
+                className={`h-full w-full object-cover transition-opacity group-hover:scale-110 transition-transform duration-500 ease-out ${thumbnailLoaded ? "opacity-100" : "opacity-0"}`}
+              />
+            </>
           ) : (
             <span className="text-7xl group-hover:scale-110 transition-smooth">{product.emoji}</span>
           )}
