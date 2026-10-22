@@ -34,7 +34,6 @@ export type DeliveryItem = {
     thumbnail_url?: string | null;
   };
   order_status: string;
-  };
   downloads: DeliveryDownload[];
   license_keys: string[];
   account_credentials?: { value: string | null; username: string | null; password: string | null; notes: string | null; credential_fields: { label: string; value: string }[] }[];
