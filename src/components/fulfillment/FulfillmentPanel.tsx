@@ -416,7 +416,7 @@ function SubscriptionCard({
               {new Date(deliveredAt).toLocaleString()}
             </div>
           )}
-          {deliveryNote && <div className="text-muted-foreground">Note: {deliveryNote}</div>}
+          {isAdmin && deliveryNote && <div className="text-muted-foreground">Note: {deliveryNote}</div>}
         </div>
       )}
 
