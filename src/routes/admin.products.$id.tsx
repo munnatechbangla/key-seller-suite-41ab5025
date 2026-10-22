@@ -955,7 +955,6 @@ function BasicInfoTab({
             >
               <option value="in_stock">In Stock</option>
               <option value="out_of_stock">Out of Stock</option>
-              <option value="on_backorder">On Backorder</option>
             </select>
           </div>
           <div>
