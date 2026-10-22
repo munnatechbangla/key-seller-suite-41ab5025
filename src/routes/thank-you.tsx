@@ -167,7 +167,7 @@ function ThankYou() {
                 <div className="space-y-2">
                   {q.data.items.map((it) => (
                     <div key={it.id} className="flex items-center gap-3 p-3 rounded-xl border border-border">
-                      <ProductThumb src={it.thumbnail_snapshot} emoji="📦" alt={it.product_name} size={48} />
+                      <ProductThumb src={it.thumbnail_snapshot} productId={it.product_id} emoji="📦" alt={it.product_name} size={48} />
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-sm">{it.product_name}</div>
                         <div className="text-xs text-muted-foreground">{formatPrice(Number(it.unit_price))} each</div>
