@@ -60,7 +60,12 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes, bef
 
   // ---- selection state: attributeId -> optionId ----
   const [selection, setSelection] = useState<Record<string, string>>({});
-  const [qty, setQty] = useState(1);
+  const [qty, setQty] = useState(() => Math.max(1, Number(product.minOrderQuantity ?? 1)));
+  useEffect(() => {
+    const min = Math.max(1, Number(product.minOrderQuantity ?? 1));
+    const max = product.maxOrderQuantity == null ? Number.POSITIVE_INFINITY : Number(product.maxOrderQuantity);
+    setQty((current) => Math.min(max, Math.max(min, current)));
+  }, [product.id, product.minOrderQuantity, product.maxOrderQuantity]);
   const [priceKey, setPriceKey] = useState(0); // for fade animation
 
   // Preselect: from URL ?variant= if present, otherwise first available variant.
@@ -288,12 +293,12 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes, bef
       {/* Price + variant meta */}
       <div className="rounded-2xl bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 p-5">
         <div key={priceKey} className="animate-fade-in flex items-end gap-3 flex-wrap">
-          <div className="text-4xl font-bold text-primary">{formatPrice(price)}</div>
+          <div className="text-4xl font-bold text-primary">{formatPrice(price * qty)}</div>
           {compareAt && compareAt > price && (
             <div className="flex gap-2 items-center">
-              <span className="text-sm text-muted-foreground line-through">{formatPrice(compareAt)}</span>
+              <span className="text-sm text-muted-foreground line-through">{formatPrice(compareAt * qty)}</span>
               <span className="text-xs font-bold text-accent">
-                Save {formatPrice(compareAt - price)}
+                Save {formatPrice((compareAt - price) * qty)}
               </span>
             </div>
           )}
@@ -353,21 +358,24 @@ export function VariantSelector({ product, onVariantChange, onHasAttributes, bef
 
         <div className="inline-flex items-center rounded-xl border border-border bg-card">
           <button
-            onClick={() => setQty(Math.max(1, qty - 1))}
-            className="w-10 h-11 grid place-items-center hover:bg-muted rounded-l-xl"
+            onClick={() => setQty(Math.max(Number(product.minOrderQuantity ?? 1), qty - 1))}
+            disabled={qty <= Number(product.minOrderQuantity ?? 1)}
+            className="w-10 h-11 grid place-items-center hover:bg-muted rounded-l-xl disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label="Decrease quantity"
           >
             −
           </button>
           <span className="w-10 text-center font-semibold" aria-live="polite">{qty}</span>
           <button
-            onClick={() => setQty(qty + 1)}
-            className="w-10 h-11 grid place-items-center hover:bg-muted rounded-r-xl"
+            onClick={() => setQty(Math.min(product.maxOrderQuantity ?? Number.POSITIVE_INFINITY, qty + 1))}
+            disabled={product.maxOrderQuantity != null && qty >= product.maxOrderQuantity}
+            className="w-10 h-11 grid place-items-center hover:bg-muted rounded-r-xl disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label="Increase quantity"
           >
             +
           </button>
         </div>
+        {(Number(product.minOrderQuantity ?? 1) > 1 || product.maxOrderQuantity != null) && <p className="col-span-2 sm:col-span-3 text-xs text-muted-foreground">Order quantity: minimum {Number(product.minOrderQuantity ?? 1)}{product.maxOrderQuantity != null ? ` · maximum ${product.maxOrderQuantity}` : ""}</p>}
         <button
           onClick={() => handleAdd(false)}
           disabled={!canBuy}
