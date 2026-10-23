@@ -60,6 +60,10 @@ export function ProductCard({ product }: { product: Product }) {
   const hasVariantPrice = product.priceFrom != null && product.priceFrom > 0;
   const displayPrice = isVariable ? (hasVariantPrice ? product.priceFrom! : null) : product.price;
   const displayOld = isVariable ? (product.oldPriceFrom ?? null) : (product.oldPrice ?? null);
+  const minOrderQuantity = Math.max(1, Number(product.minOrderQuantity ?? 1));
+  const showMinimumOrderTotal = !isVariable && minOrderQuantity > 1;
+  const cardPrice = showMinimumOrderTotal ? (displayPrice ?? 0) * minOrderQuantity : displayPrice;
+  const cardOldPrice = showMinimumOrderTotal && displayOld != null ? displayOld * minOrderQuantity : displayOld;
   const off = displayPrice != null && displayOld && displayOld > displayPrice
     ? Math.round((1 - displayPrice / displayOld) * 100)
     : 0;
@@ -180,9 +184,12 @@ export function ProductCard({ product }: { product: Product }) {
         ) : (
           <div className="flex flex-wrap items-end justify-between gap-2 pt-2">
             <div className="min-w-0 flex-1">
-              <div className="text-lg font-bold text-primary">{formatPrice(displayPrice ?? 0)}</div>
-              {displayOld && displayOld > (displayPrice ?? 0) && (
-                <div className="text-xs text-muted-foreground line-through">{formatPrice(displayOld)}</div>
+              <div className="text-lg font-bold text-primary">
+                {showMinimumOrderTotal && <span className="text-xs font-medium text-muted-foreground mr-1">From</span>}
+                {formatPrice(cardPrice ?? 0)}
+              </div>
+              {cardOldPrice && cardOldPrice > (cardPrice ?? 0) && (
+                <div className="text-xs text-muted-foreground line-through">{formatPrice(cardOldPrice)}</div>
               )}
             </div>
             <button
