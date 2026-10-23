@@ -231,7 +231,7 @@ export const useAuth = create<AuthState>()((set, get) => ({
       email,
       password,
       options: {
-        emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
+        emailRedirectTo: typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined,
         data: { full_name: name },
       },
     });
