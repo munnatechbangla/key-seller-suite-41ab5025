@@ -2,7 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tan
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/stores";
-import { LayoutDashboard, Package, ShoppingBag, Users, KeyRound, Loader2, Ticket, Settings as SettingsIcon, Mail, FileText, CreditCard, Wallet, Star, ScrollText, Wand2, HeartPulse, Database, BookOpen, ClipboardCheck, History, LayoutTemplate, Sparkles, Image as ImageIcon, Boxes, TrendingDown, Repeat, Bell, FileCode, Newspaper } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Users, KeyRound, Loader2, Ticket, Settings as SettingsIcon, Mail, FileText, CreditCard, Wallet, Star, ScrollText, Wand2, HeartPulse, Database, BookOpen, ClipboardCheck, History, LayoutTemplate, Sparkles, Image as ImageIcon, Boxes, TrendingDown, Repeat, Bell, FileCode, Newspaper, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/site/Logo";
 
@@ -55,12 +55,17 @@ function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [checking, setChecking] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
 
   useEffect(() => {
     const unsub = init();
     return unsub;
   }, [init]);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -90,6 +95,71 @@ function AdminLayout() {
 
   return (
     <div className="min-h-screen flex w-full bg-muted/20">
+      <div className="md:hidden sticky top-0 z-40 w-full self-start border-b bg-background">
+        <div className="flex h-14 items-center justify-between gap-3 px-4">
+          <div className="flex min-w-0 items-center gap-2">
+            <Logo size="sm" />
+            <span className="text-xs text-muted-foreground">Admin</span>
+          </div>
+          <button
+            type="button"
+            aria-label={mobileMenuOpen ? "Close admin menu" : "Open admin menu"}
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-background text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
+        {mobileMenuOpen && (
+          <nav aria-label="Mobile admin navigation" className="max-h-[72dvh] overflow-y-auto border-t p-2">
+            {items.map((it) => {
+              const active = it.exact ? pathname === it.to : pathname.startsWith(it.to);
+              return (
+                <Link
+                  key={it.to}
+                  to={it.to as any}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                    active ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted",
+                  )}
+                >
+                  <it.icon className="h-4 w-4 shrink-0" />
+                  {it.label}
+                </Link>
+              );
+            })}
+            <div className="my-2 border-t pt-2">
+              <p className="px-3 py-1 text-xs font-medium text-muted-foreground">Blog</p>
+              {[
+                { to: "/admin/blog/categories", label: "Blog Categories" },
+                { to: "/admin/blog/tags", label: "Blog Tags" },
+              ].map((item) => (
+                <Link key={item.to} to={item.to as any} onClick={() => setMobileMenuOpen(false)} className="flex min-h-10 items-center rounded-md px-3 pl-10 text-sm text-foreground hover:bg-muted">
+                  {item.label}
+                </Link>
+              ))}
+              <p className="px-3 py-1 text-xs font-medium text-muted-foreground">Pages</p>
+              {[
+                { to: "/admin/pages/about", label: "About" },
+                { to: "/admin/pages/contact", label: "Contact" },
+                { to: "/admin/pages/faq", label: "FAQ" },
+                { to: "/admin/pages/support", label: "Support Center" },
+                { to: "/admin/pages/track-order", label: "Track Order" },
+                { to: "/admin/pages/privacy", label: "Privacy Policy" },
+                { to: "/admin/pages/terms", label: "Terms & Conditions" },
+                { to: "/admin/pages/refund", label: "Refund Policy" },
+              ].map((item) => (
+                <Link key={item.to} to={item.to as any} onClick={() => setMobileMenuOpen(false)} className="flex min-h-10 items-center rounded-md px-3 pl-10 text-sm text-foreground hover:bg-muted">
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+            <div className="border-t px-3 py-3 text-xs text-muted-foreground">{user?.email}</div>
+          </nav>
+        )}
+      </div>
       <aside className="w-60 border-r bg-background hidden md:flex flex-col">
         <div className="px-5 py-4 border-b flex items-center gap-2">
           <Logo size="sm" />
