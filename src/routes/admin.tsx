@@ -65,7 +65,8 @@ function AdminLayout() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      navigate({ to: "/auth/login" });
+      // Preserve the requested admin route so successful sign-in returns to the admin panel.
+      navigate({ to: "/auth/login", search: { returnTo: pathname } });
       return;
     }
     (async () => {
