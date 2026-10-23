@@ -94,7 +94,7 @@ function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen flex w-full bg-muted/20">
+    <div className="min-h-screen flex flex-col md:flex-row w-full bg-muted/20">
       <div className="md:hidden sticky top-0 z-40 w-full self-start border-b bg-background">
         <div className="flex h-14 items-center justify-between gap-3 px-4">
           <div className="flex min-w-0 items-center gap-2">
