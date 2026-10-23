@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
+  useRouterState,
   createRootRouteWithContext,
   useRouter,
   HeadContent,
@@ -126,6 +127,8 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdminRoute = pathname.startsWith("/admin");
   const initAuth = useAuth((s) => s.init);
   const loadSettings = useSettings((s) => s.load);
   const favicon = useSiteFavicon();
@@ -159,10 +162,10 @@ function RootComponent() {
       <AnalyticsScripts />
       <SeoCenterInjector />
       <SetupGate />
-      <div className="pb-16 lg:pb-0">
+      <div className={isAdminRoute ? "" : "pb-16 lg:pb-0"}>
         <Outlet />
       </div>
-      <MobileBottomNav />
+      {!isAdminRoute && <MobileBottomNav />}
       <RecentlyPurchasedPopup />
       <SupportWidget />
       <Toaster position="top-center" richColors />
