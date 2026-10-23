@@ -204,6 +204,80 @@ export async function deliverEmail(
   return { ok: false, provider: "none", error: "no_provider_configured (set RESEND_API_KEY)" };
 }
 
+// Send the account welcome email immediately; other transactional workflows keep using the queue.
+export async function sendWelcomeEmailImmediately(email: string, name?: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: tpl, error: templateError } = await supabaseAdmin
+    .from("email_templates")
+    .select("subject, html_body, enabled")
+    .eq("template_key", "welcome")
+    .maybeSingle();
+  if (templateError) throw templateError;
+  if (!tpl) {
+    await supabaseAdmin.from("email_logs").insert({
+      template_key: "welcome",
+      recipient: email,
+      subject: "welcome",
+      status: "failed",
+      error_message: "template_not_found",
+      payload: { name: name ?? "there" },
+    });
+    return { ok: false, reason: "template_not_found" };
+  }
+  if (!tpl.enabled) return { ok: true, skipped: "template_disabled" as const };
+
+  const sender = await loadSenderSettings();
+  const vars = { site_name: sender.site_name ?? "TopupHut", name: name ?? "there" };
+  const subject = renderTemplate(tpl.subject, vars);
+  const html = renderTemplate(tpl.html_body, vars);
+  const sendingEnabled =
+    !!process.env.RESEND_API_KEY &&
+    !!sender.sender_email &&
+    (process.env.EMAILS_ENABLED ?? "false").toLowerCase() === "true";
+
+  if (!sendingEnabled) {
+    const issues = [
+      ...(!process.env.RESEND_API_KEY ? ["RESEND_API_KEY is not set"] : []),
+      ...(!sender.sender_email ? ["sender email is not configured"] : []),
+      ...((process.env.EMAILS_ENABLED ?? "false").toLowerCase() !== "true" ? ["EMAILS_ENABLED is not true"] : []),
+    ];
+    const { error } = await supabaseAdmin.from("email_logs").insert({
+      template_key: "welcome",
+      recipient: email,
+      subject,
+      status: "skipped",
+      rendered_html: html,
+      payload: vars,
+      error_message: issues.join("; "),
+    });
+    if (error) throw error;
+    return { ok: false, reason: "email_not_configured", issues };
+  }
+
+  const result = await deliverEmail({
+    to: email,
+    subject,
+    html,
+    from: sender.sender_email!,
+    fromName: sender.sender_name ?? sender.site_name ?? "TopupHut",
+    replyTo: sender.reply_to,
+  });
+  const { error } = await supabaseAdmin.from("email_logs").insert({
+    template_key: "welcome",
+    recipient: email,
+    subject,
+    status: result.ok ? "sent" : "failed",
+    rendered_html: html,
+    payload: vars,
+    provider: result.provider,
+    error_message: result.error ?? null,
+    sent_at: result.ok ? new Date().toISOString() : null,
+    attempts: 1,
+  });
+  if (error) throw error;
+  return result;
+}
+
 export async function retryEmail(id: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   await supabaseAdmin

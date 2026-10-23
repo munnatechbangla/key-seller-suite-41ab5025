@@ -1,5 +1,5 @@
 // Server-only helpers that fan out transactional emails for lifecycle events.
-import { enqueueEmail } from "./service.server";
+import { enqueueEmail, sendWelcomeEmailImmediately } from "./service.server";
 
 export async function sendOrderConfirmation(orderId: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -88,9 +88,5 @@ export async function sendRefundEmail(orderId: string, amount: number) {
 }
 
 export async function sendWelcomeEmail(email: string, name?: string) {
-  await enqueueEmail({
-    templateKey: "welcome",
-    recipient: email,
-    vars: { name: name ?? "there" },
-  });
+  return sendWelcomeEmailImmediately(email, name);
 }

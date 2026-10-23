@@ -13,6 +13,7 @@ export const Route = createFileRoute("/auth/register")({
 
 function RegisterPage() {
   const register = useAuth((s) => s.register);
+  const ensureWelcomeEmail = useServerFn(ensureWelcomeEmailFn);
   const navigate = useNavigate();
   const { returnTo } = Route.useSearch();
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -24,6 +25,18 @@ function RegisterPage() {
     if (!name || !email || password.length < 6) return toast.error("Please complete all fields (min 6 char password)");
     const { error } = await register(name, email, password);
     if (error) return toast.error(error);
+
+    // If email confirmation is disabled, send the welcome email now.
+    // If confirmation is required, /auth/callback sends it after verification.
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (sessionData.session) {
+      try {
+        await ensureWelcomeEmail();
+      } catch (emailError) {
+        console.error("[welcome-email] Could not send welcome email", emailError);
+      }
+    }
+
     toast.success("Account created! Check your email to verify.");
     navigate({ to: returnTo || "/account" });
   };

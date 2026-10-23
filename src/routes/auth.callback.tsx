@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { ensureWelcomeEmailFn } from "@/lib/emails/welcome.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth/callback")({
@@ -14,7 +16,8 @@ function safeReturnPath(value: string | null): string {
 }
 
 function AuthCallbackPage() {
-  const [message, setMessage] = useState("Completing Google sign-in…");
+  const [message, setMessage] = useState("Completing sign-in…");
+  const ensureWelcomeEmail = useServerFn(ensureWelcomeEmailFn);
 
   useEffect(() => {
     let cancelled = false;
@@ -44,6 +47,13 @@ function AuthCallbackPage() {
           throw new Error(url.searchParams.get("error_description") || hash.get("error_description") || "Google sign-in did not complete. Please try again.");
         }
 
+        // Welcome delivery must never block a successful sign-in.
+        try {
+          await ensureWelcomeEmail();
+        } catch (emailError) {
+          console.error("[welcome-email] Could not send welcome email", emailError);
+        }
+
         const next = safeReturnPath(sessionStorage.getItem("auth:redirect"));
         sessionStorage.removeItem("auth:redirect");
         if (!cancelled) window.location.replace(next);
@@ -55,7 +65,7 @@ function AuthCallbackPage() {
 
     void completeSignIn();
     return () => { cancelled = true; };
-  }, []);
+  }, [ensureWelcomeEmail]);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4">
