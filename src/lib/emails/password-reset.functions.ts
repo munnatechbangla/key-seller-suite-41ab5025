@@ -71,9 +71,19 @@ export const requestPasswordResetEmailFn = createServerFn({ method: "POST" })
       if (!senderEmail) return { ok: true };
       siteUrl = siteUrl.replace(/\/+$/, "");
 
+      const { data: account, error: accountLookupError } = await supabaseAdmin.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000,
+      });
+      if (accountLookupError) return { ok: true };
+      const matchingUser = account.users.find(
+        (user) => user.email?.trim().toLowerCase() === email,
+      );
+      if (!matchingUser?.email) return { ok: true };
+
       const { data: generated, error: generateError } = await supabaseAdmin.auth.admin.generateLink({
         type: "recovery",
-        email,
+        email: matchingUser.email,
         options: { redirectTo: `${siteUrl}/auth/reset` },
       });
       const actionLink = generated?.properties?.action_link;
