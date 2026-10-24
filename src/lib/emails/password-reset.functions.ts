@@ -71,13 +71,11 @@ export const requestPasswordResetEmailFn = createServerFn({ method: "POST" })
       if (!senderEmail) return { ok: true };
       siteUrl = siteUrl.replace(/\/+$/, "");
 
-      const matchingUserResult = await supabaseAdmin.auth.admin.getUserByEmail(email);
-      const matchingUser = matchingUserResult.data.user;
-      if (matchingUserResult.error || !matchingUser?.email) return { ok: true };
-
+      // Supabase Admin API generates recovery links directly for existing accounts.
+      // For unknown accounts it returns an error; the public response remains generic.
       const { data: generated, error: generateError } = await supabaseAdmin.auth.admin.generateLink({
         type: "recovery",
-        email: matchingUser.email,
+        email,
         options: { redirectTo: `${siteUrl}/auth/reset` },
       });
       const actionLink = generated?.properties?.action_link;
