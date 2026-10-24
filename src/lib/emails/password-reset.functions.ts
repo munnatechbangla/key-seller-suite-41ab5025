@@ -21,7 +21,7 @@ export const requestPasswordResetEmailFn = createServerFn({ method: "POST" })
       if (!resendKey || !emailsEnabled) return { ok: true };
 
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data: recent, error: rateLimitError } = await supabaseAdmin
+      const { count: recentCount, error: rateLimitError } = await supabaseAdmin
         .from("email_logs")
         .select("id", { count: "exact", head: true })
         .eq("template_key", "password_reset")
@@ -29,7 +29,7 @@ export const requestPasswordResetEmailFn = createServerFn({ method: "POST" })
         .gte("created_at", new Date(Date.now() - 15 * 60 * 1000).toISOString());
 
       // Fail closed if the rate-limit check cannot be performed.
-      if (rateLimitError || (recent !== null && (recent as unknown as number) >= 3)) {
+      if (rateLimitError || (recentCount ?? 0) >= 3) {
         return { ok: true };
       }
 
