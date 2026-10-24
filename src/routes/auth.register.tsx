@@ -1,7 +1,10 @@
 import { siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { AuthShell, SocialButtons } from "@/components/site/AuthShell";
 import { useAuth } from "@/lib/stores";
+import { ensureWelcomeEmailFn } from "@/lib/emails/welcome.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth/register")({
