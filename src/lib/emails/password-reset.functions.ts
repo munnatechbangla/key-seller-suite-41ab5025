@@ -14,11 +14,20 @@ export const requestPasswordResetEmailFn = createServerFn({ method: "POST" })
     try {
       // A service-role key is required to create a recovery link without exposing
       // privileged credentials to the browser. Fail closed if it is not configured.
-      if (!getRuntimeEnv("SUPABASE_SERVICE_ROLE_KEY")) return { ok: true };
+      if (!getRuntimeEnv("SUPABASE_SERVICE_ROLE_KEY")) {
+        console.error("[password-reset-email] Missing SUPABASE_SERVICE_ROLE_KEY runtime binding");
+        return { ok: true };
+      }
 
       const resendKey = getRuntimeEnv("RESEND_API_KEY");
       const emailsEnabled = (getRuntimeEnv("EMAILS_ENABLED") ?? "false").toLowerCase() === "true";
-      if (!resendKey || !emailsEnabled) return { ok: true };
+      if (!resendKey || !emailsEnabled) {
+        console.error("[password-reset-email] Email provider is not enabled", {
+          hasResendKey: Boolean(resendKey),
+          emailsEnabled,
+        });
+        return { ok: true };
+      }
 
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { count: recentCount, error: rateLimitError } = await supabaseAdmin
@@ -30,6 +39,8 @@ export const requestPasswordResetEmailFn = createServerFn({ method: "POST" })
 
       // Fail closed if the rate-limit check cannot be performed.
       if (rateLimitError || (recentCount ?? 0) >= 3) {
+        if (rateLimitError) console.error("[password-reset-email] Rate-limit lookup failed", rateLimitError.message);
+        else console.warn("[password-reset-email] Rate limit reached");
         return { ok: true };
       }
 
@@ -38,13 +49,22 @@ export const requestPasswordResetEmailFn = createServerFn({ method: "POST" })
         .select("subject, html_body, enabled")
         .eq("template_key", "password_reset")
         .maybeSingle();
-      if (templateError || !template?.enabled) return { ok: true };
+      if (templateError || !template?.enabled) {
+        console.error("[password-reset-email] Password reset template unavailable", {
+          queryFailed: Boolean(templateError),
+          enabled: Boolean(template?.enabled),
+        });
+        return { ok: true };
+      }
 
       const { data: settings, error: settingsError } = await supabaseAdmin
         .from("site_settings")
         .select("group_key, setting_key, value")
         .in("group_key", ["email", "site", "seo"]);
-      if (settingsError) return { ok: true };
+      if (settingsError) {
+        console.error("[password-reset-email] Could not load email settings", settingsError.message);
+        return { ok: true };
+      }
 
       let senderEmail = "";
       let senderName = "TopupHut";
@@ -68,7 +88,10 @@ export const requestPasswordResetEmailFn = createServerFn({ method: "POST" })
         }
       }
 
-      if (!senderEmail) return { ok: true };
+      if (!senderEmail) {
+        console.error("[password-reset-email] Sender email is not configured");
+        return { ok: true };
+      }
       siteUrl = siteUrl.replace(/\/+$/, "");
 
       // Supabase Admin API generates recovery links directly for existing accounts.
@@ -79,7 +102,15 @@ export const requestPasswordResetEmailFn = createServerFn({ method: "POST" })
         options: { redirectTo: `${siteUrl}/auth/reset` },
       });
       const actionLink = generated?.properties?.action_link;
-      if (generateError || !actionLink || !generated.user?.email) return { ok: true };
+      if (generateError || !actionLink || !generated.user?.email) {
+        console.error("[password-reset-email] Supabase recovery link generation failed", {
+          hasError: Boolean(generateError),
+          hasActionLink: Boolean(actionLink),
+          hasUserEmail: Boolean(generated?.user?.email),
+          error: generateError?.message,
+        });
+        return { ok: true };
+      }
 
       const { renderTemplate } = await import("./render");
       const vars = { site_name: siteName, reset_url: actionLink };
@@ -96,7 +127,7 @@ export const requestPasswordResetEmailFn = createServerFn({ method: "POST" })
       });
 
       // Do not store rendered HTML or the recovery URL: it is a bearer credential.
-      await supabaseAdmin.from("email_logs").insert({
+      const { error: logError } = await supabaseAdmin.from("email_logs").insert({
         template_key: "password_reset",
         recipient: generated.user.email,
         subject,
@@ -107,6 +138,7 @@ export const requestPasswordResetEmailFn = createServerFn({ method: "POST" })
         sent_at: delivery.ok ? new Date().toISOString() : null,
         attempts: 1,
       });
+      if (logError) console.error("[password-reset-email] Could not write email log", logError.message);
     } catch (error) {
       // Avoid logging the email address or the generated recovery link.
       console.error("[password-reset-email] Request could not be processed", error instanceof Error ? error.message : "unknown error");
