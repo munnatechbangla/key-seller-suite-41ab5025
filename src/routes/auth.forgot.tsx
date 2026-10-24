@@ -1,7 +1,8 @@
 import { siteName } from "@/lib/cms/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { AuthShell } from "@/components/site/AuthShell";
-import { supabase } from "@/integrations/supabase/client";
+import { requestPasswordResetEmailFn } from "@/lib/emails/password-reset.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth/forgot")({
@@ -10,19 +11,23 @@ export const Route = createFileRoute("/auth/forgot")({
 });
 
 function ForgotPage() {
+  const requestPasswordResetEmail = useServerFn(requestPasswordResetEmailFn);
+
   return (
     <AuthShell title="Forgot password?" subtitle="We'll email you a link to reset it">
       <form
         onSubmit={async (e) => {
           e.preventDefault();
           const fd = new FormData(e.currentTarget);
-          const email = String(fd.get("email") ?? "");
+          const email = String(fd.get("email") ?? "").trim();
           if (!email) return toast.error("Enter your email");
-          const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/auth/reset`,
-          });
-          if (error) return toast.error(error.message);
-          toast.success("If that email exists, a reset link has been sent.");
+          try {
+            await requestPasswordResetEmail({ data: { email } });
+            toast.success("If that email exists, a reset link has been sent.");
+          } catch {
+            // Keep the response generic to avoid revealing whether an account exists.
+            toast.success("If that email exists, a reset link has been sent.");
+          }
         }}
         className="space-y-4"
       >
