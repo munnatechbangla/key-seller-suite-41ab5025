@@ -4,6 +4,7 @@
 // Until then, emails are queued and logged with status='skipped' (or 'pending'
 // if you want to replay them later after configuring a sender domain).
 import { renderTemplate } from "./render";
+import { getRuntimeEnv } from "@/lib/runtime-env";
 
 type EnqueueArgs = {
   templateKey: string;
@@ -43,8 +44,8 @@ async function loadSenderSettings() {
 
 export async function getEmailSystemStatus() {
   const sender = await loadSenderSettings();
-  const hasProvider = !!process.env.RESEND_API_KEY;
-  const enabledFlag = (process.env.EMAILS_ENABLED ?? "false").toLowerCase() === "true";
+  const hasProvider = !!getRuntimeEnv("RESEND_API_KEY");
+  const enabledFlag = (getRuntimeEnv("EMAILS_ENABLED") ?? "false").toLowerCase() === "true";
   const hasSender = !!sender.sender_email;
   const sendingEnabled = hasProvider && hasSender && enabledFlag;
   const issues: string[] = [];
@@ -93,7 +94,7 @@ export async function enqueueEmail(args: EnqueueArgs) {
   // Dev mode: no sender domain configured OR sending not enabled globally.
   const sendingEnabled =
     !!sender.sender_email &&
-    (process.env.EMAILS_ENABLED ?? "false").toLowerCase() === "true";
+    (getRuntimeEnv("EMAILS_ENABLED") ?? "false").toLowerCase() === "true";
 
   const status = sendingEnabled ? "pending" : "skipped";
   await supabaseAdmin.from("email_logs").insert({
@@ -115,7 +116,7 @@ export async function processPendingEmails(limit = 25) {
   const sender = await loadSenderSettings();
   const sendingEnabled =
     !!sender.sender_email &&
-    (process.env.EMAILS_ENABLED ?? "false").toLowerCase() === "true";
+    (getRuntimeEnv("EMAILS_ENABLED") ?? "false").toLowerCase() === "true";
   if (!sendingEnabled) return { processed: 0, reason: "dev_mode" };
 
   const { data: rows } = await supabaseAdmin
@@ -174,7 +175,7 @@ type DeliverArgs = {
 export async function deliverEmail(
   args: DeliverArgs,
 ): Promise<{ ok: boolean; provider: string; error?: string }> {
-  const resendKey = process.env.RESEND_API_KEY;
+  const resendKey = getRuntimeEnv("RESEND_API_KEY");
   if (resendKey) {
     try {
       const res = await fetch("https://api.resend.com/emails", {
@@ -231,15 +232,15 @@ export async function sendWelcomeEmailImmediately(email: string, name?: string) 
   const subject = renderTemplate(tpl.subject, vars);
   const html = renderTemplate(tpl.html_body, vars);
   const sendingEnabled =
-    !!process.env.RESEND_API_KEY &&
+    !!getRuntimeEnv("RESEND_API_KEY") &&
     !!sender.sender_email &&
-    (process.env.EMAILS_ENABLED ?? "false").toLowerCase() === "true";
+    (getRuntimeEnv("EMAILS_ENABLED") ?? "false").toLowerCase() === "true";
 
   if (!sendingEnabled) {
     const issues = [
-      ...(!process.env.RESEND_API_KEY ? ["RESEND_API_KEY is not set"] : []),
+      ...(!getRuntimeEnv("RESEND_API_KEY") ? ["RESEND_API_KEY is not set"] : []),
       ...(!sender.sender_email ? ["sender email is not configured"] : []),
-      ...((process.env.EMAILS_ENABLED ?? "false").toLowerCase() !== "true" ? ["EMAILS_ENABLED is not true"] : []),
+      ...((getRuntimeEnv("EMAILS_ENABLED") ?? "false").toLowerCase() !== "true" ? ["EMAILS_ENABLED is not true"] : []),
     ];
     const { error } = await supabaseAdmin.from("email_logs").insert({
       template_key: "welcome",
