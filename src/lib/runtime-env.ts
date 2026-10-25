@@ -32,8 +32,8 @@ function stringBindings(env: unknown): Record<string, string> {
 export async function bridgeRuntimeEnv(env: unknown): Promise<void> {
   const g = globalThis as RuntimeEnvGlobal;
 
-  // Stash the raw Cloudflare env so getRuntimeEnv can read it directly, even
-  // for keys that are not enumerable at bridge time (Proxies, lazy bindings).
+  // Keep the current request's Cloudflare bindings available directly. Runtime
+  // bindings must take precedence over build-time/process.env fallbacks.
   if (env && typeof env === "object") {
     g.__digitalNestCloudflareEnv = env as Record<string, unknown>;
   }
@@ -62,9 +62,11 @@ export async function bridgeRuntimeEnv(env: unknown): Promise<void> {
   for (const [key, value] of Object.entries(bindings)) {
     for (const target of targets) {
       try {
-        if (!target[key]) target[key] = value;
+        // Cloudflare's current runtime binding wins over any stale value
+        // injected into process.env at build time (e.g. EMAILS_ENABLED=false).
+        target[key] = value;
       } catch {
-        // Some runtimes expose a readonly env object; the global fallback above remains available.
+        // Some runtimes expose a readonly env object; the runtime stores above remain available.
       }
     }
   }
@@ -73,31 +75,28 @@ export async function bridgeRuntimeEnv(env: unknown): Promise<void> {
 export function getRuntimeEnv(name: string): string | undefined {
   const g = globalThis as RuntimeEnvGlobal;
 
-  // 1. Bridged process.env (Node dev + populated Cloudflare bridge).
+  // 1. Prefer the current Nitro/Cloudflare request bindings over process.env.
+  // A build-time process.env value can be stale and otherwise mask a dashboard
+  // variable/secret added to the active Cloudflare Worker deployment.
+  const nitro = readStringBinding(g.__env__, name);
+  if (nitro) return nitro;
+
+  const cf = readStringBinding(g.__digitalNestCloudflareEnv, name);
+  if (cf) return cf;
+
+  // 2. Bridged runtime env store (populated by bridgeRuntimeEnv).
+  const bridged = g.__digitalNestRuntimeEnv?.[name];
+  if (typeof bridged === "string" && bridged) return bridged;
+
+  // 3. Process env is a fallback for local development and non-Cloudflare hosts.
   try {
     if (typeof process !== "undefined") {
       const value = process.env?.[name];
       if (typeof value === "string" && value) return value;
     }
   } catch {
-    // Ignore — some runtimes throw on bare `process` access.
+    // Ignore — some runtimes throw on bare process access.
   }
-
-  // 2. Bridged runtime env store (populated by bridgeRuntimeEnv).
-  const bridged = g.__digitalNestRuntimeEnv?.[name];
-  if (typeof bridged === "string" && bridged) return bridged;
-
-  // 3. Raw Cloudflare Worker env object — direct property read handles
-  //    Proxy-backed bindings and secrets that aren't enumerable.
-  const cf = readStringBinding(g.__digitalNestCloudflareEnv, name);
-  if (cf) return cf;
-
-  // 4. Nitro's cloudflare-module runtime stores Worker bindings on
-  //    globalThis.__env__ before dispatching the request. TanStack server
-  //    function requests can reach middleware through this Nitro request path,
-  //    so auth middleware must be able to read this source too.
-  const nitro = readStringBinding(g.__env__, name);
-  if (nitro) return nitro;
 
   return undefined;
 }
