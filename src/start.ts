@@ -1,20 +1,42 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
-import { env as cloudflareEnv } from "cloudflare:workers";
+import { getRequest } from "@tanstack/react-start/server";
 
 import { renderErrorPage } from "./lib/error-page";
 import { bridgeRuntimeEnv } from "./lib/runtime-env";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
-// Use Cloudflare's supported runtime binding API. A standard Fetch Request does
-// not expose request.runtime.cloudflare.env, so attempting to read bindings
-// from getRequest() can silently leave server functions with stale build-time
-// values such as EMAILS_ENABLED=false.
+// Ensures Cloudflare Worker bindings are bridged into process.env / the runtime
+// env store BEFORE any server function or route handler runs. TanStack server
+// function requests are dispatched by Nitro's cloudflare-module preset, which
+// stashes the raw Worker `env` object on `globalThis.__env__` per request.
+// src/server.ts's bridge only runs for the SSR entry; server-fn RPC calls can
+// reach the handler through Nitro's router without touching src/server.ts, so
+// we re-bridge here for every server request.
 const bridgeEnvMiddleware = createMiddleware().server(async ({ next }) => {
-  try {
-    await bridgeRuntimeEnv(cloudflareEnv);
-  } catch (error) {
-    // Keep the request alive; email status/logging will surface missing config.
-    console.error("[runtime-env] Could not bridge Cloudflare bindings", error);
+  const g = globalThis as typeof globalThis & {
+    __env__?: Record<string, unknown>;
+    __digitalNestCloudflareEnv?: Record<string, unknown>;
+  };
+
+  // Nitro exposes Cloudflare bindings on the request runtime. Prefer that
+  // request-scoped source over global fallbacks so a stale build-time value
+  // cannot mask a Production dashboard variable or secret.
+  const request = getRequest() as Request & {
+    runtime?: { cloudflare?: { env?: Record<string, unknown> } };
+  };
+  const requestEnv = request?.runtime?.cloudflare?.env;
+  const env = requestEnv ?? g.__digitalNestCloudflareEnv ?? g.__env__;
+
+  if (requestEnv) {
+    g.__digitalNestCloudflareEnv = requestEnv;
+  }
+
+  if (env) {
+    try {
+      await bridgeRuntimeEnv(env);
+    } catch {
+      // Non-fatal: fall through and let downstream code report the missing env.
+    }
   }
   return next();
 });
