@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { getRuntimeEnv } from "@/lib/runtime-env";
 
 async function assertAdmin(ctx: { supabase: any; userId: string }) {
   const { data, error } = await ctx.supabase.rpc("has_role", {
@@ -103,7 +104,7 @@ export const adminSendTestEmailFn = createServerFn({ method: "POST" })
     if (!s.sender_email) {
       return { ok: false, error: "Configure sender email in Settings → Email first." };
     }
-    const provider = process.env.RESEND_API_KEY ? "resend" : "none";
+    const provider = getRuntimeEnv("RESEND_API_KEY") ? "resend" : "none";
     if (provider === "none") {
       return { ok: false, error: "No provider configured. Add RESEND_API_KEY to send real emails." };
     }
