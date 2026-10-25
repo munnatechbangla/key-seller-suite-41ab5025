@@ -1,4 +1,5 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 
 import { renderErrorPage } from "./lib/error-page";
 import { bridgeRuntimeEnv } from "./lib/runtime-env";
@@ -16,7 +17,20 @@ const bridgeEnvMiddleware = createMiddleware().server(async ({ next }) => {
     __env__?: Record<string, unknown>;
     __digitalNestCloudflareEnv?: Record<string, unknown>;
   };
-  const env = g.__env__ ?? g.__digitalNestCloudflareEnv;
+
+  // Nitro exposes Cloudflare bindings on the request runtime. Prefer that
+  // request-scoped source over global fallbacks so a stale build-time value
+  // cannot mask a Production dashboard variable or secret.
+  const request = getRequest() as Request & {
+    runtime?: { cloudflare?: { env?: Record<string, unknown> } };
+  };
+  const requestEnv = request?.runtime?.cloudflare?.env;
+  const env = requestEnv ?? g.__digitalNestCloudflareEnv ?? g.__env__;
+
+  if (requestEnv) {
+    g.__digitalNestCloudflareEnv = requestEnv;
+  }
+
   if (env) {
     try {
       await bridgeRuntimeEnv(env);
