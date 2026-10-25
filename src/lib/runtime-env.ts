@@ -75,20 +75,22 @@ export async function bridgeRuntimeEnv(env: unknown): Promise<void> {
 export function getRuntimeEnv(name: string): string | undefined {
   const g = globalThis as RuntimeEnvGlobal;
 
-  // 1. Prefer the current Nitro/Cloudflare request bindings over process.env.
-  // A build-time process.env value can be stale and otherwise mask a dashboard
-  // variable/secret added to the active Cloudflare Worker deployment.
-  const nitro = readStringBinding(g.__env__, name);
-  if (nitro) return nitro;
-
+  // Prefer the raw Cloudflare Worker bindings captured for this request.
+  // Nitro's global __env__ can be a wrapper/build-time view and must not mask
+  // the actual Worker binding (for example EMAILS_ENABLED=true in Production).
   const cf = readStringBinding(g.__digitalNestCloudflareEnv, name);
   if (cf) return cf;
 
-  // 2. Bridged runtime env store (populated by bridgeRuntimeEnv).
+  // Next use the values bridged from the actual Cloudflare request bindings.
   const bridged = g.__digitalNestRuntimeEnv?.[name];
   if (typeof bridged === "string" && bridged) return bridged;
 
-  // 3. Process env is a fallback for local development and non-Cloudflare hosts.
+  // Nitro fallback for server-function requests when no raw Worker env has
+  // been captured yet.
+  const nitro = readStringBinding(g.__env__, name);
+  if (nitro) return nitro;
+
+  // Process env is only a fallback for local development and non-Cloudflare hosts.
   try {
     if (typeof process !== "undefined") {
       const value = process.env?.[name];
