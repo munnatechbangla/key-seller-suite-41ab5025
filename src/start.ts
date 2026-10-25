@@ -25,7 +25,7 @@ const bridgeEnvMiddleware = createMiddleware().server(async ({ next }) => {
     runtime?: { cloudflare?: { env?: Record<string, unknown> } };
   };
   const requestEnv = request?.runtime?.cloudflare?.env;
-  const env = requestEnv ?? g.__env__ ?? g.__digitalNestCloudflareEnv;
+  const env = requestEnv ?? g.__digitalNestCloudflareEnv ?? g.__env__;
 
   if (requestEnv) {
     g.__digitalNestCloudflareEnv = requestEnv;
