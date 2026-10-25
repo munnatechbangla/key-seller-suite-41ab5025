@@ -81,14 +81,16 @@ export function getRuntimeEnv(name: string): string | undefined {
   const cf = readStringBinding(g.__digitalNestCloudflareEnv, name);
   if (cf) return cf;
 
-  // Next use the values bridged from the actual Cloudflare request bindings.
-  const bridged = g.__digitalNestRuntimeEnv?.[name];
-  if (typeof bridged === "string" && bridged) return bridged;
-
-  // Nitro fallback for server-function requests when no raw Worker env has
-  // been captured yet.
+  // Nitro's current Cloudflare bindings are the authoritative fallback when
+  // this server-function request does not expose request.runtime.cloudflare.env.
+  // Read them before the bridged cache: that cache is merged across calls and
+  // can retain a stale value when a binding was not enumerable during bridging.
   const nitro = readStringBinding(g.__env__, name);
   if (nitro) return nitro;
+
+  // Use the bridged store only after checking the current request's sources.
+  const bridged = g.__digitalNestRuntimeEnv?.[name];
+  if (typeof bridged === "string" && bridged) return bridged;
 
   // Process env is only a fallback for local development and non-Cloudflare hosts.
   try {
