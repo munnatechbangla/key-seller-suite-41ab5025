@@ -220,6 +220,13 @@ function Hero() {
 
 function FloatingCard({ product, delay = "0s", duration = "10s", size = "md", className = "" }: { product: Product; delay?: string; duration?: string; size?: "sm" | "md"; className?: string }) {
   const isMd = size === "md";
+  const { url: thumbnailSrc } = useResolvedMediaUrl(product.thumbnailUrl);
+  const [thumbnailFailed, setThumbnailFailed] = useState(false);
+
+  useEffect(() => {
+    setThumbnailFailed(false);
+  }, [product.id, product.thumbnailUrl, thumbnailSrc]);
+
   return (
     <Link
       to="/products/$slug"
@@ -235,10 +242,17 @@ function FloatingCard({ product, delay = "0s", duration = "10s", size = "md", cl
         <div className="absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
         <div className="flex items-center gap-3">
           <div className={`${isMd ? "h-12 w-12" : "h-11 w-11"} shrink-0 rounded-xl bg-gradient-primary grid place-items-center overflow-hidden text-xl shadow-glow ring-1 ring-white/20`}>
-            {product.thumbnailUrl ? (
-              <img src={product.thumbnailUrl} alt={product.name} className="h-full w-full object-cover" loading="lazy" decoding="async" />
+            {thumbnailSrc && !thumbnailFailed ? (
+              <img
+                src={thumbnailSrc}
+                alt={product.name}
+                className="h-full w-full object-cover"
+                loading="lazy"
+                decoding="async"
+                onError={() => setThumbnailFailed(true)}
+              />
             ) : (
-              <span>{product.emoji}</span>
+              <span aria-hidden="true">{product.emoji}</span>
             )}
           </div>
           <div className="flex-1 min-w-0">
