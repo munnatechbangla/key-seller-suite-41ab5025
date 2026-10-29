@@ -19,7 +19,7 @@ import { StickyBuyBar } from "@/components/site/StickyBuyBar";
 import { productQuery, relatedQuery, productsBySlugsQuery, useProduct, useRelated, useProductsBySlugs } from "@/lib/catalog";
 import { supabase } from "@/integrations/supabase/client";
 import { reviewsQuery } from "@/lib/reviews";
-import { useCart, useWishlist, useCompare, useRecent } from "@/lib/stores";
+import { useCart, useWishlist, useRecent } from "@/lib/stores";
 import { formatPrice } from "@/lib/product-price";
 import { useEffect, useRef, useState } from "react";
 import { VariantSelector } from "@/components/site/VariantSelector";
@@ -27,7 +27,7 @@ import { ProductCustomFields, type ProductCustomFieldsHandle } from "@/component
 import type { ProductVariant } from "@/lib/product-variants.functions";
 import { listProductAttributesFn } from "@/lib/product-variants.functions";
 import {
-  Star, Zap, Shield, Heart, GitCompare, ShoppingCart, Check,
+  Star, Zap, Shield, Heart, ShoppingCart, Check,
   Truck, Lock, Package,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -212,7 +212,6 @@ function LegacyProductPage() {
   const hasAttrs = !!product.hasAttributes || (attrsProbe.data?.length ?? 0) > 0;
   const cart = useCart();
   const wish = useWishlist();
-  const cmp = useCompare();
   const recent = useRecent((s) => s.slugs);
 
   // Phase 4.3B: dynamic Rich Content blocks — falls back to static description when none.
@@ -444,9 +443,6 @@ function LegacyProductPage() {
           <div className="flex min-w-0 gap-2 flex-wrap text-sm">
             <button onClick={() => { wish.toggle(product.slug); toast(wish.has(product.slug) ? "Removed from wishlist" : "Added to wishlist"); }} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border ${wish.has(product.slug) ? "bg-accent/10 border-accent text-accent" : "border-border hover:bg-muted"}`}>
               <Heart className={`h-4 w-4 ${wish.has(product.slug) ? "fill-accent" : ""}`} /> Wishlist
-            </button>
-            <button onClick={() => { cmp.toggle(product.slug); toast(cmp.has(product.slug) ? "Removed from compare" : "Added to compare"); }} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border ${cmp.has(product.slug) ? "bg-primary/10 border-primary text-primary" : "border-border hover:bg-muted"}`}>
-              <GitCompare className="h-4 w-4" /> Compare
             </button>
             <div className="min-w-0 sm:ml-auto">
               <ShareButtons
