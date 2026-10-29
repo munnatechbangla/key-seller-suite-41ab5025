@@ -165,7 +165,6 @@ const makeSlugList = (name: string) =>
   );
 
 export const useWishlist = makeSlugList(storageKey("wishlist"));
-export const useCompare = makeSlugList(storageKey("compare"));
 
 type RecentState = {
   slugs: string[];
