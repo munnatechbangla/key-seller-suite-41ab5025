@@ -161,11 +161,11 @@ function Hero() {
               }
             }
           `}</style>
-          <h1 className="topuphut-hero-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.08] tracking-tight">
+          <h1 className="topuphut-hero-heading text-[clamp(1.65rem,7.4vw,2.25rem)] sm:text-5xl lg:text-6xl font-extrabold leading-[1.12] tracking-tight">
             {hero.title.lead}
             <span className="topuphut-hero-accent block text-gradient">{hero.title.accent}</span>
           </h1>
-          <p className="text-lg text-white/75 max-w-xl leading-relaxed">{hero.description}</p>
+          <p className="text-base sm:text-lg text-white/75 max-w-xl leading-relaxed">{hero.description}</p>
           <div className="flex flex-wrap gap-3 pt-2">
             <Link
               to={hero.primaryCta.to}
