@@ -161,7 +161,7 @@ function Hero() {
               }
             }
           `}</style>
-          <h1 className="topuphut-hero-heading text-[clamp(1.65rem,7.4vw,2.25rem)] sm:text-5xl lg:text-6xl font-extrabold leading-[1.12] tracking-tight">
+          <h1 className="topuphut-hero-heading text-[clamp(1.75rem,8.1vw,2.4rem)] sm:text-5xl lg:text-6xl font-extrabold leading-[1.16] tracking-tight">
             {hero.title.lead}
             <span className="topuphut-hero-accent block text-gradient">{hero.title.accent}</span>
           </h1>
