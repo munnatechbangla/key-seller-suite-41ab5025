@@ -87,6 +87,11 @@ export type HomeProductSection = {
   limit: number;
   manualProductSlugs?: string[];
   countdown?: HomeSectionCountdown;
+  moreButton?: {
+    enabled: boolean;
+    label: string;
+    url: string;
+  };
 };
 
 
