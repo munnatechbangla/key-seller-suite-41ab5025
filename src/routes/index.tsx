@@ -138,9 +138,32 @@ function Hero() {
             <BadgeIcon className="h-4 w-4 text-accent" />
             <span className="min-w-0 truncate">{hero.badge.text}</span>
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight">
+          <style>{`
+            @keyframes topuphut-hero-enter {
+              from { opacity: 0; transform: translateY(12px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes topuphut-gradient-reveal {
+              from { opacity: 0; background-position: 100% 50%; }
+              to { opacity: 1; background-position: 0% 50%; }
+            }
+            .topuphut-hero-heading {
+              animation: topuphut-hero-enter 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+              text-wrap: balance;
+            }
+            .topuphut-hero-accent {
+              background-size: 200% 100%;
+              animation: topuphut-gradient-reveal 900ms ease-out 180ms both;
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .topuphut-hero-heading, .topuphut-hero-accent {
+                animation: none !important;
+              }
+            }
+          `}</style>
+          <h1 className="topuphut-hero-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.08] tracking-tight">
             {hero.title.lead}
-            <span className="block text-gradient">{hero.title.accent}</span>
+            <span className="topuphut-hero-accent block text-gradient">{hero.title.accent}</span>
           </h1>
           <p className="text-lg text-white/75 max-w-xl leading-relaxed">{hero.description}</p>
           <div className="flex flex-wrap gap-3 pt-2">
