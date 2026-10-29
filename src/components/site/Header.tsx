@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Heart, ShoppingCart, User, Search, Menu, X, GitCompare } from "lucide-react";
+import { Heart, ShoppingCart, User, Search, Menu, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useCart, useWishlist, useCompare, useAuth } from "@/lib/stores";
+import { useCart, useWishlist, useAuth } from "@/lib/stores";
 import { useHomepage } from "@/lib/cms/homepage";
 import { useCmsHeaderPages } from "@/lib/cms/nav-pages";
 import { AnnouncementBar } from "@/components/site/AnnouncementBar";
@@ -18,7 +18,6 @@ export function Header() {
   const navigate = useNavigate();
   const cartCount = useCart((s) => s.count());
   const wishCount = useWishlist((s) => s.slugs.length);
-  const cmpCount = useCompare((s) => s.slugs.length);
   const user = useAuth((s) => s.user);
   const navItems = useHomepage((s) => s.config?.headerNav?.items);
   const cmsPages = useCmsHeaderPages();
@@ -87,7 +86,6 @@ export function Header() {
 
           <div className="flex items-center gap-0.5 sm:gap-1 ml-auto md:ml-0 shrink-0">
             <div className="hidden md:block mr-1"><ThemeToggle /></div>
-            <IconLink to="/compare" label="Compare" badge={cmpCount} className="hidden sm:grid"><GitCompare className="h-5 w-5" /></IconLink>
             <IconLink to="/wishlist" label="Wishlist" badge={wishCount} className="hidden sm:grid"><Heart className="h-5 w-5" /></IconLink>
             <IconLink to={user ? "/account" : "/auth/login"} label="Account"><User className="h-5 w-5" /></IconLink>
             <button
@@ -141,9 +139,6 @@ export function Header() {
                 </div>
               </form>
               <div className="flex sm:hidden items-center gap-2 pt-2">
-                <Link to="/compare" onClick={() => setOpen(false)} className="flex-1 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-muted flex items-center gap-2">
-                  <GitCompare className="h-4 w-4" /> Compare {cmpCount ? `(${cmpCount})` : ""}
-                </Link>
                 <Link to="/wishlist" onClick={() => setOpen(false)} className="flex-1 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-muted flex items-center gap-2">
                   <Heart className="h-4 w-4" /> Wishlist {wishCount ? `(${wishCount})` : ""}
                 </Link>
