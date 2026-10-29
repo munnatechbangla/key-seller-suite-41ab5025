@@ -36,10 +36,10 @@ export type ProductSection = {
 };
 
 export const heroConfig: HeroConfig = {
-  badge: { icon: "Sparkles", text: "Trusted by 200,000+ customers worldwide" },
-  title: { lead: "Premium digital products,", accent: "delivered in seconds." },
+  badge: { icon: "Sparkles", text: "Your Trusted Digital Store" },
+  title: { lead: "Your Digital World,", accent: "Made Better." },
   description:
-    "ChatGPT Plus, Netflix, Canva Pro, Spotify, IPTV, software keys & gift cards — up to 70% off retail. Instant activation, lifetime warranty, 24/7 support.",
+    "Discover AI tools, premium subscriptions, software licenses, gift cards and more. Competitive prices, clear delivery details and helpful customer support—all in one place.",
   ctas: [
     { label: "Browse Products", to: "/products", variant: "primary", icon: "ArrowRight" },
     { label: "Watch Demo", href: "#", variant: "ghost", icon: "Play" },
