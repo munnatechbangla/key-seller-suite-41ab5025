@@ -367,13 +367,46 @@ function HomepageBuilder() {
                     onChange={(slugs) => set({ ...it, manualProductSlugs: slugs })}
                   />
                 )}
+                <div className="rounded-lg border p-3 space-y-3">
+                  <Toggle
+                    label="Enable More button"
+                    value={it.moreButton?.enabled ?? false}
+                    onChange={(enabled) => set({
+                      ...it,
+                      moreButton: {
+                        enabled,
+                        label: it.moreButton?.label ?? "View all",
+                        url: it.moreButton?.url ?? "",
+                      },
+                    })}
+                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Field
+                      label="More button label"
+                      value={it.moreButton?.label ?? "View all"}
+                      onChange={(label) => set({
+                        ...it,
+                        moreButton: { enabled: it.moreButton?.enabled ?? false, label, url: it.moreButton?.url ?? "" },
+                      })}
+                    />
+                    <Field
+                      label="More button URL"
+                      value={it.moreButton?.url ?? ""}
+                      onChange={(url) => set({
+                        ...it,
+                        moreButton: { enabled: it.moreButton?.enabled ?? false, label: it.moreButton?.label ?? "View all", url },
+                      })}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">The button appears only when enabled and a URL is provided. Use a path like /products or a full URL.</p>
+                </div>
                 <SectionCountdownEditor
                   countdown={it.countdown}
                   onChange={(c) => set({ ...it, countdown: c })}
                 />
               </>
             )}
-            makeNew={() => ({ id: newId("psec"), enabled: true, eyebrow: "New section", title: "Untitled", subtitle: "", source: "featured", limit: 8, manualProductSlugs: [], countdown: { enabled: false, endsAt: "", label: "", hideAfterExpiry: true, expiredMessage: "" } })}
+            makeNew={() => ({ id: newId("psec"), enabled: true, eyebrow: "New section", title: "Untitled", subtitle: "", source: "featured", limit: 8, manualProductSlugs: [], moreButton: { enabled: false, label: "View all", url: "" }, countdown: { enabled: false, endsAt: "", label: "", hideAfterExpiry: true, expiredMessage: "" } })}
           />
         </TabsContent>
 
