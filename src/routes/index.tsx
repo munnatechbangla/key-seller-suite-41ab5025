@@ -408,7 +408,21 @@ function ProductSectionBlock({ section }: { section: HomeProductSection }) {
       eyebrow={section.eyebrow}
       title={section.title}
       subtitle={section.subtitle}
-      action={section.countdown?.enabled ? <SectionCountdown countdown={section.countdown} /> : undefined}
+      action={
+        (section.countdown?.enabled || (section.moreButton?.enabled && section.moreButton.url.trim())) ? (
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            {section.countdown?.enabled && <SectionCountdown countdown={section.countdown} />}
+            {section.moreButton?.enabled && section.moreButton.url.trim() && (
+              <a
+                href={section.moreButton.url.trim()}
+                className="text-sm font-semibold text-primary inline-flex items-center gap-1 hover:gap-2 transition-all whitespace-nowrap"
+              >
+                {section.moreButton.label.trim() || "View all"} <ChevronRight className="h-4 w-4" />
+              </a>
+            )}
+          </div>
+        ) : undefined
+      }
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
         {items.map((p) => <ProductCard key={p.slug} product={p} />)}
