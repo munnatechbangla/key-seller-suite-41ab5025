@@ -64,6 +64,7 @@ function HomepageBuilder() {
   const upsert = useServerFn(adminUpsertSettingFn);
   const setLocal = useHomepage((s) => s.setLocal);
   const reloadStore = useHomepage((s) => s.load);
+  const categories = useQuery(categoriesQuery()).data ?? [];
   const [cfg, setCfg] = useState<HomepageConfig>(defaultHomepageConfig);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -356,11 +357,24 @@ function HomepageBuilder() {
                       { value: "trending", label: "Trending Products" },
                       { value: "bestSellers", label: "Best Sellers" },
                       { value: "manual", label: "Manual Products" },
+                      { value: "allProducts", label: "All Products" },
+                      { value: "category", label: "Category" },
                     ]}
                     onChange={(v) => set({ ...it, source: v as HomeProductSection["source"] })}
                   />
                   <NumberField label="Limit (auto modes)" value={it.limit} onChange={(v) => set({ ...it, limit: v })} />
                 </div>
+                {it.source === "category" && (
+                  <SelectField
+                    label="Select category"
+                    value={it.categorySlug ?? ""}
+                    options={[
+                      { value: "", label: "Select a category" },
+                      ...categories.map((category) => ({ value: category.slug, label: category.name })),
+                    ]}
+                    onChange={(categorySlug) => set({ ...it, categorySlug: categorySlug || undefined })}
+                  />
+                )}
                 {it.source === "manual" && (
                   <SectionProductPicker
                     slugs={it.manualProductSlugs ?? []}
