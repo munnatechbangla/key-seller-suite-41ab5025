@@ -408,9 +408,10 @@ function ProductSectionBlock({ section }: { section: HomeProductSection }) {
       eyebrow={section.eyebrow}
       title={section.title}
       subtitle={section.subtitle}
+      className={section.moreButton?.enabled && section.moreButton.url.trim() ? "[&>div:first-child]:gap-2 [&>div:first-child]:mb-5 sm:[&>div:first-child]:gap-4 sm:[&>div:first-child]:mb-8" : ""}
       action={
         (section.countdown?.enabled || (section.moreButton?.enabled && section.moreButton.url.trim())) ? (
-          <div className="flex flex-wrap items-center justify-end gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-3 -mt-2 sm:mt-0">
             {section.countdown?.enabled && <SectionCountdown countdown={section.countdown} />}
             {section.moreButton?.enabled && section.moreButton.url.trim() && (
               <a
