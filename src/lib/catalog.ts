@@ -171,12 +171,13 @@ async function fetchCategories(): Promise<Category[]> {
     .order("sort_order", { ascending: true });
   if (error) throw error;
   // Get counts (one query)
-  const { data: counts } = await supabase
-    .from("products")
-    .select("category_id")
-    .eq("status", "published");
+  const { data: counts, error: countsError } = await (supabase as any)
+    .from("product_category_assignments")
+    .select("category_id, products!inner(status)")
+    .eq("products.status", "published");
+  if (countsError) throw countsError;
   const tally = new Map<string, number>();
-  (counts ?? []).forEach((c) => {
+  (counts ?? []).forEach((c: any) => {
     if (c.category_id) tally.set(c.category_id, (tally.get(c.category_id) ?? 0) + 1);
   });
   return (data ?? []).map((r) => ({
@@ -207,7 +208,14 @@ async function fetchProducts(filter: ProductsFilter = {}): Promise<Product[]> {
     if (categoryError) throw categoryError;
     // Never fall back to the full catalog when a requested category is missing or inactive.
     if (!cat) return [];
-    q = q.eq("category_id", cat.id);
+    const { data: assignments, error: assignmentsError } = await (supabase as any)
+      .from("product_category_assignments")
+      .select("product_id")
+      .eq("category_id", cat.id);
+    if (assignmentsError) throw assignmentsError;
+    const productIds = [...new Set((assignments ?? []).map((row: any) => row.product_id as string))];
+    if (productIds.length === 0) return [];
+    q = q.in("id", productIds);
   }
   switch (filter.sort) {
     case "newest": q = q.order("created_at", { ascending: false }); break;

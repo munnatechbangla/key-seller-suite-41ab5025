@@ -46,7 +46,26 @@ export const adminListProductsFn = createServerFn({ method: "GET" })
       .select("id, title, slug, short_description, description, features, included, thumbnail_url, regular_price, sale_price, status, stock_status, min_order_quantity, max_order_quantity, is_featured, sales_count, created_at, product_type, delivery_type, customer_delivery_mode, delivery_time, visibility, external_url, is_digital, is_license_key, category_id")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return data ?? [];
+    const products = data ?? [];
+    if (products.length === 0) return [];
+    const { data: assignments, error: assignmentsError } = await (context.supabase as any)
+      .from("product_category_assignments")
+      .select("product_id, category_id")
+      .in("product_id", products.map((product: any) => product.id));
+    if (assignmentsError) throw new Error(assignmentsError.message);
+    const categoriesByProduct = new Map<string, string[]>();
+    (assignments ?? []).forEach((row: any) => {
+      const current = categoriesByProduct.get(row.product_id) ?? [];
+      current.push(row.category_id);
+      categoriesByProduct.set(row.product_id, current);
+    });
+    return products.map((product: any) => {
+      const ids = categoriesByProduct.get(product.id) ?? [];
+      const orderedIds = product.category_id
+        ? [product.category_id, ...ids.filter((categoryId) => categoryId !== product.category_id)]
+        : ids;
+      return { ...product, category_ids: orderedIds.length > 0 ? orderedIds : (product.category_id ? [product.category_id] : []) };
+    });
   });
 
 const productTypeEnum = z.enum([
@@ -84,6 +103,7 @@ const productSchema = z.object({
   visibility: productVisibilityEnum.nullable().optional(),
   external_url: z.string().nullable().optional(),
   category_id: z.string().uuid().nullable().optional(),
+  category_ids: z.array(z.string().uuid()).max(100).optional(),
 }).superRefine((value, ctx) => {
   if (value.max_order_quantity != null && value.min_order_quantity != null && value.max_order_quantity < value.min_order_quantity) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["max_order_quantity"], message: "Maximum quantity must be greater than or equal to minimum quantity" });
@@ -102,14 +122,37 @@ export const adminUpsertProductFn = createServerFn({ method: "POST" })
     if (payload.customer_delivery_mode === undefined) delete payload.customer_delivery_mode;
     if (payload.delivery_time === undefined) delete payload.delivery_time;
     if (payload.category_id === undefined) delete payload.category_id;
-    if (payload.id) {
-      const { error } = await context.supabase.from("products").update(payload).eq("id", payload.id);
+    const categoryIds: string[] | undefined = payload.category_ids === undefined
+      ? undefined
+      : [...new Set(payload.category_ids as string[])];
+    delete payload.category_ids;
+    let productId = payload.id as string | undefined;
+    if (productId) {
+      const { error } = await context.supabase.from("products").update(payload).eq("id", productId);
       if (error) throw new Error(error.message);
-      return { ok: true, id: payload.id };
+    } else {
+      const { data: row, error } = await context.supabase.from("products").insert(payload).select("id").single();
+      if (error) throw new Error(error.message);
+      productId = row.id as string;
     }
-    const { data: row, error } = await context.supabase.from("products").insert(payload).select("id").single();
-    if (error) throw new Error(error.message);
-    return { ok: true, id: row.id };
+    if (categoryIds !== undefined && productId) {
+      const relation = (context.supabase as any).from("product_category_assignments");
+      if (categoryIds.length > 0) {
+        const { error: addError } = await relation.upsert(
+          categoryIds.map((categoryId) => ({ product_id: productId, category_id: categoryId })),
+          { onConflict: "product_id,category_id", ignoreDuplicates: true },
+        );
+        if (addError) throw new Error(`Product saved, but categories could not be added: ${addError.message}`);
+      }
+      const { data: existing, error: existingError } = await relation.select("category_id").eq("product_id", productId);
+      if (existingError) throw new Error(`Product saved, but categories could not be synchronized: ${existingError.message}`);
+      const staleIds = (existing ?? []).map((row: any) => row.category_id).filter((id: string) => !categoryIds.includes(id));
+      if (staleIds.length > 0) {
+        const { error: removeError } = await relation.delete().eq("product_id", productId).in("category_id", staleIds);
+        if (removeError) throw new Error(`Product saved, but removed categories could not be synchronized: ${removeError.message}`);
+      }
+    }
+    return { ok: true, id: productId };
   });
 
 export const adminDeleteProductFn = createServerFn({ method: "POST" })

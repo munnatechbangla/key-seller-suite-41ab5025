@@ -786,6 +786,7 @@ function BasicInfoTab({
     customer_delivery_mode: "",
     delivery_time: "",
     category_id: "",
+    category_ids: [],
   }));
   const loadedFor = useRef<string | null>(null);
   useEffect(() => {
@@ -812,6 +813,9 @@ function BasicInfoTab({
       customer_delivery_mode: product.customer_delivery_mode ?? "",
       delivery_time: product.delivery_time ?? "",
       category_id: product.category_id ?? "",
+      category_ids: Array.isArray(product.category_ids) && product.category_ids.length > 0
+        ? [...(product.category_id ? [product.category_id] : []), ...product.category_ids.filter((categoryId: string) => categoryId !== product.category_id)]
+        : product.category_id ? [product.category_id] : [],
     });
   }, [product]);
 
@@ -845,7 +849,8 @@ function BasicInfoTab({
         delivery_type: form.delivery_type || null,
         customer_delivery_mode: form.customer_delivery_mode || null,
         delivery_time: form.delivery_time.trim() || null,
-        category_id: form.category_id ? form.category_id : null,
+        category_ids: Array.isArray(form.category_ids) ? form.category_ids : [],
+        category_id: Array.isArray(form.category_ids) && form.category_ids.length > 0 ? form.category_ids[0] : null,
       };
       return upsert({ data: payload });
     },
@@ -1049,21 +1054,30 @@ function BasicInfoTab({
       </div>
 
       <div>
-        <Label>Category</Label>
-        <div className="flex items-center gap-2">
-          <select
-            className="w-full h-10 rounded-md border bg-background px-3 text-sm"
-            value={form.category_id || ""}
-            onChange={(e) => set({ category_id: e.target.value })}
-          >
-            <option value="">— Uncategorized —</option>
-            {(categories as any[]).map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
-          <Link to="/admin/categories" className="text-xs text-primary whitespace-nowrap hover:underline">
-            Manage
-          </Link>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <Label>Categories</Label>
+          <Link to="/admin/categories" className="text-xs text-primary whitespace-nowrap hover:underline">Manage</Link>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3">Select one or more categories for this product. The first selected category remains the primary category for legacy compatibility.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-md border p-3">
+          {(categories as any[]).map((c) => {
+            const checked = Array.isArray(form.category_ids) && form.category_ids.includes(c.id);
+            return (
+              <label key={c.id} className="flex items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-muted/60 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(e) => {
+                    const current: string[] = Array.isArray(form.category_ids) ? form.category_ids : [];
+                    const next = e.target.checked ? [...current, c.id] : current.filter((categoryId) => categoryId !== c.id);
+                    set({ category_ids: next, category_id: next[0] ?? "" });
+                  }}
+                />
+                <span>{c.name}</span>
+              </label>
+            );
+          })}
+          {(categories as any[]).length === 0 && <p className="text-sm text-muted-foreground">No categories available.</p>}
         </div>
       </div>
 

@@ -36,9 +36,10 @@ export const adminListCategoriesFn = createServerFn({ method: "GET" })
         .select("id, parent_id, name, slug, description, icon, image_url, sort_order, is_active, seo_title, seo_description")
         .order("sort_order", { ascending: true })
         .order("name", { ascending: true }),
-      context.supabase.from("products").select("category_id"),
+      (context.supabase as any).from("product_category_assignments").select("category_id"),
     ]);
     if (catsRes.error) throw new Error(catsRes.error.message);
+    if (countsRes.error) throw new Error(countsRes.error.message);
     const tally = new Map<string, number>();
     (countsRes.data ?? []).forEach((r: any) => {
       if (r.category_id) tally.set(r.category_id, (tally.get(r.category_id) ?? 0) + 1);
