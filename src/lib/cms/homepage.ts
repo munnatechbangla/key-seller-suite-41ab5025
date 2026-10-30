@@ -67,7 +67,7 @@ export type HomeCategoriesSection = {
   featuredCategoryIds?: string[];
 };
 
-export type HomeProductSectionSource = "featured" | "trending" | "bestSellers" | "latest" | "manual";
+export type HomeProductSectionSource = "featured" | "trending" | "bestSellers" | "latest" | "manual" | "allProducts" | "category";
 
 export type HomeSectionCountdown = {
   enabled: boolean;
@@ -86,6 +86,8 @@ export type HomeProductSection = {
   source: HomeProductSectionSource;
   limit: number;
   manualProductSlugs?: string[];
+  /** Category slug used only when source is "category". */
+  categorySlug?: string;
   countdown?: HomeSectionCountdown;
   moreButton?: {
     enabled: boolean;
