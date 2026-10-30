@@ -112,7 +112,7 @@ const SELECT_PRODUCT = `
   meta_title, meta_description, focus_keyword, secondary_keywords, canonical_url, robots,
   og_title, og_description, og_image, twitter_title, twitter_description, twitter_image,
   schema_enabled, faq_schema_enabled, breadcrumb_schema_enabled, product_schema_enabled,
-  product_categories ( slug, name )
+  product_categories!products_category_id_fkey ( slug, name )
 ` as const;
 
 export function mapProduct(row: ProductRow): Product {
