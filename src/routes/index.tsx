@@ -402,6 +402,7 @@ function ProductSectionBlock({ section }: { section: HomeProductSection }) {
     source: section.source,
     limit: section.limit,
     manualProductSlugs: section.manualProductSlugs,
+    categorySlug: section.categorySlug,
   });
   return (
     <Section
