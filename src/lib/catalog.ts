@@ -198,12 +198,16 @@ async function fetchProducts(filter: ProductsFilter = {}): Promise<Product[]> {
     .select(SELECT_PRODUCT)
     .eq("status", "published");
   if (filter.categorySlug) {
-    const { data: cat } = await supabase
+    const { data: cat, error: categoryError } = await supabase
       .from("product_categories")
       .select("id")
       .eq("slug", filter.categorySlug)
+      .eq("is_active", true)
       .maybeSingle();
-    if (cat) q = q.eq("category_id", cat.id);
+    if (categoryError) throw categoryError;
+    // Never fall back to the full catalog when a requested category is missing or inactive.
+    if (!cat) return [];
+    q = q.eq("category_id", cat.id);
   }
   switch (filter.sort) {
     case "newest": q = q.order("created_at", { ascending: false }); break;

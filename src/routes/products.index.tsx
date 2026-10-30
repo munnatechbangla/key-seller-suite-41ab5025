@@ -9,6 +9,9 @@ import { useState } from "react";
 import { Filter, Grid3x3, List } from "lucide-react";
 
 export const Route = createFileRoute("/products/")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    category: typeof search.category === "string" ? search.category : undefined,
+  }),
   head: () => ({
     meta: seoMeta({
       title: "All Digital Products",
@@ -27,10 +30,13 @@ export const Route = createFileRoute("/products/")({
 });
 
 function ProductsPage() {
-  const [cat, setCat] = useState<string | null>(null);
+  const { category: cat } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const [sort, setSort] = useState<ProductSort>("popular");
 
   const categories = useCategories();
+  const selectedCategory = categories.find((category) => category.slug === cat);
+  const invalidCategory = Boolean(cat && !selectedCategory);
   const list = useProducts({ categorySlug: cat, sort });
 
   return (
@@ -38,9 +44,9 @@ function ProductsPage() {
       <Header />
       <div className="bg-gradient-hero text-white">
         <div className="container mx-auto px-4 py-12">
-          <div className="text-xs text-white/60 mb-2">Home / Products</div>
-          <h1 className="text-3xl sm:text-4xl font-bold">All Digital Products</h1>
-          <p className="text-white/70 mt-2">{list.length} premium items — instant delivery</p>
+          <div className="text-xs text-white/60 mb-2">Home / {selectedCategory ? `Categories / ${selectedCategory.name}` : "Products"}</div>
+          <h1 className="text-3xl sm:text-4xl font-bold">{invalidCategory ? "Category not found" : selectedCategory?.name ?? "All Digital Products"}</h1>
+          <p className="text-white/70 mt-2">{invalidCategory ? "This category could not be found." : `${list.length} premium items — instant delivery`}</p>
         </div>
       </div>
 
@@ -52,7 +58,7 @@ function ProductsPage() {
             </div>
             <div className="space-y-1">
               <button
-                onClick={() => setCat(null)}
+                onClick={() => navigate({ search: (prev) => ({ ...prev, category: undefined }) })
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-smooth ${
                   !cat ? "bg-primary/10 text-primary font-semibold" : "hover:bg-muted"
                 }`}
@@ -62,7 +68,7 @@ function ProductsPage() {
               {categories.map((c) => (
                 <button
                   key={c.slug}
-                  onClick={() => setCat(c.slug)}
+                  onClick={() => navigate({ search: (prev) => ({ ...prev, category: c.slug }) })
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-smooth ${
                     cat === c.slug ? "bg-primary/10 text-primary font-semibold" : "hover:bg-muted"
                   }`}
@@ -100,9 +106,15 @@ function ProductsPage() {
             </select>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
-            {list.map((p) => <ProductCard key={p.slug} product={p} />)}
-          </div>
+          {list.length > 0 ? (
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
+              {list.map((p) => <ProductCard key={p.slug} product={p} />)}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
+              {invalidCategory ? "The requested category does not exist. Please choose a category from the list." : selectedCategory ? `No published products are currently available in ${selectedCategory.name}.` : "No products are currently available."}
+            </div>
+          )}
         </div>
       </div>
       <Footer />

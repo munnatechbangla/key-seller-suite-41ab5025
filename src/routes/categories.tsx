@@ -38,6 +38,7 @@ function CategoriesPage() {
           <Link
             key={c.slug}
             to="/products"
+            search={{ category: c.slug }}
             className="group rounded-2xl bg-card border border-border p-6 hover:border-primary/40 hover:shadow-premium hover:-translate-y-1 transition-smooth flex gap-4"
           >
             <div className="h-16 w-16 rounded-2xl bg-gradient-primary grid place-items-center text-3xl shadow-glow shrink-0">
