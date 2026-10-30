@@ -1,8 +1,8 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Star, ShoppingCart, Zap, Heart, GitCompare, Check, X } from "lucide-react";
+import { Star, ShoppingCart, Zap, Heart, Check, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useProduct } from "@/lib/catalog";
-import { useCart, useWishlist, useCompare } from "@/lib/stores";
+import { useCart, useWishlist } from "@/lib/stores";
 import { toast } from "sonner";
 import { useState } from "react";
 import { LiveVisitorsCounter } from "./LiveVisitorsCounter";
@@ -14,7 +14,6 @@ export function QuickViewModal({ slug, open, onOpenChange }: { slug: string | nu
   const product = useProduct(slug ?? "");
   const cart = useCart();
   const wish = useWishlist();
-  const cmp = useCompare();
   const [qty, setQty] = useState(1);
   const navigate = useNavigate();
 
@@ -134,12 +133,6 @@ export function QuickViewModal({ slug, open, onOpenChange }: { slug: string | nu
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${wish.has(product.slug) ? "bg-accent/10 border-accent text-accent" : "border-border hover:bg-muted"}`}
               >
                 <Heart className={`h-3.5 w-3.5 ${wish.has(product.slug) ? "fill-accent" : ""}`} /> Wishlist
-              </button>
-              <button
-                onClick={() => { cmp.toggle(product.slug); toast(cmp.has(product.slug) ? "Removed from compare" : "Added to compare"); }}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${cmp.has(product.slug) ? "bg-primary/10 border-primary text-primary" : "border-border hover:bg-muted"}`}
-              >
-                <GitCompare className="h-3.5 w-3.5" /> Compare
               </button>
               <Link
                 to="/products/$slug"
