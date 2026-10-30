@@ -58,7 +58,7 @@ function ProductsPage() {
             </div>
             <div className="space-y-1">
               <button
-                onClick={() => navigate({ search: (prev) => ({ ...prev, category: undefined }) })
+                onClick={() => navigate({ search: (prev) => ({ ...prev, category: undefined }) })}
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-smooth ${
                   !cat ? "bg-primary/10 text-primary font-semibold" : "hover:bg-muted"
                 }`}
@@ -68,7 +68,7 @@ function ProductsPage() {
               {categories.map((c) => (
                 <button
                   key={c.slug}
-                  onClick={() => navigate({ search: (prev) => ({ ...prev, category: c.slug }) })
+                  onClick={() => navigate({ search: (prev) => ({ ...prev, category: c.slug }) })}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-smooth ${
                     cat === c.slug ? "bg-primary/10 text-primary font-semibold" : "hover:bg-muted"
                   }`}
