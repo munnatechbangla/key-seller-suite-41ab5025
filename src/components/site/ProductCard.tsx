@@ -103,20 +103,12 @@ export function ProductCard({ product, listingActions = false, viewMode = "grid"
           ) : (
             <span className="text-7xl group-hover:scale-110 transition-smooth">{product.emoji}</span>
           )}
-          {product.badge && (
-            <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold bg-gradient-primary text-primary-foreground shadow-elegant">
-              {product.badge}
-            </span>
-          )}
-          {off > 0 && (
+           {off > 0 && (
             <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold bg-accent text-accent-foreground">
               -{off}%
             </span>
           )}
-          <div className="absolute bottom-2 left-2 right-2 flex justify-start">
-            <SaleBadges product={product} extra={{ stock: product.stock ?? null }} max={2} />
-          </div>
-        </div>
+         </div>
       </Link>
       <div className="absolute top-3 right-3 mt-9 flex flex-col gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-smooth">
         <button
@@ -137,6 +129,20 @@ export function ProductCard({ product, listingActions = false, viewMode = "grid"
         )}
       </div>
       <div className={`min-w-0 flex-1 space-y-2 ${viewMode === "list" ? "p-3 sm:p-4 md:p-5" : "p-4"}`} >
+        {(product.badge || product.stock === 0 || product.isTrending || product.isBestSeller || (product.salesCount ?? 0) > 0 || product.createdAt) && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {product.badge && (
+              <span className="inline-flex max-w-full rounded-full bg-gradient-primary px-2.5 py-1 text-[10px] font-bold text-primary-foreground shadow-sm">
+                {product.badge}
+              </span>
+            )}
+            <SaleBadges
+              product={product}
+              extra={{ stock: product.stock ?? null, salesCount: product.salesCount ?? null, createdAt: product.createdAt ?? null }}
+              max={3}
+            />
+          </div>
+        )}
         <div className={`flex min-w-0 items-center gap-1 text-xs text-muted-foreground ${viewMode === "list" ? "gap-1 sm:gap-2" : ""}`} >
           <Star className="h-3.5 w-3.5 fill-accent text-accent" />
           <span className="font-semibold text-foreground">{product.rating}</span>
