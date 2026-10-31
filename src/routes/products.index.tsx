@@ -108,7 +108,7 @@ function ProductsPage() {
 
           {list.length > 0 ? (
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
-              {list.map((p) => <ProductCard key={p.slug} product={p} />)}
+              {list.map((p) => <ProductCard key={p.slug} product={p} listingActions />)}
             </div>
           ) : (
             <div className="rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
