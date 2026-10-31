@@ -16,7 +16,7 @@ const QuickViewModal = lazy(() =>
 );
 
 
-export function ProductCard({ product, listingActions = false }: { product: Product; listingActions?: boolean }) {
+export function ProductCard({ product, listingActions = false, viewMode = "grid" }: { product: Product; listingActions?: boolean; viewMode?: "grid" | "list" }) {
   const { url: thumbnailSrc, loading: thumbnailLoading } = useResolvedMediaUrl(product.thumbnailUrl);
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
@@ -76,14 +76,14 @@ export function ProductCard({ product, listingActions = false }: { product: Prod
   const [quickOpen, setQuickOpen] = useState(false);
 
   return (
-    <article className="group relative rounded-2xl bg-card border border-border overflow-hidden hover:shadow-2xl hover:border-primary/30 hover:-translate-y-1.5 transition-all duration-300 ease-out">
+    <article className={`group relative rounded-2xl bg-card border border-border overflow-hidden hover:shadow-2xl hover:border-primary/30 hover:-translate-y-1.5 transition-all duration-300 ease-out ${viewMode === "list" ? "flex flex-row items-stretch" : ""}`} >
       {quickViewEnabled && quickOpen && (
         <Suspense fallback={null}>
           <QuickViewModal slug={product.slug} open={quickOpen} onOpenChange={setQuickOpen} />
         </Suspense>
       )}
 
-      <Link to="/products/$slug" params={{ slug: product.slug }} className="block">
+      <Link to="/products/$slug" params={{ slug: product.slug }} className={viewMode === "list" ? "block w-28 sm:w-36 md:w-44 shrink-0 self-start" : "block"}>
         <div className="relative aspect-square bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center overflow-hidden">
           {product.thumbnailUrl && !thumbnailFailed && thumbnailLoading ? (
             <div className="absolute inset-0 animate-pulse bg-muted/70" aria-label="Loading product image" />
@@ -136,7 +136,7 @@ export function ProductCard({ product, listingActions = false }: { product: Prod
           </button>
         )}
       </div>
-      <div className="p-4 space-y-2">
+      <div className={`p-4 space-y-2 min-w-0 flex-1 ${viewMode === "list" ? "sm:p-5" : ""}`} >
         <div className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
           <Star className="h-3.5 w-3.5 fill-accent text-accent" />
           <span className="font-semibold text-foreground">{product.rating}</span>
