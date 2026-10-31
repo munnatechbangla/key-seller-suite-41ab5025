@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { Star, ShoppingCart, Zap, Heart, Eye } from "lucide-react";
+import { Star, Zap, Heart, Eye } from "lucide-react";
 import type { Product } from "@/lib/catalog";
-import { useCart, useWishlist } from "@/lib/stores";
+import { useWishlist } from "@/lib/stores";
 import { formatPrice } from "@/lib/product-price";
 import { SaleBadges } from "@/components/site/SaleBadges";
 import { useMarketplace } from "@/lib/cms/marketplace";
@@ -69,7 +69,6 @@ export function ProductCard({ product }: { product: Product }) {
     : 0;
   const showSelectOptions = isVariable && !hasVariantPrice;
 
-  const cart = useCart();
   const wish = useWishlist();
   const wished = wish.has(product.slug);
   const quickViewEnabled = useMarketplace((s) => s.config.product_experience.quick_view_enabled);
@@ -155,12 +154,10 @@ export function ProductCard({ product }: { product: Product }) {
           <h3 className="font-semibold text-sm leading-snug line-clamp-2 min-h-10 hover:text-primary transition-smooth">{product.name}</h3>
         </Link>
         <p className="text-xs text-muted-foreground line-clamp-2">{product.short}</p>
-        {isVariable ? (
-          <div className="flex flex-col gap-2 pt-2">
-            <div className="min-w-0">
-              {showSelectOptions ? (
-                <div className="text-sm font-semibold text-primary whitespace-nowrap">View Options</div>
-              ) : (
+        <div className="flex flex-col gap-2 pt-2">
+          <div className="min-w-0">
+            {isVariable ? (
+              showSelectOptions ? null : (
                 <>
                   <div className="text-lg font-bold text-primary">
                     <span className="text-xs font-medium text-muted-foreground mr-1">From</span>
@@ -170,37 +167,28 @@ export function ProductCard({ product }: { product: Product }) {
                     <div className="text-xs text-muted-foreground line-through">{formatPrice(displayOld)}</div>
                   )}
                 </>
-              )}
-            </div>
-            <Link
-              to="/products/$slug"
-              params={{ slug: product.slug }}
-              aria-label="View options"
-              className="w-full h-9 md:h-[38px] lg:h-10 px-4 inline-flex items-center justify-center whitespace-nowrap overflow-hidden text-ellipsis rounded-full bg-gradient-primary text-primary-foreground text-sm font-semibold leading-none hover:shadow-glow transition-smooth"
-            >
-              View Options
-            </Link>
+              )
+            ) : (
+              <>
+                <div className="text-lg font-bold text-primary">
+                  {showMinimumOrderTotal && <span className="text-xs font-medium text-muted-foreground mr-1">From</span>}
+                  {formatPrice(cardPrice ?? 0)}
+                </div>
+                {cardOldPrice && cardOldPrice > (cardPrice ?? 0) && (
+                  <div className="text-xs text-muted-foreground line-through">{formatPrice(cardOldPrice)}</div>
+                )}
+              </>
+            )}
           </div>
-        ) : (
-          <div className="flex flex-wrap items-end justify-between gap-2 pt-2">
-            <div className="min-w-0 flex-1">
-              <div className="text-lg font-bold text-primary">
-                {showMinimumOrderTotal && <span className="text-xs font-medium text-muted-foreground mr-1">From</span>}
-                {formatPrice(cardPrice ?? 0)}
-              </div>
-              {cardOldPrice && cardOldPrice > (cardPrice ?? 0) && (
-                <div className="text-xs text-muted-foreground line-through">{formatPrice(cardOldPrice)}</div>
-              )}
-            </div>
-            <button
-              onClick={() => { cart.add(product); toast.success("Added to cart"); }}
-              aria-label="Add to cart"
-              className="shrink-0 h-10 w-10 grid place-items-center rounded-xl bg-gradient-primary text-primary-foreground hover:shadow-glow transition-smooth"
-            >
-              <ShoppingCart className="h-4 w-4" />
-            </button>
-          </div>
-        )}
+          <Link
+            to="/products/$slug"
+            params={{ slug: product.slug }}
+            aria-label={`Buy now: ${product.name}`}
+            className="w-full h-10 px-4 inline-flex items-center justify-center whitespace-nowrap overflow-hidden text-ellipsis rounded-full bg-gradient-primary text-primary-foreground text-sm font-semibold leading-none hover:shadow-glow transition-smooth"
+          >
+            Buy Now
+          </Link>
+        </div>
 
       </div>
     </article>
