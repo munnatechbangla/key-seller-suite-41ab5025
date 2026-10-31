@@ -5,7 +5,7 @@ import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { formatPrice } from "@/lib/product-price";
 import { useCategories, useProducts, type ProductSort, categoriesQuery, productsQuery } from "@/lib/catalog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Filter, Grid3x3, List } from "lucide-react";
 
 export const Route = createFileRoute("/products/")({
@@ -33,11 +33,36 @@ function ProductsPage() {
   const { category: cat } = Route.useSearch();
   const navigate = Route.useNavigate();
   const [sort, setSort] = useState<ProductSort>("popular");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [maxPriceFilter, setMaxPriceFilter] = useState<number | null>(null);
 
   const categories = useCategories();
   const selectedCategory = categories.find((category) => category.slug === cat);
   const invalidCategory = Boolean(cat && !selectedCategory);
   const list = useProducts({ categorySlug: cat, sort });
+
+  useEffect(() => {
+    setMaxPriceFilter(null);
+  }, [cat]);
+
+  const getEffectivePrice = (product: (typeof list)[number]) => {
+    const variable = Boolean(product.hasAttributes);
+    if (variable && product.priceFrom == null) return Number.POSITIVE_INFINITY;
+    const basePrice = variable ? Number(product.priceFrom) : Number(product.price);
+    const quantity = Math.max(1, Number(product.minOrderQuantity ?? 1));
+    return !variable && quantity > 1 ? basePrice * quantity : basePrice;
+  };
+  const finitePrices = list.map(getEffectivePrice).filter(Number.isFinite);
+  const sliderMax = Math.max(1, Math.ceil(Math.max(0, ...finitePrices)));
+  const activeMaxPrice = Math.min(maxPriceFilter ?? sliderMax, sliderMax);
+  const priceFilteredList = list.filter((product) => getEffectivePrice(product) <= activeMaxPrice);
+  const displayedProducts = [...priceFilteredList].sort((a, b) => {
+    if (sort === "price-asc") return getEffectivePrice(a) - getEffectivePrice(b);
+    if (sort === "price-desc") return getEffectivePrice(b) - getEffectivePrice(a);
+    if (sort === "rating") return b.rating - a.rating;
+    if (sort === "popular") return b.reviews - a.reviews;
+    return 0;
+  });
 
   return (
     <div className="min-h-screen">
@@ -81,18 +106,52 @@ function ProductsPage() {
 
           <div className="rounded-2xl bg-card border border-border p-5">
             <div className="font-semibold mb-3">Price range</div>
-            <input type="range" min={0} max={100} defaultValue={50} className="w-full accent-[var(--primary)]" />
+            <label htmlFor="product-price-range" className="block text-sm text-muted-foreground mb-2">
+              Up to {formatPrice(activeMaxPrice)}
+            </label>
+            <input
+              id="product-price-range"
+              type="range"
+              min={0}
+              max={sliderMax}
+              step={1}
+              value={Math.min(activeMaxPrice, sliderMax)}
+              onChange={(event) => setMaxPriceFilter(Number(event.target.value))}
+              aria-label="Maximum product price"
+              className="w-full accent-[var(--primary)]"
+            />
             <div className="flex justify-between text-xs text-muted-foreground mt-2">
-              <span>{formatPrice(0)}</span><span>{formatPrice(100)}+</span>
+              <span>{formatPrice(0)}</span><span>{formatPrice(sliderMax)}+</span>
             </div>
+            {maxPriceFilter !== null && maxPriceFilter < sliderMax && (
+              <button
+                type="button"
+                onClick={() => setMaxPriceFilter(null)}
+                className="mt-3 text-xs font-medium text-primary hover:underline"
+              >
+                Clear price filter
+              </button>
+            )}
           </div>
         </aside>
 
         <div>
           <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
             <div className="flex gap-1">
-              <button className="h-10 w-10 grid place-items-center rounded-lg bg-primary text-primary-foreground"><Grid3x3 className="h-4 w-4" /></button>
-              <button className="h-10 w-10 grid place-items-center rounded-lg hover:bg-muted"><List className="h-4 w-4" /></button>
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                aria-label="Grid view"
+                aria-pressed={viewMode === "grid"}
+                className={`h-10 w-10 grid place-items-center rounded-lg ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+              ><Grid3x3 className="h-4 w-4" /></button>
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                aria-label="List view"
+                aria-pressed={viewMode === "list"}
+                className={`h-10 w-10 grid place-items-center rounded-lg ${viewMode === "list" ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+              ><List className="h-4 w-4" /></button>
             </div>
             <select
               value={sort}
@@ -106,13 +165,15 @@ function ProductsPage() {
             </select>
           </div>
 
-          {list.length > 0 ? (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
-              {list.map((p) => <ProductCard key={p.slug} product={p} listingActions />)}
+          {displayedProducts.length > 0 ? (
+            <div className={viewMode === "grid" ? "grid grid-cols-2 lg:grid-cols-3 gap-5" : "grid grid-cols-1 gap-4"}>
+              {displayedProducts.map((p) => <ProductCard key={p.slug} product={p} listingActions viewMode={viewMode} />)}
             </div>
           ) : (
             <div className="rounded-2xl border border-border bg-card p-8 text-center text-muted-foreground">
-              {invalidCategory ? "The requested category does not exist. Please choose a category from the list." : selectedCategory ? `No published products are currently available in ${selectedCategory.name}.` : "No products are currently available."}
+              {maxPriceFilter !== null && priceFilteredList.length === 0
+                ? "No products match this price range. Increase the maximum price or clear the filter."
+                : invalidCategory ? "The requested category does not exist. Please choose a category from the list." : selectedCategory ? `No published products are currently available in ${selectedCategory.name}.` : "No products are currently available."}
             </div>
           )}
         </div>
