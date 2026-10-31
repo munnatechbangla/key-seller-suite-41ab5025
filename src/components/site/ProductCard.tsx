@@ -16,7 +16,7 @@ const QuickViewModal = lazy(() =>
 );
 
 
-export function ProductCard({ product, homepageActions = false }: { product: Product; homepageActions?: boolean }) {
+export function ProductCard({ product, listingActions = false }: { product: Product; listingActions?: boolean }) {
   const { url: thumbnailSrc, loading: thumbnailLoading } = useResolvedMediaUrl(product.thumbnailUrl);
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
@@ -137,11 +137,6 @@ export function ProductCard({ product, homepageActions = false }: { product: Pro
         )}
       </div>
       <div className="p-4 space-y-2">
-        {product.deliveryMode && product.deliveryMode !== "instant" && product.delivery ? (
-          <div className="flex items-center gap-1 text-[10px] leading-tight text-muted-foreground">
-            <span className="truncate">{product.delivery}</span>
-          </div>
-        ) : null}
         <div className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
           <Star className="h-3.5 w-3.5 fill-accent text-accent" />
           <span className="font-semibold text-foreground">{product.rating}</span>
@@ -155,7 +150,7 @@ export function ProductCard({ product, homepageActions = false }: { product: Pro
           <h3 className="font-semibold text-sm leading-snug line-clamp-2 min-h-10 hover:text-primary transition-smooth">{product.name}</h3>
         </Link>
         <p className="text-xs text-muted-foreground line-clamp-2">{product.short}</p>
-        {homepageActions ? (
+        {listingActions ? (
           <div className="flex flex-col gap-2 pt-2">
             <div className="min-w-0">
               {isVariable ? (
@@ -173,7 +168,7 @@ export function ProductCard({ product, homepageActions = false }: { product: Pro
               ) : (
                 <>
                   <div className="text-lg font-bold text-primary">
-                    {showMinimumOrderTotal && <span className="text-xs font-medium text-muted-foreground mr-1">From</span>}
+                    {<span className="text-xs font-medium text-muted-foreground mr-1">{showMinimumOrderTotal ? "From" : "Price"}</span>}
                     {formatPrice(cardPrice ?? 0)}
                   </div>
                   {cardOldPrice && cardOldPrice > (cardPrice ?? 0) && (
@@ -221,7 +216,7 @@ export function ProductCard({ product, homepageActions = false }: { product: Pro
           <div className="flex flex-wrap items-end justify-between gap-2 pt-2">
             <div className="min-w-0 flex-1">
               <div className="text-lg font-bold text-primary">
-                {showMinimumOrderTotal && <span className="text-xs font-medium text-muted-foreground mr-1">From</span>}
+                {<span className="text-xs font-medium text-muted-foreground mr-1">{showMinimumOrderTotal ? "From" : "Price"}</span>}
                 {formatPrice(cardPrice ?? 0)}
               </div>
               {cardOldPrice && cardOldPrice > (cardPrice ?? 0) && (
