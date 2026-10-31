@@ -83,8 +83,8 @@ export function ProductCard({ product, listingActions = false, viewMode = "grid"
         </Suspense>
       )}
 
-      <Link to="/products/$slug" params={{ slug: product.slug }} className={viewMode === "list" ? "block w-28 sm:w-36 md:w-44 shrink-0 self-start" : "block"}>
-        <div className="relative aspect-square bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center overflow-hidden">
+      <Link to="/products/$slug" params={{ slug: product.slug }} className={viewMode === "list" ? "flex w-24 sm:w-32 md:w-40 shrink-0 items-center" : "block"}>
+        <div className={`relative aspect-square bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 grid place-items-center overflow-hidden ${viewMode === "list" ? "w-full" : ""}`} >
           {product.thumbnailUrl && !thumbnailFailed && thumbnailLoading ? (
             <div className="absolute inset-0 animate-pulse bg-muted/70" aria-label="Loading product image" />
           ) : product.thumbnailUrl && displayThumbnailSrc && !thumbnailFailed ? (
@@ -136,8 +136,8 @@ export function ProductCard({ product, listingActions = false, viewMode = "grid"
           </button>
         )}
       </div>
-      <div className={`p-4 space-y-2 min-w-0 flex-1 ${viewMode === "list" ? "sm:p-5" : ""}`} >
-        <div className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+      <div className={`min-w-0 flex-1 space-y-2 ${viewMode === "list" ? "p-3 sm:p-4 md:p-5" : "p-4"}`} >
+        <div className={`flex min-w-0 items-center gap-1 text-xs text-muted-foreground ${viewMode === "list" ? "gap-1 sm:gap-2" : ""}`} >
           <Star className="h-3.5 w-3.5 fill-accent text-accent" />
           <span className="font-semibold text-foreground">{product.rating}</span>
           <span>({product.reviews.toLocaleString()})</span>
@@ -147,11 +147,11 @@ export function ProductCard({ product, listingActions = false, viewMode = "grid"
           </span>
         </div>
         <Link to="/products/$slug" params={{ slug: product.slug }} className="block">
-          <h3 className="font-semibold text-sm leading-snug line-clamp-2 min-h-10 hover:text-primary transition-smooth">{product.name}</h3>
+          <h3 className={`font-semibold leading-snug line-clamp-2 hover:text-primary transition-smooth ${viewMode === "list" ? "text-xs sm:text-sm md:text-base min-h-0" : "text-sm min-h-10"}`}>{product.name}</h3>
         </Link>
-        <p className="text-xs text-muted-foreground line-clamp-2">{product.short}</p>
+        <p className={`text-xs text-muted-foreground line-clamp-2 ${viewMode === "list" ? "hidden sm:block" : ""}`}>{product.short}</p>
         {listingActions ? (
-          <div className="flex flex-col gap-2 pt-2">
+          <div className={`flex gap-2 pt-2 ${viewMode === "list" ? "flex-col" : "flex-col"}`}>
             <div className="min-w-0">
               {isVariable ? (
                 showSelectOptions ? null : (
