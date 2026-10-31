@@ -151,7 +151,7 @@ export function ProductCard({ product, listingActions = false, viewMode = "grid"
         </Link>
         <p className={`text-xs text-muted-foreground line-clamp-2 ${viewMode === "list" ? "hidden sm:block" : ""}`}>{product.short}</p>
         {listingActions ? (
-          <div className={`flex gap-2 pt-2 ${viewMode === "list" ? "flex-col" : "flex-col"}`}>
+          <div className="flex flex-col gap-2 pt-2">
             <div className="min-w-0">
               {isVariable ? (
                 showSelectOptions ? null : (
