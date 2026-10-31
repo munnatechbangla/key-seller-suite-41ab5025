@@ -55,7 +55,10 @@ function ProductsPage() {
   const finitePrices = list.map(getEffectivePrice).filter(Number.isFinite);
   const sliderMax = Math.max(1, Math.ceil(Math.max(0, ...finitePrices)));
   const activeMaxPrice = Math.min(maxPriceFilter ?? sliderMax, sliderMax);
-  const priceFilteredList = list.filter((product) => getEffectivePrice(product) <= activeMaxPrice);
+  const isPriceFilterActive = maxPriceFilter !== null && maxPriceFilter < sliderMax;
+  const priceFilteredList = isPriceFilterActive
+    ? list.filter((product) => getEffectivePrice(product) <= activeMaxPrice)
+    : list;
   const displayedProducts = [...priceFilteredList].sort((a, b) => {
     if (sort === "price-asc") return getEffectivePrice(a) - getEffectivePrice(b);
     if (sort === "price-desc") return getEffectivePrice(b) - getEffectivePrice(a);
