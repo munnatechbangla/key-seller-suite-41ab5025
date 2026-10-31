@@ -129,11 +129,14 @@ export function ProductCard({ product, listingActions = false, viewMode = "grid"
         )}
       </div>
       <div className={`min-w-0 flex-1 space-y-2 ${viewMode === "list" ? "p-3 sm:p-4 md:p-5" : "p-4"}`} >
-        {(product.badge || product.stock === 0 || product.isTrending || product.isBestSeller || (product.salesCount ?? 0) > 0 || product.createdAt) && (
-          <div className="flex flex-wrap items-center gap-1.5">
-            {product.badge && (
-              <span className="inline-flex max-w-full rounded-full bg-gradient-primary px-2.5 py-1 text-[10px] font-bold text-primary-foreground shadow-sm">
-                {product.badge}
+        {((product.badge ?? "").trim() || product.stock === 0) && (
+          <div className="flex min-w-0 flex-nowrap items-center gap-1 overflow-hidden">
+            {(product.badge ?? "").trim() && (
+              <span
+                className="inline-flex min-w-0 max-w-[48%] shrink truncate whitespace-nowrap rounded-full bg-gradient-primary px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground shadow-sm"
+                title={product.badge?.trim()}
+              >
+                {product.badge?.trim()}
               </span>
             )}
             <SaleBadges
