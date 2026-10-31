@@ -43,7 +43,7 @@ export const adminListProductsFn = createServerFn({ method: "GET" })
     await assertAdmin(context);
     const { data, error } = await context.supabase
       .from("products")
-      .select("id, title, slug, short_description, description, features, included, thumbnail_url, regular_price, sale_price, status, stock_status, min_order_quantity, max_order_quantity, is_featured, sales_count, created_at, product_type, delivery_type, customer_delivery_mode, delivery_time, visibility, external_url, is_digital, is_license_key, category_id")
+      .select("id, title, slug, short_description, description, features, included, thumbnail_url, regular_price, sale_price, status, stock_status, min_order_quantity, max_order_quantity, is_featured, sales_count, created_at, product_type, delivery_type, customer_delivery_mode, delivery_time, badge, visibility, external_url, is_digital, is_license_key, category_id")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     const products = data ?? [];
@@ -100,6 +100,7 @@ const productSchema = z.object({
   delivery_type: deliveryTypeEnum.nullable().optional(),
   customer_delivery_mode: customerDeliveryModeEnum.nullable().optional(),
   delivery_time: z.string().max(120).nullable().optional(),
+  badge: z.string().max(60).nullable().optional(),
   visibility: productVisibilityEnum.nullable().optional(),
   external_url: z.string().nullable().optional(),
   category_id: z.string().uuid().nullable().optional(),
