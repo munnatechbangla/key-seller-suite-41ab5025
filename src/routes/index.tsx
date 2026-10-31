@@ -427,7 +427,7 @@ function ProductSectionBlock({ section }: { section: HomeProductSection }) {
       }
     >
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-        {items.map((p) => <ProductCard key={p.slug} product={p} homepageActions />)}
+        {items.map((p) => <ProductCard key={p.slug} product={p} listingActions />)}
       </div>
     </Section>
   );
