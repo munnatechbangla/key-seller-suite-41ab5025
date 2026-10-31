@@ -1,6 +1,6 @@
 import type { Product } from "@/lib/catalog";
 
-type Extra = { stock?: number | null };
+type Extra = { stock?: number | null; salesCount?: number | null; createdAt?: string | null };
 
 /**
  * Only renders the system-critical stock badge.
