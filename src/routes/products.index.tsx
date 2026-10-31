@@ -60,8 +60,13 @@ function ProductsPage() {
     ? list.filter((product) => getEffectivePrice(product) <= activeMaxPrice)
     : list;
   const displayedProducts = [...priceFilteredList].sort((a, b) => {
-    if (sort === "price-asc") return getEffectivePrice(a) - getEffectivePrice(b);
-    if (sort === "price-desc") return getEffectivePrice(b) - getEffectivePrice(a);
+    if (sort === "price-asc" || sort === "price-desc") {
+      const priceA = getEffectivePrice(a);
+      const priceB = getEffectivePrice(b);
+      if (!Number.isFinite(priceA)) return Number.isFinite(priceB) ? 1 : 0;
+      if (!Number.isFinite(priceB)) return -1;
+      return sort === "price-asc" ? priceA - priceB : priceB - priceA;
+    }
     if (sort === "rating") return b.rating - a.rating;
     if (sort === "popular") return b.reviews - a.reviews;
     return 0;
