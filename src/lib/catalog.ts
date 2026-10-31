@@ -24,6 +24,10 @@ export type Product = {
   oldPrice?: number;
   rating: number;
   reviews: number;
+  salesCount?: number;
+  createdAt?: string | null;
+  isTrending?: boolean;
+  isBestSeller?: boolean;
   badge?: ProductBadge;
   delivery: string;
   deliveryMode?: "instant" | "fast" | "manual" | "extended" | null;
@@ -79,6 +83,8 @@ type ProductRow = {
   badge: string | null;
   rating: number;
   reviews_count: number;
+  sales_count?: number | null;
+  created_at?: string | null;
   features: string[];
   included: string[];
   specs: Record<string, string>;
@@ -107,7 +113,7 @@ type ProductRow = {
 const SELECT_PRODUCT = `
   id, slug, title, short_description, description,
   regular_price, sale_price, thumbnail_url, emoji, delivery_time, customer_delivery_mode, badge,
-  rating, reviews_count, features, included, specs, stock_status,
+  rating, reviews_count, sales_count, created_at, features, included, specs, stock_status,
   min_order_quantity, max_order_quantity,
   meta_title, meta_description, focus_keyword, secondary_keywords, canonical_url, robots,
   og_title, og_description, og_image, twitter_title, twitter_description, twitter_image,
@@ -129,6 +135,8 @@ export function mapProduct(row: ProductRow): Product {
     oldPrice,
     rating: Number(row.rating ?? 0),
     reviews: row.reviews_count ?? 0,
+    salesCount: row.sales_count == null ? undefined : Number(row.sales_count),
+    createdAt: row.created_at ?? null,
     badge: row.badge ?? undefined,
     delivery: row.delivery_time ?? "",
     deliveryMode: row.customer_delivery_mode ?? null,
@@ -238,15 +246,19 @@ async function fetchProducts(filter: ProductsFilter = {}): Promise<Product[]> {
 async function augmentWithVariantPricing(products: Product[]): Promise<void> {
   if (products.length === 0) return;
   const ids = products.map((p) => p.id);
-  const [attrsRes, varsRes] = await Promise.all([
+  const [attrsRes, varsRes, trendingRes, bestSellersRes] = await Promise.all([
     supabase.from("product_attributes").select("product_id").in("product_id", ids),
     supabase
       .from("product_variations")
       .select("product_id, price, sale_price, stock, stock_status, status, visibility")
       .in("product_id", ids),
+    supabase.from("trending_products").select("product_id").in("product_id", ids),
+    supabase.from("best_sellers").select("product_id").in("product_id", ids),
   ]);
   const attrSet = new Set<string>();
   (attrsRes.data ?? []).forEach((r: any) => attrSet.add(r.product_id));
+  const trendingSet = new Set<string>((trendingRes.data ?? []).map((r: any) => r.product_id));
+  const bestSellerSet = new Set<string>((bestSellersRes.data ?? []).map((r: any) => r.product_id));
   const byProduct = new Map<string, { price: number; old: number | null }[]>();
   const availableVariantProducts = new Set<string>();
   (varsRes.data ?? []).forEach((v: any) => {
@@ -265,6 +277,8 @@ async function augmentWithVariantPricing(products: Product[]): Promise<void> {
     byProduct.set(v.product_id, list);
   });
   for (const p of products) {
+    p.isTrending = trendingSet.has(p.id);
+    p.isBestSeller = bestSellerSet.has(p.id);
     const hasAttrs = attrSet.has(p.id);
     const list = byProduct.get(p.id);
     if (hasAttrs && !varsRes.error) {
