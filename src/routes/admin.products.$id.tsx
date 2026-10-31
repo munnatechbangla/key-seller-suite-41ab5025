@@ -785,6 +785,7 @@ function BasicInfoTab({
     delivery_type: "",
     customer_delivery_mode: "",
     delivery_time: "",
+    badge: "",
     category_id: "",
     category_ids: [],
   }));
@@ -812,6 +813,7 @@ function BasicInfoTab({
       delivery_type: product.delivery_type ?? "",
       customer_delivery_mode: product.customer_delivery_mode ?? "",
       delivery_time: product.delivery_time ?? "",
+      badge: product.badge ?? "",
       category_id: product.category_id ?? "",
       category_ids: Array.isArray(product.category_ids) && product.category_ids.length > 0
         ? [...(product.category_id ? [product.category_id] : []), ...product.category_ids.filter((categoryId: string) => categoryId !== product.category_id)]
@@ -849,6 +851,7 @@ function BasicInfoTab({
         delivery_type: form.delivery_type || null,
         customer_delivery_mode: form.customer_delivery_mode || null,
         delivery_time: form.delivery_time.trim() || null,
+        badge: String(form.badge ?? "").trim() || null,
         category_ids: Array.isArray(form.category_ids) ? form.category_ids : [],
         category_id: Array.isArray(form.category_ids) && form.category_ids.length > 0 ? form.category_ids[0] : null,
       };
@@ -883,6 +886,17 @@ function BasicInfoTab({
           value={form.short_description}
           onChange={(e) => set({ short_description: e.target.value })}
         />
+      </div>
+
+      <div>
+        <Label>Product badge (optional)</Label>
+        <Input
+          value={form.badge}
+          onChange={(e) => set({ badge: e.target.value })}
+          placeholder="e.g. Trending, Bestseller, New"
+          maxLength={60}
+        />
+        <p className="mt-1 text-xs text-muted-foreground">Leave empty to hide the custom badge. This label appears below the product image, without covering its content.</p>
       </div>
 
       <div>
