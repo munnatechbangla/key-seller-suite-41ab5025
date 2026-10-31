@@ -8,13 +8,16 @@ export function SaleBadges({ product, extra, max = 3 }: { product: Product; extr
   const items: { key: string; label: string; bg: string; fg: string }[] = [];
 
   const stock = extra?.stock ?? product.stock ?? null;
-  const sales = extra?.salesCount ?? null;
-  const createdAt = extra?.createdAt ?? null;
+  const sales = extra?.salesCount ?? product.salesCount ?? null;
+  const createdAt = extra?.createdAt ?? product.createdAt ?? null;
 
-  if (sp.bestseller.enabled && (product as any).isBestSeller) {
+  if (stock !== null && stock <= 0) {
+    items.push({ key: "oos", label: "Out of Stock", bg: "#EF4444", fg: "#ffffff" });
+  }
+  if (sp.bestseller.enabled && product.isBestSeller) {
     items.push({ key: "bs", label: sp.bestseller.label, bg: sp.bestseller.color, fg: sp.bestseller.text_color });
   }
-  if (sp.trending.enabled && (product as any).isTrending) {
+  if (sp.trending.enabled && product.isTrending && product.badge?.trim().toLowerCase() !== sp.trending.label.trim().toLowerCase()) {
     items.push({ key: "tr", label: sp.trending.label, bg: sp.trending.color, fg: sp.trending.text_color });
   }
   if (sp.new_arrival.enabled && createdAt) {
