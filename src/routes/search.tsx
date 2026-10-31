@@ -86,7 +86,7 @@ function SearchPage() {
           <div className="mt-10">
             <p className="text-sm text-muted-foreground mb-4">{results.length} result{results.length !== 1 ? "s" : ""} for "{q}"</p>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-              {results.map((p) => <ProductCard key={p.slug} product={p} />)}
+              {results.map((p) => <ProductCard key={p.slug} product={p} listingActions />)}
             </div>
           </div>
         )}
